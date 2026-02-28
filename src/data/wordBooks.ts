@@ -33,6 +33,32 @@ export interface ImportResult {
   createdBookId?: string;
 }
 
+export interface AnkiDeckSummary {
+  deckId: string;
+  deckName: string;
+  cardCount: number;
+  noteCount: number;
+}
+
+export type AnkiProgressMode = 'none' | 'coarse';
+
+export interface AnkiImportOptions {
+  selectedDeckId: string;
+  bookName?: string;
+  source?: string;
+  license?: string;
+  version?: string;
+  fileName?: string;
+  progressMode?: AnkiProgressMode;
+}
+
+export interface AnkiImportResult extends ImportResult {
+  selectedDeck?: AnkiDeckSummary;
+  skippedCards: number;
+  mappedProgressCount: number;
+  unmappedRows: ImportRowError[];
+}
+
 interface BuiltInBookTemplate {
   id: string;
   name: string;

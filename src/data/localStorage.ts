@@ -1,7 +1,11 @@
 // Local Storage based data management (no Supabase required)
 
 import { normalizeWordKey, parseWordBookText } from '@/services/bookImport';
+import { importApkg, inspectApkg, type AnkiProgressMapping } from '@/services/ankiApkgImport';
 import {
+  type AnkiDeckSummary,
+  type AnkiImportOptions,
+  type AnkiImportResult,
   BUILT_IN_BOOK_IDS,
   DEFAULT_ACTIVE_BOOK_ID,
   getBuiltInWordBooks,
@@ -87,6 +91,7 @@ interface ImportHistoryItem {
   id: string;
   userId: string;
   fileName: string;
+  format: 'csv' | 'apkg';
   importedAt: string;
   result: ImportResult;
 }
@@ -235,13 +240,19 @@ const setImportHistoryMap = (historyMap: Record<string, ImportHistoryItem[]>): v
   setItem(KEYS.IMPORT_HISTORY, historyMap);
 };
 
-const appendImportHistory = (userId: string, fileName: string, result: ImportResult): void => {
+const appendImportHistory = (
+  userId: string,
+  fileName: string,
+  result: ImportResult,
+  format: 'csv' | 'apkg',
+): void => {
   const historyMap = getImportHistoryMap();
   const current = historyMap[userId] || [];
   current.unshift({
     id: `import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     userId,
     fileName,
+    format,
     importedAt: nowIso(),
     result,
   });
@@ -660,12 +671,22 @@ export const getActiveBookSummary = (userId: string, allWords: WordData[]): Acti
   };
 };
 
-export const importWordBookFromCsv = (
+interface ImportedWordRow {
+  key: string;
+  word: WordData;
+  progress?: AnkiProgressMapping | null;
+  raw?: string;
+}
+
+interface UpsertImportedWordsResult {
+  importedWordIds: string[];
+  mappedProgressCount: number;
+}
+
+const upsertImportedWords = (
   userId: string,
-  fileText: string,
-  meta: ImportWordBookMeta = {},
-): ImportResult => {
-  const parsed = parseWordBookText(fileText, { delimiter: meta.delimiter });
+  rows: ImportedWordRow[],
+): UpsertImportedWordsResult => {
   const combinedExisting = getCombinedWordsForUser(userId, wordsDatabase);
   const { byWordKey: existingByWordKey } = buildWordLookups(combinedExisting);
 
@@ -674,9 +695,10 @@ export const importWordBookFromCsv = (
   const updatedCustomWords = [...customWords];
 
   const importedWordIds: string[] = [];
+  const pendingProgress = new Map<string, AnkiProgressMapping>();
   let createdWordCount = 0;
 
-  for (const row of parsed.successRows) {
+  for (const row of rows) {
     const existingWord = existingByWordKey.get(row.key);
 
     if (existingWord) {
@@ -693,6 +715,10 @@ export const importWordBookFromCsv = (
         }
       }
 
+      if (row.progress) {
+        pendingProgress.set(existingWord.id, row.progress);
+      }
+
       continue;
     }
 
@@ -706,59 +732,173 @@ export const importWordBookFromCsv = (
     customByWordKey.set(row.key, createdWord);
     existingByWordKey.set(row.key, createdWord);
     importedWordIds.push(createdWord.id);
+
+    if (row.progress) {
+      pendingProgress.set(createdWord.id, row.progress);
+    }
   }
 
   setCustomWords(userId, updatedCustomWords);
 
-  let createdBookId: string | undefined;
-  const uniqueWordIds = uniqueStrings(importedWordIds);
+  if (pendingProgress.size > 0) {
+    const allProgress = getItem<Record<string, UserProgress[]>>(KEYS.PROGRESS, {});
+    if (!allProgress[userId]) {
+      allProgress[userId] = [];
+    }
 
-  if (uniqueWordIds.length > 0) {
-    const allWords = getCombinedWordsForUser(userId, wordsDatabase);
-    const { byId } = buildWordLookups(allWords);
+    for (const [wordId, mapped] of pendingProgress.entries()) {
+      const existingIndex = allProgress[userId].findIndex((item) => item.wordId === wordId);
 
-    const levels = uniqueStrings(
-      uniqueWordIds
-        .map((wordId) => byId.get(wordId)?.level)
-        .filter((level): level is WordData['level'] => Boolean(level)),
-    );
+      if (existingIndex >= 0) {
+        allProgress[userId][existingIndex] = {
+          ...allProgress[userId][existingIndex],
+          status: mapped.status,
+          reviewCount: Math.max(mapped.reviewCount, allProgress[userId][existingIndex].reviewCount),
+          easeFactor: mapped.easeFactor,
+          nextReview: mapped.nextReview,
+          lastReviewed: nowIso(),
+        };
+      } else {
+        allProgress[userId].push({
+          userId,
+          wordId,
+          status: mapped.status,
+          reviewCount: mapped.reviewCount,
+          lastReviewed: nowIso(),
+          nextReview: mapped.nextReview,
+          easeFactor: mapped.easeFactor,
+        });
+      }
+    }
 
-    const topics = uniqueStrings(
-      uniqueWordIds
-        .map((wordId) => byId.get(wordId)?.topic)
-        .filter((topic): topic is string => Boolean(topic)),
-    );
-
-    const generatedBookId = `book_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    const book: WordBook = {
-      id: generatedBookId,
-      name: meta.bookName?.trim() || 'Imported Word Book',
-      source: meta.source || 'CSV/TSV Import',
-      license: meta.license || 'User provided',
-      levelRange: levels.length > 0 ? levels : ['B1'],
-      topicTags: topics,
-      wordIds: uniqueWordIds,
-      createdAt: nowIso(),
-      isBuiltIn: false,
-      version: meta.version || '1.0.0',
-    };
-
-    saveWordBook(userId, book);
-    setActiveBook(userId, book.id);
-    createdBookId = book.id;
+    setItem(KEYS.PROGRESS, allProgress);
   }
+
+  return {
+    importedWordIds,
+    mappedProgressCount: pendingProgress.size,
+  };
+};
+
+const createBookFromImportedWordIds = (
+  userId: string,
+  importedWordIds: string[],
+  meta: ImportWordBookMeta,
+): string | undefined => {
+  const uniqueWordIds = uniqueStrings(importedWordIds);
+  if (uniqueWordIds.length === 0) {
+    return undefined;
+  }
+
+  const allWords = getCombinedWordsForUser(userId, wordsDatabase);
+  const { byId } = buildWordLookups(allWords);
+
+  const levels = uniqueStrings(
+    uniqueWordIds
+      .map((wordId) => byId.get(wordId)?.level)
+      .filter((level): level is WordData['level'] => Boolean(level)),
+  );
+
+  const topics = uniqueStrings(
+    uniqueWordIds
+      .map((wordId) => byId.get(wordId)?.topic)
+      .filter((topic): topic is string => Boolean(topic)),
+  );
+
+  const generatedBookId = `book_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const book: WordBook = {
+    id: generatedBookId,
+    name: meta.bookName?.trim() || 'Imported Word Book',
+    source: meta.source || 'CSV/TSV Import',
+    license: meta.license || 'User provided',
+    levelRange: levels.length > 0 ? levels : ['B1'],
+    topicTags: topics,
+    wordIds: uniqueWordIds,
+    createdAt: nowIso(),
+    isBuiltIn: false,
+    version: meta.version || '1.0.0',
+  };
+
+  saveWordBook(userId, book);
+  setActiveBook(userId, book.id);
+  return book.id;
+};
+
+export const importWordBookFromCsv = (
+  userId: string,
+  fileText: string,
+  meta: ImportWordBookMeta = {},
+): ImportResult => {
+  const parsed = parseWordBookText(fileText, { delimiter: meta.delimiter });
+  const upsertResult = upsertImportedWords(
+    userId,
+    parsed.successRows.map((row) => ({
+      key: row.key,
+      word: row.word,
+      raw: row.raw,
+    })),
+  );
+
+  const createdBookId = createBookFromImportedWordIds(userId, upsertResult.importedWordIds, meta);
 
   clearDailyWordsCacheForUser(userId);
 
   const result: ImportResult = {
     totalRows: parsed.totalRows,
-    successCount: uniqueWordIds.length,
+    successCount: uniqueStrings(upsertResult.importedWordIds).length,
     duplicateCount: parsed.duplicateCount,
     errorRows: parsed.errorRows,
     createdBookId,
   };
 
-  appendImportHistory(userId, meta.fileName || 'manual-import', result);
+  appendImportHistory(userId, meta.fileName || 'manual-import', result, 'csv');
+  return result;
+};
+
+export const inspectAnkiApkg = async (file: File): Promise<AnkiDeckSummary[]> => {
+  const result = await inspectApkg(file);
+  return result.decks;
+};
+
+export const importWordBookFromAnkiApkg = async (
+  userId: string,
+  file: File,
+  options: AnkiImportOptions,
+): Promise<AnkiImportResult> => {
+  const parsed = await importApkg(file, options);
+
+  const upsertResult = upsertImportedWords(
+    userId,
+    parsed.rows.map((row) => ({
+      key: row.key,
+      word: row.word,
+      progress: row.progress,
+      raw: row.raw,
+    })),
+  );
+
+  const createdBookId = createBookFromImportedWordIds(userId, upsertResult.importedWordIds, {
+    bookName: options.bookName,
+    source: options.source || `Anki APKG Import: ${file.name}`,
+    license: options.license || 'User provided',
+    version: options.version,
+  });
+
+  clearDailyWordsCacheForUser(userId);
+
+  const result: AnkiImportResult = {
+    totalRows: parsed.rows.length + parsed.unmappedRows.length,
+    successCount: uniqueStrings(upsertResult.importedWordIds).length,
+    duplicateCount: parsed.skippedCards - parsed.unmappedRows.length,
+    errorRows: parsed.unmappedRows,
+    createdBookId,
+    selectedDeck: parsed.selectedDeck,
+    skippedCards: parsed.skippedCards,
+    mappedProgressCount: upsertResult.mappedProgressCount,
+    unmappedRows: parsed.unmappedRows,
+  };
+
+  appendImportHistory(userId, options.fileName || file.name, result, 'apkg');
   return result;
 };
 

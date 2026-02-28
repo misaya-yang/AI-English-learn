@@ -21,6 +21,8 @@ import {
   getActiveBook as getActiveBookFromStorage,
   setActiveBook as setActiveBookInStorage,
   importWordBookFromCsv,
+  importWordBookFromAnkiApkg,
+  inspectAnkiApkg,
   deleteWordBook as deleteWordBookFromStorage,
   getActiveBookSummary,
   getCustomWords,
@@ -32,7 +34,7 @@ import {
   type LearningPlan,
 } from '@/data/localStorage';
 import { wordsDatabase, type WordData, getWordOfTheDay, getPreviousWords } from '@/data/words';
-import type { ImportResult, WordBook } from '@/data/wordBooks';
+import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportResult, WordBook } from '@/data/wordBooks';
 
 interface StudyStats {
   totalWords: number;
@@ -57,6 +59,8 @@ interface UserDataContextType {
   activeBookSummary: ActiveBookSummary;
   setActiveBook: (bookId: string) => void;
   importWordBook: (fileText: string, meta?: ImportWordBookMeta) => ImportResult;
+  inspectAnkiApkg: (file: File) => Promise<AnkiDeckSummary[]>;
+  importAnkiApkg: (file: File, options: AnkiImportOptions) => Promise<AnkiImportResult>;
   deleteWordBook: (bookId: string) => boolean;
 
   // Custom words
@@ -99,6 +103,16 @@ const EMPTY_IMPORT_RESULT: ImportResult = {
   successCount: 0,
   duplicateCount: 0,
   errorRows: [],
+};
+
+const EMPTY_ANKI_IMPORT_RESULT: AnkiImportResult = {
+  totalRows: 0,
+  successCount: 0,
+  duplicateCount: 0,
+  errorRows: [],
+  skippedCards: 0,
+  mappedProgressCount: 0,
+  unmappedRows: [],
 };
 
 const EMPTY_BOOK_SUMMARY: ActiveBookSummary = {
@@ -211,6 +225,22 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     if (!user) return EMPTY_IMPORT_RESULT;
 
     const result = importWordBookFromCsv(userId, fileText, meta);
+    loadData();
+    return result;
+  };
+
+  const inspectAnkiApkgDecks = async (file: File): Promise<AnkiDeckSummary[]> => {
+    if (!user) return [];
+    return inspectAnkiApkg(file);
+  };
+
+  const importAnkiApkg = async (
+    file: File,
+    options: AnkiImportOptions,
+  ): Promise<AnkiImportResult> => {
+    if (!user) return EMPTY_ANKI_IMPORT_RESULT;
+
+    const result = await importWordBookFromAnkiApkg(userId, file, options);
     loadData();
     return result;
   };
@@ -342,6 +372,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         activeBookSummary,
         setActiveBook,
         importWordBook,
+        inspectAnkiApkg: inspectAnkiApkgDecks,
+        importAnkiApkg,
         deleteWordBook,
         customWords,
         addCustomWord,

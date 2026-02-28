@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AddWordDialog } from '@/components/AddWordDialog';
+import { ImportAnkiApkgDialog } from '@/components/ImportAnkiApkgDialog';
 import { ImportWordBookDialog } from '@/components/ImportWordBookDialog';
 import {
   Search,
@@ -24,7 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { wordsDatabase, type WordData } from '@/data/words';
 import type { UserProgress } from '@/data/localStorage';
-import type { ImportResult, ImportRowError } from '@/data/wordBooks';
+import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportResult, ImportRowError } from '@/data/wordBooks';
 import { toast } from 'sonner';
 
 interface VocabularyItem {
@@ -52,6 +53,8 @@ export default function VocabularyBankPage() {
     activeBook,
     setActiveBook,
     importWordBook,
+    inspectAnkiApkg,
+    importAnkiApkg,
     deleteWordBook,
     customWords,
     addCustomWord,
@@ -178,6 +181,14 @@ export default function VocabularyBankPage() {
     }
   };
 
+  const handleInspectAnki = async (file: File): Promise<AnkiDeckSummary[]> => {
+    return inspectAnkiApkg(file);
+  };
+
+  const handleImportAnki = async (file: File, options: AnkiImportOptions): Promise<AnkiImportResult> => {
+    return importAnkiApkg(file, options);
+  };
+
   const handleAddWord = (word: WordData) => {
     addCustomWord(word);
     toast.success('Word added to your custom book');
@@ -205,6 +216,21 @@ export default function VocabularyBankPage() {
         </div>
         <div className="flex gap-2 flex-wrap">
           <AddWordDialog onAddWord={handleAddWord} />
+          <ImportAnkiApkgDialog
+            onInspect={handleInspectAnki}
+            onImport={handleImportAnki}
+            onSuccess={(result) => {
+              toast.success(
+                `Anki 导入完成：${result.successCount} 词，映射进度 ${result.mappedProgressCount} 条`,
+              );
+            }}
+            onError={(errors) => {
+              if (errors.length > 0) {
+                toast.warning(`Anki 导入有 ${errors.length} 条无法映射，已生成错误报告`);
+                downloadImportErrors(errors);
+              }
+            }}
+          />
           <ImportWordBookDialog
             onImport={handleImportBook}
             onSuccess={(result) => {
