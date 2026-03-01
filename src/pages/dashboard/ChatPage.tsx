@@ -37,12 +37,14 @@ import {
   Menu,
   Edit2,
   Check,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useSupabaseChat } from '@/hooks/useSupabaseChat';
-import { INIT_ALL_SQL, checkTablesExist } from '@/lib/supabase';
+import { INIT_ALL_SQL } from '@/lib/supabase';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { useTranslation } from 'react-i18next';
 
@@ -268,17 +270,18 @@ export default function ChatPage() {
   const language = i18n.language;
   const {
     sessions,
-    currentSession,
     currentSessionId,
     messages,
     isLoading,
     streamingContent,
-    dbReady,
+    syncState,
+    chatError,
     sendMessage,
     createSession,
     deleteSession,
     switchSession,
     updateSessionTitle,
+    retryLastFailedMessage,
     stopGeneration,
     clearMessages,
     deleteAllSessions,
@@ -290,9 +293,15 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dbStatus, setDbStatus] = useState<Record<string, boolean>>({});
   const [showDbSetup, setShowDbSetup] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const shouldAutoScrollRef = useRef(true);
+
+  const getMessagesViewport = useCallback(() => {
+    const root = messagesScrollAreaRef.current;
+    if (!root) return null;
+    return root.querySelector('[data-slot=\"scroll-area-viewport\"]') as HTMLDivElement | null;
+  }, []);
 
   // Check database status - disabled as tables are confirmed to exist
   useEffect(() => {
@@ -306,10 +315,40 @@ export default function ChatPage() {
     });
   }, []);
 
-  // Auto scroll to bottom when messages change or streaming
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingContent]);
+    const viewport = getMessagesViewport();
+    if (!viewport) return;
+
+    const handleScroll = () => {
+      const distanceToBottom = viewport.scrollHeight - (viewport.scrollTop + viewport.clientHeight);
+      shouldAutoScrollRef.current = distanceToBottom < 72;
+    };
+
+    handleScroll();
+    viewport.addEventListener('scroll', handleScroll);
+    return () => viewport.removeEventListener('scroll', handleScroll);
+  }, [getMessagesViewport, currentSessionId, sidebarOpen]);
+
+  // Auto scroll to bottom when user is near bottom.
+  useEffect(() => {
+    const viewport = getMessagesViewport();
+    if (!viewport) return;
+    if (!shouldAutoScrollRef.current) return;
+
+    const raf = requestAnimationFrame(() => {
+      viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, [messages, streamingContent, getMessagesViewport]);
+
+  // Force scroll to bottom when switching session.
+  useEffect(() => {
+    const viewport = getMessagesViewport();
+    if (!viewport) return;
+    shouldAutoScrollRef.current = true;
+    viewport.scrollTop = viewport.scrollHeight;
+  }, [currentSessionId, getMessagesViewport]);
 
   // Focus input on mount
   useEffect(() => {
@@ -365,8 +404,21 @@ export default function ChatPage() {
     }
   };
 
+  const syncLabel =
+    syncState.source === 'remote'
+      ? language === 'zh'
+        ? '云端同步'
+        : 'Cloud Sync'
+      : syncState.source === 'merged'
+        ? language === 'zh'
+          ? '云端+本地回补'
+          : 'Cloud + Local Sync'
+        : language === 'zh'
+          ? '本地模式'
+          : 'Local Mode';
+
   return (
-    <div className="h-[calc(100vh-80px)] flex">
+    <div className="h-full min-h-0 flex overflow-hidden">
       {/* Database Status */}
       {Object.keys(dbStatus).length > 0 && !Object.values(dbStatus).every(Boolean) && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 max-w-lg shadow-lg">
@@ -436,9 +488,9 @@ export default function ChatPage() {
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="flex-shrink-0 border-r border-border bg-card overflow-hidden"
+            className="flex-shrink-0 border-r border-border bg-card overflow-hidden min-h-0"
           >
-            <div className="flex flex-col h-full w-[280px]">
+            <div className="flex flex-col h-full min-h-0 w-[280px]">
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="font-semibold flex items-center gap-2">
@@ -457,7 +509,7 @@ export default function ChatPage() {
               </div>
 
               {/* Session List */}
-              <ScrollArea className="flex-1 h-[calc(100%-120px)]">
+              <ScrollArea className="flex-1 min-h-0">
                 <div className="p-2 space-y-1">
                   {sessions.length === 0 ? (
                     <div className="text-center py-8 px-4">
@@ -523,7 +575,7 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-background">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-background">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-3">
@@ -575,7 +627,7 @@ export default function ChatPage() {
         </div>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+        <ScrollArea className="flex-1 min-h-0 px-4" ref={messagesScrollAreaRef}>
           <div className="max-w-3xl mx-auto">
             {messages.length === 0 ? (
               <WelcomeMessage onPromptClick={handleQuickPrompt} t={t} prompts={quickPrompts} />
@@ -618,12 +670,31 @@ export default function ChatPage() {
                   </div>
                 )}
                 
-                {/* Scroll anchor */}
-                <div ref={messagesEndRef} />
               </div>
             )}
           </div>
         </ScrollArea>
+
+        {chatError && (
+          <div className="px-4 pb-2">
+            <div className="max-w-3xl mx-auto rounded-xl border border-amber-300/50 bg-amber-50/60 dark:bg-amber-900/20 p-3 flex items-start gap-3">
+              <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">
+                  {language === 'zh' ? 'AI 暂时不可用' : 'AI is temporarily unavailable'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {chatError.message}
+                  {chatError.requestId ? ` · requestId: ${chatError.requestId}` : ''}
+                </p>
+              </div>
+              <Button size="sm" variant="outline" onClick={retryLastFailedMessage} disabled={isLoading}>
+                <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                {language === 'zh' ? '重试' : 'Retry'}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Input Area - Enhanced */}
         <div className="border-t border-border bg-card p-4">
@@ -690,9 +761,14 @@ export default function ChatPage() {
               <span>·</span>
               <span className={cn(
                 "flex items-center gap-1",
-                Object.values(dbStatus).every(Boolean) ? "text-emerald-600" : "text-amber-600"
+                syncState.source === 'remote'
+                  ? 'text-emerald-600'
+                  : syncState.source === 'merged'
+                    ? 'text-blue-600'
+                    : 'text-amber-600'
               )}>
-                {Object.values(dbStatus).every(Boolean) ? `✓ ${t('common.cloudStorage')}` : `⚠ ${t('common.localStorage')}`}
+                {syncState.source === 'remote' ? '✓' : syncState.source === 'merged' ? '↻' : '⚠'} {syncLabel}
+                {syncState.pendingSyncCount > 0 ? ` (${syncState.pendingSyncCount})` : ''}
               </span>
             </p>
           </div>

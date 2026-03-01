@@ -23,7 +23,7 @@ export async function sendMessageToDeepSeekStream(
       content = getChatFallbackReply(messages);
     }
 
-    const chunks = content.match(/.{1,24}/g) || [content];
+    const chunks = content.match(/[\s\S]{1,24}/g) || [content];
     for (const chunk of chunks) {
       onChunk(chunk);
       await new Promise((resolve) => setTimeout(resolve, 10));

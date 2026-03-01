@@ -57,6 +57,7 @@ export default function DashboardLayout() {
   const { streak, xp, dueWords } = useUserData();
   const location = useLocation();
   const navItems = getNavItems(t);
+  const isChatRoute = location.pathname.startsWith('/dashboard/chat');
 
   if (isLoading) {
     return (
@@ -112,7 +113,7 @@ export default function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col border-r bg-card p-4">
         {/* Logo */}
@@ -275,7 +276,7 @@ export default function DashboardLayout() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen lg:ml-0">
+      <main className="flex-1 flex flex-col min-h-0 lg:ml-0 overflow-hidden">
         {/* Desktop Header */}
         <header className="hidden lg:flex items-center justify-between border-b bg-card px-6 py-3">
           <div>
@@ -326,7 +327,14 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 p-4 lg:p-6 pt-20 lg:pt-6 overflow-auto">
+        <div
+          className={cn(
+            'flex-1',
+            isChatRoute
+              ? 'p-0 pt-20 lg:pt-0 overflow-hidden min-h-0'
+              : 'p-4 lg:p-6 pt-20 lg:pt-6 overflow-auto min-h-0',
+          )}
+        >
           <Outlet />
         </div>
       </main>

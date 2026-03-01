@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { getChatFallbackReply, invokeEdgeFunction } from '@/services/aiGateway';
+import { invokeEdgeFunction } from '@/services/aiGateway';
 
 export interface ChatMessage {
   id: string;
@@ -180,29 +180,20 @@ export function useChat() {
     let fullContent = '';
 
     try {
-      let replyContent = '';
-
-      try {
-        const result = await invokeEdgeFunction<{ content: string }>(
-          'ai-chat',
-          {
-            messages: apiMessages,
-            systemPrompt: SYSTEM_PROMPT,
-            temperature: 0.7,
-            maxTokens: 2000,
-          },
-          { signal: abortControllerRef.current.signal },
-        );
-        replyContent = result.content;
-      } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-          throw error;
-        }
-        replyContent = getChatFallbackReply(apiMessages);
-      }
+      const result = await invokeEdgeFunction<{ content: string }>(
+        'ai-chat',
+        {
+          messages: apiMessages,
+          systemPrompt: SYSTEM_PROMPT,
+          temperature: 0.7,
+          maxTokens: 2000,
+        },
+        { signal: abortControllerRef.current.signal },
+      );
+      const replyContent = result.content;
 
       const assistantMessageId = uuidv4();
-      const chunks = replyContent.match(/.{1,24}/g) || [replyContent];
+      const chunks = replyContent.match(/[\s\S]{1,24}/g) || [replyContent];
       for (const chunk of chunks) {
         if (abortControllerRef.current?.signal.aborted) {
           throw new DOMException('Aborted', 'AbortError');
