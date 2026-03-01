@@ -1,8 +1,14 @@
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts';
+import { requireAuthenticatedUser } from '../_shared/auth.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  const auth = await requireAuthenticatedUser(req);
+  if (!auth.ok) {
+    return auth.response;
   }
 
   try {

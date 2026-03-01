@@ -1,5 +1,6 @@
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts';
 import { callDeepSeek, type DeepSeekMessage } from '../_shared/deepseek.ts';
+import { requireAuthenticatedUser } from '../_shared/auth.ts';
 
 const DEFAULT_SYSTEM_PROMPT = `You are an expert English tutor for Chinese-speaking learners.
 Return practical, concise guidance with bilingual clarity when helpful.
@@ -8,6 +9,11 @@ Focus on vocabulary usage, grammar correction, collocations, and example-driven 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  const auth = await requireAuthenticatedUser(req);
+  if (!auth.ok) {
+    return auth.response;
   }
 
   try {
