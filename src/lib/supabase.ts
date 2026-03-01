@@ -802,6 +802,46 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 9. Chat quiz items table
+CREATE TABLE IF NOT EXISTS chat_quiz_items (
+  id TEXT PRIMARY KEY,
+  session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
+  message_id UUID REFERENCES chat_messages(id) ON DELETE SET NULL,
+  title TEXT NOT NULL DEFAULT 'Quick Quiz',
+  stem TEXT NOT NULL,
+  options JSONB NOT NULL,
+  answer_key_hash TEXT NOT NULL,
+  explanation TEXT,
+  difficulty TEXT NOT NULL DEFAULT 'medium' CHECK (difficulty IN ('easy', 'medium', 'hard')),
+  skills JSONB NOT NULL DEFAULT '[]',
+  question_type TEXT NOT NULL DEFAULT 'multiple_choice' CHECK (question_type IN ('multiple_choice', 'true_false', 'fill_blank')),
+  estimated_seconds INTEGER NOT NULL DEFAULT 45,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 10. Chat quiz attempts table
+CREATE TABLE IF NOT EXISTS chat_quiz_attempts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  quiz_id TEXT NOT NULL REFERENCES chat_quiz_items(id) ON DELETE CASCADE,
+  session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
+  selected_option TEXT NOT NULL,
+  is_correct BOOLEAN NOT NULL,
+  duration_ms INTEGER NOT NULL DEFAULT 0,
+  source_mode TEXT NOT NULL DEFAULT 'study' CHECK (source_mode IN ('chat', 'study', 'quiz', 'canvas')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 11. Chat experiment events table
+CREATE TABLE IF NOT EXISTS chat_experiment_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  event_name TEXT NOT NULL,
+  event_payload_json JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Enable RLS on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE words ENABLE ROW LEVEL SECURITY;
@@ -811,6 +851,9 @@ ALTER TABLE learning_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE study_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_quiz_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_quiz_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_experiment_events ENABLE ROW LEVEL SECURITY;
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -824,6 +867,9 @@ CREATE INDEX IF NOT EXISTS idx_study_sessions_user_id ON study_sessions(user_id)
 CREATE INDEX IF NOT EXISTS idx_study_sessions_date ON study_sessions(date);
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id);
+CREATE INDEX IF NOT EXISTS idx_chat_quiz_items_user_created ON chat_quiz_items(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chat_quiz_attempts_user_created ON chat_quiz_attempts(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chat_experiment_events_user_created ON chat_experiment_events(user_id, created_at DESC);
 
 -- Create RLS policies (simplified for anonymous users)
 CREATE POLICY "Allow all" ON users FOR ALL USING (true) WITH CHECK (true);
@@ -834,6 +880,9 @@ CREATE POLICY "Allow all" ON learning_plans FOR ALL USING (true) WITH CHECK (tru
 CREATE POLICY "Allow all" ON study_sessions FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON chat_sessions FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON chat_messages FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON chat_quiz_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON chat_quiz_attempts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON chat_experiment_events FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================
 -- TRIGGER: Auto-create user when auth user is created

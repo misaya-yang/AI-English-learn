@@ -76,6 +76,7 @@ Deno.serve(async (req) => {
     const prompt = String(body.prompt || '');
     const answer = String(body.answer || '');
     const taskType = body.taskType === 'task1' ? 'task1' : 'task2';
+    const sourceContext = typeof body.sourceContext === 'string' ? body.sourceContext : '';
 
     if (!prompt || !answer) {
       return jsonResponse({ error: 'invalid_payload', message: 'prompt and answer are required' }, 400);
@@ -101,6 +102,7 @@ Deno.serve(async (req) => {
       '  "confidence": 0-1',
       '}',
       `Use IELTS ${taskType.toUpperCase()} context. Keep rewrites and actions concise.`,
+      sourceContext ? `Extra source context:\\n${sourceContext}` : '',
     ].join('\n');
 
     const completion = await callDeepSeek({

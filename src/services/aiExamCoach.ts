@@ -143,6 +143,7 @@ export const gradeIeltsWriting = async (args: {
   prompt: string;
   answer: string;
   taskType: 'task1' | 'task2';
+  sourceContext?: string;
 }): Promise<AiFeedback> => {
   try {
     const result = await invokeEdgeFunction<AiFeedback>('ai-grade-writing', {
@@ -152,6 +153,7 @@ export const gradeIeltsWriting = async (args: {
       answer: args.answer,
       examType: 'IELTS',
       taskType: args.taskType,
+      sourceContext: args.sourceContext,
     });
 
     if (result?.scores?.overallBand) {

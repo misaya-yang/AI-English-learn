@@ -1,12 +1,22 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { supabase, getAnonymousUserId } from '@/lib/supabase';
 import { AuthRequiredError, EdgeFunctionError, invokeEdgeFunction } from '@/services/aiGateway';
+import { attachArtifactsToContent, extractArtifactsFromContent, normalizeArtifacts } from '@/services/chatArtifacts';
+import type {
+  AgentMeta,
+  ChatArtifact,
+  ChatEdgeResponse,
+  ChatMode,
+  ChatQuizAttempt,
+  SendMessageOptions,
+} from '@/types/chatAgent';
 
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt: number;
+  artifacts?: ChatArtifact[];
 }
 
 export interface ChatSession {
@@ -32,10 +42,15 @@ export interface ChatRequestError {
 interface FailedRequestContext {
   sessionId: string;
   apiMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+  mode: ChatMode;
+  featureFlags: SendMessageOptions['featureFlags'];
+  trigger: NonNullable<SendMessageOptions['trigger']>;
 }
 
 const CHAT_SESSIONS_STORAGE_KEY = 'vocabdaily-chat-sessions';
 const CHAT_CURRENT_SESSION_KEY = 'vocabdaily-current-chat-session';
+const CHAT_QUIZ_ATTEMPTS_STORAGE_KEY = 'vocabdaily-chat-quiz-attempts';
+const CHAT_EXPERIMENT_EVENTS_STORAGE_KEY = 'vocabdaily-chat-experiment-events';
 
 // System prompt for English tutor
 const SYSTEM_PROMPT = `You are an expert English tutor specializing in helping Chinese-speaking learners. Your responses should be:
@@ -113,9 +128,16 @@ function mergeMessages(remoteMessages: ChatMessage[], localMessages: ChatMessage
       return;
     }
 
-    if (message.createdAt < existing.createdAt) {
-      mergedById.set(message.id, message);
-    }
+    mergedById.set(message.id, {
+      id: existing.id,
+      role: existing.createdAt <= message.createdAt ? existing.role : message.role,
+      content: existing.createdAt <= message.createdAt ? existing.content : message.content,
+      createdAt: Math.min(existing.createdAt, message.createdAt),
+      artifacts:
+        (existing.artifacts && existing.artifacts.length > 0
+          ? existing.artifacts
+          : message.artifacts) || undefined,
+    });
   });
 
   return [...mergedById.values()].sort((a, b) => a.createdAt - b.createdAt);
@@ -144,12 +166,20 @@ function normalizeLocalSessions(raw: unknown): ChatSession[] {
                 typeof entry.content === 'string',
             );
           })
-          .map((message) => ({
-            id: message.id,
-            role: message.role,
-            content: message.content,
-            createdAt: parseTimestamp(message.createdAt, fallbackNow),
-          }))
+          .map((message) => {
+            const parsed = extractArtifactsFromContent(message.content);
+            const artifacts = Array.isArray((message as { artifacts?: unknown }).artifacts)
+              ? normalizeArtifacts((message as { artifacts?: unknown }).artifacts)
+              : parsed.artifacts;
+
+            return {
+              id: message.id,
+              role: message.role,
+              content: parsed.content,
+              createdAt: parseTimestamp(message.createdAt, fallbackNow),
+              artifacts: artifacts.length > 0 ? artifacts : undefined,
+            };
+          })
       : [];
 
     const createdAt = parseTimestamp(input.createdAt, fallbackNow);
@@ -180,6 +210,46 @@ function loadLocalSessions(): ChatSession[] {
 
 function saveLocalSessions(sessions: ChatSession[]): void {
   localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+}
+
+function loadLocalQuizAttempts(): Record<string, ChatQuizAttempt> {
+  const raw = localStorage.getItem(CHAT_QUIZ_ATTEMPTS_STORAGE_KEY);
+  if (!raw) return {};
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, ChatQuizAttempt>;
+    const result: Record<string, ChatQuizAttempt> = {};
+    Object.values(parsed).forEach((item) => {
+      if (!item || !item.quizId) return;
+      result[item.quizId] = item;
+    });
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalQuizAttempts(map: Record<string, ChatQuizAttempt>): void {
+  localStorage.setItem(CHAT_QUIZ_ATTEMPTS_STORAGE_KEY, JSON.stringify(map));
+}
+
+function appendExperimentEventLocal(eventName: string, payload: Record<string, unknown>): void {
+  try {
+    const raw = localStorage.getItem(CHAT_EXPERIMENT_EVENTS_STORAGE_KEY);
+    const base = raw ? JSON.parse(raw) as Array<Record<string, unknown>> : [];
+    const next = [
+      {
+        id: crypto.randomUUID(),
+        eventName,
+        payload,
+        createdAt: new Date().toISOString(),
+      },
+      ...base,
+    ].slice(0, 500);
+    localStorage.setItem(CHAT_EXPERIMENT_EVENTS_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // Ignore local event cache failures.
+  }
 }
 
 function toRequestError(error: unknown): ChatRequestError {
@@ -295,6 +365,10 @@ export function useSupabaseChat() {
   const [dbReady, setDbReady] = useState(true);
   const [syncState, setSyncState] = useState<ChatSyncState>({ source: 'remote', pendingSyncCount: 0 });
   const [chatError, setChatError] = useState<ChatRequestError | null>(null);
+  const [quizAttemptsById, setQuizAttemptsById] = useState<Record<string, ChatQuizAttempt>>(() =>
+    loadLocalQuizAttempts(),
+  );
+  const [lastAgentMeta, setLastAgentMeta] = useState<AgentMeta | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const failedRequestRef = useRef<FailedRequestContext | null>(null);
@@ -393,7 +467,7 @@ export function useSupabaseChat() {
             id: message.id,
             session_id: session.id,
             role: message.role,
-            content: message.content,
+            content: attachArtifactsToContent(message.content, message.artifacts),
             created_at: new Date(message.createdAt).toISOString(),
           });
 
@@ -475,11 +549,13 @@ export function useSupabaseChat() {
       const remoteMessageIdsBySession = new Map<string, Set<string>>();
 
       messagesData.forEach((message) => {
+        const parsed = extractArtifactsFromContent(message.content);
         const chatMessage: ChatMessage = {
           id: message.id,
           role: message.role,
-          content: message.content,
+          content: parsed.content,
           createdAt: new Date(message.created_at).getTime(),
+          artifacts: parsed.artifacts.length > 0 ? parsed.artifacts : undefined,
         };
 
         const existing = remoteMessagesBySession.get(message.session_id) || [];
@@ -509,6 +585,49 @@ export function useSupabaseChat() {
       persistSessions(mergedSessions);
       ensureValidCurrentSession(mergedSessions);
       setDbReady(true);
+
+      try {
+        const { data: remoteAttempts } = await supabase
+          .from('chat_quiz_attempts')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(500);
+
+        const localAttempts = loadLocalQuizAttempts();
+        const mergedAttempts: Record<string, ChatQuizAttempt> = { ...localAttempts };
+        (remoteAttempts || []).forEach((row) => {
+          const quizId = String(row.quiz_id || '');
+          if (!quizId) return;
+          const candidate: ChatQuizAttempt = {
+            id: String(row.id || crypto.randomUUID()),
+            quizId,
+            sessionId: String(row.session_id || ''),
+            userId,
+            selected: String(row.selected_option || ''),
+            isCorrect: Boolean(row.is_correct),
+            durationMs: Number(row.duration_ms || 0),
+            createdAt: new Date(String(row.created_at || new Date().toISOString())).getTime(),
+            sourceMode:
+              row.source_mode === 'chat' ||
+              row.source_mode === 'study' ||
+              row.source_mode === 'quiz' ||
+              row.source_mode === 'canvas'
+                ? row.source_mode
+                : 'study',
+          };
+
+          const existing = mergedAttempts[quizId];
+          if (!existing || candidate.createdAt > existing.createdAt) {
+            mergedAttempts[quizId] = candidate;
+          }
+        });
+
+        setQuizAttemptsById(mergedAttempts);
+        saveLocalQuizAttempts(mergedAttempts);
+      } catch {
+        // Optional table may not exist; keep local attempt state.
+      }
 
       const pendingBefore = countPendingSync(localSessions, remoteSessionIds, remoteMessageIdsBySession);
       const source: ChatSyncState['source'] =
@@ -555,6 +674,32 @@ export function useSupabaseChat() {
       localStorage.removeItem(CHAT_CURRENT_SESSION_KEY);
     }
   }, [currentSessionId]);
+
+  const trackExperimentEvent = useCallback(
+    async (eventName: string, payload: Record<string, unknown>) => {
+      appendExperimentEventLocal(eventName, payload);
+
+      try {
+        await supabase.from('chat_experiment_events').insert({
+          user_id: userId,
+          event_name: eventName,
+          event_payload_json: payload,
+          created_at: new Date().toISOString(),
+        });
+      } catch {
+        // Optional table may not exist yet. Keep local events only.
+      }
+    },
+    [userId],
+  );
+
+  const persistQuizAttemptMap = useCallback((updater: (prev: Record<string, ChatQuizAttempt>) => Record<string, ChatQuizAttempt>) => {
+    setQuizAttemptsById((prev) => {
+      const next = updater(prev);
+      saveLocalQuizAttempts(next);
+      return next;
+    });
+  }, []);
 
   const createSession = useCallback(async (title: string = '新对话') => {
     const sessionId = crypto.randomUUID();
@@ -674,12 +819,40 @@ export function useSupabaseChat() {
           id: assistantMessage.id,
           session_id: sessionId,
           role: assistantMessage.role,
-          content: assistantMessage.content,
+          content: attachArtifactsToContent(assistantMessage.content, assistantMessage.artifacts),
           created_at: new Date(assistantMessage.createdAt).toISOString(),
         });
 
         if (error) {
           throw error;
+        }
+
+        const quizzes =
+          assistantMessage.artifacts?.filter(
+            (artifact): artifact is Extract<ChatArtifact, { type: 'quiz' }> => artifact.type === 'quiz',
+          ) || [];
+
+        for (const quiz of quizzes) {
+          try {
+            await supabase.from('chat_quiz_items').insert({
+              id: quiz.payload.quizId,
+              session_id: sessionId,
+              user_id: userId,
+              message_id: assistantMessage.id,
+              title: quiz.payload.title,
+              stem: quiz.payload.stem,
+              options: quiz.payload.options,
+              answer_key_hash: quiz.payload.answerKey,
+              explanation: quiz.payload.explanation,
+              difficulty: quiz.payload.difficulty,
+              skills: quiz.payload.skills,
+              question_type: quiz.payload.questionType,
+              estimated_seconds: quiz.payload.estimatedSeconds,
+              created_at: new Date(assistantMessage.createdAt).toISOString(),
+            });
+          } catch {
+            // Optional table may not exist yet.
+          }
         }
       } catch (error) {
         console.error('Error saving assistant message:', error);
@@ -702,7 +875,7 @@ export function useSupabaseChat() {
         }),
       );
     },
-    [updateSessions],
+    [updateSessions, userId],
   );
 
   const requestAssistantReply = useCallback(
@@ -715,7 +888,7 @@ export function useSupabaseChat() {
       let fullContent = '';
 
       try {
-        const result = await invokeEdgeFunction<{ content: string }>(
+        const result = await invokeEdgeFunction<ChatEdgeResponse>(
           'ai-chat',
           {
             messages: context.apiMessages,
@@ -724,6 +897,7 @@ export function useSupabaseChat() {
               locale: 'zh-CN',
               app: 'VocabDaily',
               mode: 'english-learning-coach',
+              currentMode: context.mode,
             },
             dialogueContext: context.apiMessages
               .filter((message) => message.role === 'user' || message.role === 'assistant')
@@ -731,6 +905,13 @@ export function useSupabaseChat() {
             toolContext: {
               availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
               responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
+            },
+            mode: context.mode,
+            featureFlags: {
+              enableQuizArtifacts: true,
+              enableStudyArtifacts: true,
+              allowAutoQuiz: context.mode === 'study' || context.mode === 'quiz',
+              ...context.featureFlags,
             },
             temperature: 0.7,
             maxTokens: 2000,
@@ -745,6 +926,16 @@ export function useSupabaseChat() {
             code: 'empty_content',
           });
         }
+
+        const artifacts = normalizeArtifacts(result.artifacts);
+        setLastAgentMeta(result.agentMeta || null);
+
+        void trackExperimentEvent('chat_reply_received', {
+          mode: context.mode,
+          trigger: context.trigger,
+          hasArtifacts: artifacts.length > 0,
+          artifactTypes: artifacts.map((artifact) => artifact.type),
+        });
 
         const chunks = replyContent.match(/[\s\S]{1,24}/g) || [replyContent];
         for (const chunk of chunks) {
@@ -761,6 +952,7 @@ export function useSupabaseChat() {
           role: 'assistant',
           content: fullContent,
           createdAt: Date.now(),
+          artifacts: artifacts.length > 0 ? artifacts : undefined,
         };
 
         await appendAssistantMessage(context.sessionId, assistantMessage);
@@ -787,10 +979,10 @@ export function useSupabaseChat() {
         abortControllerRef.current = null;
       }
     },
-    [appendAssistantMessage, streamingContent],
+    [appendAssistantMessage, streamingContent, trackExperimentEvent],
   );
 
-  const sendMessage = useCallback(async (content: string) => {
+  const sendMessage = useCallback(async (content: string, options: SendMessageOptions = {}) => {
     if (!content.trim() || isLoading) return;
 
     let sessionId = currentSessionId;
@@ -802,6 +994,8 @@ export function useSupabaseChat() {
     }
 
     const now = Date.now();
+    const mode: ChatMode = options.mode || 'study';
+    const trigger = options.trigger || 'manual_input';
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -880,18 +1074,90 @@ export function useSupabaseChat() {
       { role: 'user', content: userMessage.content },
     ];
 
+    void trackExperimentEvent('chat_message_sent', {
+      mode,
+      trigger,
+      sessionId,
+      hasHistory: historyMessages.length > 0,
+    });
+
     await requestAssistantReply({
       sessionId,
       apiMessages,
+      mode,
+      featureFlags: options.featureFlags,
+      trigger,
     });
-  }, [createSession, currentSessionId, isLoading, requestAssistantReply, sessions, updateSessions, userId]);
+  }, [createSession, currentSessionId, isLoading, requestAssistantReply, sessions, trackExperimentEvent, updateSessions, userId]);
 
   const retryLastFailedMessage = useCallback(async () => {
     if (isLoading) return;
     if (!failedRequestRef.current) return;
 
+    void trackExperimentEvent('chat_retry_last_failed', {
+      sessionId: failedRequestRef.current.sessionId,
+      mode: failedRequestRef.current.mode,
+    });
     await requestAssistantReply(failedRequestRef.current);
-  }, [isLoading, requestAssistantReply]);
+  }, [isLoading, requestAssistantReply, trackExperimentEvent]);
+
+  const submitQuizAttempt = useCallback(
+    async (args: {
+      quizId: string;
+      sessionId: string;
+      selected: string;
+      isCorrect: boolean;
+      durationMs: number;
+      sourceMode: ChatMode;
+    }) => {
+      const attempt: ChatQuizAttempt = {
+        id: crypto.randomUUID(),
+        quizId: args.quizId,
+        sessionId: args.sessionId,
+        userId,
+        selected: args.selected,
+        isCorrect: args.isCorrect,
+        durationMs: args.durationMs,
+        createdAt: Date.now(),
+        sourceMode: args.sourceMode,
+      };
+
+      persistQuizAttemptMap((prev) => ({
+        ...prev,
+        [attempt.quizId]: attempt,
+      }));
+
+      void trackExperimentEvent('quiz_attempt_submitted', {
+        quizId: attempt.quizId,
+        sessionId: attempt.sessionId,
+        isCorrect: attempt.isCorrect,
+        durationMs: attempt.durationMs,
+        sourceMode: attempt.sourceMode,
+      });
+
+      try {
+        await supabase.from('chat_quiz_attempts').insert({
+          id: attempt.id,
+          quiz_id: attempt.quizId,
+          session_id: attempt.sessionId,
+          user_id: attempt.userId,
+          selected_option: attempt.selected,
+          is_correct: attempt.isCorrect,
+          duration_ms: attempt.durationMs,
+          source_mode: attempt.sourceMode,
+          created_at: new Date(attempt.createdAt).toISOString(),
+        });
+      } catch {
+        setSyncState((prev) => ({
+          source: 'local',
+          pendingSyncCount: prev.pendingSyncCount + 1,
+        }));
+      }
+
+      return attempt;
+    },
+    [persistQuizAttemptMap, trackExperimentEvent, userId],
+  );
 
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {
@@ -936,7 +1202,7 @@ export function useSupabaseChat() {
         pendingSyncCount: prev.pendingSyncCount + 1,
       }));
     }
-  }, [currentSessionId, sessions, updateSessions]);
+  }, [currentSessionId, updateSessions]);
 
   const deleteAllSessions = useCallback(async () => {
     let remoteOk = true;
@@ -956,6 +1222,7 @@ export function useSupabaseChat() {
 
     setSessions([]);
     setCurrentSessionId(null);
+    setLastAgentMeta(null);
     localStorage.removeItem(CHAT_SESSIONS_STORAGE_KEY);
     localStorage.removeItem(CHAT_CURRENT_SESSION_KEY);
 
@@ -978,8 +1245,11 @@ export function useSupabaseChat() {
     streamingContent,
     dbReady,
     syncState,
+    quizAttemptsById,
+    lastAgentMeta,
     chatError,
     sendMessage,
+    submitQuizAttempt,
     createSession,
     deleteSession,
     switchSession,

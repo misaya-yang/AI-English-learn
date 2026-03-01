@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, type ComponentType } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -39,6 +39,10 @@ import {
   Check,
   AlertTriangle,
   RefreshCw,
+  FlaskConical,
+  NotebookPen,
+  Layers3,
+  GraduationCap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,6 +51,12 @@ import { useSupabaseChat } from '@/hooks/useSupabaseChat';
 import { INIT_ALL_SQL } from '@/lib/supabase';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { useTranslation } from 'react-i18next';
+import type { ChatArtifact, ChatMode } from '@/types/chatAgent';
+import { useUserData } from '@/contexts/UserDataContext';
+import type { WordData } from '@/data/words';
+import { generateMicroLessonFromErrors } from '@/services/aiExamCoach';
+import { useAuth } from '@/contexts/AuthContext';
+import type { FeedbackIssue } from '@/types/examContent';
 
 // Quick prompt suggestions - English prompts for learning (not translated)
 const getQuickPrompts = (t: any) => [
@@ -71,6 +81,144 @@ const getQuickPrompts = (t: any) => [
     textZh: t('chat.quickPrompts.practice'),
   },
 ];
+
+const CHAT_MODE_OPTIONS: Array<{ id: ChatMode; label: string; labelZh: string; icon: ComponentType<{ className?: string }> }> = [
+  { id: 'chat', label: 'Chat', labelZh: '对话', icon: MessageSquare },
+  { id: 'study', label: 'Study', labelZh: '学习', icon: GraduationCap },
+  { id: 'quiz', label: 'Quiz', labelZh: '测验', icon: FlaskConical },
+  { id: 'canvas', label: 'Canvas', labelZh: '写作', icon: NotebookPen },
+];
+
+interface QuizCardProps {
+  artifact: Extract<ChatArtifact, { type: 'quiz' }>;
+  sessionId: string | null;
+  mode: ChatMode;
+  hasAttempt: boolean;
+  attemptedOption?: string;
+  onSubmit: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void;
+  onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
+  onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
+  t: any;
+  language: string;
+}
+
+const QuizArtifactCard = ({
+  artifact,
+  sessionId,
+  mode,
+  hasAttempt,
+  attemptedOption,
+  onSubmit,
+  onAddReviewCard,
+  onGenerateLesson,
+  t,
+  language,
+}: QuizCardProps) => {
+  const [selected, setSelected] = useState('');
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [localAttempted, setLocalAttempted] = useState(hasAttempt);
+  const [localSelected, setLocalSelected] = useState(attemptedOption || '');
+
+  useEffect(() => {
+    setLocalAttempted(hasAttempt);
+    setLocalSelected(attemptedOption || '');
+  }, [attemptedOption, hasAttempt]);
+
+  const effectiveSelected = localSelected || selected;
+  const isCorrect = effectiveSelected === artifact.payload.answerKey;
+  const canSubmit = !!sessionId && !localAttempted && selected.length > 0;
+
+  return (
+    <div className="mt-3 rounded-xl border border-emerald-300/40 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{artifact.payload.title}</p>
+        <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+          {artifact.payload.difficulty}
+        </span>
+      </div>
+
+      <p className="text-sm leading-relaxed">{artifact.payload.stem}</p>
+
+      <div className="space-y-2">
+        {artifact.payload.options.map((option) => {
+          const checked = effectiveSelected === option.id;
+          const disabled = localAttempted;
+          const optionIsCorrect = localAttempted && option.id === artifact.payload.answerKey;
+          const optionIsWrongSelected = localAttempted && checked && option.id !== artifact.payload.answerKey;
+
+          return (
+            <button
+              key={option.id}
+              onClick={() => {
+                if (disabled) return;
+                if (!startedAt) {
+                  setStartedAt(Date.now());
+                }
+                setSelected(option.id);
+              }}
+              className={cn(
+                'w-full text-left rounded-lg border px-3 py-2 text-sm transition-colors',
+                checked ? 'border-emerald-500 bg-emerald-100/80 dark:bg-emerald-900/50' : 'border-border hover:border-emerald-400/60',
+                optionIsCorrect && 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/60',
+                optionIsWrongSelected && 'border-red-500 bg-red-50 dark:bg-red-950/40',
+              )}
+              disabled={disabled}
+            >
+              {option.text}
+            </button>
+          );
+        })}
+      </div>
+
+      {!localAttempted ? (
+        <Button
+          size="sm"
+          className="bg-emerald-600 hover:bg-emerald-700"
+          disabled={!canSubmit}
+          onClick={() => {
+            if (!sessionId || !selected) return;
+            const durationMs = startedAt ? Math.max(1200, Date.now() - startedAt) : 1200;
+            const correct = selected === artifact.payload.answerKey;
+            onSubmit(artifact.payload.quizId, selected, correct, durationMs);
+            setLocalSelected(selected);
+            setLocalAttempted(true);
+          }}
+        >
+          {language.startsWith('zh') ? '提交答案' : 'Submit'}
+        </Button>
+      ) : (
+        <div className="rounded-lg border border-border bg-background/70 px-3 py-2 text-sm">
+          <p className={cn('font-medium', isCorrect ? 'text-emerald-600' : 'text-red-500')}>
+            {isCorrect ? (language.startsWith('zh') ? '回答正确' : 'Correct') : (language.startsWith('zh') ? '回答不正确' : 'Not quite')}
+          </p>
+          <p className="mt-1 text-muted-foreground">{artifact.payload.explanation}</p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onAddReviewCard(artifact)}
+        >
+          <Layers3 className="h-3.5 w-3.5 mr-1.5" />
+          {language.startsWith('zh') ? '加入复习卡' : 'Add to review'}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onGenerateLesson(artifact)}
+        >
+          <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+          {language.startsWith('zh') ? '生成补救微课' : 'Generate micro lesson'}
+        </Button>
+        <span className="text-xs text-muted-foreground self-center">
+          {mode.toUpperCase()} · {artifact.payload.estimatedSeconds}s
+        </span>
+      </div>
+    </div>
+  );
+};
 
 // Welcome message component
 const WelcomeMessage = ({ onPromptClick, t, prompts }: { onPromptClick: (text: string) => void; t: any; prompts: any[] }) => (
@@ -109,12 +257,31 @@ interface MessageBubbleProps {
     role: 'user' | 'assistant' | 'system';
     content: string;
     createdAt: number;
+    artifacts?: ChatArtifact[];
   };
   isStreaming?: boolean;
   t: any;
+  language: string;
+  sessionId: string | null;
+  mode: ChatMode;
+  attemptedQuizMap: Record<string, { selected: string }>;
+  onSubmitQuiz: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void;
+  onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
+  onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
 }
 
-const MessageBubble = ({ message, isStreaming, t }: MessageBubbleProps & { t: any }) => {
+const MessageBubble = ({
+  message,
+  isStreaming,
+  t,
+  language,
+  sessionId,
+  mode,
+  attemptedQuizMap,
+  onSubmitQuiz,
+  onAddReviewCard,
+  onGenerateLesson,
+}: MessageBubbleProps & { t: any }) => {
   const isUser = message.role === 'user';
   
   const copyToClipboard = useCallback(() => {
@@ -165,6 +332,28 @@ const MessageBubble = ({ message, isStreaming, t }: MessageBubbleProps & { t: an
             <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-1 align-middle" />
           )}
         </div>
+
+        {!isUser &&
+          !isStreaming &&
+          message.artifacts?.map((artifact, index) => {
+            if (artifact.type !== 'quiz') return null;
+            const attempt = attemptedQuizMap[artifact.payload.quizId];
+            return (
+              <QuizArtifactCard
+                key={`${message.id}-quiz-${index}`}
+                artifact={artifact}
+                sessionId={sessionId}
+                mode={mode}
+                hasAttempt={!!attempt}
+                attemptedOption={attempt?.selected}
+                onSubmit={onSubmitQuiz}
+                onAddReviewCard={onAddReviewCard}
+                onGenerateLesson={onGenerateLesson}
+                t={t}
+                language={language}
+              />
+            );
+          })}
 
         {/* Actions */}
         {!isUser && !isStreaming && (
@@ -268,6 +457,9 @@ const EditableTitle = ({
 export default function ChatPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
+  const { user } = useAuth();
+  const chatUserId = user?.id || 'guest';
+  const { addCustomWord } = useUserData();
   const {
     sessions,
     currentSessionId,
@@ -275,8 +467,11 @@ export default function ChatPage() {
     isLoading,
     streamingContent,
     syncState,
+    quizAttemptsById,
+    lastAgentMeta,
     chatError,
     sendMessage,
+    submitQuizAttempt,
     createSession,
     deleteSession,
     switchSession,
@@ -288,9 +483,13 @@ export default function ChatPage() {
   } = useSupabaseChat();
   
   const quickPrompts = getQuickPrompts(t);
+  const attemptedQuizMap = Object.fromEntries(
+    Object.entries(quizAttemptsById).map(([quizId, attempt]) => [quizId, { selected: attempt.selected }]),
+  );
 
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [chatMode, setChatMode] = useState<ChatMode>('study');
   const [dbStatus, setDbStatus] = useState<Record<string, boolean>>({});
   const [showDbSetup, setShowDbSetup] = useState(false);
   const messagesScrollAreaRef = useRef<HTMLDivElement>(null);
@@ -364,13 +563,46 @@ export default function ChatPage() {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
     }
-    await sendMessage(text);
-  }, [input, isLoading, sendMessage]);
+    await sendMessage(text, {
+      mode: chatMode,
+      trigger: 'manual_input',
+      featureFlags: {
+        enableQuizArtifacts: true,
+        enableStudyArtifacts: true,
+        allowAutoQuiz: chatMode !== 'chat',
+      },
+    });
+  }, [chatMode, input, isLoading, sendMessage]);
 
   // Handle quick prompt
   const handleQuickPrompt = useCallback((text: string) => {
-    sendMessage(text);
-  }, [sendMessage]);
+    sendMessage(text, {
+      mode: chatMode,
+      trigger: 'quick_prompt',
+      featureFlags: {
+        enableQuizArtifacts: true,
+        enableStudyArtifacts: true,
+        allowAutoQuiz: chatMode === 'study' || chatMode === 'quiz',
+      },
+    });
+  }, [chatMode, sendMessage]);
+
+  const handleManualQuiz = useCallback(() => {
+    const text =
+      language.startsWith('zh')
+        ? '基于我们刚才的对话，给我一题英语测验（四选一），并给出中文解析。'
+        : 'Based on our recent chat, give me one 4-option English quiz and explain it.';
+    void sendMessage(text, {
+      mode: chatMode,
+      trigger: 'quiz_button',
+      featureFlags: {
+        enableQuizArtifacts: true,
+        enableStudyArtifacts: true,
+        forceQuiz: true,
+        allowAutoQuiz: true,
+      },
+    });
+  }, [chatMode, language, sendMessage]);
 
   // Handle key press
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -404,16 +636,117 @@ export default function ChatPage() {
     }
   };
 
+  const extractWordCandidate = (artifact: Extract<ChatArtifact, { type: 'quiz' }>): string => {
+    if (artifact.payload.targetWord) {
+      return artifact.payload.targetWord.trim().toLowerCase();
+    }
+
+    const first = artifact.payload.stem.match(/["“'`](\w[\w-]*)["”'`]/);
+    if (first?.[1]) return first[1].toLowerCase();
+
+    const fallback = artifact.payload.stem.match(/\\b[a-zA-Z][a-zA-Z-]{2,}\\b/);
+    return fallback?.[0]?.toLowerCase() || 'focus';
+  };
+
+  const addReviewCardFromQuiz = useCallback(
+    (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => {
+      const word = extractWordCandidate(artifact);
+      const item: WordData = {
+        id: `quiz_word_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        word,
+        phonetic: '',
+        partOfSpeech: 'phrase',
+        definition: artifact.payload.explanation || artifact.payload.stem,
+        definitionZh: language.startsWith('zh') ? '来自 AI 测验回流' : 'Imported from AI quiz',
+        examples: [
+          {
+            en: artifact.payload.stem,
+            zh: language.startsWith('zh') ? '来自测验题干' : 'From quiz stem',
+          },
+        ],
+        synonyms: [],
+        antonyms: [],
+        collocations: [],
+        level: 'B1',
+        topic: 'quiz',
+      };
+
+      addCustomWord(item);
+      toast.success(language.startsWith('zh') ? '已加入复习卡' : 'Added to review cards');
+    },
+    [addCustomWord, language],
+  );
+
+  const generateLessonFromQuiz = useCallback(
+    async (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => {
+      const normalizeTag = (value: string): FeedbackIssue['tag'] => {
+        if (value === 'task_response') return 'task_response';
+        if (value === 'coherence') return 'coherence';
+        if (value === 'grammar') return 'grammar';
+        if (value === 'logic') return 'logic';
+        if (value === 'collocation') return 'collocation';
+        if (value === 'tense') return 'tense';
+        return 'lexical';
+      };
+
+      const tags = (artifact.payload.tags || [])
+        .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+        .map((item) => normalizeTag(item));
+      const fallbackTag: FeedbackIssue['tag'] = artifact.payload.skills.some((skill) => skill.includes('grammar'))
+        ? 'grammar'
+        : artifact.payload.skills.some((skill) => skill.includes('coherence'))
+          ? 'coherence'
+          : 'lexical';
+
+      const lesson = await generateMicroLessonFromErrors({
+        userId: chatUserId,
+        errorTags: tags.length > 0 ? tags : [fallbackTag],
+        targetLevel: 'B1',
+      });
+
+      toast.success(
+        language.startsWith('zh')
+          ? `已生成补救微课：${lesson.unit.title}`
+          : `Micro lesson generated: ${lesson.unit.title}`,
+      );
+    },
+    [chatUserId, language],
+  );
+
+  const handleQuizSubmit = useCallback(
+    (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => {
+      if (!currentSessionId) return;
+      void submitQuizAttempt({
+        quizId,
+        sessionId: currentSessionId,
+        selected,
+        isCorrect,
+        durationMs,
+        sourceMode: chatMode,
+      });
+      toast.success(
+        isCorrect
+          ? language.startsWith('zh')
+            ? '回答正确，继续保持'
+            : 'Correct answer'
+          : language.startsWith('zh')
+            ? '已记录错误，建议复习'
+            : 'Attempt saved',
+      );
+    },
+    [chatMode, currentSessionId, language, submitQuizAttempt],
+  );
+
   const syncLabel =
     syncState.source === 'remote'
-      ? language === 'zh'
+      ? language.startsWith('zh')
         ? '云端同步'
         : 'Cloud Sync'
       : syncState.source === 'merged'
-        ? language === 'zh'
+        ? language.startsWith('zh')
           ? '云端+本地回补'
           : 'Cloud + Local Sync'
-        : language === 'zh'
+        : language.startsWith('zh')
           ? '本地模式'
           : 'Local Mode';
 
@@ -427,9 +760,9 @@ export default function ChatPage() {
               <Sparkles className="h-4 w-4 text-amber-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-medium text-sm">{language === 'zh' ? '需要初始化数据库表' : 'Database tables need initialization'}</h4>
+              <h4 className="font-medium text-sm">{language.startsWith('zh') ? '需要初始化数据库表' : 'Database tables need initialization'}</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                {language === 'zh' 
+                {language.startsWith('zh') 
                   ? '检测到以下表未创建，请在 Supabase SQL Editor 中运行完整 SQL：'
                   : 'The following tables are not created. Please run the complete SQL in Supabase SQL Editor:'}
               </p>
@@ -453,11 +786,11 @@ export default function ChatPage() {
                   className="text-xs"
                   onClick={() => {
                     navigator.clipboard.writeText(INIT_ALL_SQL);
-                    toast.success(language === 'zh' ? '完整 SQL 已复制到剪贴板' : 'Full SQL copied to clipboard');
+                    toast.success(language.startsWith('zh') ? '完整 SQL 已复制到剪贴板' : 'Full SQL copied to clipboard');
                   }}
                 >
                   <Copy className="h-3 w-3 mr-1" />
-                  {language === 'zh' ? '复制完整 SQL' : 'Copy Full SQL'}
+                  {language.startsWith('zh') ? '复制完整 SQL' : 'Copy Full SQL'}
                 </Button>
                 <Button 
                   size="sm" 
@@ -466,8 +799,8 @@ export default function ChatPage() {
                   onClick={() => setShowDbSetup(!showDbSetup)}
                 >
                   {showDbSetup 
-                    ? (language === 'zh' ? '收起' : 'Collapse')
-                    : (language === 'zh' ? '查看 SQL' : 'View SQL')}
+                    ? (language.startsWith('zh') ? '收起' : 'Collapse')
+                    : (language.startsWith('zh') ? '查看 SQL' : 'View SQL')}
                 </Button>
               </div>
               {showDbSetup && (
@@ -584,8 +917,8 @@ export default function ChatPage() {
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               title={sidebarOpen 
-                ? (language === 'zh' ? '收起侧边栏' : 'Collapse sidebar')
-                : (language === 'zh' ? '展开侧边栏' : 'Expand sidebar')}
+                ? (language.startsWith('zh') ? '收起侧边栏' : 'Collapse sidebar')
+                : (language.startsWith('zh') ? '展开侧边栏' : 'Expand sidebar')}
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -635,7 +968,17 @@ export default function ChatPage() {
               <div className="py-4 space-y-2">
                 {messages.map((message) => (
                   <div key={message.id} className="group">
-                    <MessageBubble message={message} t={t} />
+                    <MessageBubble
+                      message={message}
+                      t={t}
+                      language={language}
+                      sessionId={currentSessionId}
+                      mode={chatMode}
+                      attemptedQuizMap={attemptedQuizMap}
+                      onSubmitQuiz={handleQuizSubmit}
+                      onAddReviewCard={addReviewCardFromQuiz}
+                      onGenerateLesson={generateLessonFromQuiz}
+                    />
                   </div>
                 ))}
                 
@@ -650,6 +993,13 @@ export default function ChatPage() {
                     }}
                     isStreaming
                     t={t}
+                    language={language}
+                    sessionId={currentSessionId}
+                    mode={chatMode}
+                    attemptedQuizMap={{}}
+                    onSubmitQuiz={handleQuizSubmit}
+                    onAddReviewCard={addReviewCardFromQuiz}
+                    onGenerateLesson={generateLessonFromQuiz}
                   />
                 )}
 
@@ -681,7 +1031,7 @@ export default function ChatPage() {
               <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
-                  {language === 'zh' ? 'AI 暂时不可用' : 'AI is temporarily unavailable'}
+                  {language.startsWith('zh') ? 'AI 暂时不可用' : 'AI is temporarily unavailable'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {chatError.message}
@@ -690,7 +1040,7 @@ export default function ChatPage() {
               </div>
               <Button size="sm" variant="outline" onClick={retryLastFailedMessage} disabled={isLoading}>
                 <RefreshCw className="h-3.5 w-3.5 mr-1" />
-                {language === 'zh' ? '重试' : 'Retry'}
+                {language.startsWith('zh') ? '重试' : 'Retry'}
               </Button>
             </div>
           </div>
@@ -699,6 +1049,41 @@ export default function ChatPage() {
         {/* Input Area - Enhanced */}
         <div className="border-t border-border bg-card p-4">
           <div className="max-w-3xl mx-auto">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              {CHAT_MODE_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setChatMode(option.id)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                    chatMode === option.id
+                      ? 'border-emerald-500 bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                      : 'border-border hover:border-emerald-400/60',
+                  )}
+                >
+                  <option.icon className="h-3.5 w-3.5" />
+                  <span>{language.startsWith('zh') ? option.labelZh : option.label}</span>
+                </button>
+              ))}
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 rounded-full text-xs"
+                onClick={handleManualQuiz}
+                disabled={isLoading}
+              >
+                <FlaskConical className="h-3.5 w-3.5 mr-1.5" />
+                {language.startsWith('zh') ? '马上测我' : 'Quiz me now'}
+              </Button>
+
+              {lastAgentMeta?.triggerReason && (
+                <span className="text-[11px] text-muted-foreground">
+                  {language.startsWith('zh') ? '触发原因' : 'Trigger'}: {lastAgentMeta.triggerReason}
+                </span>
+              )}
+            </div>
+
             {/* Quick Prompts (only when no messages) */}
             {messages.length === 0 && (
               <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
