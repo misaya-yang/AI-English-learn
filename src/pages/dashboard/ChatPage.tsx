@@ -1454,10 +1454,11 @@ export default function ChatPage() {
           : undefined;
       const availableCount = quizArtifactsRef.current.length;
       if (nextAnsweredCount < availableCount) {
-        toast.message(
+        toast.info(
           language.startsWith('zh')
             ? `继续下一题（${nextQuestionIndex}/${nextSequence.targetCount}）`
             : `Next question (${nextQuestionIndex}/${nextSequence.targetCount})`,
+          { duration: 2200 },
         );
         return;
       }
@@ -1467,10 +1468,11 @@ export default function ChatPage() {
         return;
       }
 
-      toast.message(
+      toast.info(
         language.startsWith('zh')
           ? `正在生成剩余题目（${nextQuestionIndex}-${nextSequence.targetCount}）`
           : `Generating remaining questions (${nextQuestionIndex}-${nextSequence.targetCount})`,
+        { duration: 2200 },
       );
       void requestQuizBatch({
         sequence: nextSequence,
