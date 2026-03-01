@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { getChatFallbackReply, invokeEdgeFunction } from '@/services/aiGateway';
 
 export interface ChatMessage {
   id: string;
@@ -42,10 +43,6 @@ When correcting grammar:
 - Explain why it's wrong
 
 Keep responses concise but comprehensive. Use markdown formatting for clarity.`;
-
-// DeepSeek API config
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
-const API_KEY = 'sk-bc21c425645b42b9b05a538b766b51ae';
 
 export function useChat() {
   // All chat sessions
@@ -180,63 +177,39 @@ export function useChat() {
     // Create abort controller
     abortControllerRef.current = new AbortController();
 
+    let fullContent = '';
+
     try {
-      const response = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: apiMessages,
-          temperature: 0.7,
-          max_tokens: 2000,
-          stream: true,
-        }),
-        signal: abortControllerRef.current.signal,
-      });
+      let replyContent = '';
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response body');
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let fullContent = '';
-
-      // Add placeholder for assistant message
-      const assistantMessageId = uuidv4();
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.trim() === '' || line.trim() === 'data: [DONE]') continue;
-          
-          if (line.startsWith('data: ')) {
-            try {
-              const json = JSON.parse(line.slice(6));
-              const chunk = json.choices?.[0]?.delta?.content;
-              if (chunk) {
-                fullContent += chunk;
-                setStreamingContent(fullContent);
-              }
-            } catch (e) {
-              // Skip invalid JSON
-            }
-          }
+      try {
+        const result = await invokeEdgeFunction<{ content: string }>(
+          'ai-chat',
+          {
+            messages: apiMessages,
+            systemPrompt: SYSTEM_PROMPT,
+            temperature: 0.7,
+            maxTokens: 2000,
+          },
+          { signal: abortControllerRef.current.signal },
+        );
+        replyContent = result.content;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw error;
         }
+        replyContent = getChatFallbackReply(apiMessages);
+      }
+
+      const assistantMessageId = uuidv4();
+      const chunks = replyContent.match(/.{1,24}/g) || [replyContent];
+      for (const chunk of chunks) {
+        if (abortControllerRef.current?.signal.aborted) {
+          throw new DOMException('Aborted', 'AbortError');
+        }
+        fullContent += chunk;
+        setStreamingContent(fullContent);
+        await new Promise((resolve) => setTimeout(resolve, 8));
       }
 
       // Add final assistant message
@@ -261,11 +234,12 @@ export function useChat() {
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         // User cancelled, add partial content if any
-        if (streamingContent) {
+        const partial = fullContent || streamingContent;
+        if (partial) {
           const assistantMessage: ChatMessage = {
             id: uuidv4(),
             role: 'assistant',
-            content: streamingContent,
+            content: partial,
             createdAt: Date.now(),
           };
           setSessions(prev => prev.map(session => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   HelpCircle,
   Check,
@@ -24,6 +26,9 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import type { WordData } from '@/data/words';
+import type { AiFeedback } from '@/types/examContent';
+import { getContentItemsByUnit, getContentUnits, getQuotaSnapshot, saveAiFeedbackRecord, saveItemAttempt } from '@/data/examContent';
+import { consumeExamFeatureQuota, createAttempt, gradeIeltsWriting } from '@/services/aiExamCoach';
 
 // Quiz question types
 interface QuizQuestion {
@@ -127,6 +132,8 @@ const practiceModes = [
 ];
 
 export default function PracticePage() {
+  const { user } = useAuth();
+  const userId = user?.id || 'guest';
   const { dailyWords, addStudySession } = useUserData();
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -135,9 +142,12 @@ export default function PracticePage() {
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [writingInput, setWritingInput] = useState('');
-  const [writingFeedback, setWritingFeedback] = useState<string | null>(null);
+  const [writingFeedback, setWritingFeedback] = useState<AiFeedback | null>(null);
+  const [writingPrompt, setWritingPrompt] = useState('');
+  const [writingTaskType, setWritingTaskType] = useState<'task1' | 'task2'>('task2');
+  const [writingItemId, setWritingItemId] = useState('practice_ielts_manual');
+  const [feedbackQuotaRemaining, setFeedbackQuotaRemaining] = useState(0);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
-  const [writingWord, setWritingWord] = useState<WordData | null>(null);
 
   // Generate quiz questions when mode is selected
   useEffect(() => {
@@ -146,9 +156,26 @@ export default function PracticePage() {
       setQuizQuestions(questions);
     }
     if (selectedMode === 'writing' && dailyWords.length > 0) {
-      setWritingWord(dailyWords[0]);
+      const writingUnits = getContentUnits({ examType: 'IELTS', skill: 'writing' });
+      const firstUnit = writingUnits[0];
+      const firstItem = firstUnit ? getContentItemsByUnit(firstUnit.id)[0] : null;
+      if (firstItem) {
+        setWritingPrompt(firstItem.prompt);
+        setWritingTaskType(firstItem.itemType === 'writing_task_1' ? 'task1' : 'task2');
+        setWritingItemId(firstItem.id);
+      } else {
+        setWritingPrompt(
+          'Some people think governments should invest more in public transport than in building new roads. To what extent do you agree or disagree?',
+        );
+        setWritingTaskType('task2');
+        setWritingItemId('practice_ielts_manual');
+      }
+
+      void getQuotaSnapshot(userId).then((snapshot) => {
+        setFeedbackQuotaRemaining(snapshot.remaining.aiAdvancedFeedbackPerDay);
+      });
     }
-  }, [selectedMode, dailyWords]);
+  }, [selectedMode, dailyWords, userId]);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const progress = quizQuestions.length > 0 ? ((currentQuestionIndex) / quizQuestions.length) * 100 : 0;
@@ -179,34 +206,46 @@ export default function PracticePage() {
     }
   };
 
-  const handleWritingSubmit = () => {
+  const handleWritingSubmit = async () => {
     if (!writingInput.trim()) {
       toast.error('Please write a sentence first');
       return;
     }
 
-    // Mock AI feedback
-    const hasWord = writingWord && writingInput.toLowerCase().includes(writingWord.word.toLowerCase());
-    
-    if (hasWord) {
-      setWritingFeedback(
-        `Great job! You used "${writingWord?.word}" correctly in your sentence.\n\n` +
-        `Your sentence: "${writingInput}"\n\n` +
-        `Here are some suggestions:\n` +
-        `1. Good grammar structure\n` +
-        `2. Clear meaning\n\n` +
-        `Score: 9/10`
-      );
-      toast.success('Feedback received! +15 XP');
-      addStudySession(1, 1, 15, 5);
-    } else {
-      setWritingFeedback(
-        `Please try to include the word "${writingWord?.word}" in your sentence.\n\n` +
-        `Definition: ${writingWord?.definition}\n\n` +
-        `Example: "${writingWord?.examples[0]?.en}"\n\n` +
-        `Try again!`
-      );
+    if (!writingPrompt.trim()) {
+      toast.error('Please provide an IELTS prompt first');
+      return;
     }
+
+    const quotaResult = await consumeExamFeatureQuota(userId, 'aiAdvancedFeedbackPerDay');
+    if (!quotaResult.allowed) {
+      toast.error('Today AI writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
+      return;
+    }
+
+    const attempt = createAttempt({
+      userId,
+      itemId: writingItemId,
+      answer: writingInput.trim(),
+      skill: 'writing',
+    });
+    saveItemAttempt(attempt);
+
+    const feedback = await gradeIeltsWriting({
+      userId,
+      attemptId: attempt.id,
+      prompt: writingPrompt,
+      answer: writingInput.trim(),
+      taskType: writingTaskType,
+    });
+
+    saveAiFeedbackRecord(userId, feedback);
+    setWritingFeedback(feedback);
+    setFeedbackQuotaRemaining(quotaResult.remaining);
+
+    const earnedXp = feedback.scores.overallBand >= 6 ? 20 : 12;
+    addStudySession(1, feedback.scores.overallBand >= 6 ? 1 : 0, earnedXp, 8);
+    toast.success(`AI feedback ready. Overall band ${feedback.scores.overallBand}`);
   };
 
   const handleRestart = () => {
@@ -267,34 +306,50 @@ export default function PracticePage() {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Writing Practice</h1>
-            <p className="text-muted-foreground">写作练习</p>
+            <h1 className="text-2xl font-bold">IELTS Writing Coach</h1>
+            <p className="text-muted-foreground">写作练习（结构化评分反馈）</p>
           </div>
-          <Button variant="outline" onClick={() => setSelectedMode(null)}>
-            Back to Modes
-          </Button>
+          <div className="flex gap-2">
+            <Badge variant="outline">AI feedback left: {feedbackQuotaRemaining}</Badge>
+            <Button variant="outline" onClick={() => setSelectedMode(null)}>
+              Back to Modes
+            </Button>
+          </div>
         </div>
 
         <Card>
           <CardContent className="p-6">
-            {writingWord && (
-              <div className="mb-6">
-                <Badge className="mb-4">Word: {writingWord.word}</Badge>
-                <p className="text-sm text-muted-foreground mb-2">{writingWord.definition}</p>
-                <p className="text-sm text-muted-foreground">{writingWord.definitionZh}</p>
+            <div className="space-y-3 mb-4">
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Task Type</Label>
+                  <Select value={writingTaskType} onValueChange={(value: 'task1' | 'task2') => setWritingTaskType(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="task1">Task 1</SelectItem>
+                      <SelectItem value="task2">Task 2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            )}
 
-            <div className="mb-6">
-              <p className="text-lg mb-2">Write a sentence using the word above:</p>
-              <p className="text-sm text-muted-foreground">使用上面的词写一个句子：</p>
+              <div>
+                <Label>Prompt</Label>
+                <Textarea
+                  value={writingPrompt}
+                  onChange={(e) => setWritingPrompt(e.target.value)}
+                  className="min-h-[110px]"
+                />
+              </div>
             </div>
 
             <Textarea
               value={writingInput}
               onChange={(e) => setWritingInput(e.target.value)}
-              placeholder="Type your sentence here..."
-              className="min-h-[120px] mb-4"
+              placeholder="Write your IELTS response here..."
+              className="min-h-[160px] mb-4"
             />
 
             {!writingFeedback ? (
@@ -303,7 +358,7 @@ export default function PracticePage() {
                 className="w-full bg-emerald-600 hover:bg-emerald-700"
               >
                 <Zap className="h-4 w-4 mr-2" />
-                Get AI Feedback
+                Get IELTS AI Feedback
               </Button>
             ) : (
               <motion.div
@@ -315,7 +370,36 @@ export default function PracticePage() {
                   <Lightbulb className="h-4 w-4 text-yellow-500" />
                   AI Feedback
                 </h4>
-                <p className="text-sm whitespace-pre-line">{writingFeedback}</p>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+                  <div className="rounded border p-2 text-center">
+                    <p className="text-xs text-muted-foreground">Task</p>
+                    <p className="font-semibold">{writingFeedback.scores.taskResponse.toFixed(1)}</p>
+                  </div>
+                  <div className="rounded border p-2 text-center">
+                    <p className="text-xs text-muted-foreground">Coherence</p>
+                    <p className="font-semibold">{writingFeedback.scores.coherenceCohesion.toFixed(1)}</p>
+                  </div>
+                  <div className="rounded border p-2 text-center">
+                    <p className="text-xs text-muted-foreground">Lexical</p>
+                    <p className="font-semibold">{writingFeedback.scores.lexicalResource.toFixed(1)}</p>
+                  </div>
+                  <div className="rounded border p-2 text-center">
+                    <p className="text-xs text-muted-foreground">Grammar</p>
+                    <p className="font-semibold">{writingFeedback.scores.grammaticalRangeAccuracy.toFixed(1)}</p>
+                  </div>
+                  <div className="rounded border p-2 text-center border-emerald-500 bg-emerald-50/60 dark:bg-emerald-900/10">
+                    <p className="text-xs text-muted-foreground">Overall</p>
+                    <p className="font-semibold">{writingFeedback.scores.overallBand.toFixed(1)}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {writingFeedback.issues.map((issue, index) => (
+                    <div key={`${issue.tag}-${index}`} className="rounded border p-2">
+                      <p className="text-sm font-medium">{issue.message}</p>
+                      <p className="text-xs text-muted-foreground">{issue.suggestion}</p>
+                    </div>
+                  ))}
+                </div>
                 <Button onClick={handleRestart} variant="outline" className="mt-4 w-full">
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Try Another

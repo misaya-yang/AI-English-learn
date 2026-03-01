@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { WordData } from '@/data/words';
 import { toast } from 'sonner';
+import { getRecommendedUnit } from '@/data/examContent';
 
 interface WordCardProps {
   word: WordData;
@@ -302,6 +304,8 @@ function WordCard({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard }: 
 }
 
 export default function TodayPage() {
+  const { user } = useAuth();
+  const userId = user?.id || 'guest';
   const { dailyWords, activeBook, activeBookSummary, markWordAsLearned, refreshDailyWords } = useUserData();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
@@ -313,6 +317,7 @@ export default function TodayPage() {
   const words = dailyWords.length > 0 ? dailyWords : [];
   const currentWord = words[currentWordIndex];
   const progress = words.length > 0 ? (learnedWords.size / words.length) * 100 : 0;
+  const recommendedUnit = getRecommendedUnit(userId);
 
   useEffect(() => {
     // Refresh daily words when component mounts
@@ -550,6 +555,23 @@ export default function TodayPage() {
           <p className="text-sm text-amber-600 mt-3">
             当前词书已接近学完，建议切换词书或导入新词书。
           </p>
+        )}
+        {recommendedUnit && (
+          <Card className="mt-4 border-emerald-200 dark:border-emerald-800">
+            <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">AI 推荐补强微课：{recommendedUnit.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  预计 {recommendedUnit.estimatedMinutes} 分钟，针对近期高频错因
+                </p>
+              </div>
+              <Link to="/dashboard/exam">
+                <Button size="sm" variant="outline">
+                  去练习
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         )}
       </motion.div>
 

@@ -22,6 +22,7 @@ import AnalyticsPage from '@/pages/dashboard/AnalyticsPage';
 import ChatPage from '@/pages/dashboard/ChatPage';
 import SettingsPage from '@/pages/dashboard/SettingsPage';
 import ProfilePage from '@/pages/dashboard/ProfilePage';
+import ExamPrepPage from '@/pages/dashboard/ExamPrepPage';
 
 // Public Pages
 import WordOfTheDayPage from '@/pages/WordOfTheDayPage';
@@ -52,6 +53,7 @@ function App() {
                 <Route path="today" element={<TodayPage />} />
                 <Route path="review" element={<ReviewPage />} />
                 <Route path="practice" element={<PracticePage />} />
+                <Route path="exam" element={<ExamPrepPage />} />
                 <Route path="vocabulary" element={<VocabularyBankPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="chat" element={<ChatPage />} />

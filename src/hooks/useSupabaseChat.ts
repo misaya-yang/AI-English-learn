@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { supabase, getAnonymousUserId, type ChatSessionRow, type ChatMessageRow } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { supabase, getAnonymousUserId } from '@/lib/supabase';
+import { getChatFallbackReply, invokeEdgeFunction } from '@/services/aiGateway';
 
 export interface ChatMessage {
   id: string;
@@ -16,10 +16,6 @@ export interface ChatSession {
   createdAt: number;
   updatedAt: number;
 }
-
-// DeepSeek API config
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
-const API_KEY = 'sk-bc21c425645b42b9b05a538b766b51ae';
 
 // System prompt for English tutor
 const SYSTEM_PROMPT = `You are an expert English tutor specializing in helping Chinese-speaking learners. Your responses should be:
@@ -97,13 +93,8 @@ export function useSupabaseChat() {
   // Get messages for current session
   const messages = currentSession?.messages || [];
 
-  // Load sessions from Supabase on mount
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
   // Load sessions from Supabase
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       const { data: sessionsData, error: sessionsError } = await supabase
         .from('chat_sessions')
@@ -157,7 +148,12 @@ export function useSupabaseChat() {
       console.warn('Falling back to local chat storage (unexpected error):', error);
       loadFromLocalStorage();
     }
-  };
+  }, [userId]);
+
+  // Load sessions from Supabase on mount
+  useEffect(() => {
+    void loadSessions();
+  }, [loadSessions]);
 
   // Fallback to localStorage
   const loadFromLocalStorage = () => {
@@ -166,7 +162,7 @@ export function useSupabaseChat() {
       try {
         const parsed = JSON.parse(saved);
         setSessions(parsed);
-      } catch (e) {
+      } catch {
         setSessions([]);
       }
     }
@@ -356,60 +352,38 @@ export function useSupabaseChat() {
     // Create abort controller
     abortControllerRef.current = new AbortController();
 
+    let fullContent = '';
+
     try {
-      const response = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: apiMessages,
-          temperature: 0.7,
-          max_tokens: 2000,
-          stream: true,
-        }),
-        signal: abortControllerRef.current.signal,
-      });
+      let replyContent = '';
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response body');
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let fullContent = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.trim() === '' || line.trim() === 'data: [DONE]') continue;
-          
-          if (line.startsWith('data: ')) {
-            try {
-              const json = JSON.parse(line.slice(6));
-              const chunk = json.choices?.[0]?.delta?.content;
-              if (chunk) {
-                fullContent += chunk;
-                setStreamingContent(fullContent);
-              }
-            } catch (e) {
-              // Skip invalid JSON
-            }
-          }
+      try {
+        const result = await invokeEdgeFunction<{ content: string }>(
+          'ai-chat',
+          {
+            messages: apiMessages,
+            systemPrompt: SYSTEM_PROMPT,
+            temperature: 0.7,
+            maxTokens: 2000,
+          },
+          { signal: abortControllerRef.current.signal },
+        );
+        replyContent = result.content;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw error;
         }
+        replyContent = getChatFallbackReply(apiMessages);
+      }
+
+      const chunks = replyContent.match(/.{1,24}/g) || [replyContent];
+      for (const chunk of chunks) {
+        if (abortControllerRef.current?.signal.aborted) {
+          throw new DOMException('Aborted', 'AbortError');
+        }
+        fullContent += chunk;
+        setStreamingContent(fullContent);
+        await new Promise((resolve) => setTimeout(resolve, 8));
       }
 
       // Save assistant message to Supabase
@@ -448,11 +422,12 @@ export function useSupabaseChat() {
 
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        if (streamingContent) {
+        const partial = fullContent || streamingContent;
+        if (partial) {
           const assistantMessage: ChatMessage = {
             id: crypto.randomUUID(),
             role: 'assistant',
-            content: streamingContent,
+            content: partial,
             createdAt: Date.now(),
           };
           setSessions(prev => {
@@ -498,7 +473,7 @@ export function useSupabaseChat() {
       setStreamingContent('');
       abortControllerRef.current = null;
     }
-  }, [currentSessionId, sessions, isLoading, streamingContent, createSession, userId]);
+  }, [currentSessionId, sessions, isLoading, streamingContent, createSession]);
 
   // Stop generation
   const stopGeneration = useCallback(() => {

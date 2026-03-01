@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { getEntitlement, getQuotaSnapshot, setEntitlementPlan } from '@/data/examContent';
+import { toast } from 'sonner';
 
 const plans = [
   {
@@ -29,6 +31,7 @@ const plans = [
       '10 words per day',
       'Basic review mode',
       'Limited practice quizzes',
+      '2 IELTS AI feedback/day',
       'Community support',
       'Basic progress tracking',
     ],
@@ -52,6 +55,9 @@ const plans = [
     features: [
       'Unlimited words per day',
       'Advanced AI feedback',
+      'IELTS Writing Coach (structured scoring)',
+      'IELTS micro courses + simulation items',
+      'Error graph & one-click remediation lesson',
       'All practice modes',
       'Priority word generation',
       'Export to CSV/Anki',
@@ -86,8 +92,34 @@ const faqs = [
 ];
 
 export default function PricingPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const userId = user?.id || 'guest';
   const [isYearly, setIsYearly] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
+  const [remaining, setRemaining] = useState({
+    aiAdvancedFeedbackPerDay: 0,
+    simItemsPerDay: 0,
+    microLessonsPerDay: 0,
+  });
+
+  useEffect(() => {
+    const loadPlan = async () => {
+      const entitlement = await getEntitlement(userId);
+      const snapshot = await getQuotaSnapshot(userId);
+      setCurrentPlan(entitlement.plan);
+      setRemaining(snapshot.remaining);
+    };
+    void loadPlan();
+  }, [userId]);
+
+  const handleSwitchPlan = async (plan: 'free' | 'pro') => {
+    await setEntitlementPlan(userId, plan);
+    const entitlement = await getEntitlement(userId);
+    const snapshot = await getQuotaSnapshot(userId);
+    setCurrentPlan(entitlement.plan);
+    setRemaining(snapshot.remaining);
+    toast.success(`Plan switched to ${plan.toUpperCase()} (manual entitlement mode)`);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,6 +164,28 @@ export default function PricingPage() {
             免费开始，准备好时再升级
           </p>
         </div>
+
+        <Card className="max-w-3xl mx-auto mb-8 border-emerald-200 dark:border-emerald-800">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Current Entitlement</p>
+                <p className="text-lg font-semibold">Plan: {currentPlan.toUpperCase()}</p>
+                <p className="text-xs text-muted-foreground">
+                  AI feedback left today: {remaining.aiAdvancedFeedbackPerDay} • Sim items left: {remaining.simItemsPerDay} • Micro lessons left: {remaining.microLessonsPerDay}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant={currentPlan === 'free' ? 'default' : 'outline'} onClick={() => handleSwitchPlan('free')}>
+                  Switch to Free
+                </Button>
+                <Button variant={currentPlan === 'pro' ? 'default' : 'outline'} onClick={() => handleSwitchPlan('pro')}>
+                  Switch to Pro
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Billing Toggle */}
         <div className="flex items-center justify-center gap-4 mb-12">
@@ -238,7 +292,9 @@ export default function PricingPage() {
                   { feature: 'Daily words', free: '10', pro: 'Unlimited' },
                   { feature: 'Review mode', free: 'Basic', pro: 'Advanced SRS' },
                   { feature: 'Practice quizzes', free: 'Limited', pro: 'All modes' },
-                  { feature: 'AI feedback', free: '-', pro: '✓' },
+                  { feature: 'IELTS AI feedback/day', free: '2', pro: '30' },
+                  { feature: 'IELTS micro courses', free: 'Limited', pro: 'Full access' },
+                  { feature: 'Error graph', free: '-', pro: '✓' },
                   { feature: 'Export to CSV/Anki', free: '-', pro: '✓' },
                   { feature: 'Analytics', free: 'Basic', pro: 'Detailed' },
                   { feature: 'Support', free: 'Community', pro: 'Email' },
