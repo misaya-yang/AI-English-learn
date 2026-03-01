@@ -272,7 +272,7 @@ const QuizArtifactCard = ({
   const canSubmit = !!sessionId && !localAttempted && selected.length > 0;
 
   return (
-    <div className="mt-3 rounded-xl border border-emerald-300/40 bg-emerald-50/50 dark:bg-emerald-900/20 p-3 space-y-3">
+    <div className="mt-2 p-0 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{artifact.payload.title}</p>
         <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
@@ -510,6 +510,12 @@ const MessageBubble = ({
   onUseCanvasSummary,
 }: MessageBubbleProps & { t: any }) => {
   const isUser = message.role === 'user';
+  const quizArtifacts =
+    message.artifacts?.filter(
+      (artifact): artifact is Extract<ChatArtifact, { type: 'quiz' }> => artifact.type === 'quiz',
+    ) || [];
+  const hasUnansweredQuiz = quizArtifacts.some((artifact) => !attemptedQuizMap[artifact.payload.quizId]);
+  const shouldHideAssistantText = !isUser && !isStreaming && hasUnansweredQuiz;
   
   const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(message.content);
@@ -543,18 +549,18 @@ const MessageBubble = ({
         isUser ? 'items-end max-w-[92%] lg:max-w-[78%]' : 'items-start w-full'
       )}>
         {isUser ? (
-          <div className="relative overflow-hidden px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-br-sm">
+          <div className="relative overflow-hidden px-4 py-3 rounded-2xl bg-emerald-600 text-white rounded-br-sm">
             <p className="relative z-10 text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
             {isStreaming && (
               <span className="relative z-10 inline-block w-2 h-4 bg-emerald-100 animate-pulse ml-1 align-middle" />
             )}
           </div>
         ) : (
-          <div className="relative w-full px-1 py-1">
+          <div className="relative w-full">
             {isStreaming && (
               <motion.div
                 aria-hidden
-                className="absolute inset-0 pointer-events-none rounded-xl"
+                className="absolute inset-0 pointer-events-none"
                 style={{
                   background: 'linear-gradient(100deg, transparent 8%, rgba(16, 185, 129, 0.12) 46%, transparent 82%)',
                   backgroundSize: '200% 100%',
@@ -563,12 +569,14 @@ const MessageBubble = ({
                 transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
               />
             )}
-            <div className="relative z-10 prose prose-invert max-w-none">
-              <MarkdownRenderer content={message.content} />
-              {isStreaming && (
-                <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-1 align-middle" />
-              )}
-            </div>
+            {!shouldHideAssistantText && message.content.trim().length > 0 && (
+              <div className="relative z-10 prose dark:prose-invert max-w-none">
+                <MarkdownRenderer content={message.content} />
+                {isStreaming && (
+                  <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-1 align-middle" />
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -933,11 +941,15 @@ export default function ChatPage() {
           usedWords: [],
         })
       : text;
+    let startedRunId: string | undefined;
+    let startedRunTarget = requestedQuizCount || undefined;
 
     if (shouldStartQuizSequence && nextSequence) {
       syncQuizSequence(nextSequence);
       if (currentSessionId) {
-        startQuizRun(nextSequence.targetCount, nextSequence.seedPrompt, currentSessionId);
+        const started = startQuizRun(nextSequence.targetCount, nextSequence.seedPrompt, currentSessionId);
+        startedRunId = started?.runId;
+        startedRunTarget = started?.targetCount || nextSequence.targetCount;
       }
       handledSequenceQuizIdsRef.current.clear();
     } else if (quizSequenceRef.current) {
@@ -959,11 +971,11 @@ export default function ChatPage() {
       trigger: 'manual_input',
       apiContentOverride: shouldStartQuizSequence ? payload : undefined,
       quizRun:
-        shouldStartQuizSequence && quizRunState
+        shouldStartQuizSequence && (startedRunId || quizRunState?.runId)
           ? {
-              runId: quizRunState.runId,
+              runId: startedRunId || quizRunState!.runId,
               questionIndex: 1,
-              targetCount: quizRunState.targetCount,
+              targetCount: startedRunTarget || quizRunState?.targetCount || requestedQuizCount!,
             }
           : undefined,
       featureFlags: {
@@ -1383,6 +1395,21 @@ export default function ChatPage() {
     return loadingStages[loadingStageIndex] || loadingStages[0];
   })();
 
+  const latestSequentialQuizMessageId = useMemo(() => {
+    if (!quizSequence) return null;
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const message = messages[i];
+      if (
+        message.role === 'assistant' &&
+        Array.isArray(message.artifacts) &&
+        message.artifacts.some((artifact) => artifact.type === 'quiz')
+      ) {
+        return message.id;
+      }
+    }
+    return null;
+  }, [messages, quizSequence]);
+
   return (
     <div className="h-full min-h-0 flex overflow-hidden">
       {/* Database Status */}
@@ -1634,20 +1661,38 @@ export default function ChatPage() {
             ) : (
               <div className="py-4 space-y-2">
                 {messages.map((message) => (
-                  <div key={message.id} className="group">
-                    <MessageBubble
-                      message={message}
-                      t={t}
-                      language={language}
-                      sessionId={currentSessionId}
-                      mode={chatMode}
-                      attemptedQuizMap={attemptedQuizMap}
-                      onSubmitQuiz={handleQuizSubmit}
-                      onAddReviewCard={addReviewCardFromQuiz}
-                      onGenerateLesson={generateLessonFromQuiz}
-                      onUseCanvasSummary={handleUseCanvasSummary}
-                    />
-                  </div>
+                  (() => {
+                    const hasQuizArtifact =
+                      message.role === 'assistant' &&
+                      Array.isArray(message.artifacts) &&
+                      message.artifacts.some((artifact) => artifact.type === 'quiz');
+
+                    if (
+                      quizSequence &&
+                      hasQuizArtifact &&
+                      latestSequentialQuizMessageId &&
+                      message.id !== latestSequentialQuizMessageId
+                    ) {
+                      return null;
+                    }
+
+                    return (
+                      <div key={message.id} className="group">
+                        <MessageBubble
+                          message={message}
+                          t={t}
+                          language={language}
+                          sessionId={currentSessionId}
+                          mode={chatMode}
+                          attemptedQuizMap={attemptedQuizMap}
+                          onSubmitQuiz={handleQuizSubmit}
+                          onAddReviewCard={addReviewCardFromQuiz}
+                          onGenerateLesson={generateLessonFromQuiz}
+                          onUseCanvasSummary={handleUseCanvasSummary}
+                        />
+                      </div>
+                    );
+                  })()
                 ))}
                 
                 {/* Streaming message */}

@@ -443,12 +443,24 @@ export const normalizeEnvelope = (
 ): ChatEnvelope => {
   const raw = envelope && typeof envelope === 'object' ? (envelope as Partial<ChatEnvelope>) : null;
 
-  const content =
+  const rawContent =
     sanitizeText(raw?.content) ||
     sanitizeFallbackText(options.fallbackText) ||
     'I generated a malformed response. Please retry.';
   const artifacts = normalizeArtifacts(raw?.artifacts);
   const safeArtifacts = options.allowQuizArtifact ? artifacts : artifacts.filter((artifact) => artifact.type !== 'quiz');
+  const sanitizeQuizLeakingContent = (value: string): string => {
+    if (!safeArtifacts.some((artifact) => artifact.type === 'quiz')) {
+      return value;
+    }
+
+    return value
+      .replace(/(?:^|\n)\s*(?:answer|correct answer|正确答案|答案)\s*[:：].*(?:\n|$)/gi, '\n')
+      .replace(/(?:^|\n)\s*(?:解析|analysis)\s*[:：][\s\S]*/i, '')
+      .trim();
+  };
+
+  const content = sanitizeQuizLeakingContent(rawContent);
   const mergedSources = options.sources && options.sources.length > 0
     ? options.sources
     : normalizeSources(raw?.sources);
@@ -510,6 +522,8 @@ export const buildContractPrompt = (
     '}',
     'Quiz payload schema:',
     '{ quizId, title, questionType, stem, options[{id,text}], answerKey, explanation, difficulty, skills[], estimatedSeconds, targetWord?, tags? }',
+    'When quiz artifact is present, never reveal answer key in content before user submission.',
+    'For quiz questions, keep content to short setup only; put evaluative details in artifact explanation.',
     'Write concise educational response for Chinese-speaking English learners.',
     'Use format: direct answer -> examples -> Chinese key points -> next actions.',
     `Mode=${mode}. ${quizRule}`,

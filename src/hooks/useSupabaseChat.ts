@@ -1197,6 +1197,17 @@ export function useSupabaseChat() {
             : [];
 
         const artifacts = normalizeArtifacts([...(result.artifacts || []), ...sourceArtifact]);
+        const sanitizeQuizContent = (value: string): string =>
+          value
+            .replace(/(?:^|\n)\s*(?:answer|correct answer|正确答案|答案)\s*[:：].*(?:\n|$)/gi, '\n')
+            .replace(/(?:^|\n)\s*(?:解析|analysis)\s*[:：][\s\S]*/i, '')
+            .trim();
+
+        const safeReplyContent =
+          context.quizRun && artifacts.some((artifact) => artifact.type === 'quiz')
+            ? sanitizeQuizContent(replyContent) ||
+              'Please select an option first. I will explain after you submit your answer.'
+            : replyContent;
         setLastAgentMeta(result.agentMeta || null);
         setLastRenderState(result.renderState || null);
         setLastSources(Array.isArray(result.sources) ? result.sources : []);
@@ -1212,14 +1223,14 @@ export function useSupabaseChat() {
           searchTriggered: Boolean(result.contextMeta?.searchTriggered),
         });
 
-        const chunks = replyContent.match(/[\s\S]{1,48}/g) || [replyContent];
+        const chunks = safeReplyContent.match(/[\s\S]{1,48}/g) || [safeReplyContent];
         for (const chunk of chunks) {
           if (abortControllerRef.current?.signal.aborted) {
             throw new DOMException('Aborted', 'AbortError');
           }
           fullContent += chunk;
           setStreamingContent(fullContent);
-          setLastRenderState({ stage: 'streaming', progress: Math.min(0.98, fullContent.length / Math.max(replyContent.length, 1)) });
+          setLastRenderState({ stage: 'streaming', progress: Math.min(0.98, fullContent.length / Math.max(safeReplyContent.length, 1)) });
           await new Promise((resolve) => setTimeout(resolve, 2));
         }
 
