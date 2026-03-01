@@ -66,6 +66,7 @@ const en = {
   chat: {
     title: 'AI English Tutor',
     subtitle: 'Powered by DeepSeek',
+    history: 'History',
     ready: 'Ready',
     placeholder: 'Ask me anything about English... (Shift+Enter for new line)',
     welcomeTitle: 'AI English Tutor',
@@ -469,6 +470,7 @@ const zh = {
   chat: {
     title: 'AI English Tutor',
     subtitle: '由 DeepSeek 驱动',
+    history: '历史对话',
     ready: '准备就绪',
     placeholder: '问我任何英语相关问题... (Shift+Enter 换行)',
     welcomeTitle: 'AI English Tutor',

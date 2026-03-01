@@ -7,9 +7,12 @@ import type {
   AgentMeta,
   ChatArtifact,
   ChatEdgeResponse,
+  ChatSource,
   ChatMode,
   ChatQuizAttempt,
+  ContextMeta,
   SendMessageOptions,
+  ToolRun,
 } from '@/types/chatAgent';
 
 export interface ChatMessage {
@@ -44,6 +47,8 @@ interface FailedRequestContext {
   sessionId: string;
   apiMessages: Array<{ role: 'user' | 'assistant'; content: string }>;
   mode: ChatMode;
+  searchMode: NonNullable<SendMessageOptions['searchMode']>;
+  canvasSyncToParent: boolean;
   featureFlags: SendMessageOptions['featureFlags'];
   trigger: NonNullable<SendMessageOptions['trigger']>;
 }
@@ -52,6 +57,7 @@ const CHAT_SESSIONS_STORAGE_KEY = 'vocabdaily-chat-sessions';
 const CHAT_CURRENT_SESSION_KEY = 'vocabdaily-current-chat-session';
 const CHAT_QUIZ_ATTEMPTS_STORAGE_KEY = 'vocabdaily-chat-quiz-attempts';
 const CHAT_EXPERIMENT_EVENTS_STORAGE_KEY = 'vocabdaily-chat-experiment-events';
+const CHAT_CANVAS_SESSION_MAP_KEY = 'vocabdaily-canvas-child-session-map';
 const MAX_HISTORY_TURNS = 4;
 const MAX_CONTEXT_CHARS = 420;
 const MAX_USER_CHARS = 900;
@@ -395,9 +401,13 @@ export function useSupabaseChat() {
     loadLocalQuizAttempts(),
   );
   const [lastAgentMeta, setLastAgentMeta] = useState<AgentMeta | null>(null);
+  const [lastSources, setLastSources] = useState<ChatSource[]>([]);
+  const [lastToolRuns, setLastToolRuns] = useState<ToolRun[]>([]);
+  const [lastContextMeta, setLastContextMeta] = useState<ContextMeta | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const failedRequestRef = useRef<FailedRequestContext | null>(null);
+  const canvasSessionMapRef = useRef<Record<string, string>>({});
 
   const currentSession = sessions.find((session) => session.id === currentSessionId) || null;
   const messages = useMemo(() => {
@@ -701,6 +711,32 @@ export function useSupabaseChat() {
     }
   }, [currentSessionId]);
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CHAT_CANVAS_SESSION_MAP_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        canvasSessionMapRef.current = parsed as Record<string, string>;
+      }
+    } catch {
+      canvasSessionMapRef.current = {};
+    }
+  }, []);
+
+  const getCanvasChildSessionId = useCallback((parentSessionId: string) => {
+    const existing = canvasSessionMapRef.current[parentSessionId];
+    if (existing) return existing;
+
+    const child = crypto.randomUUID();
+    canvasSessionMapRef.current = {
+      ...canvasSessionMapRef.current,
+      [parentSessionId]: child,
+    };
+    localStorage.setItem(CHAT_CANVAS_SESSION_MAP_KEY, JSON.stringify(canvasSessionMapRef.current));
+    return child;
+  }, []);
+
   const trackExperimentEvent = useCallback(
     async (eventName: string, payload: Record<string, unknown>) => {
       const normalizedEventName = eventName
@@ -936,6 +972,7 @@ export function useSupabaseChat() {
         const result = await invokeEdgeFunction<ChatEdgeResponse>(
           'ai-chat',
           {
+            sessionId: context.sessionId,
             messages: context.apiMessages,
             systemPrompt: SYSTEM_PROMPT,
             learningContext: {
@@ -948,6 +985,27 @@ export function useSupabaseChat() {
               availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
               responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
             },
+            agentConfig: {
+              totalTokens: 2200,
+              compactThreshold: 0.8,
+            },
+            searchPolicy: {
+              mode: context.searchMode,
+              alwaysShowSources: true,
+              maxSearchCalls: 2,
+              maxPerMinute: 8,
+            },
+            memoryPolicy: {
+              topK: 6,
+            },
+            canvasContext:
+              context.mode === 'canvas'
+                ? {
+                    parentSessionId: context.sessionId,
+                    childSessionId: getCanvasChildSessionId(context.sessionId),
+                    syncToParent: context.canvasSyncToParent,
+                  }
+                : undefined,
             mode: context.mode,
             featureFlags: {
               enableQuizArtifacts: true,
@@ -969,14 +1027,32 @@ export function useSupabaseChat() {
           });
         }
 
-        const artifacts = normalizeArtifacts(result.artifacts);
+        const sourceArtifact: ChatArtifact[] =
+          Array.isArray(result.sources) && result.sources.length > 0
+            ? [
+                {
+                  type: 'web_sources',
+                  payload: {
+                    title: 'Web sources',
+                    sources: result.sources,
+                  },
+                },
+              ]
+            : [];
+
+        const artifacts = normalizeArtifacts([...(result.artifacts || []), ...sourceArtifact]);
         setLastAgentMeta(result.agentMeta || null);
+        setLastSources(Array.isArray(result.sources) ? result.sources : []);
+        setLastToolRuns(Array.isArray(result.toolRuns) ? result.toolRuns : []);
+        setLastContextMeta(result.contextMeta || null);
 
         void trackExperimentEvent('chat_reply_received', {
           mode: context.mode,
           trigger: context.trigger,
           hasArtifacts: artifacts.length > 0,
           artifactTypes: artifacts.map((artifact) => artifact.type),
+          sourceCount: Array.isArray(result.sources) ? result.sources.length : 0,
+          searchTriggered: Boolean(result.contextMeta?.searchTriggered),
         });
 
         const chunks = replyContent.match(/[\s\S]{1,48}/g) || [replyContent];
@@ -1033,7 +1109,7 @@ export function useSupabaseChat() {
         abortControllerRef.current = null;
       }
     },
-    [appendAssistantMessage, streamingContent, trackExperimentEvent],
+    [appendAssistantMessage, getCanvasChildSessionId, streamingContent, trackExperimentEvent],
   );
 
   const sendMessage = useCallback(async (content: string, options: SendMessageOptions = {}) => {
@@ -1049,6 +1125,8 @@ export function useSupabaseChat() {
 
     const now = Date.now();
     const mode: ChatMode = options.mode || 'study';
+    const searchMode = options.searchMode || 'auto';
+    const canvasSyncToParent = Boolean(options.canvasSyncToParent);
     const trigger = options.trigger || 'manual_input';
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -1135,6 +1213,7 @@ export function useSupabaseChat() {
 
     void trackExperimentEvent('chat_message_sent', {
       mode,
+      searchMode,
       trigger,
       sessionId,
       hasHistory: historyMessages.length > 0,
@@ -1146,6 +1225,7 @@ export function useSupabaseChat() {
       sessionId,
       payload: {
         mode,
+        searchMode,
         trigger,
         messageLength: userMessage.content.length,
       },
@@ -1155,6 +1235,8 @@ export function useSupabaseChat() {
       sessionId,
       apiMessages,
       mode,
+      searchMode,
+      canvasSyncToParent,
       featureFlags: options.featureFlags,
       trigger,
     });
@@ -1305,6 +1387,9 @@ export function useSupabaseChat() {
     setSessions([]);
     setCurrentSessionId(null);
     setLastAgentMeta(null);
+    setLastSources([]);
+    setLastToolRuns([]);
+    setLastContextMeta(null);
     localStorage.removeItem(CHAT_SESSIONS_STORAGE_KEY);
     localStorage.removeItem(CHAT_CURRENT_SESSION_KEY);
 
@@ -1329,6 +1414,9 @@ export function useSupabaseChat() {
     syncState,
     quizAttemptsById,
     lastAgentMeta,
+    lastSources,
+    lastToolRuns,
+    lastContextMeta,
     chatError,
     sendMessage,
     submitQuizAttempt,

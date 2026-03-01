@@ -43,6 +43,8 @@ import {
   NotebookPen,
   Layers3,
   GraduationCap,
+  Globe,
+  Link2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -269,6 +271,7 @@ interface MessageBubbleProps {
   onSubmitQuiz: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void;
   onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
   onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
+  onUseCanvasSummary: (summary: string) => void;
 }
 
 const MessageBubble = ({
@@ -282,6 +285,7 @@ const MessageBubble = ({
   onSubmitQuiz,
   onAddReviewCard,
   onGenerateLesson,
+  onUseCanvasSummary,
 }: MessageBubbleProps & { t: any }) => {
   const isUser = message.role === 'user';
   
@@ -337,23 +341,83 @@ const MessageBubble = ({
         {!isUser &&
           !isStreaming &&
           message.artifacts?.map((artifact, index) => {
-            if (artifact.type !== 'quiz') return null;
-            const attempt = attemptedQuizMap[artifact.payload.quizId];
-            return (
-              <QuizArtifactCard
-                key={`${message.id}-quiz-${index}`}
-                artifact={artifact}
-                sessionId={sessionId}
-                mode={mode}
-                hasAttempt={!!attempt}
-                attemptedOption={attempt?.selected}
-                onSubmit={onSubmitQuiz}
-                onAddReviewCard={onAddReviewCard}
-                onGenerateLesson={onGenerateLesson}
-                t={t}
-                language={language}
-              />
-            );
+            if (artifact.type === 'quiz') {
+              const attempt = attemptedQuizMap[artifact.payload.quizId];
+              return (
+                <QuizArtifactCard
+                  key={`${message.id}-quiz-${index}`}
+                  artifact={artifact}
+                  sessionId={sessionId}
+                  mode={mode}
+                  hasAttempt={!!attempt}
+                  attemptedOption={attempt?.selected}
+                  onSubmit={onSubmitQuiz}
+                  onAddReviewCard={onAddReviewCard}
+                  onGenerateLesson={onGenerateLesson}
+                  t={t}
+                  language={language}
+                />
+              );
+            }
+
+            if (artifact.type === 'web_sources') {
+              return (
+                <div
+                  key={`${message.id}-sources-${index}`}
+                  className="mt-3 rounded-xl border border-blue-300/40 bg-blue-50/50 dark:bg-blue-900/20 p-3 space-y-2"
+                >
+                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                    {artifact.payload.title || (language.startsWith('zh') ? '资料来源' : 'Sources')}
+                  </p>
+                  <div className="space-y-2">
+                    {artifact.payload.sources.map((source) => (
+                      <a
+                        key={source.id}
+                        href={source.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-lg border border-blue-200/60 dark:border-blue-800/60 bg-background/70 px-3 py-2 hover:border-blue-400/70 transition-colors"
+                      >
+                        <div className="flex items-start gap-2">
+                          <Link2 className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium truncate">{source.title}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{source.domain}</p>
+                            {source.snippet && (
+                              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{source.snippet}</p>
+                            )}
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            if (artifact.type === 'canvas_summary') {
+              return (
+                <div
+                  key={`${message.id}-canvas-summary-${index}`}
+                  className="mt-3 rounded-xl border border-violet-300/40 bg-violet-50/50 dark:bg-violet-900/20 p-3 space-y-2"
+                >
+                  <p className="text-xs font-semibold text-violet-700 dark:text-violet-300">
+                    {artifact.payload.title}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{artifact.payload.summary}</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => onUseCanvasSummary(artifact.payload.summary)}
+                  >
+                    {language.startsWith('zh') ? '同步到主对话输入框' : 'Sync summary to input'}
+                  </Button>
+                </div>
+              );
+            }
+
+            return null;
           })}
 
         {/* Actions */}
@@ -470,6 +534,9 @@ export default function ChatPage() {
     syncState,
     quizAttemptsById,
     lastAgentMeta,
+    lastSources,
+    lastToolRuns,
+    lastContextMeta,
     chatError,
     sendMessage,
     submitQuizAttempt,
@@ -491,6 +558,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatMode, setChatMode] = useState<ChatMode>('study');
+  const [searchMode, setSearchMode] = useState<'auto' | 'off'>('auto');
   const [dbStatus, setDbStatus] = useState<Record<string, boolean>>({});
   const [showDbSetup, setShowDbSetup] = useState(false);
   const messagesScrollAreaRef = useRef<HTMLDivElement>(null);
@@ -500,7 +568,7 @@ export default function ChatPage() {
   const getMessagesViewport = useCallback(() => {
     const root = messagesScrollAreaRef.current;
     if (!root) return null;
-    return root.querySelector('[data-slot=\"scroll-area-viewport\"]') as HTMLDivElement | null;
+    return root.querySelector('[data-slot="scroll-area-viewport"]') as HTMLDivElement | null;
   }, []);
 
   // Check database status - disabled as tables are confirmed to exist
@@ -566,6 +634,7 @@ export default function ChatPage() {
     }
     await sendMessage(text, {
       mode: chatMode,
+      searchMode,
       trigger: 'manual_input',
       featureFlags: {
         enableQuizArtifacts: true,
@@ -573,12 +642,13 @@ export default function ChatPage() {
         allowAutoQuiz: chatMode !== 'chat',
       },
     });
-  }, [chatMode, input, isLoading, sendMessage]);
+  }, [chatMode, input, isLoading, searchMode, sendMessage]);
 
   // Handle quick prompt
   const handleQuickPrompt = useCallback((text: string) => {
     sendMessage(text, {
       mode: chatMode,
+      searchMode,
       trigger: 'quick_prompt',
       featureFlags: {
         enableQuizArtifacts: true,
@@ -586,7 +656,7 @@ export default function ChatPage() {
         allowAutoQuiz: chatMode === 'study' || chatMode === 'quiz',
       },
     });
-  }, [chatMode, sendMessage]);
+  }, [chatMode, searchMode, sendMessage]);
 
   const handleManualQuiz = useCallback(() => {
     const text =
@@ -595,6 +665,7 @@ export default function ChatPage() {
         : 'Based on our recent chat, give me one 4-option English quiz and explain it.';
     void sendMessage(text, {
       mode: chatMode,
+      searchMode,
       trigger: 'quiz_button',
       featureFlags: {
         enableQuizArtifacts: true,
@@ -603,7 +674,35 @@ export default function ChatPage() {
         allowAutoQuiz: true,
       },
     });
-  }, [chatMode, language, sendMessage]);
+  }, [chatMode, language, searchMode, sendMessage]);
+
+  const handleForceWebSearch = useCallback(() => {
+    const text = input.trim();
+    if (!text || isLoading) return;
+
+    setInput('');
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
+
+    void sendMessage(text, {
+      mode: chatMode,
+      searchMode: 'force',
+      trigger: 'manual_input',
+      featureFlags: {
+        enableQuizArtifacts: true,
+        enableStudyArtifacts: true,
+        allowAutoQuiz: chatMode !== 'chat',
+        forceWebSearch: true,
+      },
+    });
+  }, [chatMode, input, isLoading, sendMessage]);
+
+  const handleUseCanvasSummary = useCallback((summary: string) => {
+    setInput(summary);
+    setChatMode('chat');
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
 
   // Handle key press
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -1047,6 +1146,7 @@ export default function ChatPage() {
                       onSubmitQuiz={handleQuizSubmit}
                       onAddReviewCard={addReviewCardFromQuiz}
                       onGenerateLesson={generateLessonFromQuiz}
+                      onUseCanvasSummary={handleUseCanvasSummary}
                     />
                   </div>
                 ))}
@@ -1069,6 +1169,7 @@ export default function ChatPage() {
                     onSubmitQuiz={handleQuizSubmit}
                     onAddReviewCard={addReviewCardFromQuiz}
                     onGenerateLesson={generateLessonFromQuiz}
+                    onUseCanvasSummary={handleUseCanvasSummary}
                   />
                 )}
 
@@ -1146,9 +1247,58 @@ export default function ChatPage() {
                 {language.startsWith('zh') ? '马上测我' : 'Quiz me now'}
               </Button>
 
+              <Button
+                size="sm"
+                variant={searchMode === 'auto' ? 'default' : 'outline'}
+                className={cn(
+                  'h-8 rounded-full text-xs',
+                  searchMode === 'auto' ? 'bg-blue-600 hover:bg-blue-700 text-white' : '',
+                )}
+                onClick={() => setSearchMode((prev) => (prev === 'auto' ? 'off' : 'auto'))}
+                disabled={isLoading}
+              >
+                <Globe className="h-3.5 w-3.5 mr-1.5" />
+                {searchMode === 'auto'
+                  ? language.startsWith('zh')
+                    ? '联网检索：自动'
+                    : 'WebSearch: Auto'
+                  : language.startsWith('zh')
+                    ? '联网检索：关闭'
+                    : 'WebSearch: Off'}
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 rounded-full text-xs"
+                onClick={handleForceWebSearch}
+                disabled={isLoading || !input.trim()}
+              >
+                <Globe className="h-3.5 w-3.5 mr-1.5" />
+                {language.startsWith('zh') ? '强制搜索本条' : 'Search this input'}
+              </Button>
+
               {lastAgentMeta?.triggerReason && (
                 <span className="text-[11px] text-muted-foreground">
                   {language.startsWith('zh') ? '触发原因' : 'Trigger'}: {lastAgentMeta.triggerReason}
+                </span>
+              )}
+
+              {lastContextMeta && (
+                <span className="text-[11px] text-muted-foreground">
+                  {language.startsWith('zh') ? '上下文' : 'Context'}: {lastContextMeta.inputTokensEst}t ·
+                  {lastContextMeta.compacted
+                    ? language.startsWith('zh')
+                      ? ' 已压缩'
+                      : ' compacted'
+                    : language.startsWith('zh')
+                      ? ' 未压缩'
+                      : ' raw'}
+                  {lastContextMeta.searchTriggered
+                    ? language.startsWith('zh')
+                      ? ' · 已搜索'
+                      : ' · searched'
+                    : ''}
                 </span>
               )}
             </div>
@@ -1212,6 +1362,16 @@ export default function ChatPage() {
               <span>{t('common.markdownSupport')}</span>
               <span>·</span>
               <span>{t('common.streaming')}</span>
+              {(lastSources.length > 0 || lastToolRuns.length > 0) && (
+                <>
+                  <span>·</span>
+                  <span>
+                    {language.startsWith('zh')
+                      ? `来源 ${lastSources.length} / 工具 ${lastToolRuns.length}`
+                      : `Sources ${lastSources.length} / Tools ${lastToolRuns.length}`}
+                  </span>
+                </>
+              )}
               <span>·</span>
               <span className={cn(
                 "flex items-center gap-1",

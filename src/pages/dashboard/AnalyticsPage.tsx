@@ -47,14 +47,6 @@ const generateTopicData = (dailyWords: Array<{ topic: string }>) => {
   }));
 };
 
-const badges = [
-  { name: '7-Day Streak', nameZh: '7天连续', icon: Flame, color: 'text-orange-500', earned: true },
-  { name: '100 Words', nameZh: '100单词', icon: BookOpen, color: 'text-emerald-500', earned: false },
-  { name: 'Perfect Week', nameZh: '完美一周', icon: Calendar, color: 'text-blue-500', earned: false },
-  { name: 'Word Wizard', nameZh: '单词巫师', icon: Zap, color: 'text-purple-500', earned: false },
-  { name: 'Master Learner', nameZh: '学习大师', icon: Award, color: 'text-yellow-500', earned: false },
-];
-
 export default function AnalyticsPage() {
   const { stats, xp, streak, dailyWords } = useUserData();
   const { user } = useAuth();
@@ -137,6 +129,15 @@ export default function AnalyticsPage() {
     { day: 'Day 30', retention: baseline },
     { day: 'Day 60', retention: Math.max(30, baseline - 6) },
     { day: 'Day 90', retention: Math.max(25, baseline - 10) },
+  ];
+
+  const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
+  const badges = [
+    { name: '7-Day Streak', nameZh: '7天连续', icon: Flame, color: 'text-orange-500', earned: streak.current >= 7 },
+    { name: '100 Words', nameZh: '100单词', icon: BookOpen, color: 'text-emerald-500', earned: stats.totalWords >= 100 },
+    { name: 'Perfect Week', nameZh: '完美一周', icon: Calendar, color: 'text-blue-500', earned: hasPerfectWeek },
+    { name: 'Word Wizard', nameZh: '单词巫师', icon: Zap, color: 'text-purple-500', earned: stats.masteredWords >= 50 },
+    { name: 'Master Learner', nameZh: '学习大师', icon: Award, color: 'text-yellow-500', earned: xp.total >= 1000 },
   ];
 
   return (

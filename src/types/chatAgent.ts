@@ -1,5 +1,7 @@
 export type ChatMode = 'chat' | 'study' | 'quiz' | 'canvas';
 
+export type SearchMode = 'off' | 'auto' | 'force';
+
 export type QuizQuestionType = 'multiple_choice' | 'true_false' | 'fill_blank';
 
 export interface QuizOption {
@@ -42,7 +44,67 @@ export interface CanvasHintArtifact {
   };
 }
 
-export type ChatArtifact = QuizArtifact | StudyPlanArtifact | CanvasHintArtifact;
+export interface ChatSource {
+  id: string;
+  title: string;
+  url: string;
+  domain: string;
+  publishedAt?: string;
+  snippet: string;
+  confidence: number;
+}
+
+export interface WebSourcesArtifact {
+  type: 'web_sources';
+  payload: {
+    title: string;
+    sources: ChatSource[];
+  };
+}
+
+export interface CanvasSummaryArtifact {
+  type: 'canvas_summary';
+  payload: {
+    title: string;
+    summary: string;
+    childSessionId?: string;
+  };
+}
+
+export interface ToolRun {
+  tool: string;
+  name: string;
+  status: 'success' | 'error' | 'skipped' | 'rate_limited';
+  latencyMs: number;
+  errorCode?: string;
+}
+
+export interface ContextMeta {
+  inputTokensEst: number;
+  budgetUsed: {
+    system: number;
+    recentTurns: number;
+    memory: number;
+    toolObservations: number;
+    reserve: number;
+  };
+  compacted: boolean;
+  memoryHits: number;
+  searchTriggered: boolean;
+}
+
+export interface CanvasSessionMeta {
+  parentSessionId?: string;
+  childSessionId?: string;
+  syncState?: 'isolated' | 'synced' | 'not_applicable';
+}
+
+export type ChatArtifact =
+  | QuizArtifact
+  | StudyPlanArtifact
+  | CanvasHintArtifact
+  | WebSourcesArtifact
+  | CanvasSummaryArtifact;
 
 export interface AgentMeta {
   triggerReason?: string;
@@ -56,15 +118,22 @@ export interface ChatEdgeResponse {
   provider?: 'edge' | 'fallback';
   artifacts?: ChatArtifact[];
   agentMeta?: AgentMeta;
+  sources?: ChatSource[];
+  toolRuns?: ToolRun[];
+  contextMeta?: ContextMeta;
+  canvasSessionMeta?: CanvasSessionMeta;
 }
 
 export interface SendMessageOptions {
   mode?: ChatMode;
+  searchMode?: SearchMode;
+  canvasSyncToParent?: boolean;
   featureFlags?: {
     enableQuizArtifacts?: boolean;
     enableStudyArtifacts?: boolean;
     forceQuiz?: boolean;
     allowAutoQuiz?: boolean;
+    forceWebSearch?: boolean;
   };
   trigger?: 'manual_input' | 'quick_prompt' | 'quiz_button' | 'retry';
 }

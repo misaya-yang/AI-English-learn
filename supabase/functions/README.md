@@ -20,7 +20,10 @@ Set in Supabase project secrets:
 
 - `DEEPSEEK_API_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
 - `APP_BASE_URL`
+- `TAVILY_API_KEY` (optional; web search is skipped when absent)
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_PRO_MONTHLY`

@@ -842,6 +842,74 @@ CREATE TABLE IF NOT EXISTS chat_experiment_events (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 12. Agent memory items table
+CREATE TABLE IF NOT EXISTS agent_memory_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  session_id UUID,
+  kind TEXT NOT NULL CHECK (kind IN ('profile', 'preference', 'weakness_tag', 'goal', 'error_trace', 'tool_fact')),
+  content TEXT NOT NULL,
+  tags TEXT[] NOT NULL DEFAULT '{}',
+  confidence DECIMAL(4,3) NOT NULL DEFAULT 0.700,
+  source_ref JSONB NOT NULL DEFAULT '{}',
+  dedupe_key TEXT NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, dedupe_key)
+);
+
+-- 13. Agent context snapshots table
+CREATE TABLE IF NOT EXISTS agent_context_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  session_id UUID NOT NULL,
+  summary TEXT NOT NULL,
+  compacted_from_count INTEGER NOT NULL DEFAULT 0,
+  source_pointers JSONB NOT NULL DEFAULT '[]',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 14. Agent tool runs table
+CREATE TABLE IF NOT EXISTS agent_tool_runs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  session_id UUID,
+  tool TEXT NOT NULL,
+  run_name TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('success', 'error', 'skipped', 'rate_limited')),
+  latency_ms INTEGER NOT NULL DEFAULT 0,
+  error_code TEXT,
+  request_payload JSONB NOT NULL DEFAULT '{}',
+  response_payload JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 15. Agent web sources table
+CREATE TABLE IF NOT EXISTS agent_web_sources (
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL,
+  session_id UUID,
+  tool_run_id UUID REFERENCES agent_tool_runs(id) ON DELETE SET NULL,
+  url TEXT NOT NULL,
+  domain TEXT,
+  title TEXT,
+  snippet TEXT,
+  published_at TIMESTAMP WITH TIME ZONE,
+  retrieved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  confidence DECIMAL(4,3) NOT NULL DEFAULT 0.600,
+  raw JSONB NOT NULL DEFAULT '{}'
+);
+
+-- 16. Agent search quotas table
+CREATE TABLE IF NOT EXISTS agent_search_quotas (
+  user_id UUID PRIMARY KEY,
+  window_started_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT date_trunc('minute', NOW()),
+  requests_in_window INTEGER NOT NULL DEFAULT 0,
+  max_per_minute INTEGER NOT NULL DEFAULT 8,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Enable RLS on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE words ENABLE ROW LEVEL SECURITY;
@@ -854,6 +922,11 @@ ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_quiz_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_quiz_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_experiment_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_memory_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_context_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_tool_runs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_web_sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_search_quotas ENABLE ROW LEVEL SECURITY;
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -870,6 +943,10 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session
 CREATE INDEX IF NOT EXISTS idx_chat_quiz_items_user_created ON chat_quiz_items(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_chat_quiz_attempts_user_created ON chat_quiz_attempts(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_chat_experiment_events_user_created ON chat_experiment_events(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_memory_user_updated ON agent_memory_items(user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_context_snapshots_user_created ON agent_context_snapshots(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_tool_runs_user_created ON agent_tool_runs(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_web_sources_user_retrieved ON agent_web_sources(user_id, retrieved_at DESC);
 
 -- Create RLS policies (simplified for anonymous users)
 CREATE POLICY "Allow all" ON users FOR ALL USING (true) WITH CHECK (true);
@@ -883,6 +960,11 @@ CREATE POLICY "Allow all" ON chat_messages FOR ALL USING (true) WITH CHECK (true
 CREATE POLICY "Allow all" ON chat_quiz_items FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON chat_quiz_attempts FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON chat_experiment_events FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON agent_memory_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON agent_context_snapshots FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON agent_tool_runs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON agent_web_sources FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON agent_search_quotas FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================
 -- TRIGGER: Auto-create user when auth user is created
