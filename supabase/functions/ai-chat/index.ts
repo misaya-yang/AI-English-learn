@@ -9,6 +9,7 @@ import {
   buildContractPrompt,
   normalizeEnvelope,
   normalizeMode,
+  type ChatRenderState,
   type CanvasSessionMeta,
   type ChatArtifact,
   type ChatEnvelope,
@@ -282,6 +283,19 @@ Deno.serve(async (req) => {
 
     const allowQuizArtifact = mode === 'quiz' || Boolean(featureFlags.forceQuiz) || Boolean(featureFlags.allowAutoQuiz);
 
+    const normalizedQuizRun = body.quizRun && typeof body.quizRun === 'object'
+      ? {
+          runId: typeof body.quizRun.runId === 'string' ? body.quizRun.runId : '',
+          questionIndex: Number(body.quizRun.questionIndex) || 1,
+          targetCount: Number(body.quizRun.targetCount) || 1,
+        }
+      : undefined;
+
+    const renderState: ChatRenderState = {
+      stage: toolRouting.searchTriggered ? 'searching' : 'composing',
+      progress: 0.75,
+    };
+
     const payload = normalizeEnvelope(parsed, {
       fallbackText: completion,
       mode,
@@ -295,6 +309,10 @@ Deno.serve(async (req) => {
         memoryHits: memories.length,
         searchTriggered: toolRouting.searchTriggered,
       },
+      renderState,
+      quizRun: normalizedQuizRun && normalizedQuizRun.runId
+        ? normalizedQuizRun
+        : undefined,
     });
 
     const artifactsWithSources = ensureWebSourcesArtifact(payload.artifacts || [], payload.sources);

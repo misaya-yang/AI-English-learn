@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -18,15 +19,22 @@ import TodayPage from '@/pages/dashboard/TodayPage';
 import ReviewPage from '@/pages/dashboard/ReviewPage';
 import PracticePage from '@/pages/dashboard/PracticePage';
 import VocabularyBankPage from '@/pages/dashboard/VocabularyBankPage';
-import AnalyticsPage from '@/pages/dashboard/AnalyticsPage';
-import ChatPage from '@/pages/dashboard/ChatPage';
 import SettingsPage from '@/pages/dashboard/SettingsPage';
 import ProfilePage from '@/pages/dashboard/ProfilePage';
-import ExamPrepPage from '@/pages/dashboard/ExamPrepPage';
 
 // Public Pages
 import WordOfTheDayPage from '@/pages/WordOfTheDayPage';
 import PricingPage from '@/pages/PricingPage';
+
+const AnalyticsPage = lazy(() => import('@/pages/dashboard/AnalyticsPage'));
+const ChatPage = lazy(() => import('@/pages/dashboard/ChatPage'));
+const ExamPrepPage = lazy(() => import('@/pages/dashboard/ExamPrepPage'));
+
+const RouteFallback = () => (
+  <div className="flex h-[40vh] items-center justify-center text-sm text-muted-foreground">
+    Loading...
+  </div>
+);
 
 function App() {
   return (
@@ -53,10 +61,10 @@ function App() {
                 <Route path="today" element={<TodayPage />} />
                 <Route path="review" element={<ReviewPage />} />
                 <Route path="practice" element={<PracticePage />} />
-                <Route path="exam" element={<ExamPrepPage />} />
+                <Route path="exam" element={<Suspense fallback={<RouteFallback />}><ExamPrepPage /></Suspense>} />
                 <Route path="vocabulary" element={<VocabularyBankPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="chat" element={<ChatPage />} />
+                <Route path="analytics" element={<Suspense fallback={<RouteFallback />}><AnalyticsPage /></Suspense>} />
+                <Route path="chat" element={<Suspense fallback={<RouteFallback />}><ChatPage /></Suspense>} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
               </Route>

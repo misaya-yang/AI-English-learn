@@ -57,7 +57,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
             <Badge variant="secondary" className="mb-4 px-3 py-1">
               {word.level} • 第 {item.reviewCount + 1} 次复习
             </Badge>
-            <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <h2 className="text-5xl font-bold mb-4 text-emerald-600">
               {word.word}
             </h2>
             <p className="text-lg text-muted-foreground mb-4 font-mono">
@@ -213,13 +213,13 @@ export default function ReviewPage() {
         animate={{ opacity: 1, scale: 1 }}
       >
         <motion.div 
-          className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/30 rounded-full flex items-center justify-center mb-6 shadow-lg"
+          className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center mb-6 shadow-lg"
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
           <Check className="h-12 w-12 text-emerald-600" />
         </motion.div>
-        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">太棒了！🎉</h2>
+        <h2 className="text-3xl font-bold mb-2 text-emerald-600">太棒了！🎉</h2>
         <p className="text-muted-foreground mb-2 text-lg">您已完成所有复习</p>
         <p className="text-sm text-muted-foreground text-center max-w-md">
           您没有待复习的单词。明天再见！
@@ -243,23 +243,23 @@ export default function ReviewPage() {
           className="text-center p-8 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 rounded-2xl border border-emerald-200"
         >
           <motion.div 
-            className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/30"
+            className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-card"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
           >
             <Check className="h-12 w-12 text-white" />
           </motion.div>
-          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">复习完成！🎉</h2>
+          <h2 className="text-3xl font-bold mb-2 text-emerald-600">复习完成！🎉</h2>
           <p className="text-muted-foreground mb-6">继续保持，积少成多！</p>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-white dark:bg-card p-4 rounded-xl shadow-sm">
-              <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{totalReviewed}</p>
+              <p className="text-3xl font-bold text-emerald-600">{totalReviewed}</p>
               <p className="text-sm text-muted-foreground">复习单词</p>
             </div>
             <div className="bg-white dark:bg-card p-4 rounded-xl shadow-sm">
-              <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{accuracy}%</p>
+              <p className="text-3xl font-bold text-emerald-600">{accuracy}%</p>
               <p className="text-sm text-muted-foreground">正确率</p>
             </div>
           </div>
@@ -292,7 +292,7 @@ export default function ReviewPage() {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">复习模式</h1>
+            <h1 className="text-2xl font-bold text-emerald-600">复习模式</h1>
             <p className="text-muted-foreground text-sm">基于间隔重复算法优化记忆</p>
           </div>
           <div className="flex items-center gap-4">

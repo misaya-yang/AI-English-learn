@@ -238,7 +238,7 @@ interface QuizCardProps {
   mode: ChatMode;
   hasAttempt: boolean;
   attemptedOption?: string;
-  onSubmit: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void;
+  onSubmit: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void | Promise<void>;
   onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
   onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
   t: any;
@@ -366,7 +366,7 @@ const QuizArtifactCard = ({
 // Welcome message component
 const WelcomeMessage = ({ onPromptClick, t, prompts }: { onPromptClick: (text: string) => void; t: any; prompts: any[] }) => (
   <div className="flex flex-col items-center justify-center py-8 px-4">
-    <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/30 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+    <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/40 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
       <Bot className="h-8 w-8 text-emerald-600" />
     </div>
     <h2 className="text-2xl font-bold mb-2 text-center">{t('chat.welcomeTitle')}</h2>
@@ -490,7 +490,7 @@ interface MessageBubbleProps {
   sessionId: string | null;
   mode: ChatMode;
   attemptedQuizMap: Record<string, { selected: string }>;
-  onSubmitQuiz: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void;
+  onSubmitQuiz: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void | Promise<void>;
   onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
   onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
   onUseCanvasSummary: (summary: string) => void;
@@ -767,13 +767,19 @@ export default function ChatPage() {
     streamingContent,
     syncState,
     quizAttemptsById,
+    quizRunState,
     lastAgentMeta,
+    lastRenderState,
     lastSources,
     lastToolRuns,
     lastContextMeta,
     chatError,
     sendMessage,
     submitQuizAttempt,
+    startQuizRun,
+    advanceQuizRun,
+    recoverQuizRunFromSession,
+    clearQuizRun,
     createSession,
     deleteSession,
     switchSession,
@@ -810,6 +816,16 @@ export default function ChatPage() {
     quizSequenceRef.current = next;
     setQuizSequence(next);
   }, []);
+
+  useEffect(() => {
+    if (!quizRunState) return;
+    syncQuizSequence({
+      targetCount: quizRunState.targetCount,
+      answeredCount: quizRunState.answeredCount,
+      seedPrompt: quizRunState.seedPrompt,
+      usedWords: quizRunState.usedWords,
+    });
+  }, [quizRunState, syncQuizSequence]);
 
   const contentWidthClass = sidebarOpen
     ? 'max-w-[min(1360px,100%)]'
@@ -920,9 +936,13 @@ export default function ChatPage() {
 
     if (shouldStartQuizSequence && nextSequence) {
       syncQuizSequence(nextSequence);
+      if (currentSessionId) {
+        startQuizRun(nextSequence.targetCount, nextSequence.seedPrompt, currentSessionId);
+      }
       handledSequenceQuizIdsRef.current.clear();
     } else if (quizSequenceRef.current) {
       syncQuizSequence(null);
+      clearQuizRun(currentSessionId);
       handledSequenceQuizIdsRef.current.clear();
     }
 
@@ -938,6 +958,14 @@ export default function ChatPage() {
       searchMode,
       trigger: 'manual_input',
       apiContentOverride: shouldStartQuizSequence ? payload : undefined,
+      quizRun:
+        shouldStartQuizSequence && quizRunState
+          ? {
+              runId: quizRunState.runId,
+              questionIndex: 1,
+              targetCount: quizRunState.targetCount,
+            }
+          : undefined,
       featureFlags: {
         enableQuizArtifacts: true,
         enableStudyArtifacts: true,
@@ -945,11 +973,12 @@ export default function ChatPage() {
         forceQuiz: shouldStartQuizSequence || undefined,
       },
     });
-  }, [chatMode, input, isLoading, language, searchMode, sendMessage, syncQuizSequence]);
+  }, [chatMode, clearQuizRun, currentSessionId, input, isLoading, language, quizRunState, searchMode, sendMessage, startQuizRun, syncQuizSequence]);
 
   // Handle quick prompt
   const handleQuickPrompt = useCallback((text: string) => {
     syncQuizSequence(null);
+    clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
     sendMessage(text, {
@@ -962,7 +991,7 @@ export default function ChatPage() {
         allowAutoQuiz: chatMode === 'study' || chatMode === 'quiz',
       },
     });
-  }, [chatMode, searchMode, sendMessage, syncQuizSequence]);
+  }, [chatMode, clearQuizRun, currentSessionId, searchMode, sendMessage, syncQuizSequence]);
 
   const handleManualQuiz = useCallback(() => {
     const text =
@@ -970,6 +999,7 @@ export default function ChatPage() {
         ? '基于我们刚才的对话，给我一题英语测验（四选一），并给出中文解析。'
         : 'Based on our recent chat, give me one 4-option English quiz and explain it.';
     syncQuizSequence(null);
+    clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
     void sendMessage(text, {
@@ -983,13 +1013,14 @@ export default function ChatPage() {
         allowAutoQuiz: true,
       },
     });
-  }, [chatMode, language, searchMode, sendMessage, syncQuizSequence]);
+  }, [chatMode, clearQuizRun, currentSessionId, language, searchMode, sendMessage, syncQuizSequence]);
 
   const handleForceWebSearch = useCallback(() => {
     const text = input.trim();
     if (!text || isLoading) return;
 
     syncQuizSequence(null);
+    clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setInput('');
     setToolsExpanded(false);
@@ -1008,7 +1039,7 @@ export default function ChatPage() {
         forceWebSearch: true,
       },
     });
-  }, [chatMode, input, isLoading, sendMessage, syncQuizSequence]);
+  }, [chatMode, clearQuizRun, currentSessionId, input, isLoading, sendMessage, syncQuizSequence]);
 
   const handleUseCanvasSummary = useCallback((summary: string) => {
     setInput(summary);
@@ -1141,21 +1172,32 @@ export default function ChatPage() {
   );
 
   const requestNextSequentialQuiz = useCallback(
-    async (sequence: QuizSequenceState, questionIndex: number) => {
+    async (args: {
+      sequence: QuizSequenceState;
+      questionIndex: number;
+      runId?: string;
+    }) => {
       const prompt = buildQuizSequencePrompt({
         language,
-        seedPrompt: sequence.seedPrompt,
-        questionIndex,
-        targetCount: sequence.targetCount,
-        usedWords: sequence.usedWords,
+        seedPrompt: args.sequence.seedPrompt,
+        questionIndex: args.questionIndex,
+        targetCount: args.sequence.targetCount,
+        usedWords: args.sequence.usedWords,
       });
 
-      await sendMessage(sequence.seedPrompt, {
+      await sendMessage(args.sequence.seedPrompt, {
         mode: 'quiz',
         searchMode,
         trigger: 'quiz_button',
         apiContentOverride: prompt,
         hideUserMessage: true,
+        quizRun: args.runId
+          ? {
+              runId: args.runId,
+              questionIndex: args.questionIndex,
+              targetCount: args.sequence.targetCount,
+            }
+          : undefined,
         featureFlags: {
           enableQuizArtifacts: true,
           enableStudyArtifacts: true,
@@ -1168,9 +1210,9 @@ export default function ChatPage() {
   );
 
   const handleQuizSubmit = useCallback(
-    (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => {
+    async (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => {
       if (!currentSessionId) return;
-      void submitQuizAttempt({
+      await submitQuizAttempt({
         quizId,
         sessionId: currentSessionId,
         selected,
@@ -1249,6 +1291,12 @@ export default function ChatPage() {
       handledSequenceQuizIdsRef.current.add(quizId);
       const artifact = findQuizArtifact(quizId);
       const usedWord = artifact ? extractWordCandidate(artifact) : '';
+      const persistedRun = advanceQuizRun({
+        sessionId: currentSessionId,
+        quizId,
+        isCorrect,
+        usedWord,
+      });
       const nextAnsweredCount = Math.min(sequence.targetCount, sequence.answeredCount + 1);
       const nextUsedWords = usedWord
         ? Array.from(new Set([...sequence.usedWords, usedWord]))
@@ -1256,6 +1304,7 @@ export default function ChatPage() {
 
       if (nextAnsweredCount >= sequence.targetCount) {
         syncQuizSequence(null);
+        clearQuizRun(currentSessionId);
         handledSequenceQuizIdsRef.current.clear();
         toast.success(
           language.startsWith('zh')
@@ -1273,21 +1322,32 @@ export default function ChatPage() {
       syncQuizSequence(nextSequence);
 
       const nextQuestionIndex = nextAnsweredCount + 1;
+      const persistedRunId =
+        persistedRun && typeof persistedRun === 'object' && 'runId' in persistedRun
+          ? (persistedRun as { runId?: string }).runId
+          : undefined;
       toast.message(
         language.startsWith('zh')
           ? `继续下一题（${nextQuestionIndex}/${nextSequence.targetCount}）`
           : `Next question (${nextQuestionIndex}/${nextSequence.targetCount})`,
       );
-      void requestNextSequentialQuiz(nextSequence, nextQuestionIndex);
+      void requestNextSequentialQuiz({
+        sequence: nextSequence,
+        questionIndex: nextQuestionIndex,
+        runId: persistedRunId || quizRunState?.runId,
+      });
     },
     [
       addReviewCardFromQuiz,
+      advanceQuizRun,
       chatMode,
       chatUserId,
+      clearQuizRun,
       completeMissionTask,
       currentSessionId,
       findQuizArtifact,
       language,
+      quizRunState?.runId,
       requestNextSequentialQuiz,
       syncQuizSequence,
       submitQuizAttempt,
@@ -1307,11 +1367,21 @@ export default function ChatPage() {
           ? '本地模式'
           : 'Local Mode';
 
-  const loadingLabel = isLoading && streamingContent
-    ? language.startsWith('zh')
-      ? '正在渲染回答'
-      : 'Rendering response'
-    : loadingStages[loadingStageIndex] || loadingStages[0];
+  const loadingLabel = (() => {
+    if (lastRenderState?.stage === 'planning') {
+      return language.startsWith('zh') ? '正在理解问题' : 'Understanding request';
+    }
+    if (lastRenderState?.stage === 'searching') {
+      return language.startsWith('zh') ? '正在检索学习资料' : 'Searching evidence';
+    }
+    if (lastRenderState?.stage === 'composing') {
+      return language.startsWith('zh') ? '正在组织教学答案' : 'Composing response';
+    }
+    if (lastRenderState?.stage === 'streaming' || (isLoading && streamingContent)) {
+      return language.startsWith('zh') ? '正在渲染回答' : 'Rendering response';
+    }
+    return loadingStages[loadingStageIndex] || loadingStages[0];
+  })();
 
   return (
     <div className="h-full min-h-0 flex overflow-hidden">
@@ -1399,6 +1469,7 @@ export default function ChatPage() {
                   className="h-8 w-8"
                   onClick={() => {
                     syncQuizSequence(null);
+                    clearQuizRun(currentSessionId);
                     handledSequenceQuizIdsRef.current.clear();
                     void createSession();
                   }}
@@ -1428,7 +1499,17 @@ export default function ChatPage() {
                             : 'hover:bg-muted border border-transparent'
                         )}
                         onClick={() => {
-                          syncQuizSequence(null);
+                          const recovered = recoverQuizRunFromSession(session.id);
+                          if (recovered) {
+                            syncQuizSequence({
+                              targetCount: recovered.targetCount,
+                              answeredCount: recovered.answeredCount,
+                              seedPrompt: recovered.seedPrompt,
+                              usedWords: recovered.usedWords,
+                            });
+                          } else {
+                            syncQuizSequence(null);
+                          }
                           handledSequenceQuizIdsRef.current.clear();
                           switchSession(session.id);
                         }}
@@ -1518,6 +1599,7 @@ export default function ChatPage() {
               size="sm"
               onClick={() => {
                 syncQuizSequence(null);
+                clearQuizRun(currentSessionId);
                 handledSequenceQuizIdsRef.current.clear();
                 void createSession();
               }}
@@ -1644,6 +1726,7 @@ export default function ChatPage() {
                 className="h-7 text-xs text-emerald-700 hover:text-emerald-800"
                 onClick={() => {
                   syncQuizSequence(null);
+                  clearQuizRun(currentSessionId);
                   handledSequenceQuizIdsRef.current.clear();
                 }}
               >
@@ -1654,16 +1737,16 @@ export default function ChatPage() {
         )}
 
         {/* Input Area - Enhanced */}
-        <div className="border-t border-border bg-card p-4">
-          <div className={cn(contentWidthClass, 'mx-auto')}>
+        <div className="border-t border-border bg-background/95 backdrop-blur p-4">
+          <div className={cn(contentWidthClass, 'mx-auto relative')}>
             <AnimatePresence initial={false}>
               {toolsExpanded && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: 8, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="mb-3 overflow-hidden rounded-2xl border border-border bg-muted/50 p-3"
+                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                  transition={{ duration: 0.18 }}
+                  className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border/90 bg-background/96 shadow-xl p-3"
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground">
@@ -1787,7 +1870,7 @@ export default function ChatPage() {
             )}
 
             {/* Input */}
-            <div className="relative flex gap-2 items-end bg-muted rounded-2xl border border-border p-3 focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/10 transition-all">
+            <div className="relative flex gap-2 items-end bg-card rounded-2xl border border-border/80 p-3 focus-within:border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/15 transition-all">
               <Button
                 variant="ghost"
                 size="icon"
@@ -1828,7 +1911,7 @@ export default function ChatPage() {
                   <Button
                     onClick={handleSend}
                     disabled={!input.trim()}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-xl h-10 w-10 p-0 disabled:opacity-50"
+                    className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 w-10 p-0 disabled:opacity-50"
                   >
                     <Send className="h-5 w-5" />
                   </Button>

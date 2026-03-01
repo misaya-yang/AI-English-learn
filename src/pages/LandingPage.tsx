@@ -159,7 +159,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
                 <BookOpen className="h-5 w-5 text-white" />
               </div>
               <span className="font-bold text-lg">VocabDaily AI</span>
@@ -330,7 +330,7 @@ export default function LandingPage() {
                   alt="Students learning"
                   className="w-full h-auto"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/15 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
                   <Card className="bg-white/95 dark:bg-card/95 backdrop-blur">
                     <CardContent className="p-4">
@@ -565,7 +565,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
+      <section className="py-20 bg-emerald-700 text-white">
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Start Your Vocabulary Journey Today</h2>
           <p className="text-xl mb-2">今天开始您的单词学习之旅</p>
@@ -587,7 +587,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
                   <BookOpen className="h-5 w-5 text-white" />
                 </div>
                 <span className="font-bold">VocabDaily AI</span>

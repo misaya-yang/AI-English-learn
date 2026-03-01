@@ -115,10 +115,10 @@ export default function DashboardLayout() {
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r bg-card p-4">
+      <aside className="hidden lg:flex w-64 flex-col border-r bg-sidebar p-4">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -208,7 +208,7 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
         <div className="flex items-center justify-between p-4">
           <Link to="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
@@ -278,7 +278,8 @@ export default function DashboardLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-0 lg:ml-0 overflow-hidden">
         {/* Desktop Header */}
-        <header className="hidden lg:flex items-center justify-between border-b bg-card px-6 py-3">
+        {!isChatRoute && (
+          <header className="hidden lg:flex items-center justify-between border-b bg-card/80 backdrop-blur px-6 py-3">
           <div>
             <h2 className="text-lg font-semibold">
               {navItems.find((item) => isActive(item.path))?.label || 'Dashboard'}
@@ -324,7 +325,8 @@ export default function DashboardLayout() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </header>
+          </header>
+        )}
 
         {/* Page Content */}
         <div

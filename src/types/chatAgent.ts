@@ -79,6 +79,23 @@ export interface ToolRun {
   errorCode?: string;
 }
 
+export interface ChatRenderState {
+  stage: 'planning' | 'searching' | 'composing' | 'streaming';
+  progress?: number;
+}
+
+export interface QuizRunState {
+  runId: string;
+  targetCount: number;
+  answeredCount: number;
+  status: 'idle' | 'awaiting_answer' | 'grading' | 'requesting_next' | 'completed';
+  currentQuizId?: string;
+  seedPrompt: string;
+  usedWords: string[];
+  startedAt: number;
+  completedAt?: number;
+}
+
 export interface ContextMeta {
   inputTokensEst: number;
   budgetUsed: {
@@ -118,6 +135,12 @@ export interface ChatEdgeResponse {
   provider?: 'edge' | 'fallback';
   artifacts?: ChatArtifact[];
   agentMeta?: AgentMeta;
+  renderState?: ChatRenderState;
+  quizRun?: {
+    runId: string;
+    questionIndex: number;
+    targetCount: number;
+  };
   sources?: ChatSource[];
   toolRuns?: ToolRun[];
   contextMeta?: ContextMeta;
@@ -136,6 +159,11 @@ export interface SendMessageOptions {
     forceQuiz?: boolean;
     allowAutoQuiz?: boolean;
     forceWebSearch?: boolean;
+  };
+  quizRun?: {
+    runId: string;
+    questionIndex: number;
+    targetCount: number;
   };
   trigger?: 'manual_input' | 'quick_prompt' | 'quiz_button' | 'retry';
 }

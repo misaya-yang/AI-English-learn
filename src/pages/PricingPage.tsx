@@ -174,7 +174,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
                 <BookOpen className="h-5 w-5 text-white" />
               </div>
               <span className="font-bold">VocabDaily AI</span>
@@ -240,7 +240,7 @@ export default function PricingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Card className={cn('h-full relative', plan.highlighted && 'border-emerald-500 shadow-lg')}>
+              <Card className={cn('h-full relative', plan.highlighted && 'border-emerald-500 shadow-card')}>
                 {plan.highlighted && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600">Most Popular</Badge>
                 )}
@@ -345,7 +345,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded flex items-center justify-center">
+              <div className="w-6 h-6 bg-emerald-600 rounded flex items-center justify-center">
                 <BookOpen className="h-3 w-3 text-white" />
               </div>
               <span className="font-medium">VocabDaily AI</span>

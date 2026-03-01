@@ -97,7 +97,7 @@ function WordCard({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard }: 
             </motion.div>
             
             <motion.h2 
-              className="text-5xl font-bold text-center mb-3 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent"
+              className="text-5xl font-bold text-center mb-3 text-emerald-600"
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
@@ -289,7 +289,7 @@ function WordCard({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard }: 
               </Button>
               <Button
                 variant="default"
-                className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700"
                 onClick={() => onMarkStatus('learned')}
                 disabled={isLearned}
               >
@@ -466,7 +466,7 @@ export default function TodayPage() {
         transition={{ duration: 0.5 }}
       >
         <motion.div 
-          className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/30 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20"
+          className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20"
           animate={{ 
             scale: [1, 1.05, 1],
             rotate: [0, 5, -5, 0]
@@ -479,7 +479,7 @@ export default function TodayPage() {
         >
           <Sparkles className="h-12 w-12 text-emerald-600" />
         </motion.div>
-        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">准备好开始学习了吗？</h2>
+        <h2 className="text-3xl font-bold mb-2 text-emerald-600">准备好开始学习了吗？</h2>
         <p className="text-muted-foreground mb-2 text-lg">
           {activeBook
             ? `当前词书：${activeBook.name}`
@@ -491,7 +491,7 @@ export default function TodayPage() {
         {activeBook ? (
           <Button
             size="lg"
-            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-xl shadow-lg shadow-emerald-500/25 px-8 py-6 text-lg transition-all hover:scale-105"
+            className="bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-card px-8 py-6 text-lg transition-all hover:scale-105"
             onClick={refreshDailyWords}
           >
             <Sparkles className="h-5 w-5 mr-2" />
@@ -501,7 +501,7 @@ export default function TodayPage() {
           <Link to="/dashboard/vocabulary">
             <Button
               size="lg"
-              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-xl shadow-lg shadow-emerald-500/25 px-8 py-6 text-lg transition-all hover:scale-105"
+              className="bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-card px-8 py-6 text-lg transition-all hover:scale-105"
             >
               <BookOpen className="h-5 w-5 mr-2" />
               去选择词书
@@ -523,7 +523,7 @@ export default function TodayPage() {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-emerald-600">
               今日单词
             </h1>
             <p className="text-muted-foreground text-sm">{new Date().toLocaleDateString('zh-CN', { 
@@ -740,7 +740,7 @@ export default function TodayPage() {
             "flex-1 h-12 rounded-xl shadow-lg transition-all",
             learnedWords.has(currentWord?.id || '')
               ? "bg-emerald-600"
-              : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/25"
+              : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25"
           )}
           onClick={() => handleMarkStatus('learned')}
           disabled={!currentWord || learnedWords.has(currentWord.id)}
@@ -806,14 +806,14 @@ export default function TodayPage() {
           className="mt-8 text-center p-8 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800"
         >
           <motion.div 
-            className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30"
+            className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-card"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
           >
             <Check className="h-10 w-10 text-white" />
           </motion.div>
-          <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">太棒了! 🎉</h3>
+          <h3 className="text-2xl font-bold mb-2 text-emerald-600">太棒了! 🎉</h3>
           <p className="text-muted-foreground mb-6">
             您今天已学习所有 {words.length} 个单词！
             <br />
@@ -833,7 +833,7 @@ export default function TodayPage() {
             </Button>
             <Button
               variant="default"
-              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
               onClick={() => {
                 setLearnedWords(new Set());
                 setHardWords(new Set());

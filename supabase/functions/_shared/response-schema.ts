@@ -96,10 +96,23 @@ export interface AgentMeta {
   latencyMs?: number;
 }
 
+export interface ChatRenderState {
+  stage: 'planning' | 'searching' | 'composing' | 'streaming';
+  progress?: number;
+}
+
+export interface QuizRunMeta {
+  runId: string;
+  questionIndex: number;
+  targetCount: number;
+}
+
 export interface ChatEnvelope {
   content: string;
   artifacts?: ChatArtifact[];
   agentMeta?: AgentMeta;
+  renderState?: ChatRenderState;
+  quizRun?: QuizRunMeta;
   sources?: ChatSource[];
   toolRuns?: ToolRun[];
   contextMeta?: ContextMeta;
@@ -376,6 +389,43 @@ const normalizeCanvasSessionMeta = (meta: unknown): CanvasSessionMeta | undefine
   };
 };
 
+const normalizeRenderState = (value: unknown): ChatRenderState | undefined => {
+  if (!value || typeof value !== 'object') return undefined;
+  const raw = value as Partial<ChatRenderState>;
+  const stage =
+    raw.stage === 'planning' ||
+    raw.stage === 'searching' ||
+    raw.stage === 'composing' ||
+    raw.stage === 'streaming'
+      ? raw.stage
+      : undefined;
+
+  if (!stage) return undefined;
+
+  const progress = typeof raw.progress === 'number' && Number.isFinite(raw.progress)
+    ? Math.max(0, Math.min(1, raw.progress))
+    : undefined;
+
+  return { stage, progress };
+};
+
+const normalizeQuizRunMeta = (value: unknown): QuizRunMeta | undefined => {
+  if (!value || typeof value !== 'object') return undefined;
+  const raw = value as Partial<QuizRunMeta>;
+  const runId = sanitizeText(raw.runId);
+  const questionIndex = Number(raw.questionIndex);
+  const targetCount = Number(raw.targetCount);
+  if (!runId || !Number.isFinite(questionIndex) || !Number.isFinite(targetCount)) {
+    return undefined;
+  }
+
+  return {
+    runId,
+    questionIndex: Math.max(1, Math.floor(questionIndex)),
+    targetCount: Math.max(1, Math.floor(targetCount)),
+  };
+};
+
 export const normalizeEnvelope = (
   envelope: unknown,
   options: {
@@ -387,6 +437,8 @@ export const normalizeEnvelope = (
     sources?: ChatSource[];
     toolRuns?: ToolRun[];
     canvasSessionMeta?: CanvasSessionMeta;
+    renderState?: ChatRenderState;
+    quizRun?: QuizRunMeta;
   },
 ): ChatEnvelope => {
   const raw = envelope && typeof envelope === 'object' ? (envelope as Partial<ChatEnvelope>) : null;
@@ -415,6 +467,8 @@ export const normalizeEnvelope = (
       schemaVersion: sanitizeText(raw?.agentMeta?.schemaVersion) || 'chat_v2',
       latencyMs: Number.isFinite(raw?.agentMeta?.latencyMs) ? Number(raw?.agentMeta?.latencyMs) : options.latencyMs,
     },
+    renderState: options.renderState || normalizeRenderState(raw?.renderState),
+    quizRun: options.quizRun || normalizeQuizRunMeta(raw?.quizRun),
     sources: mergedSources.length > 0 ? mergedSources : undefined,
     toolRuns: mergedToolRuns.length > 0 ? mergedToolRuns : undefined,
     contextMeta: options.contextMeta || normalizeContextMeta(raw?.contextMeta),

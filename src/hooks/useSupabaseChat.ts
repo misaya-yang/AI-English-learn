@@ -7,10 +7,12 @@ import type {
   AgentMeta,
   ChatArtifact,
   ChatEdgeResponse,
+  ChatRenderState,
   ChatSource,
   ChatMode,
   ChatQuizAttempt,
   ContextMeta,
+  QuizRunState,
   SendMessageOptions,
   ToolRun,
 } from '@/types/chatAgent';
@@ -50,6 +52,7 @@ interface FailedRequestContext {
   searchMode: NonNullable<SendMessageOptions['searchMode']>;
   canvasSyncToParent: boolean;
   featureFlags: SendMessageOptions['featureFlags'];
+  quizRun?: SendMessageOptions['quizRun'];
   trigger: NonNullable<SendMessageOptions['trigger']>;
 }
 
@@ -58,6 +61,7 @@ const CHAT_CURRENT_SESSION_KEY = 'vocabdaily-current-chat-session';
 const CHAT_QUIZ_ATTEMPTS_STORAGE_KEY = 'vocabdaily-chat-quiz-attempts';
 const CHAT_EXPERIMENT_EVENTS_STORAGE_KEY = 'vocabdaily-chat-experiment-events';
 const CHAT_CANVAS_SESSION_MAP_KEY = 'vocabdaily-canvas-child-session-map';
+const CHAT_QUIZ_RUNS_STORAGE_KEY = 'vocabdaily-chat-quiz-runs';
 const MAX_HISTORY_TURNS = 4;
 const MAX_CONTEXT_CHARS = 420;
 const MAX_USER_CHARS = 900;
@@ -112,12 +116,18 @@ const normalizeAssistantReplyContent = (raw: unknown): string => {
   const trimmed = raw.trim();
   if (!trimmed) return '';
 
-  const tryParseEnvelope = (): string => {
-    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) return '';
+  const tryParseEnvelope = (input: string): string => {
+    if (!input.startsWith('{') || !input.endsWith('}')) return '';
     try {
-      const parsed = JSON.parse(trimmed) as { content?: unknown };
+      const parsed = JSON.parse(input) as { content?: unknown; message?: unknown; text?: unknown };
       if (typeof parsed.content === 'string' && parsed.content.trim().length > 0) {
         return parsed.content.trim();
+      }
+      if (typeof parsed.message === 'string' && parsed.message.trim().length > 0) {
+        return parsed.message.trim();
+      }
+      if (typeof parsed.text === 'string' && parsed.text.trim().length > 0) {
+        return parsed.text.trim();
       }
     } catch {
       return '';
@@ -125,15 +135,25 @@ const normalizeAssistantReplyContent = (raw: unknown): string => {
     return '';
   };
 
-  const parsedContent = tryParseEnvelope();
+  const stripCodeFence = (value: string): string => {
+    const fence = value.match(/^```(?:json|markdown|md)?\s*([\s\S]*?)```$/i);
+    return fence?.[1]?.trim() || value;
+  };
+
+  const deFenced = stripCodeFence(trimmed);
+  const parsedContent = tryParseEnvelope(deFenced) || tryParseEnvelope(trimmed);
   if (parsedContent) return parsedContent;
 
-  const objectDumpMatches = trimmed.match(/\[object Object\]/g);
+  const objectDumpMatches = deFenced.match(/\[object Object\]/g);
   if (objectDumpMatches && objectDumpMatches.length >= 2) {
     return '';
   }
 
-  return trimmed;
+  if (/^\{[\s\S]*\}$/.test(deFenced) && !deFenced.includes(' ')) {
+    return '';
+  }
+
+  return deFenced;
 };
 
 // Generate title from first user message
@@ -294,6 +314,22 @@ function saveLocalQuizAttempts(map: Record<string, ChatQuizAttempt>): void {
   localStorage.setItem(CHAT_QUIZ_ATTEMPTS_STORAGE_KEY, JSON.stringify(map));
 }
 
+function loadLocalQuizRuns(): Record<string, QuizRunState> {
+  const raw = localStorage.getItem(CHAT_QUIZ_RUNS_STORAGE_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, QuizRunState>;
+    if (!parsed || typeof parsed !== 'object') return {};
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalQuizRuns(map: Record<string, QuizRunState>): void {
+  localStorage.setItem(CHAT_QUIZ_RUNS_STORAGE_KEY, JSON.stringify(map));
+}
+
 function appendExperimentEventLocal(eventName: string, payload: Record<string, unknown>): void {
   try {
     const raw = localStorage.getItem(CHAT_EXPERIMENT_EVENTS_STORAGE_KEY);
@@ -429,7 +465,11 @@ export function useSupabaseChat() {
   const [quizAttemptsById, setQuizAttemptsById] = useState<Record<string, ChatQuizAttempt>>(() =>
     loadLocalQuizAttempts(),
   );
+  const [quizRunsBySession, setQuizRunsBySession] = useState<Record<string, QuizRunState>>(() =>
+    loadLocalQuizRuns(),
+  );
   const [lastAgentMeta, setLastAgentMeta] = useState<AgentMeta | null>(null);
+  const [lastRenderState, setLastRenderState] = useState<ChatRenderState | null>(null);
   const [lastSources, setLastSources] = useState<ChatSource[]>([]);
   const [lastToolRuns, setLastToolRuns] = useState<ToolRun[]>([]);
   const [lastContextMeta, setLastContextMeta] = useState<ContextMeta | null>(null);
@@ -439,6 +479,7 @@ export function useSupabaseChat() {
   const canvasSessionMapRef = useRef<Record<string, string>>({});
 
   const currentSession = sessions.find((session) => session.id === currentSessionId) || null;
+  const quizRunState = currentSessionId ? quizRunsBySession[currentSessionId] || null : null;
   const messages = useMemo(() => {
     const source = currentSession?.messages || [];
     const unique = new Map<string, ChatMessage>();
@@ -804,6 +845,84 @@ export function useSupabaseChat() {
     });
   }, []);
 
+  const persistQuizRuns = useCallback((updater: (prev: Record<string, QuizRunState>) => Record<string, QuizRunState>) => {
+    setQuizRunsBySession((prev) => {
+      const next = updater(prev);
+      saveLocalQuizRuns(next);
+      return next;
+    });
+  }, []);
+
+  const startQuizRun = useCallback((targetCount: number, seedPrompt: string, sessionId?: string | null) => {
+    const effectiveSessionId = sessionId || currentSessionId;
+    if (!effectiveSessionId) return null;
+    const now = Date.now();
+    const run: QuizRunState = {
+      runId: crypto.randomUUID(),
+      targetCount: Math.max(2, Math.min(20, Math.floor(targetCount))),
+      answeredCount: 0,
+      status: 'awaiting_answer',
+      seedPrompt,
+      usedWords: [],
+      startedAt: now,
+    };
+    persistQuizRuns((prev) => ({
+      ...prev,
+      [effectiveSessionId]: run,
+    }));
+    return run;
+  }, [currentSessionId, persistQuizRuns]);
+
+  const advanceQuizRun = useCallback((args: {
+    sessionId: string;
+    quizId: string;
+    isCorrect: boolean;
+    usedWord?: string;
+  }) => {
+    let nextRun: QuizRunState | null = null;
+    persistQuizRuns((prev) => {
+      const existing = prev[args.sessionId];
+      if (!existing || existing.status === 'completed') {
+        nextRun = null;
+        return prev;
+      }
+
+      const usedWords = args.usedWord
+        ? Array.from(new Set([...existing.usedWords, args.usedWord]))
+        : existing.usedWords;
+      const answeredCount = Math.min(existing.targetCount, existing.answeredCount + 1);
+      const completed = answeredCount >= existing.targetCount;
+      nextRun = {
+        ...existing,
+        answeredCount,
+        usedWords,
+        currentQuizId: args.quizId,
+        status: completed ? 'completed' : 'requesting_next',
+        completedAt: completed ? Date.now() : undefined,
+      };
+      return {
+        ...prev,
+        [args.sessionId]: nextRun,
+      };
+    });
+    return nextRun;
+  }, [persistQuizRuns]);
+
+  const recoverQuizRunFromSession = useCallback((sessionId: string) => {
+    return quizRunsBySession[sessionId] || null;
+  }, [quizRunsBySession]);
+
+  const clearQuizRun = useCallback((sessionId?: string | null) => {
+    const effectiveSessionId = sessionId || currentSessionId;
+    if (!effectiveSessionId) return;
+    persistQuizRuns((prev) => {
+      if (!prev[effectiveSessionId]) return prev;
+      const next = { ...prev };
+      delete next[effectiveSessionId];
+      return next;
+    });
+  }, [currentSessionId, persistQuizRuns]);
+
   const createSession = useCallback(async (title: string = '新对话') => {
     const sessionId = crypto.randomUUID();
     const now = Date.now();
@@ -895,6 +1014,12 @@ export function useSupabaseChat() {
 
     const remaining = sessions.filter((session) => session.id !== sessionId);
     updateSessions((prev) => prev.filter((session) => session.id !== sessionId));
+    persistQuizRuns((prev) => {
+      if (!prev[sessionId]) return prev;
+      const next = { ...prev };
+      delete next[sessionId];
+      return next;
+    });
 
     if (currentSessionId === sessionId) {
       setCurrentSessionId(remaining.length > 0 ? remaining[0].id : null);
@@ -906,7 +1031,7 @@ export function useSupabaseChat() {
         pendingSyncCount: prev.pendingSyncCount + 1,
       }));
     }
-  }, [currentSessionId, sessions, updateSessions, userId]);
+  }, [currentSessionId, persistQuizRuns, sessions, updateSessions, userId]);
 
   const switchSession = useCallback((sessionId: string) => {
     setCurrentSessionId(sessionId);
@@ -986,6 +1111,7 @@ export function useSupabaseChat() {
       setIsLoading(true);
       setStreamingContent('');
       setChatError(null);
+      setLastRenderState({ stage: 'planning', progress: 0.1 });
 
       abortControllerRef.current = new AbortController();
       let timeoutHandle: number | null = null;
@@ -1036,6 +1162,7 @@ export function useSupabaseChat() {
                   }
                 : undefined,
             mode: context.mode,
+            quizRun: context.quizRun,
             featureFlags: {
               enableQuizArtifacts: true,
               enableStudyArtifacts: true,
@@ -1071,6 +1198,7 @@ export function useSupabaseChat() {
 
         const artifacts = normalizeArtifacts([...(result.artifacts || []), ...sourceArtifact]);
         setLastAgentMeta(result.agentMeta || null);
+        setLastRenderState(result.renderState || null);
         setLastSources(Array.isArray(result.sources) ? result.sources : []);
         setLastToolRuns(Array.isArray(result.toolRuns) ? result.toolRuns : []);
         setLastContextMeta(result.contextMeta || null);
@@ -1091,6 +1219,7 @@ export function useSupabaseChat() {
           }
           fullContent += chunk;
           setStreamingContent(fullContent);
+          setLastRenderState({ stage: 'streaming', progress: Math.min(0.98, fullContent.length / Math.max(replyContent.length, 1)) });
           await new Promise((resolve) => setTimeout(resolve, 2));
         }
 
@@ -1135,6 +1264,7 @@ export function useSupabaseChat() {
         }
         setIsLoading(false);
         setStreamingContent('');
+        setLastRenderState((prev) => (prev ? { ...prev, progress: 1 } : null));
         abortControllerRef.current = null;
       }
     },
@@ -1302,6 +1432,7 @@ export function useSupabaseChat() {
       searchMode,
       canvasSyncToParent,
       featureFlags: options.featureFlags,
+      quizRun: options.quizRun,
       trigger,
     });
   }, [createSession, currentSessionId, isLoading, requestAssistantReply, sessions, trackExperimentEvent, updateSessions, userId]);
@@ -1423,6 +1554,7 @@ export function useSupabaseChat() {
         return session;
       }),
     );
+    clearQuizRun(currentSessionId);
 
     if (!remoteOk) {
       setSyncState((prev) => ({
@@ -1430,7 +1562,7 @@ export function useSupabaseChat() {
         pendingSyncCount: prev.pendingSyncCount + 1,
       }));
     }
-  }, [currentSessionId, updateSessions]);
+  }, [clearQuizRun, currentSessionId, updateSessions]);
 
   const deleteAllSessions = useCallback(async () => {
     let remoteOk = true;
@@ -1451,11 +1583,14 @@ export function useSupabaseChat() {
     setSessions([]);
     setCurrentSessionId(null);
     setLastAgentMeta(null);
+    setLastRenderState(null);
     setLastSources([]);
     setLastToolRuns([]);
     setLastContextMeta(null);
+    setQuizRunsBySession({});
     localStorage.removeItem(CHAT_SESSIONS_STORAGE_KEY);
     localStorage.removeItem(CHAT_CURRENT_SESSION_KEY);
+    localStorage.removeItem(CHAT_QUIZ_RUNS_STORAGE_KEY);
 
     if (!remoteOk) {
       setSyncState((prev) => ({
@@ -1477,13 +1612,19 @@ export function useSupabaseChat() {
     dbReady,
     syncState,
     quizAttemptsById,
+    quizRunState,
     lastAgentMeta,
+    lastRenderState,
     lastSources,
     lastToolRuns,
     lastContextMeta,
     chatError,
     sendMessage,
     submitQuizAttempt,
+    startQuizRun,
+    advanceQuizRun,
+    recoverQuizRunFromSession,
+    clearQuizRun,
     createSession,
     deleteSession,
     switchSession,

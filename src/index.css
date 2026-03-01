@@ -2,66 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Manrope";
+  src: local("Manrope");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans SC";
+  src: local("Noto Sans SC"), local("NotoSansSC-Regular");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: local("JetBrains Mono"), local("JetBrainsMono-Regular");
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 210 20% 98%;
+    --foreground: 222 20% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222 20% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 160 84% 39%;
+    --popover-foreground: 222 20% 15%;
+    --primary: 161 84% 35%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 168 76% 42%;
+    --secondary: 210 18% 94%;
+    --secondary-foreground: 222 20% 18%;
+    --muted: 210 18% 94%;
+    --muted-foreground: 215 14% 45%;
+    --accent: 187 86% 37%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 160 84% 39%;
-    --radius: 0.625rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 160 84% 39%;
+    --border: 214 20% 86%;
+    --input: 214 20% 86%;
+    --ring: 161 84% 35%;
+    --radius: 0.75rem;
+    --sidebar-background: 210 17% 96%;
+    --sidebar-foreground: 222 18% 20%;
+    --sidebar-primary: 161 84% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-accent: 210 18% 92%;
+    --sidebar-accent-foreground: 222 20% 18%;
+    --sidebar-border: 214 19% 88%;
+    --sidebar-ring: 161 84% 35%;
+
+    --font-ui: "Manrope", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --font-code: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+    --text-12: 0.75rem;
+    --text-14: 0.875rem;
+    --text-16: 1rem;
+    --text-20: 1.25rem;
+    --text-24: 1.5rem;
+    --text-32: 2rem;
+    --duration-fast: 120ms;
+    --duration-base: 180ms;
+    --duration-slow: 280ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --ease-decelerate: cubic-bezier(0, 0, 0, 1);
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --background: 222 24% 8%;
+    --foreground: 210 25% 94%;
+    --card: 222 22% 11%;
+    --card-foreground: 210 25% 94%;
+    --popover: 222 22% 11%;
+    --popover-foreground: 210 25% 94%;
+    --primary: 161 84% 45%;
+    --primary-foreground: 222 24% 8%;
+    --secondary: 223 18% 16%;
+    --secondary-foreground: 210 25% 94%;
+    --muted: 223 18% 16%;
+    --muted-foreground: 214 15% 67%;
+    --accent: 187 78% 48%;
+    --accent-foreground: 222 24% 8%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 210 25% 94%;
+    --border: 223 16% 22%;
+    --input: 223 16% 22%;
+    --ring: 161 84% 45%;
+    --sidebar-background: 222 22% 10%;
+    --sidebar-foreground: 210 22% 92%;
+    --sidebar-primary: 161 84% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 223 18% 16%;
+    --sidebar-accent-foreground: 210 22% 92%;
+    --sidebar-border: 223 16% 22%;
+    --sidebar-ring: 161 84% 45%;
   }
 }
 
@@ -71,6 +103,10 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-ui);
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
@@ -86,6 +122,17 @@
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Custom scrollbar */
@@ -220,7 +267,7 @@ input:focus-visible {
 .hljs-doctag,
 .hljs-name,
 .hljs-strong {
-  @apply text-purple-600 dark:text-purple-400 font-bold;
+  @apply text-cyan-700 dark:text-cyan-300 font-bold;
 }
 
 .hljs-comment {
@@ -256,7 +303,7 @@ input:focus-visible {
 
 .hljs-number,
 .hljs-bullet {
-  @apply text-blue-600 dark:text-blue-400;
+  @apply text-sky-700 dark:text-sky-300;
 }
 
 .hljs-emphasis {

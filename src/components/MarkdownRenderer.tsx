@@ -10,6 +10,42 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
+const sanitizeMarkdownContent = (raw: string): string => {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+
+  const objectDumpMatches = trimmed.match(/\[object Object\]/g);
+  if (objectDumpMatches && objectDumpMatches.length >= 2) {
+    return 'The response payload was malformed. Please retry.';
+  }
+
+  const tryExtractEnvelopeText = (value: string): string => {
+    if (!value.startsWith('{') || !value.endsWith('}')) return '';
+    try {
+      const parsed = JSON.parse(value) as { content?: unknown; text?: unknown; message?: unknown };
+      const candidate =
+        (typeof parsed.content === 'string' && parsed.content.trim()) ||
+        (typeof parsed.text === 'string' && parsed.text.trim()) ||
+        (typeof parsed.message === 'string' && parsed.message.trim()) ||
+        '';
+      return candidate;
+    } catch {
+      return '';
+    }
+  };
+
+  const fencedMatch = trimmed.match(/^```(?:json|markdown|md)?\s*([\s\S]*?)```$/i);
+  if (fencedMatch?.[1]) {
+    const parsed = tryExtractEnvelopeText(fencedMatch[1].trim());
+    if (parsed) return parsed;
+  }
+
+  const parsed = tryExtractEnvelopeText(trimmed);
+  if (parsed) return parsed;
+
+  return raw;
+};
+
 // Custom code block component
 const CodeBlock: React.FC<{ children: string; className?: string }> = ({ children, className }) => {
   const language = className?.replace('language-', '') || 'text';
@@ -40,6 +76,8 @@ const InlineCode: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className }) => {
+  const safeContent = sanitizeMarkdownContent(content);
+
   return (
     <div className={cn('markdown-content prose prose-sm dark:prose-invert max-w-none', className)}>
       <ReactMarkdown
@@ -47,7 +85,15 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         rehypePlugins={[rehypeHighlight, rehypeRaw]}
         components={{
           // Custom code blocks
-          code({ node, inline, className, children, ...props }: any) {
+          code({
+            inline,
+            className,
+            children,
+          }: {
+            inline?: boolean;
+            className?: string;
+            children?: React.ReactNode;
+          }) {
             const match = /language-(\w+)/.exec(className || '');
             return !inline && match ? (
               <CodeBlock className={className}>{String(children).replace(/\n$/, '')}</CodeBlock>
@@ -96,7 +142,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
           hr: () => <hr className="my-4 border-border" />,
         }}
       >
-        {content}
+        {safeContent}
       </ReactMarkdown>
     </div>
   );
