@@ -111,6 +111,34 @@ const sanitizeText = (value: unknown): string => {
   return value.trim();
 };
 
+const sanitizeFallbackText = (value: unknown): string => {
+  if (typeof value !== 'string') return '';
+  const text = value.trim();
+  if (!text) return '';
+
+  const objectDumpMatches = text.match(/\[object Object\]/g);
+  if (objectDumpMatches && objectDumpMatches.length >= 2) {
+    return '';
+  }
+
+  return text;
+};
+
+const hashText = (input: string): string => {
+  let hash = 0;
+  for (let index = 0; index < input.length; index += 1) {
+    hash = ((hash << 5) - hash) + input.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+};
+
+const normalizeQuizId = (quizId: unknown, stem: string): string => {
+  const baseId = sanitizeText(quizId) || 'quiz';
+  const stemHash = hashText(stem || baseId).slice(0, 8);
+  return `${baseId}_${stemHash}`;
+};
+
 export const normalizeMode = (mode: unknown): ChatMode => {
   if (mode === 'chat' || mode === 'study' || mode === 'quiz' || mode === 'canvas') {
     return mode;
@@ -142,7 +170,7 @@ const normalizeQuizPayload = (payload: unknown): QuizArtifactPayload | null => {
   }
 
   return {
-    quizId: String(raw.quizId),
+    quizId: normalizeQuizId(raw.quizId, sanitizeText(raw.stem)),
     title: sanitizeText(raw.title) || 'Quick quiz',
     questionType:
       raw.questionType === 'true_false' || raw.questionType === 'fill_blank' || raw.questionType === 'multiple_choice'
@@ -363,7 +391,10 @@ export const normalizeEnvelope = (
 ): ChatEnvelope => {
   const raw = envelope && typeof envelope === 'object' ? (envelope as Partial<ChatEnvelope>) : null;
 
-  const content = sanitizeText(raw?.content) || sanitizeText(options.fallbackText);
+  const content =
+    sanitizeText(raw?.content) ||
+    sanitizeFallbackText(options.fallbackText) ||
+    'I generated a malformed response. Please retry.';
   const artifacts = normalizeArtifacts(raw?.artifacts);
   const safeArtifacts = options.allowQuizArtifact ? artifacts : artifacts.filter((artifact) => artifact.type !== 'quiz');
   const mergedSources = options.sources && options.sources.length > 0

@@ -128,6 +128,8 @@ export interface SendMessageOptions {
   mode?: ChatMode;
   searchMode?: SearchMode;
   canvasSyncToParent?: boolean;
+  apiContentOverride?: string;
+  hideUserMessage?: boolean;
   featureFlags?: {
     enableQuizArtifacts?: boolean;
     enableStudyArtifacts?: boolean;

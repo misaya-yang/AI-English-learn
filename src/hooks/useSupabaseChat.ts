@@ -107,6 +107,35 @@ const clipForContext = (value: string, limit: number): string => {
   return `${input.slice(0, head)}\n...\n${input.slice(-tail)}`;
 };
 
+const normalizeAssistantReplyContent = (raw: unknown): string => {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+
+  const tryParseEnvelope = (): string => {
+    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) return '';
+    try {
+      const parsed = JSON.parse(trimmed) as { content?: unknown };
+      if (typeof parsed.content === 'string' && parsed.content.trim().length > 0) {
+        return parsed.content.trim();
+      }
+    } catch {
+      return '';
+    }
+    return '';
+  };
+
+  const parsedContent = tryParseEnvelope();
+  if (parsedContent) return parsedContent;
+
+  const objectDumpMatches = trimmed.match(/\[object Object\]/g);
+  if (objectDumpMatches && objectDumpMatches.length >= 2) {
+    return '';
+  }
+
+  return trimmed;
+};
+
 // Generate title from first user message
 function generateTitle(content: string): string {
   const cleanContent = content
@@ -1019,11 +1048,11 @@ export function useSupabaseChat() {
           { signal: abortControllerRef.current.signal },
         );
 
-        const replyContent = result.content?.trim();
+        const replyContent = normalizeAssistantReplyContent(result.content);
         if (!replyContent) {
-          throw new EdgeFunctionError('AI returned empty content.', {
+          throw new EdgeFunctionError('AI returned malformed content. Please retry.', {
             status: 502,
-            code: 'empty_content',
+            code: 'malformed_content',
           });
         }
 
@@ -1127,54 +1156,62 @@ export function useSupabaseChat() {
     const mode: ChatMode = options.mode || 'study';
     const searchMode = options.searchMode || 'auto';
     const canvasSyncToParent = Boolean(options.canvasSyncToParent);
+    const hideUserMessage = Boolean(options.hideUserMessage);
     const trigger = options.trigger || 'manual_input';
+    const displayContent = content.trim();
+    const apiUserContent = (options.apiContentOverride || content).trim();
+    if (!apiUserContent) return;
+
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
-      content: content.trim(),
+      content: displayContent,
       createdAt: now,
     };
 
     const sessionSnapshot = sessions.find((session) => session.id === sessionId);
-    const shouldUpdateTitle = isNewSession || (sessionSnapshot && sessionSnapshot.messages.length === 0);
-    const newTitle = shouldUpdateTitle ? generateTitle(content.trim()) : undefined;
+    const shouldUpdateTitle =
+      !hideUserMessage && (isNewSession || (sessionSnapshot && sessionSnapshot.messages.length === 0));
+    const newTitle = shouldUpdateTitle ? generateTitle(displayContent) : undefined;
 
     let remoteMessageSaved = true;
-    try {
-      const { error: messageInsertError } = await supabase.from('chat_messages').insert({
-        id: userMessage.id,
-        session_id: sessionId,
-        role: userMessage.role,
-        content: userMessage.content,
-        created_at: new Date(userMessage.createdAt).toISOString(),
-      });
+    if (!hideUserMessage) {
+      try {
+        const { error: messageInsertError } = await supabase.from('chat_messages').insert({
+          id: userMessage.id,
+          session_id: sessionId,
+          role: userMessage.role,
+          content: userMessage.content,
+          created_at: new Date(userMessage.createdAt).toISOString(),
+        });
 
-      if (messageInsertError) {
+        if (messageInsertError) {
+          remoteMessageSaved = false;
+        }
+
+        if (newTitle) {
+          const { error: titleError } = await supabase
+            .from('chat_sessions')
+            .update({ title: newTitle, updated_at: new Date(now).toISOString() })
+            .eq('id', sessionId)
+            .eq('user_id', userId);
+          if (titleError) {
+            remoteMessageSaved = false;
+          }
+        } else {
+          const { error: updateError } = await supabase
+            .from('chat_sessions')
+            .update({ updated_at: new Date(now).toISOString() })
+            .eq('id', sessionId)
+            .eq('user_id', userId);
+          if (updateError) {
+            remoteMessageSaved = false;
+          }
+        }
+      } catch (error) {
+        console.error('Error saving user message:', error);
         remoteMessageSaved = false;
       }
-
-      if (newTitle) {
-        const { error: titleError } = await supabase
-          .from('chat_sessions')
-          .update({ title: newTitle, updated_at: new Date(now).toISOString() })
-          .eq('id', sessionId)
-          .eq('user_id', userId);
-        if (titleError) {
-          remoteMessageSaved = false;
-        }
-      } else {
-        const { error: updateError } = await supabase
-          .from('chat_sessions')
-          .update({ updated_at: new Date(now).toISOString() })
-          .eq('id', sessionId)
-          .eq('user_id', userId);
-        if (updateError) {
-          remoteMessageSaved = false;
-        }
-      }
-    } catch (error) {
-      console.error('Error saving user message:', error);
-      remoteMessageSaved = false;
     }
 
     if (!remoteMessageSaved) {
@@ -1184,22 +1221,47 @@ export function useSupabaseChat() {
       }));
     }
 
-    updateSessions((prev) =>
-      prev.map((session) => {
-        if (session.id === sessionId) {
-          return {
-            ...session,
-            title: newTitle || session.title,
-            messages: [...session.messages, userMessage],
+    if (!hideUserMessage) {
+      updateSessions((prev) =>
+        {
+          let found = false;
+          const updated = prev.map((session) => {
+            if (session.id === sessionId) {
+              found = true;
+              return {
+                ...session,
+                title: newTitle || session.title,
+                messages: [...session.messages, userMessage],
+                updatedAt: now,
+              };
+            }
+            return session;
+          });
+
+          if (found) {
+            return updated;
+          }
+
+          const fallbackSession: ChatSession = {
+            id: sessionId,
+            title: newTitle || generateTitle(displayContent),
+            messages: [userMessage],
+            createdAt: now,
             updatedAt: now,
           };
-        }
-        return session;
-      }),
-    );
+
+          return [fallbackSession, ...updated];
+        },
+      );
+    }
     setCurrentSessionId(sessionId);
 
-    const historyMessages = (sessionSnapshot?.messages || [])
+    const localSnapshotMessages =
+      !hideUserMessage && sessionSnapshot
+        ? [...sessionSnapshot.messages, userMessage]
+        : (sessionSnapshot?.messages || []);
+
+    const historyMessages = localSnapshotMessages
       .filter((message) => message.role === 'user' || message.role === 'assistant')
       .slice(-MAX_HISTORY_TURNS);
 
@@ -1208,7 +1270,7 @@ export function useSupabaseChat() {
         role: message.role as 'user' | 'assistant',
         content: clipForContext(message.content, MAX_CONTEXT_CHARS),
       })),
-      { role: 'user', content: clipForContext(userMessage.content, MAX_USER_CHARS) },
+      { role: 'user', content: clipForContext(apiUserContent, MAX_USER_CHARS) },
     ];
 
     void trackExperimentEvent('chat_message_sent', {
@@ -1216,6 +1278,7 @@ export function useSupabaseChat() {
       searchMode,
       trigger,
       sessionId,
+      synthetic: hideUserMessage,
       hasHistory: historyMessages.length > 0,
     });
 
@@ -1227,7 +1290,8 @@ export function useSupabaseChat() {
         mode,
         searchMode,
         trigger,
-        messageLength: userMessage.content.length,
+        synthetic: hideUserMessage,
+        messageLength: displayContent.length,
       },
     });
 
