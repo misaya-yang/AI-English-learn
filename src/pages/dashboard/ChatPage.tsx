@@ -47,6 +47,8 @@ import {
   Wand2,
   ChevronUp,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -99,6 +101,12 @@ interface QuizSequenceState {
   answeredCount: number;
   seedPrompt: string;
   usedWords: string[];
+}
+
+interface QuizRunArtifactEntry {
+  messageId: string;
+  artifact: Extract<ChatArtifact, { type: 'quiz' }>;
+  createdAt: number;
 }
 
 const QUIZ_INTENT_RE = /(quiz|测验|測驗|测试|測試|题目|題目|考我|考考|questions?)/i;
@@ -204,29 +212,32 @@ const parseRequestedQuizCount = (text: string): number | null => {
 const buildQuizSequencePrompt = (args: {
   language: string;
   seedPrompt: string;
-  questionIndex: number;
+  startIndex: number;
+  questionCount: number;
   targetCount: number;
   usedWords: string[];
 }): string => {
   const usedWords = args.usedWords.filter((item) => item.length > 0).slice(-10);
   if (args.language.startsWith('zh')) {
     return [
-      `请继续同一套英语测验（第 ${args.questionIndex}/${args.targetCount} 题）。`,
+      `请为同一套英语测验一次性生成 ${args.questionCount} 道四选一题（从第 ${args.startIndex} 题开始，总目标 ${args.targetCount} 题）。`,
       `用户原始需求：${args.seedPrompt}`,
       usedWords.length > 0 ? `避免重复这些词：${usedWords.join('、')}。` : '',
-      '只出 1 道四选一题，并且必须返回一个 quiz artifact。',
-      '不要一次输出多题；题后给简短中英解析。',
+      `必须返回 ${args.questionCount} 个 quiz artifact（每题一个）。`,
+      'content 只允许简短引导语，不要泄露答案，不要在 content 给解析。',
+      '题目要按序编号并覆盖不同场景。',
     ]
       .filter(Boolean)
       .join('\n');
   }
 
   return [
-    `Continue the same English quiz series (question ${args.questionIndex}/${args.targetCount}).`,
+    `Generate ${args.questionCount} multiple-choice quiz questions in one response (starting from #${args.startIndex}, total target ${args.targetCount}).`,
     `Original user intent: ${args.seedPrompt}`,
     usedWords.length > 0 ? `Avoid repeating these target words: ${usedWords.join(', ')}.` : '',
-    'Return exactly one 4-option question and include exactly one quiz artifact.',
-    'Do not output multiple questions at once. Add a short bilingual explanation.',
+    `Return exactly ${args.questionCount} quiz artifacts (one artifact per question).`,
+    'Keep content as a short instruction only. Do not reveal answers in content.',
+    'Diversify contexts across questions.',
   ]
     .filter(Boolean)
     .join('\n');
@@ -546,7 +557,7 @@ const MessageBubble = ({
       {/* Message Content */}
       <div className={cn(
         'flex flex-col min-w-0',
-        isUser ? 'items-end max-w-[92%] lg:max-w-[78%]' : 'items-start w-full'
+        isUser ? 'items-end max-w-[92%] lg:max-w-[74%]' : 'items-start w-full max-w-[900px]'
       )}>
         {isUser ? (
           <div className="relative overflow-hidden px-4 py-3 rounded-2xl bg-emerald-600 text-white rounded-br-sm">
@@ -819,6 +830,8 @@ export default function ChatPage() {
   const shouldAutoScrollRef = useRef(true);
   const quizSequenceRef = useRef<QuizSequenceState | null>(null);
   const handledSequenceQuizIdsRef = useRef<Set<string>>(new Set());
+  const quizBatchRequestingRef = useRef(false);
+  const quizPrefetchAttemptedRef = useRef(false);
 
   const syncQuizSequence = useCallback((next: QuizSequenceState | null) => {
     quizSequenceRef.current = next;
@@ -836,8 +849,11 @@ export default function ChatPage() {
   }, [quizRunState, syncQuizSequence]);
 
   const contentWidthClass = sidebarOpen
-    ? 'max-w-[min(1360px,100%)]'
-    : 'max-w-[min(1520px,100%)]';
+    ? 'max-w-[980px]'
+    : 'max-w-[1060px]';
+
+  const [quizCanvasIndex, setQuizCanvasIndex] = useState(0);
+  const quizArtifactsRef = useRef<QuizRunArtifactEntry[]>([]);
 
   const loadingStages = useMemo(
     () =>
@@ -878,6 +894,55 @@ export default function ChatPage() {
     viewport.addEventListener('scroll', handleScroll);
     return () => viewport.removeEventListener('scroll', handleScroll);
   }, [getMessagesViewport, currentSessionId, sidebarOpen]);
+
+  const quizRunArtifacts = useMemo<QuizRunArtifactEntry[]>(() => {
+    if (!quizSequence) return [];
+
+    const entries: QuizRunArtifactEntry[] = [];
+    const seen = new Set<string>();
+
+    for (const message of messages) {
+      if (!message.artifacts || message.role !== 'assistant') continue;
+      for (const artifact of message.artifacts) {
+        if (artifact.type !== 'quiz') continue;
+        if (seen.has(artifact.payload.quizId)) continue;
+        seen.add(artifact.payload.quizId);
+        entries.push({
+          messageId: message.id,
+          artifact,
+          createdAt: message.createdAt,
+        });
+      }
+    }
+
+    return entries.sort((a, b) => a.createdAt - b.createdAt);
+  }, [messages, quizSequence]);
+
+  useEffect(() => {
+    if (!quizSequence) {
+      quizArtifactsRef.current = [];
+      setQuizCanvasIndex(0);
+      quizBatchRequestingRef.current = false;
+      quizPrefetchAttemptedRef.current = false;
+      return;
+    }
+
+    quizArtifactsRef.current = quizRunArtifacts;
+
+    setQuizCanvasIndex((current) => {
+      if (quizRunArtifacts.length === 0) return 0;
+      const preferred = Math.max(0, Math.min(quizSequence.answeredCount, quizRunArtifacts.length - 1));
+      return Math.min(Math.max(current, preferred), quizRunArtifacts.length - 1);
+    });
+  }, [quizRunArtifacts, quizSequence]);
+
+  useEffect(() => {
+    setQuizCanvasIndex(0);
+    quizBatchRequestingRef.current = false;
+    quizPrefetchAttemptedRef.current = false;
+  }, [currentSessionId]);
+
+  const activeQuizRunArtifact = quizRunArtifacts[quizCanvasIndex] || null;
 
   // Auto scroll to bottom when user is near bottom.
   useEffect(() => {
@@ -936,7 +1001,8 @@ export default function ChatPage() {
       ? buildQuizSequencePrompt({
           language,
           seedPrompt: text,
-          questionIndex: 1,
+          startIndex: 1,
+          questionCount: requestedQuizCount!,
           targetCount: requestedQuizCount!,
           usedWords: [],
         })
@@ -946,6 +1012,9 @@ export default function ChatPage() {
 
     if (shouldStartQuizSequence && nextSequence) {
       syncQuizSequence(nextSequence);
+      setQuizCanvasIndex(0);
+      quizBatchRequestingRef.current = false;
+      quizPrefetchAttemptedRef.current = false;
       if (currentSessionId) {
         const started = startQuizRun(nextSequence.targetCount, nextSequence.seedPrompt, currentSessionId);
         startedRunId = started?.runId;
@@ -954,6 +1023,9 @@ export default function ChatPage() {
       handledSequenceQuizIdsRef.current.clear();
     } else if (quizSequenceRef.current) {
       syncQuizSequence(null);
+      setQuizCanvasIndex(0);
+      quizBatchRequestingRef.current = false;
+      quizPrefetchAttemptedRef.current = false;
       clearQuizRun(currentSessionId);
       handledSequenceQuizIdsRef.current.clear();
     }
@@ -990,6 +1062,9 @@ export default function ChatPage() {
   // Handle quick prompt
   const handleQuickPrompt = useCallback((text: string) => {
     syncQuizSequence(null);
+    setQuizCanvasIndex(0);
+    quizBatchRequestingRef.current = false;
+    quizPrefetchAttemptedRef.current = false;
     clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
@@ -1011,6 +1086,9 @@ export default function ChatPage() {
         ? '基于我们刚才的对话，给我一题英语测验（四选一），并给出中文解析。'
         : 'Based on our recent chat, give me one 4-option English quiz and explain it.';
     syncQuizSequence(null);
+    setQuizCanvasIndex(0);
+    quizBatchRequestingRef.current = false;
+    quizPrefetchAttemptedRef.current = false;
     clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
@@ -1032,6 +1110,9 @@ export default function ChatPage() {
     if (!text || isLoading) return;
 
     syncQuizSequence(null);
+    setQuizCanvasIndex(0);
+    quizBatchRequestingRef.current = false;
+    quizPrefetchAttemptedRef.current = false;
     clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setInput('');
@@ -1183,43 +1264,72 @@ export default function ChatPage() {
     [messages],
   );
 
-  const requestNextSequentialQuiz = useCallback(
+  const requestQuizBatch = useCallback(
     async (args: {
       sequence: QuizSequenceState;
-      questionIndex: number;
+      startIndex: number;
+      questionCount: number;
       runId?: string;
     }) => {
+      if (args.questionCount <= 0) return;
       const prompt = buildQuizSequencePrompt({
         language,
         seedPrompt: args.sequence.seedPrompt,
-        questionIndex: args.questionIndex,
+        startIndex: args.startIndex,
+        questionCount: args.questionCount,
         targetCount: args.sequence.targetCount,
         usedWords: args.sequence.usedWords,
       });
-
-      await sendMessage(args.sequence.seedPrompt, {
-        mode: 'quiz',
-        searchMode,
-        trigger: 'quiz_button',
-        apiContentOverride: prompt,
-        hideUserMessage: true,
-        quizRun: args.runId
-          ? {
-              runId: args.runId,
-              questionIndex: args.questionIndex,
-              targetCount: args.sequence.targetCount,
-            }
-          : undefined,
-        featureFlags: {
-          enableQuizArtifacts: true,
-          enableStudyArtifacts: true,
-          forceQuiz: true,
-          allowAutoQuiz: true,
-        },
-      });
+      quizBatchRequestingRef.current = true;
+      try {
+        await sendMessage(args.sequence.seedPrompt, {
+          mode: 'quiz',
+          searchMode,
+          trigger: 'quiz_button',
+          apiContentOverride: prompt,
+          hideUserMessage: true,
+          quizRun: args.runId
+            ? {
+                runId: args.runId,
+                questionIndex: args.startIndex,
+                targetCount: args.sequence.targetCount,
+              }
+            : undefined,
+          featureFlags: {
+            enableQuizArtifacts: true,
+            enableStudyArtifacts: true,
+            forceQuiz: true,
+            allowAutoQuiz: true,
+          },
+        });
+      } finally {
+        quizBatchRequestingRef.current = false;
+      }
     },
     [language, searchMode, sendMessage],
   );
+
+  useEffect(() => {
+    if (!quizSequence || isLoading || quizBatchRequestingRef.current || quizPrefetchAttemptedRef.current) {
+      return;
+    }
+    if (quizRunArtifacts.length <= 0 || quizSequence.answeredCount > 0) {
+      return;
+    }
+
+    const missingCount = quizSequence.targetCount - quizRunArtifacts.length;
+    if (missingCount <= 0) {
+      return;
+    }
+
+    quizPrefetchAttemptedRef.current = true;
+    void requestQuizBatch({
+      sequence: quizSequence,
+      startIndex: quizRunArtifacts.length + 1,
+      questionCount: missingCount,
+      runId: quizRunState?.runId,
+    });
+  }, [isLoading, quizRunArtifacts.length, quizRunState?.runId, quizSequence, requestQuizBatch]);
 
   const handleQuizSubmit = useCallback(
     async (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => {
@@ -1316,6 +1426,9 @@ export default function ChatPage() {
 
       if (nextAnsweredCount >= sequence.targetCount) {
         syncQuizSequence(null);
+        setQuizCanvasIndex(0);
+        quizBatchRequestingRef.current = false;
+        quizPrefetchAttemptedRef.current = false;
         clearQuizRun(currentSessionId);
         handledSequenceQuizIdsRef.current.clear();
         toast.success(
@@ -1332,20 +1445,37 @@ export default function ChatPage() {
         usedWords: nextUsedWords,
       };
       syncQuizSequence(nextSequence);
+      setQuizCanvasIndex(Math.max(0, Math.min(nextAnsweredCount, quizArtifactsRef.current.length - 1)));
 
       const nextQuestionIndex = nextAnsweredCount + 1;
       const persistedRunId =
         persistedRun && typeof persistedRun === 'object' && 'runId' in persistedRun
           ? (persistedRun as { runId?: string }).runId
           : undefined;
+      const availableCount = quizArtifactsRef.current.length;
+      if (nextAnsweredCount < availableCount) {
+        toast.message(
+          language.startsWith('zh')
+            ? `继续下一题（${nextQuestionIndex}/${nextSequence.targetCount}）`
+            : `Next question (${nextQuestionIndex}/${nextSequence.targetCount})`,
+        );
+        return;
+      }
+
+      const missingCount = Math.max(0, nextSequence.targetCount - availableCount);
+      if (missingCount <= 0 || quizBatchRequestingRef.current) {
+        return;
+      }
+
       toast.message(
         language.startsWith('zh')
-          ? `继续下一题（${nextQuestionIndex}/${nextSequence.targetCount}）`
-          : `Next question (${nextQuestionIndex}/${nextSequence.targetCount})`,
+          ? `正在生成剩余题目（${nextQuestionIndex}-${nextSequence.targetCount}）`
+          : `Generating remaining questions (${nextQuestionIndex}-${nextSequence.targetCount})`,
       );
-      void requestNextSequentialQuiz({
+      void requestQuizBatch({
         sequence: nextSequence,
-        questionIndex: nextQuestionIndex,
+        startIndex: nextQuestionIndex,
+        questionCount: missingCount,
         runId: persistedRunId || quizRunState?.runId,
       });
     },
@@ -1360,7 +1490,7 @@ export default function ChatPage() {
       findQuizArtifact,
       language,
       quizRunState?.runId,
-      requestNextSequentialQuiz,
+      requestQuizBatch,
       syncQuizSequence,
       submitQuizAttempt,
     ],
@@ -1394,21 +1524,6 @@ export default function ChatPage() {
     }
     return loadingStages[loadingStageIndex] || loadingStages[0];
   })();
-
-  const latestSequentialQuizMessageId = useMemo(() => {
-    if (!quizSequence) return null;
-    for (let i = messages.length - 1; i >= 0; i -= 1) {
-      const message = messages[i];
-      if (
-        message.role === 'assistant' &&
-        Array.isArray(message.artifacts) &&
-        message.artifacts.some((artifact) => artifact.type === 'quiz')
-      ) {
-        return message.id;
-      }
-    }
-    return null;
-  }, [messages, quizSequence]);
 
   return (
     <div className="h-full min-h-0 flex overflow-hidden">
@@ -1496,6 +1611,9 @@ export default function ChatPage() {
                   className="h-8 w-8"
                   onClick={() => {
                     syncQuizSequence(null);
+                    setQuizCanvasIndex(0);
+                    quizBatchRequestingRef.current = false;
+                    quizPrefetchAttemptedRef.current = false;
                     clearQuizRun(currentSessionId);
                     handledSequenceQuizIdsRef.current.clear();
                     void createSession();
@@ -1520,7 +1638,7 @@ export default function ChatPage() {
                       <div
                         key={session.id}
                         className={cn(
-                          'group flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-all',
+                          'group flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-all overflow-hidden',
                           currentSessionId === session.id
                             ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800'
                             : 'hover:bg-muted border border-transparent'
@@ -1534,15 +1652,19 @@ export default function ChatPage() {
                               seedPrompt: recovered.seedPrompt,
                               usedWords: recovered.usedWords,
                             });
+                            setQuizCanvasIndex(Math.max(0, Math.min(recovered.answeredCount, recovered.targetCount - 1)));
                           } else {
                             syncQuizSequence(null);
+                            setQuizCanvasIndex(0);
                           }
+                          quizBatchRequestingRef.current = false;
+                          quizPrefetchAttemptedRef.current = false;
                           handledSequenceQuizIdsRef.current.clear();
                           switchSession(session.id);
                         }}
                       >
                         <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 overflow-hidden">
                           {currentSessionId === session.id ? (
                             <EditableTitle 
                               title={session.title} 
@@ -1560,7 +1682,8 @@ export default function ChatPage() {
                             e.stopPropagation();
                             deleteSession(session.id);
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-red-100 hover:text-red-600 transition-all"
+                          className="flex-shrink-0 p-1.5 rounded-md text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all"
+                          title={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -1626,6 +1749,9 @@ export default function ChatPage() {
               size="sm"
               onClick={() => {
                 syncQuizSequence(null);
+                setQuizCanvasIndex(0);
+                quizBatchRequestingRef.current = false;
+                quizPrefetchAttemptedRef.current = false;
                 clearQuizRun(currentSessionId);
                 handledSequenceQuizIdsRef.current.clear();
                 void createSession();
@@ -1667,12 +1793,7 @@ export default function ChatPage() {
                       Array.isArray(message.artifacts) &&
                       message.artifacts.some((artifact) => artifact.type === 'quiz');
 
-                    if (
-                      quizSequence &&
-                      hasQuizArtifact &&
-                      latestSequentialQuizMessageId &&
-                      message.id !== latestSequentialQuizMessageId
-                    ) {
+                    if (quizSequence && hasQuizArtifact) {
                       return null;
                     }
 
@@ -1694,9 +1815,78 @@ export default function ChatPage() {
                     );
                   })()
                 ))}
-                
+
+                {quizSequence && (
+                  <div className="pt-2">
+                    <div className="rounded-2xl border border-emerald-300/40 bg-emerald-50/55 dark:bg-emerald-900/20 p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                            {language.startsWith('zh') ? '连续测验画布' : 'Quiz Canvas'}
+                          </p>
+                          <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
+                            {language.startsWith('zh')
+                              ? `第 ${Math.min(quizCanvasIndex + 1, quizSequence.targetCount)}/${quizSequence.targetCount} 题 · 已完成 ${quizSequence.answeredCount} 题`
+                              : `Question ${Math.min(quizCanvasIndex + 1, quizSequence.targetCount)}/${quizSequence.targetCount} · ${quizSequence.answeredCount} completed`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={quizCanvasIndex <= 0}
+                            onClick={() => setQuizCanvasIndex((current) => Math.max(0, current - 1))}
+                            title={language.startsWith('zh') ? '上一题' : 'Previous question'}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={
+                              quizCanvasIndex >= Math.min(quizRunArtifacts.length - 1, quizSequence.answeredCount)
+                            }
+                            onClick={() =>
+                              setQuizCanvasIndex((current) =>
+                                Math.min(Math.min(quizRunArtifacts.length - 1, quizSequence.answeredCount), current + 1),
+                              )
+                            }
+                            title={language.startsWith('zh') ? '下一题' : 'Next question'}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {activeQuizRunArtifact ? (
+                        <QuizArtifactCard
+                          key={`quiz-canvas-${activeQuizRunArtifact.artifact.payload.quizId}`}
+                          artifact={activeQuizRunArtifact.artifact}
+                          sessionId={currentSessionId}
+                          mode={chatMode}
+                          hasAttempt={Boolean(attemptedQuizMap[activeQuizRunArtifact.artifact.payload.quizId])}
+                          attemptedOption={attemptedQuizMap[activeQuizRunArtifact.artifact.payload.quizId]?.selected}
+                          onSubmit={handleQuizSubmit}
+                          onAddReviewCard={addReviewCardFromQuiz}
+                          onGenerateLesson={generateLessonFromQuiz}
+                          t={t}
+                          language={language}
+                        />
+                      ) : (
+                        <div className="rounded-xl border border-emerald-300/35 bg-background/70 px-3 py-4 text-sm text-muted-foreground">
+                          {isLoading
+                            ? (language.startsWith('zh') ? '正在生成测验题目...' : 'Generating quiz questions...')
+                            : (language.startsWith('zh') ? '暂未拿到题目，请重试或稍后继续。' : 'No quiz item returned yet. Please retry.')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Streaming message */}
-                {isLoading && streamingContent && (
+                {isLoading && streamingContent && !quizSequence && (
                   <MessageBubble
                     message={{
                       id: 'streaming',
@@ -1771,6 +1961,9 @@ export default function ChatPage() {
                 className="h-7 text-xs text-emerald-700 hover:text-emerald-800"
                 onClick={() => {
                   syncQuizSequence(null);
+                  setQuizCanvasIndex(0);
+                  quizBatchRequestingRef.current = false;
+                  quizPrefetchAttemptedRef.current = false;
                   clearQuizRun(currentSessionId);
                   handledSequenceQuizIdsRef.current.clear();
                 }}

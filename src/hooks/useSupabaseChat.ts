@@ -65,11 +65,11 @@ const CHAT_QUIZ_RUNS_STORAGE_KEY = 'vocabdaily-chat-quiz-runs';
 const MAX_HISTORY_TURNS = 4;
 const MAX_CONTEXT_CHARS = 420;
 const MAX_USER_CHARS = 900;
-const CHAT_REQUEST_TIMEOUT_MS = 45000;
+const CHAT_REQUEST_TIMEOUT_MS = 90000;
 const MAX_TOKENS_BY_MODE: Record<ChatMode, number> = {
   chat: 900,
   study: 1100,
-  quiz: 1300,
+  quiz: 1800,
   canvas: 1500,
 };
 const TEMPERATURE_BY_MODE: Record<ChatMode, number> = {
@@ -1197,17 +1197,8 @@ export function useSupabaseChat() {
             : [];
 
         const artifacts = normalizeArtifacts([...(result.artifacts || []), ...sourceArtifact]);
-        const sanitizeQuizContent = (value: string): string =>
-          value
-            .replace(/(?:^|\n)\s*(?:answer|correct answer|正确答案|答案)\s*[:：].*(?:\n|$)/gi, '\n')
-            .replace(/(?:^|\n)\s*(?:解析|analysis)\s*[:：][\s\S]*/i, '')
-            .trim();
-
-        const safeReplyContent =
-          context.quizRun && artifacts.some((artifact) => artifact.type === 'quiz')
-            ? sanitizeQuizContent(replyContent) ||
-              'Please select an option first. I will explain after you submit your answer.'
-            : replyContent;
+        const hasQuizArtifact = artifacts.some((artifact) => artifact.type === 'quiz');
+        const safeReplyContent = hasQuizArtifact ? '' : replyContent;
         setLastAgentMeta(result.agentMeta || null);
         setLastRenderState(result.renderState || null);
         setLastSources(Array.isArray(result.sources) ? result.sources : []);

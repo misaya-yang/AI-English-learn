@@ -501,7 +501,7 @@ export const buildContractPrompt = (
   const requireSources = Boolean(options.requireSources);
 
   const quizRule = forceQuiz
-    ? 'You MUST include exactly one quiz artifact.'
+    ? 'You MUST include quiz artifact(s). If the user asks for multiple questions, return one artifact per question in the same response.'
     : allowAutoQuiz
       ? 'You MAY include one quiz artifact when it improves learning, otherwise include no quiz artifact.'
       : 'Do not include quiz artifact unless explicitly required.';
