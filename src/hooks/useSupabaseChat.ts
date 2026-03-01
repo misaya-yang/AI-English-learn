@@ -42,7 +42,7 @@ export interface ChatRequestError {
 
 interface FailedRequestContext {
   sessionId: string;
-  apiMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+  apiMessages: Array<{ role: 'user' | 'assistant'; content: string }>;
   mode: ChatMode;
   featureFlags: SendMessageOptions['featureFlags'];
   trigger: NonNullable<SendMessageOptions['trigger']>;
@@ -52,6 +52,22 @@ const CHAT_SESSIONS_STORAGE_KEY = 'vocabdaily-chat-sessions';
 const CHAT_CURRENT_SESSION_KEY = 'vocabdaily-current-chat-session';
 const CHAT_QUIZ_ATTEMPTS_STORAGE_KEY = 'vocabdaily-chat-quiz-attempts';
 const CHAT_EXPERIMENT_EVENTS_STORAGE_KEY = 'vocabdaily-chat-experiment-events';
+const MAX_HISTORY_TURNS = 4;
+const MAX_CONTEXT_CHARS = 420;
+const MAX_USER_CHARS = 900;
+const CHAT_REQUEST_TIMEOUT_MS = 45000;
+const MAX_TOKENS_BY_MODE: Record<ChatMode, number> = {
+  chat: 900,
+  study: 1100,
+  quiz: 1300,
+  canvas: 1500,
+};
+const TEMPERATURE_BY_MODE: Record<ChatMode, number> = {
+  chat: 0.55,
+  study: 0.6,
+  quiz: 0.5,
+  canvas: 0.65,
+};
 
 // System prompt for English tutor
 const SYSTEM_PROMPT = `You are an expert English tutor specializing in helping Chinese-speaking learners. Your responses should be:
@@ -75,6 +91,15 @@ When correcting grammar:
 - Explain why it's wrong
 
 Keep responses concise but comprehensive. Use markdown formatting for clarity.`;
+
+const clipForContext = (value: string, limit: number): string => {
+  const input = value.trim();
+  if (input.length <= limit) return input;
+
+  const head = Math.max(200, Math.floor(limit * 0.75));
+  const tail = Math.max(80, limit - head - 8);
+  return `${input.slice(0, head)}\n...\n${input.slice(-tail)}`;
+};
 
 // Generate title from first user message
 function generateTitle(content: string): string {
@@ -898,9 +923,16 @@ export function useSupabaseChat() {
       setChatError(null);
 
       abortControllerRef.current = new AbortController();
+      let timeoutHandle: number | null = null;
+      let timedOut = false;
       let fullContent = '';
 
       try {
+        timeoutHandle = window.setTimeout(() => {
+          timedOut = true;
+          abortControllerRef.current?.abort();
+        }, CHAT_REQUEST_TIMEOUT_MS);
+
         const result = await invokeEdgeFunction<ChatEdgeResponse>(
           'ai-chat',
           {
@@ -912,9 +944,6 @@ export function useSupabaseChat() {
               mode: 'english-learning-coach',
               currentMode: context.mode,
             },
-            dialogueContext: context.apiMessages
-              .filter((message) => message.role === 'user' || message.role === 'assistant')
-              .slice(-8),
             toolContext: {
               availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
               responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
@@ -926,8 +955,8 @@ export function useSupabaseChat() {
               allowAutoQuiz: context.mode === 'study' || context.mode === 'quiz',
               ...context.featureFlags,
             },
-            temperature: 0.7,
-            maxTokens: 2000,
+            temperature: TEMPERATURE_BY_MODE[context.mode],
+            maxTokens: MAX_TOKENS_BY_MODE[context.mode],
           },
           { signal: abortControllerRef.current.signal },
         );
@@ -950,14 +979,14 @@ export function useSupabaseChat() {
           artifactTypes: artifacts.map((artifact) => artifact.type),
         });
 
-        const chunks = replyContent.match(/[\s\S]{1,24}/g) || [replyContent];
+        const chunks = replyContent.match(/[\s\S]{1,48}/g) || [replyContent];
         for (const chunk of chunks) {
           if (abortControllerRef.current?.signal.aborted) {
             throw new DOMException('Aborted', 'AbortError');
           }
           fullContent += chunk;
           setStreamingContent(fullContent);
-          await new Promise((resolve) => setTimeout(resolve, 8));
+          await new Promise((resolve) => setTimeout(resolve, 2));
         }
 
         const assistantMessage: ChatMessage = {
@@ -972,6 +1001,15 @@ export function useSupabaseChat() {
         failedRequestRef.current = null;
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
+          if (timedOut && !fullContent) {
+            failedRequestRef.current = context;
+            setChatError({
+              status: 504,
+              code: 'timeout',
+              message: 'AI 响应超时，请重试或简化问题。',
+            });
+            return;
+          }
           const partial = fullContent || streamingContent;
           if (partial) {
             const assistantMessage: ChatMessage = {
@@ -987,6 +1025,9 @@ export function useSupabaseChat() {
           setChatError(toRequestError(error));
         }
       } finally {
+        if (timeoutHandle !== null) {
+          window.clearTimeout(timeoutHandle);
+        }
         setIsLoading(false);
         setStreamingContent('');
         abortControllerRef.current = null;
@@ -1080,11 +1121,16 @@ export function useSupabaseChat() {
     );
     setCurrentSessionId(sessionId);
 
-    const historyMessages = sessionSnapshot?.messages || [];
-    const apiMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...historyMessages.map((message) => ({ role: message.role, content: message.content })),
-      { role: 'user', content: userMessage.content },
+    const historyMessages = (sessionSnapshot?.messages || [])
+      .filter((message) => message.role === 'user' || message.role === 'assistant')
+      .slice(-MAX_HISTORY_TURNS);
+
+    const apiMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
+      ...historyMessages.map((message) => ({
+        role: message.role as 'user' | 'assistant',
+        content: clipForContext(message.content, MAX_CONTEXT_CHARS),
+      })),
+      { role: 'user', content: clipForContext(userMessage.content, MAX_USER_CHARS) },
     ];
 
     void trackExperimentEvent('chat_message_sent', {

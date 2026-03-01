@@ -5,6 +5,9 @@ import { requireAuthenticatedUser } from '../_shared/auth.ts';
 const DEFAULT_SYSTEM_PROMPT = `You are an expert English tutor for Chinese-speaking learners.
 Return practical, concise guidance with bilingual clarity when helpful.
 Focus on vocabulary usage, grammar correction, collocations, and example-driven coaching.`;
+const MAX_INCOMING_MESSAGES = 8;
+const MAX_MESSAGE_CHARS = 900;
+const MAX_CONTEXT_SECTION_CHARS = 1200;
 
 type ChatMode = 'chat' | 'study' | 'quiz' | 'canvas';
 
@@ -47,6 +50,13 @@ interface ChatEnvelope {
   agentMeta?: AgentMeta;
 }
 
+const clipText = (value: string, limit: number): string => {
+  if (value.length <= limit) return value;
+  const head = Math.max(240, Math.floor(limit * 0.8));
+  const tail = Math.max(120, limit - head - 8);
+  return `${value.slice(0, head)}\n...\n${value.slice(-tail)}`;
+};
+
 const normalizeMode = (mode: unknown): ChatMode => {
   if (mode === 'chat' || mode === 'study' || mode === 'quiz' || mode === 'canvas') {
     return mode;
@@ -58,7 +68,7 @@ const buildContextPrompt = (context: AiChatContext): string => {
   const sections: string[] = [];
 
   if (context.learningContext && Object.keys(context.learningContext).length > 0) {
-    sections.push(`learning_context: ${JSON.stringify(context.learningContext)}`);
+    sections.push(`learning_context: ${clipText(JSON.stringify(context.learningContext), MAX_CONTEXT_SECTION_CHARS)}`);
   }
 
   if (Array.isArray(context.dialogueContext) && context.dialogueContext.length > 0) {
@@ -67,12 +77,12 @@ const buildContextPrompt = (context: AiChatContext): string => {
       .slice(-8)
       .map((turn) => ({ role: turn.role, content: turn.content }));
     if (compactTurns.length > 0) {
-      sections.push(`dialogue_context: ${JSON.stringify(compactTurns)}`);
+      sections.push(`dialogue_context: ${clipText(JSON.stringify(compactTurns), MAX_CONTEXT_SECTION_CHARS)}`);
     }
   }
 
   if (context.toolContext && Object.keys(context.toolContext).length > 0) {
-    sections.push(`tool_context: ${JSON.stringify(context.toolContext)}`);
+    sections.push(`tool_context: ${clipText(JSON.stringify(context.toolContext), MAX_CONTEXT_SECTION_CHARS)}`);
   }
 
   if (sections.length === 0) {
@@ -256,7 +266,12 @@ Deno.serve(async (req) => {
           typeof content === 'string' &&
           content.trim().length > 0
         );
-      }) as DeepSeekMessage[],
+      })
+        .slice(-MAX_INCOMING_MESSAGES)
+        .map((message) => ({
+          role: (message as { role: 'user' | 'assistant' | 'system' }).role,
+          content: clipText((message as { content: string }).content, MAX_MESSAGE_CHARS),
+        })) as DeepSeekMessage[],
     ];
 
     const start = Date.now();

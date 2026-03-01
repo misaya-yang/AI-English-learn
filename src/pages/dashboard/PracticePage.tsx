@@ -147,16 +147,21 @@ export default function PracticePage() {
   const [writingPrompt, setWritingPrompt] = useState('');
   const [writingTaskType, setWritingTaskType] = useState<'task1' | 'task2'>('task2');
   const [writingItemId, setWritingItemId] = useState('practice_ielts_manual');
-  const [feedbackQuotaRemaining, setFeedbackQuotaRemaining] = useState(0);
+  const [feedbackQuotaRemaining, setFeedbackQuotaRemaining] = useState<number | null>(null);
+  const [isQuotaLoading, setIsQuotaLoading] = useState(false);
+  const [isWritingSubmitting, setIsWritingSubmitting] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
 
   // Generate quiz questions when mode is selected
   useEffect(() => {
+    let cancelled = false;
+
     if (selectedMode === 'quiz' || selectedMode === 'fill_blank') {
       const questions = generateQuizQuestions(dailyWords, selectedMode);
       setQuizQuestions(questions);
     }
-    if (selectedMode === 'writing' && dailyWords.length > 0) {
+
+    if (selectedMode === 'writing') {
       const writingUnits = getContentUnits({ examType: 'IELTS', skill: 'writing' });
       const firstUnit = writingUnits[0];
       const firstItem = firstUnit ? getContentItemsByUnit(firstUnit.id)[0] : null;
@@ -172,10 +177,28 @@ export default function PracticePage() {
         setWritingItemId('practice_ielts_manual');
       }
 
-      void getQuotaSnapshot(userId).then((snapshot) => {
-        setFeedbackQuotaRemaining(snapshot.remaining.aiAdvancedFeedbackPerDay);
-      });
+      setIsQuotaLoading(true);
+      setFeedbackQuotaRemaining(null);
+
+      void getQuotaSnapshot(userId)
+        .then((snapshot) => {
+          if (cancelled) return;
+          setFeedbackQuotaRemaining(snapshot.remaining.aiAdvancedFeedbackPerDay);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setFeedbackQuotaRemaining(0);
+          toast.error('Failed to load quota, please retry.');
+        })
+        .finally(() => {
+          if (cancelled) return;
+          setIsQuotaLoading(false);
+        });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedMode, dailyWords, userId]);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
@@ -220,6 +243,18 @@ export default function PracticePage() {
   };
 
   const handleWritingSubmit = async () => {
+    if (isWritingSubmitting) return;
+
+    if (isQuotaLoading || feedbackQuotaRemaining === null) {
+      toast.info('Loading quota status, please wait a moment.');
+      return;
+    }
+
+    if (feedbackQuotaRemaining <= 0) {
+      toast.error('Today AI writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
+      return;
+    }
+
     if (!writingInput.trim()) {
       toast.error('Please write a sentence first');
       return;
@@ -230,47 +265,53 @@ export default function PracticePage() {
       return;
     }
 
-    const quotaResult = await consumeExamFeatureQuota(userId, 'aiAdvancedFeedbackPerDay');
-    if (!quotaResult.allowed) {
-      toast.error('Today AI writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
-      return;
-    }
+    setIsWritingSubmitting(true);
+    try {
+      const quotaResult = await consumeExamFeatureQuota(userId, 'aiAdvancedFeedbackPerDay');
+      if (!quotaResult.allowed) {
+        setFeedbackQuotaRemaining(quotaResult.remaining);
+        toast.error('Today AI writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
+        return;
+      }
 
-    const attempt = createAttempt({
-      userId,
-      itemId: writingItemId,
-      answer: writingInput.trim(),
-      skill: 'writing',
-    });
-    saveItemAttempt(attempt);
-
-    const feedback = await gradeIeltsWriting({
-      userId,
-      attemptId: attempt.id,
-      prompt: writingPrompt,
-      answer: writingInput.trim(),
-      taskType: writingTaskType,
-    });
-
-    saveAiFeedbackRecord(userId, feedback);
-    setWritingFeedback(feedback);
-    setFeedbackQuotaRemaining(quotaResult.remaining);
-
-    const earnedXp = feedback.scores.overallBand >= 6 ? 20 : 12;
-    addStudySession(1, feedback.scores.overallBand >= 6 ? 1 : 0, earnedXp, 8);
-    completeMissionTask('task_review_today');
-
-    void recordLearningEvent({
-      userId,
-      eventName: 'practice.writing_submitted',
-      payload: {
+      const attempt = createAttempt({
+        userId,
         itemId: writingItemId,
+        answer: writingInput.trim(),
+        skill: 'writing',
+      });
+      saveItemAttempt(attempt);
+
+      const feedback = await gradeIeltsWriting({
+        userId,
+        attemptId: attempt.id,
+        prompt: writingPrompt,
+        answer: writingInput.trim(),
         taskType: writingTaskType,
-        overallBand: feedback.scores.overallBand,
-        issues: feedback.issues.map((issue) => issue.tag),
-      },
-    });
-    toast.success(`AI feedback ready. Overall band ${feedback.scores.overallBand}`);
+      });
+
+      saveAiFeedbackRecord(userId, feedback);
+      setWritingFeedback(feedback);
+      setFeedbackQuotaRemaining(quotaResult.remaining);
+
+      const earnedXp = feedback.scores.overallBand >= 6 ? 20 : 12;
+      addStudySession(1, feedback.scores.overallBand >= 6 ? 1 : 0, earnedXp, 8);
+      completeMissionTask('task_review_today');
+
+      void recordLearningEvent({
+        userId,
+        eventName: 'practice.writing_submitted',
+        payload: {
+          itemId: writingItemId,
+          taskType: writingTaskType,
+          overallBand: feedback.scores.overallBand,
+          issues: feedback.issues.map((issue) => issue.tag),
+        },
+      });
+      toast.success(`AI feedback ready. Overall band ${feedback.scores.overallBand}`);
+    } finally {
+      setIsWritingSubmitting(false);
+    }
   };
 
   const handleRestart = () => {
@@ -335,7 +376,9 @@ export default function PracticePage() {
             <p className="text-muted-foreground">写作练习（结构化评分反馈）</p>
           </div>
           <div className="flex gap-2">
-            <Badge variant="outline">AI feedback left: {feedbackQuotaRemaining}</Badge>
+            <Badge variant="outline">
+              AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
+            </Badge>
             <Button variant="outline" onClick={() => setSelectedMode(null)}>
               Back to Modes
             </Button>
@@ -381,9 +424,21 @@ export default function PracticePage() {
               <Button
                 onClick={handleWritingSubmit}
                 className="w-full bg-emerald-600 hover:bg-emerald-700"
+                disabled={
+                  isWritingSubmitting ||
+                  isQuotaLoading ||
+                  feedbackQuotaRemaining === null ||
+                  feedbackQuotaRemaining <= 0
+                }
               >
                 <Zap className="h-4 w-4 mr-2" />
-                Get IELTS AI Feedback
+                {isQuotaLoading
+                  ? 'Loading quota...'
+                  : isWritingSubmitting
+                    ? 'Generating feedback...'
+                    : feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0
+                      ? 'Quota exhausted today'
+                      : 'Get IELTS AI Feedback'}
               </Button>
             ) : (
               <motion.div
