@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, type ComponentType } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type ComponentType } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -33,7 +33,6 @@ import {
   Trash2,
   Plus,
   History,
-  X,
   Menu,
   Edit2,
   Check,
@@ -45,6 +44,9 @@ import {
   GraduationCap,
   Globe,
   Link2,
+  Wand2,
+  ChevronUp,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -253,6 +255,88 @@ const WelcomeMessage = ({ onPromptClick, t, prompts }: { onPromptClick: (text: s
   </div>
 );
 
+interface ThinkingStatusCardProps {
+  label: string;
+  language: string;
+  isStreaming: boolean;
+  toolRuns: Array<{ name: string; status: 'success' | 'error' | 'skipped' | 'rate_limited' }>;
+}
+
+const ThinkingStatusCard = ({ label, language, isStreaming, toolRuns }: ThinkingStatusCardProps) => {
+  const latestRuns = toolRuns.slice(-3);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex gap-3 py-3"
+    >
+      <Avatar className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-cyan-100 dark:from-emerald-900/40 dark:to-cyan-900/30">
+        <AvatarFallback>
+          <Loader2 className="h-4 w-4 text-emerald-600 animate-spin" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="relative flex-1 overflow-hidden rounded-2xl rounded-bl-sm border border-emerald-300/30 bg-emerald-50/60 dark:bg-emerald-900/15 p-3">
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(100deg, transparent 10%, rgba(16, 185, 129, 0.18) 48%, transparent 86%)',
+            backgroundSize: '220% 100%',
+          }}
+          animate={{ backgroundPosition: ['-120% 0%', '130% 0%'] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
+        />
+
+        <div className="relative z-10">
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {isStreaming
+              ? language.startsWith('zh')
+                ? '正在渲染并流式输出内容...'
+                : 'Rendering and streaming response...'
+              : language.startsWith('zh')
+                ? '正在分析上下文与学习状态...'
+                : 'Analyzing context and learning state...'}
+          </p>
+
+          <div className="mt-2 h-1.5 rounded-full bg-emerald-100/70 dark:bg-emerald-900/40 overflow-hidden">
+            <motion.div
+              className="h-full w-1/2 rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-500"
+              animate={{ x: ['-120%', '180%'] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </div>
+
+          {latestRuns.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {latestRuns.map((run, idx) => {
+                const statusClass =
+                  run.status === 'success'
+                    ? 'border-emerald-300/60 text-emerald-700 dark:text-emerald-300'
+                    : run.status === 'error'
+                      ? 'border-red-300/60 text-red-600 dark:text-red-300'
+                      : run.status === 'rate_limited'
+                        ? 'border-amber-300/60 text-amber-700 dark:text-amber-300'
+                        : 'border-border text-muted-foreground';
+
+                return (
+                  <span
+                    key={`${run.name}-${idx}`}
+                    className={cn('rounded-full border bg-background/70 px-2 py-0.5 text-[11px]', statusClass)}
+                  >
+                    {run.name}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 // Message bubble component
 interface MessageBubbleProps {
   message: {
@@ -317,24 +401,38 @@ const MessageBubble = ({
 
       {/* Message Content */}
       <div className={cn(
-        'flex flex-col max-w-[85%] sm:max-w-[75%]',
-        isUser ? 'items-end' : 'items-start'
+        'flex flex-col',
+        isUser ? 'items-end max-w-[92%] lg:max-w-[78%]' : 'items-start max-w-[96%] lg:max-w-[86%]'
       )}>
         <div
           className={cn(
-            'px-4 py-3 rounded-2xl',
+            'relative overflow-hidden px-4 py-3 rounded-2xl',
             isUser
               ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-br-sm'
               : 'bg-muted border border-border rounded-bl-sm'
           )}
         >
+          {isStreaming && !isUser && (
+            <motion.div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(100deg, transparent 8%, rgba(16, 185, 129, 0.16) 46%, transparent 82%)',
+                backgroundSize: '200% 100%',
+              }}
+              animate={{ backgroundPosition: ['-120% 0%', '120% 0%'] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
+            />
+          )}
           {isUser ? (
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+            <p className="relative z-10 text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
           ) : (
-            <MarkdownRenderer content={message.content} />
+            <div className="relative z-10">
+              <MarkdownRenderer content={message.content} />
+            </div>
           )}
           {isStreaming && (
-            <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-1 align-middle" />
+            <span className="relative z-10 inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-1 align-middle" />
           )}
         </div>
 
@@ -557,13 +655,27 @@ export default function ChatPage() {
 
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [toolsExpanded, setToolsExpanded] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>('study');
   const [searchMode, setSearchMode] = useState<'auto' | 'off'>('auto');
   const [dbStatus, setDbStatus] = useState<Record<string, boolean>>({});
   const [showDbSetup, setShowDbSetup] = useState(false);
+  const [loadingStageIndex, setLoadingStageIndex] = useState(0);
   const messagesScrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const shouldAutoScrollRef = useRef(true);
+
+  const contentWidthClass = sidebarOpen
+    ? 'max-w-[min(1120px,100%)]'
+    : 'max-w-[min(1280px,100%)]';
+
+  const loadingStages = useMemo(
+    () =>
+      language.startsWith('zh')
+        ? ['正在解析学习意图', '正在检索学习资料', '正在组织教学答案', '正在渲染内容']
+        : ['Understanding your goal', 'Retrieving learning context', 'Composing teaching response', 'Rendering output'],
+    [language],
+  );
 
   const getMessagesViewport = useCallback(() => {
     const root = messagesScrollAreaRef.current;
@@ -623,11 +735,25 @@ export default function ChatPage() {
     inputRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadingStageIndex(0);
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setLoadingStageIndex((current) => (current + 1) % loadingStages.length);
+    }, 1100);
+
+    return () => window.clearInterval(timer);
+  }, [isLoading, loadingStages.length]);
+
   // Handle send
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
     const text = input.trim();
     setInput('');
+    setToolsExpanded(false);
     // Reset textarea height
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
@@ -646,6 +772,7 @@ export default function ChatPage() {
 
   // Handle quick prompt
   const handleQuickPrompt = useCallback((text: string) => {
+    setToolsExpanded(false);
     sendMessage(text, {
       mode: chatMode,
       searchMode,
@@ -663,6 +790,7 @@ export default function ChatPage() {
       language.startsWith('zh')
         ? '基于我们刚才的对话，给我一题英语测验（四选一），并给出中文解析。'
         : 'Based on our recent chat, give me one 4-option English quiz and explain it.';
+    setToolsExpanded(false);
     void sendMessage(text, {
       mode: chatMode,
       searchMode,
@@ -681,6 +809,7 @@ export default function ChatPage() {
     if (!text || isLoading) return;
 
     setInput('');
+    setToolsExpanded(false);
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
     }
@@ -918,6 +1047,12 @@ export default function ChatPage() {
           ? '本地模式'
           : 'Local Mode';
 
+  const loadingLabel = isLoading && streamingContent
+    ? language.startsWith('zh')
+      ? '正在渲染回答'
+      : 'Rendering response'
+    : loadingStages[loadingStageIndex] || loadingStages[0];
+
   return (
     <div className="h-full min-h-0 flex overflow-hidden">
       {/* Database Status */}
@@ -1129,7 +1264,7 @@ export default function ChatPage() {
 
         {/* Messages Area */}
         <ScrollArea className="flex-1 min-h-0 px-4" ref={messagesScrollAreaRef}>
-          <div className="max-w-3xl mx-auto">
+          <div className={cn(contentWidthClass, 'mx-auto')}>
             {messages.length === 0 ? (
               <WelcomeMessage onPromptClick={handleQuickPrompt} t={t} prompts={quickPrompts} />
             ) : (
@@ -1173,21 +1308,13 @@ export default function ChatPage() {
                   />
                 )}
 
-                {/* Loading indicator */}
-                {isLoading && !streamingContent && (
-                  <div className="flex gap-3 py-4">
-                    <Avatar className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-teal-100">
-                      <AvatarFallback><Bot className="h-4 w-4 text-emerald-600" /></AvatarFallback>
-                    </Avatar>
-                    <div className="bg-muted border border-border rounded-2xl rounded-bl-sm px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" />
-                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-100" />
-                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-200" />
-                        <span className="text-xs text-muted-foreground ml-2">{t('common.thinking')}</span>
-                      </div>
-                    </div>
-                  </div>
+                {isLoading && (
+                  <ThinkingStatusCard
+                    label={loadingLabel}
+                    language={language}
+                    isStreaming={Boolean(streamingContent)}
+                    toolRuns={lastToolRuns}
+                  />
                 )}
                 
               </div>
@@ -1197,7 +1324,7 @@ export default function ChatPage() {
 
         {chatError && (
           <div className="px-4 pb-2">
-            <div className="max-w-3xl mx-auto rounded-xl border border-amber-300/50 bg-amber-50/60 dark:bg-amber-900/20 p-3 flex items-start gap-3">
+            <div className={cn(contentWidthClass, 'mx-auto rounded-xl border border-amber-300/50 bg-amber-50/60 dark:bg-amber-900/20 p-3 flex items-start gap-3')}>
               <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
@@ -1218,90 +1345,121 @@ export default function ChatPage() {
 
         {/* Input Area - Enhanced */}
         <div className="border-t border-border bg-card p-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              {CHAT_MODE_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setChatMode(option.id)}
-                  className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
-                    chatMode === option.id
-                      ? 'border-emerald-500 bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                      : 'border-border hover:border-emerald-400/60',
-                  )}
+          <div className={cn(contentWidthClass, 'mx-auto')}>
+            <AnimatePresence initial={false}>
+              {toolsExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: 8, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mb-3 overflow-hidden rounded-2xl border border-border bg-muted/50 p-3"
                 >
-                  <option.icon className="h-3.5 w-3.5" />
-                  <span>{language.startsWith('zh') ? option.labelZh : option.label}</span>
-                </button>
-              ))}
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {language.startsWith('zh') ? 'Agent 工具与模式' : 'Agent tools & mode'}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setToolsExpanded(false)}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                  </div>
 
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 rounded-full text-xs"
-                onClick={handleManualQuiz}
-                disabled={isLoading}
-              >
-                <FlaskConical className="h-3.5 w-3.5 mr-1.5" />
-                {language.startsWith('zh') ? '马上测我' : 'Quiz me now'}
-              </Button>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {CHAT_MODE_OPTIONS.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setChatMode(option.id)}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                            chatMode === option.id
+                              ? 'border-emerald-500 bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                              : 'border-border hover:border-emerald-400/60',
+                          )}
+                        >
+                          <option.icon className="h-3.5 w-3.5" />
+                          <span>{language.startsWith('zh') ? option.labelZh : option.label}</span>
+                        </button>
+                      ))}
+                    </div>
 
-              <Button
-                size="sm"
-                variant={searchMode === 'auto' ? 'default' : 'outline'}
-                className={cn(
-                  'h-8 rounded-full text-xs',
-                  searchMode === 'auto' ? 'bg-blue-600 hover:bg-blue-700 text-white' : '',
-                )}
-                onClick={() => setSearchMode((prev) => (prev === 'auto' ? 'off' : 'auto'))}
-                disabled={isLoading}
-              >
-                <Globe className="h-3.5 w-3.5 mr-1.5" />
-                {searchMode === 'auto'
-                  ? language.startsWith('zh')
-                    ? '联网检索：自动'
-                    : 'WebSearch: Auto'
-                  : language.startsWith('zh')
-                    ? '联网检索：关闭'
-                    : 'WebSearch: Off'}
-              </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full text-xs"
+                        onClick={handleManualQuiz}
+                        disabled={isLoading}
+                      >
+                        <FlaskConical className="h-3.5 w-3.5 mr-1.5" />
+                        {language.startsWith('zh') ? '马上测我' : 'Quiz me now'}
+                      </Button>
 
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 rounded-full text-xs"
-                onClick={handleForceWebSearch}
-                disabled={isLoading || !input.trim()}
-              >
-                <Globe className="h-3.5 w-3.5 mr-1.5" />
-                {language.startsWith('zh') ? '强制搜索本条' : 'Search this input'}
-              </Button>
+                      <Button
+                        size="sm"
+                        variant={searchMode === 'auto' ? 'default' : 'outline'}
+                        className={cn(
+                          'h-8 rounded-full text-xs',
+                          searchMode === 'auto' ? 'bg-blue-600 hover:bg-blue-700 text-white' : '',
+                        )}
+                        onClick={() => setSearchMode((prev) => (prev === 'auto' ? 'off' : 'auto'))}
+                        disabled={isLoading}
+                      >
+                        <Globe className="h-3.5 w-3.5 mr-1.5" />
+                        {searchMode === 'auto'
+                          ? language.startsWith('zh')
+                            ? '联网检索：自动'
+                            : 'WebSearch: Auto'
+                          : language.startsWith('zh')
+                            ? '联网检索：关闭'
+                            : 'WebSearch: Off'}
+                      </Button>
 
-              {lastAgentMeta?.triggerReason && (
-                <span className="text-[11px] text-muted-foreground">
-                  {language.startsWith('zh') ? '触发原因' : 'Trigger'}: {lastAgentMeta.triggerReason}
-                </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full text-xs"
+                        onClick={handleForceWebSearch}
+                        disabled={isLoading || !input.trim()}
+                      >
+                        <Globe className="h-3.5 w-3.5 mr-1.5" />
+                        {language.startsWith('zh') ? '强制搜索本条' : 'Search this input'}
+                      </Button>
+                    </div>
+
+                    {(lastAgentMeta?.triggerReason || lastContextMeta) && (
+                      <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-[11px] text-muted-foreground space-y-1">
+                        {lastAgentMeta?.triggerReason && (
+                          <p>{language.startsWith('zh') ? '触发原因' : 'Trigger'}: {lastAgentMeta.triggerReason}</p>
+                        )}
+                        {lastContextMeta && (
+                          <p>
+                            {language.startsWith('zh') ? '上下文' : 'Context'}: {lastContextMeta.inputTokensEst}t ·
+                            {lastContextMeta.compacted
+                              ? language.startsWith('zh')
+                                ? ' 已压缩'
+                                : ' compacted'
+                              : language.startsWith('zh')
+                                ? ' 未压缩'
+                                : ' raw'}
+                            {lastContextMeta.searchTriggered
+                              ? language.startsWith('zh')
+                                ? ' · 已搜索'
+                                : ' · searched'
+                              : ''}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
               )}
-
-              {lastContextMeta && (
-                <span className="text-[11px] text-muted-foreground">
-                  {language.startsWith('zh') ? '上下文' : 'Context'}: {lastContextMeta.inputTokensEst}t ·
-                  {lastContextMeta.compacted
-                    ? language.startsWith('zh')
-                      ? ' 已压缩'
-                      : ' compacted'
-                    : language.startsWith('zh')
-                      ? ' 未压缩'
-                      : ' raw'}
-                  {lastContextMeta.searchTriggered
-                    ? language.startsWith('zh')
-                      ? ' · 已搜索'
-                      : ' · searched'
-                    : ''}
-                </span>
-              )}
-            </div>
+            </AnimatePresence>
 
             {/* Quick Prompts (only when no messages) */}
             {messages.length === 0 && (
@@ -1320,6 +1478,21 @@ export default function ChatPage() {
 
             {/* Input */}
             <div className="relative flex gap-2 items-end bg-muted rounded-2xl border border-border p-3 focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/10 transition-all">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'mb-1 h-10 w-10 rounded-xl border transition-colors',
+                  toolsExpanded
+                    ? 'border-emerald-400 bg-emerald-100/70 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                    : 'border-border hover:border-emerald-400/50',
+                )}
+                onClick={() => setToolsExpanded((current) => !current)}
+                title={language.startsWith('zh') ? '工具与模式' : 'Tools & mode'}
+              >
+                <Wand2 className="h-4 w-4" />
+              </Button>
+
               <textarea
                 ref={inputRef}
                 value={input}
@@ -1357,6 +1530,18 @@ export default function ChatPage() {
               <span className="flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
                 {t('common.poweredBy')}
+              </span>
+              <span>·</span>
+              <span>
+                {language.startsWith('zh') ? '模式' : 'Mode'}: {language.startsWith('zh')
+                  ? CHAT_MODE_OPTIONS.find((option) => option.id === chatMode)?.labelZh
+                  : CHAT_MODE_OPTIONS.find((option) => option.id === chatMode)?.label}
+              </span>
+              <span>·</span>
+              <span>
+                {language.startsWith('zh') ? '检索' : 'Search'}: {searchMode === 'auto'
+                  ? (language.startsWith('zh') ? '自动' : 'Auto')
+                  : (language.startsWith('zh') ? '关闭' : 'Off')}
               </span>
               <span>·</span>
               <span>{t('common.markdownSupport')}</span>
