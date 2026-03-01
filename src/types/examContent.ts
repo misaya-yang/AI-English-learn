@@ -1,6 +1,11 @@
 export type ExamType = 'IELTS' | 'TOEFL';
 export type ExamSkill = 'writing' | 'speaking' | 'reading' | 'listening';
 export type PlanTier = 'free' | 'pro';
+export type LearningTrack =
+  | 'daily_communication'
+  | 'workplace_english'
+  | 'travel_survival'
+  | 'exam_boost';
 
 export interface ExamTrack {
   id: string;
@@ -114,4 +119,66 @@ export interface QuotaConsumeResult {
   allowed: boolean;
   remaining: number;
   reason?: string;
+}
+
+export interface LearningProfile {
+  userId: string;
+  level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+  target: string;
+  tracks: LearningTrack[];
+  dailyMinutes: number;
+  languagePreference: 'en' | 'zh' | 'bilingual';
+  updatedAt: string;
+}
+
+export interface LearningMissionTask {
+  id: string;
+  type: 'vocabulary' | 'quiz' | 'writing' | 'review';
+  title: string;
+  titleZh: string;
+  done: boolean;
+  meta?: Record<string, unknown>;
+}
+
+export interface LearningMission {
+  id: string;
+  userId: string;
+  date: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  estimatedMinutes: number;
+  tasks: LearningMissionTask[];
+  updatedAt: string;
+}
+
+export type LearningEventName =
+  | 'chat.message_sent'
+  | 'chat.reply_received'
+  | 'chat.quiz_attempted'
+  | 'practice.quiz_submitted'
+  | 'practice.writing_submitted'
+  | 'review.word_rated'
+  | 'today.word_marked'
+  | 'billing.checkout_started'
+  | 'billing.subscription_updated'
+  | 'mission.task_completed';
+
+export interface BillingCheckoutRequest {
+  planId: 'pro_monthly' | 'pro_yearly';
+  provider: 'stripe' | 'alipay';
+  successUrl: string;
+  cancelUrl: string;
+}
+
+export interface BillingCheckoutResponse {
+  provider: 'stripe' | 'alipay';
+  checkoutUrl?: string;
+  orderId?: string;
+  expiresAt: string;
+}
+
+export interface SubscriptionState {
+  plan: PlanTier;
+  status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'inactive' | 'pending' | 'unpaid';
+  currentPeriodEnd: string | null;
+  provider: 'stripe' | 'alipay' | 'manual';
 }

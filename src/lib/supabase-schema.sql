@@ -782,3 +782,125 @@ CREATE INDEX IF NOT EXISTS idx_chat_quiz_items_session ON chat_quiz_items(sessio
 CREATE INDEX IF NOT EXISTS idx_chat_quiz_attempts_user_created ON chat_quiz_attempts(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_chat_quiz_attempts_quiz ON chat_quiz_attempts(quiz_id);
 CREATE INDEX IF NOT EXISTS idx_chat_experiment_events_user_created ON chat_experiment_events(user_id, created_at DESC);
+
+-- ============================================
+-- 17. LEARNING EVENTS / MISSIONS / BILLING
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS user_learning_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE,
+  level TEXT NOT NULL DEFAULT 'B1' CHECK (level IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')),
+  target TEXT NOT NULL DEFAULT 'general_improvement',
+  tracks JSONB NOT NULL DEFAULT '["daily_communication"]',
+  daily_minutes INTEGER NOT NULL DEFAULT 20,
+  language_preference TEXT NOT NULL DEFAULT 'bilingual' CHECK (language_preference IN ('en', 'zh', 'bilingual')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS learning_missions (
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL,
+  mission_date DATE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed')),
+  estimated_minutes INTEGER NOT NULL DEFAULT 20,
+  tasks JSONB NOT NULL DEFAULT '[]',
+  meta JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, mission_date)
+);
+
+CREATE TABLE IF NOT EXISTS learning_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  event_name TEXT NOT NULL,
+  event_source TEXT NOT NULL DEFAULT 'web',
+  session_id UUID,
+  payload JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS billing_customers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE,
+  provider TEXT NOT NULL CHECK (provider IN ('stripe', 'alipay')),
+  provider_customer_id TEXT NOT NULL,
+  email TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(provider, provider_customer_id)
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  provider TEXT NOT NULL CHECK (provider IN ('stripe', 'alipay')),
+  provider_subscription_id TEXT,
+  plan_id TEXT NOT NULL DEFAULT 'free',
+  status TEXT NOT NULL DEFAULT 'inactive' CHECK (status IN ('trialing', 'active', 'past_due', 'canceled', 'unpaid', 'inactive', 'pending')),
+  current_period_start TIMESTAMP WITH TIME ZONE,
+  current_period_end TIMESTAMP WITH TIME ZONE,
+  cancel_at_period_end BOOLEAN NOT NULL DEFAULT FALSE,
+  metadata JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(provider, provider_subscription_id)
+);
+
+CREATE TABLE IF NOT EXISTS billing_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID,
+  provider TEXT NOT NULL CHECK (provider IN ('stripe', 'alipay')),
+  event_type TEXT NOT NULL,
+  provider_event_id TEXT,
+  payload JSONB NOT NULL DEFAULT '{}',
+  processed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(provider, provider_event_id)
+);
+
+ALTER TABLE user_learning_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE learning_missions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE learning_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE billing_customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE billing_events ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own learning profile" ON user_learning_profiles;
+CREATE POLICY "Users can view own learning profile" ON user_learning_profiles
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can upsert own learning profile" ON user_learning_profiles;
+CREATE POLICY "Users can upsert own learning profile" ON user_learning_profiles
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view own missions" ON learning_missions;
+CREATE POLICY "Users can view own missions" ON learning_missions
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own missions" ON learning_missions;
+CREATE POLICY "Users can manage own missions" ON learning_missions
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view own learning events" ON learning_events;
+CREATE POLICY "Users can view own learning events" ON learning_events
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own learning events" ON learning_events;
+CREATE POLICY "Users can insert own learning events" ON learning_events
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view own subscriptions" ON subscriptions;
+CREATE POLICY "Users can view own subscriptions" ON subscriptions
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view own billing events" ON billing_events;
+CREATE POLICY "Users can view own billing events" ON billing_events
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_learning_events_user_created ON learning_events(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_learning_missions_user_date ON learning_missions(user_id, mission_date DESC);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_status ON subscriptions(user_id, status, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_billing_events_user_created ON billing_events(user_id, created_at DESC);

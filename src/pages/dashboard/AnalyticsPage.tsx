@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,31 +22,18 @@ import {
   Area,
 } from 'recharts';
 import {
-  TrendingUp,
   BookOpen,
   Target,
   Zap,
   Calendar,
-  Clock,
   Flame,
   ChevronUp,
   Award,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getHeatmapData, getWeeklyActivity, type WeeklyActivityPoint } from '@/services/learningEvents';
 
-// Generate weekly data based on actual stats
-const generateWeeklyData = () => {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days.map((day) => ({
-    day,
-    words: Math.floor(Math.random() * 15) + 5,
-    xp: Math.floor(Math.random() * 150) + 50,
-    minutes: Math.floor(Math.random() * 30) + 10,
-  }));
-};
-
-// Generate topic data from words
-const generateTopicData = (dailyWords: any[]) => {
+const generateTopicData = (dailyWords: Array<{ topic: string }>) => {
   const topicCounts: Record<string, number> = {};
   dailyWords.forEach((word) => {
     topicCounts[word.topic] = (topicCounts[word.topic] || 0) + 1;
@@ -59,20 +47,6 @@ const generateTopicData = (dailyWords: any[]) => {
   }));
 };
 
-// Generate heatmap data
-const generateHeatmapData = () => {
-  const data = [];
-  for (let i = 0; i < 52; i++) {
-    for (let j = 0; j < 7; j++) {
-      const value = Math.random() > 0.3 ? Math.floor(Math.random() * 5) : 0;
-      data.push({ week: i, day: j, value });
-    }
-  }
-  return data;
-};
-
-const heatmapData = generateHeatmapData();
-
 const badges = [
   { name: '7-Day Streak', nameZh: '7天连续', icon: Flame, color: 'text-orange-500', earned: true },
   { name: '100 Words', nameZh: '100单词', icon: BookOpen, color: 'text-emerald-500', earned: false },
@@ -83,14 +57,31 @@ const badges = [
 
 export default function AnalyticsPage() {
   const { stats, xp, streak, dailyWords } = useUserData();
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState('week');
-  const [weeklyData, setWeeklyData] = useState(generateWeeklyData());
-  const [topicData, setTopicData] = useState<any[]>([]);
+  const [weeklyData, setWeeklyData] = useState<WeeklyActivityPoint[]>([]);
+  const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
+  const [topicData, setTopicData] = useState<Array<{ name: string; value: number; color: string }>>([]);
 
   useEffect(() => {
-    setWeeklyData(generateWeeklyData());
     setTopicData(generateTopicData(dailyWords));
   }, [dailyWords]);
+
+  useEffect(() => {
+    const userId = user?.id || 'guest';
+
+    const loadAnalytics = async () => {
+      const [weekly, heatmap] = await Promise.all([
+        getWeeklyActivity(userId),
+        getHeatmapData(userId),
+      ]);
+
+      setWeeklyData(weekly);
+      setHeatmapData(heatmap);
+    };
+
+    void loadAnalytics();
+  }, [stats.totalWords, timeRange, user?.id]);
 
   // Calculate level based on XP
   const level = Math.floor(xp.total / 100) + 1;
@@ -136,14 +127,16 @@ export default function AnalyticsPage() {
   ];
 
   // Retention curve data
+  const masteryRatio = stats.totalWords > 0 ? stats.masteredWords / stats.totalWords : 0.35;
+  const baseline = Math.round(40 + masteryRatio * 45);
   const retentionData = [
     { day: 'Day 1', retention: 100 },
-    { day: 'Day 3', retention: 85 },
-    { day: 'Day 7', retention: 72 },
-    { day: 'Day 14', retention: 65 },
-    { day: 'Day 30', retention: 58 },
-    { day: 'Day 60', retention: 52 },
-    { day: 'Day 90', retention: 48 },
+    { day: 'Day 3', retention: Math.min(95, baseline + 18) },
+    { day: 'Day 7', retention: Math.min(90, baseline + 10) },
+    { day: 'Day 14', retention: Math.min(85, baseline + 4) },
+    { day: 'Day 30', retention: baseline },
+    { day: 'Day 60', retention: Math.max(30, baseline - 6) },
+    { day: 'Day 90', retention: Math.max(25, baseline - 10) },
   ];
 
   return (

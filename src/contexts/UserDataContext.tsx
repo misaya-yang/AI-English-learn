@@ -35,6 +35,14 @@ import {
 } from '@/data/localStorage';
 import { wordsDatabase, type WordData, getWordOfTheDay, getPreviousWords } from '@/data/words';
 import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportResult, WordBook } from '@/data/wordBooks';
+import type { LearningMission, LearningProfile } from '@/types/examContent';
+import {
+  completeMissionTask as completeMissionTaskInService,
+  getLearningProfile,
+  getOrCreateDailyMission,
+  saveLearningProfile,
+} from '@/services/learningMissions';
+import { completeMissionTaskEvent, recordLearningEvent } from '@/services/learningEvents';
 
 interface StudyStats {
   totalWords: number;
@@ -89,6 +97,13 @@ interface UserDataContextType {
   // Learning plan
   learningPlan: LearningPlan | null;
   savePlan: (plan: Partial<LearningPlan>) => void;
+
+  // Learning profile & mission
+  learningProfile: LearningProfile;
+  updateLearningProfile: (updates: Partial<Omit<LearningProfile, 'userId' | 'updatedAt'>>) => void;
+  dailyMission: LearningMission | null;
+  refreshDailyMission: () => void;
+  completeMissionTask: (taskId: string) => void;
 
   // Settings
   settings: any;
@@ -155,6 +170,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     weeklyXP: 0,
   });
   const [learningPlan, setLearningPlan] = useState<LearningPlan | null>(null);
+  const [learningProfile, setLearningProfileState] = useState<LearningProfile>(() => getLearningProfile(userId));
+  const [dailyMission, setDailyMission] = useState<LearningMission | null>(null);
   const [settings, setSettings] = useState<any>({});
 
   const loadData = useCallback(() => {
@@ -195,6 +212,17 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const plan = getLearningPlan(userId);
     setLearningPlan(plan);
+
+    const profile = getLearningProfile(userId);
+    setLearningProfileState(profile);
+
+    void getOrCreateDailyMission({
+      userId,
+      goalWords: profile.dailyMinutes > 30 ? 20 : 10,
+      dueCount: due.length,
+    }).then((mission) => {
+      setDailyMission(mission);
+    });
 
     const userSettings = getSettings(userId);
     setSettings(userSettings);
@@ -279,6 +307,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     addXP(userId, 5);
     updateStreak(userId);
+    void recordLearningEvent({
+      userId,
+      eventName: 'today.word_marked',
+      payload: { wordId, status: 'learned' },
+    });
     loadData();
   };
 
@@ -292,6 +325,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     addXP(userId, 10);
     updateStreak(userId);
+    void recordLearningEvent({
+      userId,
+      eventName: 'today.word_marked',
+      payload: { wordId, status: 'mastered' },
+    });
     loadData();
   };
 
@@ -320,6 +358,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const xpAmount = rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10;
     addXP(userId, xpAmount);
     updateStreak(userId);
+    void recordLearningEvent({
+      userId,
+      eventName: 'review.word_rated',
+      payload: { wordId, rating, status: newStatus },
+    });
     loadData();
   };
 
@@ -359,8 +402,64 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     recordStudySession(userId, wordsStudied, wordsLearned, xpEarned, duration);
+    void recordLearningEvent({
+      userId,
+      eventName: 'mission.task_completed',
+      payload: {
+        source: 'study_session',
+        wordsStudied,
+        wordsLearned,
+        xpEarned,
+        duration,
+      },
+    });
     loadData();
   };
+
+  const updateLearningProfile = useCallback(
+    (updates: Partial<Omit<LearningProfile, 'userId' | 'updatedAt'>>) => {
+      if (!user) return;
+      void saveLearningProfile(userId, updates).then((profile) => {
+        setLearningProfileState(profile);
+        void getOrCreateDailyMission({
+          userId,
+          goalWords: profile.dailyMinutes > 30 ? 20 : 10,
+          dueCount: dueWords.length,
+        }).then((mission) => setDailyMission(mission));
+      });
+    },
+    [dueWords.length, user, userId],
+  );
+
+  const refreshDailyMission = useCallback(() => {
+    if (!user) return;
+    void getOrCreateDailyMission({
+      userId,
+      goalWords: learningProfile.dailyMinutes > 30 ? 20 : 10,
+      dueCount: dueWords.length,
+    }).then((mission) => setDailyMission(mission));
+  }, [dueWords.length, learningProfile.dailyMinutes, user, userId]);
+
+  const completeMissionTask = useCallback(
+    (taskId: string) => {
+      if (!user || !dailyMission) return;
+      void completeMissionTaskInService({
+        userId,
+        missionId: dailyMission.id,
+        taskId,
+      }).then((updated) => {
+        if (!updated) return;
+        setDailyMission(updated);
+        void completeMissionTaskEvent({
+          userId,
+          missionId: updated.id,
+          taskId,
+          taskType: updated.tasks.find((task) => task.id === taskId)?.type || 'unknown',
+        });
+      });
+    },
+    [dailyMission, user, userId],
+  );
 
   return (
     <UserDataContext.Provider
@@ -392,6 +491,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         refreshStats,
         learningPlan,
         savePlan,
+        learningProfile,
+        updateLearningProfile,
+        dailyMission,
+        refreshDailyMission,
+        completeMissionTask,
         settings,
         updateSettings,
         addStudySession,

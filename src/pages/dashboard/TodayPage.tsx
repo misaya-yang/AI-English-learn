@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { WordData } from '@/data/words';
 import { toast } from 'sonner';
 import { getRecommendedUnit } from '@/data/examContent';
+import { recordLearningEvent } from '@/services/learningEvents';
 
 interface WordCardProps {
   word: WordData;
@@ -306,7 +307,16 @@ function WordCard({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard }: 
 export default function TodayPage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, activeBook, activeBookSummary, markWordAsLearned, refreshDailyWords } = useUserData();
+  const {
+    dailyWords,
+    activeBook,
+    activeBookSummary,
+    markWordAsLearned,
+    refreshDailyWords,
+    dailyMission,
+    completeMissionTask,
+    refreshDailyMission,
+  } = useUserData();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [learnedWords, setLearnedWords] = useState<Set<string>>(new Set());
@@ -322,7 +332,8 @@ export default function TodayPage() {
   useEffect(() => {
     // Refresh daily words when component mounts
     refreshDailyWords();
-  }, [refreshDailyWords]);
+    refreshDailyMission();
+  }, [refreshDailyWords, refreshDailyMission]);
 
   const handleFlip = (wordId: string) => {
     setFlippedCards((prev) => {
@@ -348,6 +359,19 @@ export default function TodayPage() {
       
       setLearnedWords((prev) => new Set(prev).add(currentWord.id));
       markWordAsLearned(currentWord.id);
+      void recordLearningEvent({
+        userId,
+        eventName: 'today.word_marked',
+        payload: {
+          wordId: currentWord.id,
+          word: currentWord.word,
+          status: 'learned',
+        },
+      });
+
+      if (learnedWords.size + 1 >= words.length) {
+        completeMissionTask('task_vocab_today');
+      }
       toast.success(`已学会 "${currentWord.word}"! +5 XP`, {
         icon: <Star className="h-4 w-4 text-yellow-500" />,
       });
@@ -359,6 +383,15 @@ export default function TodayPage() {
       }
       
       setHardWords((prev) => new Set(prev).add(currentWord.id));
+      void recordLearningEvent({
+        userId,
+        eventName: 'today.word_marked',
+        payload: {
+          wordId: currentWord.id,
+          word: currentWord.word,
+          status: 'hard',
+        },
+      });
       toast.info(`已标记 "${currentWord.word}" 为较难，将加入复习列表`, {
         icon: <Brain className="h-4 w-4 text-amber-500" />,
       });
@@ -570,6 +603,35 @@ export default function TodayPage() {
                   去练习
                 </Button>
               </Link>
+            </CardContent>
+          </Card>
+        )}
+        {dailyMission && (
+          <Card className="mt-4 border-blue-200 dark:border-blue-800">
+            <CardContent className="py-3 px-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">今日任务 · {dailyMission.estimatedMinutes} 分钟</p>
+                <Badge variant="outline">{dailyMission.status}</Badge>
+              </div>
+              <div className="space-y-1">
+                {dailyMission.tasks.map((task) => (
+                  <div key={task.id} className="flex items-center justify-between text-xs">
+                    <span className={cn(task.done && 'line-through text-muted-foreground')}>
+                      {task.titleZh}
+                    </span>
+                    {!task.done && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => completeMissionTask(task.id)}
+                      >
+                        完成
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}

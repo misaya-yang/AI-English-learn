@@ -57,6 +57,7 @@ import type { WordData } from '@/data/words';
 import { generateMicroLessonFromErrors } from '@/services/aiExamCoach';
 import { useAuth } from '@/contexts/AuthContext';
 import type { FeedbackIssue } from '@/types/examContent';
+import { saveAiFeedbackRecord } from '@/data/examContent';
 
 // Quick prompt suggestions - English prompts for learning (not translated)
 const getQuickPrompts = (t: any) => [
@@ -459,7 +460,7 @@ export default function ChatPage() {
   const language = i18n.language;
   const { user } = useAuth();
   const chatUserId = user?.id || 'guest';
-  const { addCustomWord } = useUserData();
+  const { addCustomWord, completeMissionTask } = useUserData();
   const {
     sessions,
     currentSessionId,
@@ -713,6 +714,21 @@ export default function ChatPage() {
     [chatUserId, language],
   );
 
+  const findQuizArtifact = useCallback(
+    (quizId: string): Extract<ChatArtifact, { type: 'quiz' }> | null => {
+      for (let i = messages.length - 1; i >= 0; i -= 1) {
+        const artifacts = messages[i].artifacts || [];
+        for (const artifact of artifacts) {
+          if (artifact.type === 'quiz' && artifact.payload.quizId === quizId) {
+            return artifact;
+          }
+        }
+      }
+      return null;
+    },
+    [messages],
+  );
+
   const handleQuizSubmit = useCallback(
     (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => {
       if (!currentSessionId) return;
@@ -724,6 +740,59 @@ export default function ChatPage() {
         durationMs,
         sourceMode: chatMode,
       });
+      completeMissionTask('task_quiz_today');
+      if (!isCorrect) {
+        const artifact = findQuizArtifact(quizId);
+        if (artifact) {
+          addReviewCardFromQuiz(artifact);
+
+          const normalizeTag = (value: string): FeedbackIssue['tag'] => {
+            if (value === 'task_response') return 'task_response';
+            if (value === 'coherence') return 'coherence';
+            if (value === 'grammar') return 'grammar';
+            if (value === 'logic') return 'logic';
+            if (value === 'collocation') return 'collocation';
+            if (value === 'tense') return 'tense';
+            return 'lexical';
+          };
+
+          const inferredTag =
+            artifact.payload.tags && artifact.payload.tags.length > 0
+              ? normalizeTag(artifact.payload.tags[0])
+              : artifact.payload.skills.some((skill) => skill.includes('grammar'))
+                ? 'grammar'
+                : 'lexical';
+
+          saveAiFeedbackRecord(chatUserId, {
+            attemptId: `chat_quiz_${quizId}_${Date.now()}`,
+            scores: {
+              taskResponse: 5.5,
+              coherenceCohesion: 5.5,
+              lexicalResource: inferredTag === 'lexical' || inferredTag === 'collocation' ? 5 : 6,
+              grammaticalRangeAccuracy: inferredTag === 'grammar' || inferredTag === 'tense' ? 5 : 6,
+              overallBand: 5.5,
+            },
+            issues: [
+              {
+                tag: inferredTag,
+                severity: 'medium',
+                message: language.startsWith('zh') ? '来自对话测验的错误回流。' : 'Captured from chat quiz attempt.',
+                suggestion: language.startsWith('zh')
+                  ? '建议完成对应补救微课并加入复习。'
+                  : 'Take the remediation micro-lesson and review this card again.',
+              },
+            ],
+            rewrites: [artifact.payload.explanation],
+            nextActions: [
+              language.startsWith('zh') ? '完成 1 次补救练习' : 'Complete 1 remediation drill',
+              language.startsWith('zh') ? '24 小时后再次测验' : 'Retry in 24 hours',
+            ],
+            confidence: 0.7,
+            provider: 'fallback',
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
       toast.success(
         isCorrect
           ? language.startsWith('zh')
@@ -734,7 +803,7 @@ export default function ChatPage() {
             : 'Attempt saved',
       );
     },
-    [chatMode, currentSessionId, language, submitQuizAttempt],
+    [addReviewCardFromQuiz, chatMode, chatUserId, completeMissionTask, currentSessionId, findQuizArtifact, language, submitQuizAttempt],
   );
 
   const syncLabel =

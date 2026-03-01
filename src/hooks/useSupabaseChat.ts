@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { supabase, getAnonymousUserId } from '@/lib/supabase';
 import { AuthRequiredError, EdgeFunctionError, invokeEdgeFunction } from '@/services/aiGateway';
 import { attachArtifactsToContent, extractArtifactsFromContent, normalizeArtifacts } from '@/services/chatArtifacts';
+import { recordLearningEvent } from '@/services/learningEvents';
 import type {
   AgentMeta,
   ChatArtifact,
@@ -677,18 +678,30 @@ export function useSupabaseChat() {
 
   const trackExperimentEvent = useCallback(
     async (eventName: string, payload: Record<string, unknown>) => {
+      const normalizedEventName = eventName
+        .replace(/_/g, '.')
+        .replace('quiz.attempt.submitted', 'chat.quiz_attempted')
+        .replace('chat.message.sent', 'chat.message_sent')
+        .replace('chat.reply.received', 'chat.reply_received');
+
       appendExperimentEventLocal(eventName, payload);
 
       try {
         await supabase.from('chat_experiment_events').insert({
           user_id: userId,
-          event_name: eventName,
+          event_name: normalizedEventName,
           event_payload_json: payload,
           created_at: new Date().toISOString(),
         });
       } catch {
         // Optional table may not exist yet. Keep local events only.
       }
+
+      await recordLearningEvent({
+        userId,
+        eventName: normalizedEventName,
+        payload,
+      });
     },
     [userId],
   );
@@ -1081,6 +1094,17 @@ export function useSupabaseChat() {
       hasHistory: historyMessages.length > 0,
     });
 
+    void recordLearningEvent({
+      userId,
+      eventName: 'chat.message_sent',
+      sessionId,
+      payload: {
+        mode,
+        trigger,
+        messageLength: userMessage.content.length,
+      },
+    });
+
     await requestAssistantReply({
       sessionId,
       apiMessages,
@@ -1133,6 +1157,18 @@ export function useSupabaseChat() {
         isCorrect: attempt.isCorrect,
         durationMs: attempt.durationMs,
         sourceMode: attempt.sourceMode,
+      });
+
+      void recordLearningEvent({
+        userId,
+        eventName: 'chat.quiz_attempted',
+        sessionId: attempt.sessionId,
+        payload: {
+          quizId: attempt.quizId,
+          isCorrect: attempt.isCorrect,
+          durationMs: attempt.durationMs,
+          sourceMode: attempt.sourceMode,
+        },
       });
 
       try {

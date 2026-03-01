@@ -1,4 +1,4 @@
-import { getChatFallbackReply, invokeEdgeFunction } from './aiGateway';
+import { invokeEdgeFunction } from './aiGateway';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -12,16 +12,10 @@ export async function sendMessageToDeepSeekStream(
   onError: (error: Error) => void,
 ): Promise<void> {
   try {
-    let content = '';
-
-    try {
-      const result = await invokeEdgeFunction<{ content: string }>('ai-chat', {
-        messages,
-      });
-      content = result.content;
-    } catch {
-      content = getChatFallbackReply(messages);
-    }
+    const result = await invokeEdgeFunction<{ content: string }>('ai-chat', {
+      messages,
+    });
+    const content = result.content;
 
     const chunks = content.match(/[\s\S]{1,24}/g) || [content];
     for (const chunk of chunks) {
@@ -36,17 +30,13 @@ export async function sendMessageToDeepSeekStream(
 }
 
 export async function sendMessageToDeepSeek(messages: ChatMessage[]): Promise<string> {
-  try {
-    const result = await invokeEdgeFunction<{ content: string }>('ai-chat', {
-      messages,
-    });
+  const result = await invokeEdgeFunction<{ content: string }>('ai-chat', {
+    messages,
+  });
 
-    if (!result?.content) {
-      return getChatFallbackReply(messages);
-    }
-
-    return result.content;
-  } catch {
-    return getChatFallbackReply(messages);
+  if (!result?.content) {
+    throw new Error('AI returned empty content');
   }
+
+  return result.content;
 }

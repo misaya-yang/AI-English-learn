@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { getSubscriptionEntitlement } from '@/services/billingGateway';
 import type {
   AiFeedback,
   AnalyzedErrorNode,
@@ -367,6 +368,23 @@ const getUsageForToday = (userId: string): EntitlementUsage => {
 
 export const getEntitlement = async (userId: string): Promise<Entitlement> => {
   const map = getEntitlementMap();
+
+  try {
+    const remote = await getSubscriptionEntitlement();
+    const entitlement: Entitlement = {
+      userId,
+      plan: remote.plan,
+      quota: remote.quota,
+      periodStart: remote.periodStart,
+      periodEnd: remote.periodEnd,
+    };
+
+    map[userId] = entitlement;
+    setEntitlementMap(map);
+    return entitlement;
+  } catch {
+    // Fallback to direct table/local checks below.
+  }
 
   // Try Supabase first when table exists.
   try {

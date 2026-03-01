@@ -29,6 +29,7 @@ import type { WordData } from '@/data/words';
 import type { AiFeedback } from '@/types/examContent';
 import { getContentItemsByUnit, getContentUnits, getQuotaSnapshot, saveAiFeedbackRecord, saveItemAttempt } from '@/data/examContent';
 import { consumeExamFeatureQuota, createAttempt, gradeIeltsWriting } from '@/services/aiExamCoach';
+import { recordLearningEvent } from '@/services/learningEvents';
 
 // Quiz question types
 interface QuizQuestion {
@@ -134,7 +135,7 @@ const practiceModes = [
 export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, addStudySession } = useUserData();
+  const { dailyWords, addStudySession, completeMissionTask } = useUserData();
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -181,7 +182,7 @@ export default function PracticePage() {
   const progress = quizQuestions.length > 0 ? ((currentQuestionIndex) / quizQuestions.length) * 100 : 0;
 
   const handleAnswer = () => {
-    if (!selectedAnswer) return;
+    if (!selectedAnswer || !currentQuestion) return;
 
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
     setShowResult(true);
@@ -192,6 +193,17 @@ export default function PracticePage() {
     } else {
       toast.error('Incorrect. Try again!');
     }
+
+    void recordLearningEvent({
+      userId,
+      eventName: 'practice.quiz_submitted',
+      payload: {
+        mode: selectedMode || 'quiz',
+        isCorrect,
+        questionId: currentQuestion.id,
+        word: currentQuestion.word.word,
+      },
+    });
   };
 
   const handleNext = () => {
@@ -203,6 +215,7 @@ export default function PracticePage() {
       setIsComplete(true);
       // Record study session
       addStudySession(quizQuestions.length, score, score * 10, 15);
+      completeMissionTask('task_quiz_today');
     }
   };
 
@@ -245,6 +258,18 @@ export default function PracticePage() {
 
     const earnedXp = feedback.scores.overallBand >= 6 ? 20 : 12;
     addStudySession(1, feedback.scores.overallBand >= 6 ? 1 : 0, earnedXp, 8);
+    completeMissionTask('task_review_today');
+
+    void recordLearningEvent({
+      userId,
+      eventName: 'practice.writing_submitted',
+      payload: {
+        itemId: writingItemId,
+        taskType: writingTaskType,
+        overallBand: feedback.scores.overallBand,
+        issues: feedback.issues.map((issue) => issue.tag),
+      },
+    });
     toast.success(`AI feedback ready. Overall band ${feedback.scores.overallBand}`);
   };
 
