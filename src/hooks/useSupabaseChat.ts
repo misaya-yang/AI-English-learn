@@ -62,8 +62,9 @@ const CHAT_QUIZ_ATTEMPTS_STORAGE_KEY = 'vocabdaily-chat-quiz-attempts';
 const CHAT_EXPERIMENT_EVENTS_STORAGE_KEY = 'vocabdaily-chat-experiment-events';
 const CHAT_CANVAS_SESSION_MAP_KEY = 'vocabdaily-canvas-child-session-map';
 const CHAT_QUIZ_RUNS_STORAGE_KEY = 'vocabdaily-chat-quiz-runs';
-const MAX_HISTORY_TURNS = 4;
-const MAX_CONTEXT_CHARS = 420;
+// Keep enough recent turns to support 5-10 round coherent tutoring dialogues.
+const MAX_HISTORY_TURNS = 10;
+const MAX_CONTEXT_CHARS = 900;
 const MAX_USER_CHARS = 900;
 const CHAT_REQUEST_TIMEOUT_MS = 90000;
 const MAX_TOKENS_BY_MODE: Record<ChatMode, number> = {
@@ -78,6 +79,43 @@ const TEMPERATURE_BY_MODE: Record<ChatMode, number> = {
   quiz: 0.5,
   canvas: 0.65,
 };
+
+const QUIZ_EXPLICIT_REQUEST_PATTERN = /(quiz|mcq|multiple choice|give me .*question|ask me .*question|给我.{0,10}(道|个)?题|出.{0,8}题|来.{0,8}题|下一题|第\s*\d+\s*题|选择题|测验题|再给我.{0,8}题|继续.{0,8}题)/i;
+const REFLECTION_REQUEST_PATTERN = /(summary|summarize|plan|roadmap|review|feedback|weakness|strength|next step|总结|复盘|计划|训练计划|薄弱点|优势|下一步|回顾|评估)/i;
+const QUIZ_SUPPRESS_PATTERN = /(不要出题|不要测验|只做总结|只总结|复述|停止测验|结束测验|stop quiz|no quiz|don't give (me )?(a )?quiz)/i;
+
+const shouldAllowAutoQuizForInput = (
+  mode: ChatMode,
+  userInput: string,
+  quizRun?: SendMessageOptions['quizRun'],
+): boolean => {
+  const normalized = userInput.toLowerCase().trim();
+  const suppressQuiz = QUIZ_SUPPRESS_PATTERN.test(normalized);
+  if (suppressQuiz) {
+    return false;
+  }
+
+  if (mode === 'quiz' || Boolean(quizRun?.runId)) {
+    return true;
+  }
+
+  if (mode !== 'study') {
+    return false;
+  }
+
+  const wantsQuiz = QUIZ_EXPLICIT_REQUEST_PATTERN.test(normalized);
+  const wantsReflection = REFLECTION_REQUEST_PATTERN.test(normalized);
+
+  // Summary/planning turns should not be hijacked into another quiz.
+  if (wantsReflection && !wantsQuiz) {
+    return false;
+  }
+
+  return wantsQuiz;
+};
+
+const shouldSuppressQuizForInput = (userInput: string): boolean =>
+  QUIZ_SUPPRESS_PATTERN.test(userInput.toLowerCase().trim());
 
 // System prompt for English tutor
 const SYSTEM_PROMPT = `You are an expert English tutor specializing in helping Chinese-speaking learners. Your responses should be:
@@ -1124,6 +1162,18 @@ export function useSupabaseChat() {
           abortControllerRef.current?.abort();
         }, CHAT_REQUEST_TIMEOUT_MS);
 
+        const latestUserInputForIntent = [...context.apiMessages]
+          .reverse()
+          .find((message) => message.role === 'user')?.content || '';
+        const suppressQuizForThisTurn = shouldSuppressQuizForInput(latestUserInputForIntent);
+        const effectiveQuizRun = suppressQuizForThisTurn ? undefined : context.quizRun;
+        const mergedFeatureFlags = {
+          ...(context.featureFlags || {}),
+          enableQuizArtifacts: true,
+          enableStudyArtifacts: true,
+          allowAutoQuiz: shouldAllowAutoQuizForInput(context.mode, latestUserInputForIntent, effectiveQuizRun),
+        };
+
         const result = await invokeEdgeFunction<ChatEdgeResponse>(
           'ai-chat',
           {
@@ -1162,13 +1212,8 @@ export function useSupabaseChat() {
                   }
                 : undefined,
             mode: context.mode,
-            quizRun: context.quizRun,
-            featureFlags: {
-              enableQuizArtifacts: true,
-              enableStudyArtifacts: true,
-              allowAutoQuiz: context.mode === 'study' || context.mode === 'quiz',
-              ...context.featureFlags,
-            },
+            quizRun: effectiveQuizRun,
+            featureFlags: mergedFeatureFlags,
             temperature: TEMPERATURE_BY_MODE[context.mode],
             maxTokens: MAX_TOKENS_BY_MODE[context.mode],
           },
