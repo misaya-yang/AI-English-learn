@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -64,12 +64,48 @@ export default function LoginPage() {
   const handleDemoLogin = async () => {
     setIsLoading(true);
     try {
-      const { success, error } = await login('demo@example.com', 'demo123');
+      const demoEmail = (import.meta.env.VITE_DEMO_EMAIL as string | undefined) || 'demo@example.com';
+      const demoPassword = (import.meta.env.VITE_DEMO_PASSWORD as string | undefined) || 'Demo@123456';
+
+      const { success, error } = await login(demoEmail, demoPassword);
       if (success) {
         toast.success('欢迎使用演示账号！');
         navigate('/dashboard');
       } else {
-        toast.error(error || '演示账号登录失败');
+        const normalized = (error || '').toLowerCase();
+        const shouldTryCreate =
+          normalized.includes('invalid login') ||
+          normalized.includes('invalid credentials') ||
+          normalized.includes('not found') ||
+          normalized.includes('电子邮箱或密码错误');
+
+        if (!shouldTryCreate) {
+          toast.error(error || '演示账号登录失败');
+          return;
+        }
+
+        const created = await register(demoEmail, demoPassword, 'Demo User');
+        if (!created.success && !(created.error || '').toLowerCase().includes('already')) {
+          toast.error(created.error || '演示账号创建失败');
+          return;
+        }
+
+        const retry = await login(demoEmail, demoPassword);
+        if (retry.success) {
+          toast.success('欢迎使用演示账号！');
+          navigate('/dashboard');
+          return;
+        }
+
+        const fallbackEmail = `demo.${Date.now()}@vocabdaily.app`;
+        const fallbackPassword = 'Demo@123456';
+        const fallbackRegister = await register(fallbackEmail, fallbackPassword, 'Demo User');
+        if (!fallbackRegister.success) {
+          toast.error(fallbackRegister.error || '演示账号登录失败');
+          return;
+        }
+        toast.success('已创建临时演示账号');
+        navigate('/dashboard');
       }
     } catch {
       toast.error('登录失败');

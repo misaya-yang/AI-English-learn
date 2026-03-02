@@ -631,7 +631,7 @@ export default function LandingPage() {
               © 2024 VocabDaily AI. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">Made with ❤️ by misaya</span>
+              <span className="text-sm text-muted-foreground">Made with ❤️ by uu</span>
             </div>
           </div>
         </div>

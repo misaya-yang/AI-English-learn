@@ -110,6 +110,24 @@ export interface ContextMeta {
   searchTriggered: boolean;
 }
 
+export interface MemoryUsedTrace {
+  id: string;
+  kind: string;
+  contentPreview: string;
+  confidence: number;
+  score: number;
+  isPinned: boolean;
+}
+
+export interface MemoryWriteTrace {
+  id?: string;
+  kind: string;
+  contentPreview: string;
+  confidence: number;
+  dedupeKey: string;
+  reason: 'stable' | 'tool_fact' | 'error_trace' | 'explicit';
+}
+
 export interface CanvasSessionMeta {
   parentSessionId?: string;
   childSessionId?: string;
@@ -145,6 +163,9 @@ export interface ChatEdgeResponse {
   toolRuns?: ToolRun[];
   contextMeta?: ContextMeta;
   canvasSessionMeta?: CanvasSessionMeta;
+  memoryUsed?: MemoryUsedTrace[];
+  memoryWrites?: MemoryWriteTrace[];
+  memoryTraceId?: string;
 }
 
 export interface SendMessageOptions {
@@ -159,6 +180,21 @@ export interface SendMessageOptions {
     forceQuiz?: boolean;
     allowAutoQuiz?: boolean;
     forceWebSearch?: boolean;
+  };
+  memoryPolicy?: {
+    topK?: number;
+    minSimilarity?: number;
+    writeMode?: 'stable_only' | 'balanced';
+    allowSensitiveStore?: boolean;
+  };
+  memoryControl?: {
+    explicitRemember?: string[];
+    explicitRememberKind?: 'profile' | 'preference' | 'weakness_tag' | 'goal' | 'error_trace' | 'tool_fact';
+    explicitForget?: {
+      ids?: string[];
+      dedupeKeys?: string[];
+      query?: string;
+    };
   };
   quizRun?: {
     runId: string;

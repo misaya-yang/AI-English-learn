@@ -1,6 +1,10 @@
 export interface AdminQueryOptions {
   select?: string;
   eq?: Record<string, string | number | boolean>;
+  lt?: Record<string, string | number | boolean>;
+  lte?: Record<string, string | number | boolean>;
+  gt?: Record<string, string | number | boolean>;
+  gte?: Record<string, string | number | boolean>;
   in?: Record<string, string[]>;
   order?: { column: string; ascending?: boolean };
   limit?: number;
@@ -16,6 +20,30 @@ const buildQueryString = (options: AdminQueryOptions = {}): string => {
   if (options.eq) {
     Object.entries(options.eq).forEach(([key, value]) => {
       params.set(key, `eq.${String(value)}`);
+    });
+  }
+
+  if (options.lt) {
+    Object.entries(options.lt).forEach(([key, value]) => {
+      params.set(key, `lt.${String(value)}`);
+    });
+  }
+
+  if (options.lte) {
+    Object.entries(options.lte).forEach(([key, value]) => {
+      params.set(key, `lte.${String(value)}`);
+    });
+  }
+
+  if (options.gt) {
+    Object.entries(options.gt).forEach(([key, value]) => {
+      params.set(key, `gt.${String(value)}`);
+    });
+  }
+
+  if (options.gte) {
+    Object.entries(options.gte).forEach(([key, value]) => {
+      params.set(key, `gte.${String(value)}`);
     });
   }
 
@@ -130,6 +158,41 @@ export const adminPatch = async <T>(
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
     throw new Error(`adminPatch ${table} failed: ${response.status} ${detail}`);
+  }
+
+  return (await response.json()) as T[];
+};
+
+export const adminDelete = async <T>(
+  table: string,
+  options: Pick<AdminQueryOptions, 'eq' | 'in'>,
+): Promise<T[]> => {
+  const response = await fetch(
+    `${getRestBaseUrl()}/${table}${buildQueryString({ eq: options.eq, in: options.in })}`,
+    {
+      method: 'DELETE',
+      headers: getAdminHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`adminDelete ${table} failed: ${response.status} ${detail}`);
+  }
+
+  return (await response.json()) as T[];
+};
+
+export const adminRpc = async <T>(fn: string, payload: Record<string, unknown>): Promise<T[]> => {
+  const response = await fetch(`${getRestBaseUrl()}/rpc/${fn}`, {
+    method: 'POST',
+    headers: getAdminHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`adminRpc ${fn} failed: ${response.status} ${detail}`);
   }
 
   return (await response.json()) as T[];

@@ -31,6 +31,7 @@ import {
   Menu,
   MessageCircle,
   Moon,
+  Shield,
   Settings,
   Sun,
   Target,
@@ -48,6 +49,7 @@ const getNavItems = (t: any) => [
   { path: '/dashboard/vocabulary', label: t('nav.vocabulary'), icon: Library },
   { path: '/dashboard/analytics', label: t('nav.analytics'), icon: Trophy },
   { path: '/dashboard/chat', label: t('nav.chat'), icon: MessageCircle },
+  { path: '/dashboard/memory', label: t('nav.memory'), icon: Shield },
 ];
 
 export default function DashboardLayout() {
@@ -159,7 +161,7 @@ export default function DashboardLayout() {
         <div className="px-3 py-2 mb-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Crafted by misaya</span>
+            <span>Crafted by uu</span>
           </div>
         </div>
 

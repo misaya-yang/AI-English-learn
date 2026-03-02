@@ -64,6 +64,7 @@ import { generateMicroLessonFromErrors } from '@/services/aiExamCoach';
 import { useAuth } from '@/contexts/AuthContext';
 import type { FeedbackIssue } from '@/types/examContent';
 import { saveAiFeedbackRecord } from '@/data/examContent';
+import { deleteMemoryItems, rememberMemoryItems } from '@/services/memoryCenter';
 
 // Quick prompt suggestions - English prompts for learning (not translated)
 const getQuickPrompts = (t: any) => [
@@ -101,6 +102,7 @@ interface QuizSequenceState {
   answeredCount: number;
   seedPrompt: string;
   usedWords: string[];
+  startedAt: number;
 }
 
 interface QuizRunArtifactEntry {
@@ -109,10 +111,16 @@ interface QuizRunArtifactEntry {
   createdAt: number;
 }
 
-const QUIZ_INTENT_RE = /(quiz|测验|測驗|测试|測試|题目|題目|考我|考考|questions?)/i;
+const QUIZ_INTENT_RE = /(quiz|测验|測驗|测试|測試|选择题|選擇題|四选一|四選一|考我|考考|questions?)/i;
+const QUIZ_REQUEST_ACTION_RE = /(给我|給我|出|來|来|生成|做|做一|出题|出題|考我|测验|測驗|测试|測試|quiz|question)/i;
+const QUIZ_SUMMARY_SUPPRESS_RE =
+  /(总结|總結|复盘|復盤|分析|建议|建議|改进|改進|回顾|回顧|review|summary|summarize|feedback|plan|建议我|建議我)/i;
 const ARABIC_QUIZ_COUNT_RE =
   /(\d{1,2})\s*(?:道|题|題|个|個)?\s*(?:题|題|questions?|question|道|quiz|quizzes|单词|詞彙|vocab|words?)/i;
-const ZH_NUMBER_RE = /([零一二三四五六七八九十两兩]{1,3})\s*(?:道|题|題)/;
+const FLEX_QUIZ_COUNT_RE =
+  /(\d{1,2})\s*(?:道|题|題|个|個)[^\n\r]{0,16}?(?:题|題|question|questions|quiz|测验|測驗|测试|測試|单词|詞彙|vocab|words?)/i;
+const ZH_NUMBER_RE = /([零一二三四五六七八九十两兩]{1,3})\s*(?:道|题|題|个|個)[^\n\r]{0,12}?(?:题|題|question|questions|quiz|测验|測驗|测试|測試|单词|詞彙|vocab|words?)/i;
+const ZH_SIMPLE_QUIZ_COUNT_RE = /([零一二三四五六七八九十两兩]{1,3})\s*(?:道|题|題)/;
 const EN_NUMBER_WORD_RE =
   /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b/i;
 
@@ -180,6 +188,11 @@ const parseRequestedQuizCount = (text: string): number | null => {
   if (!trimmed || !QUIZ_INTENT_RE.test(trimmed)) {
     return null;
   }
+  const hasSummaryIntent = QUIZ_SUMMARY_SUPPRESS_RE.test(trimmed);
+  const hasQuizRequestAction = QUIZ_REQUEST_ACTION_RE.test(trimmed);
+  if (hasSummaryIntent && !hasQuizRequestAction) {
+    return null;
+  }
 
   const arabicMatch = trimmed.match(ARABIC_QUIZ_COUNT_RE);
   if (arabicMatch?.[1]) {
@@ -189,9 +202,18 @@ const parseRequestedQuizCount = (text: string): number | null => {
     }
   }
 
+  const flexMatch = trimmed.match(FLEX_QUIZ_COUNT_RE);
+  if (flexMatch?.[1]) {
+    const parsed = Number(flexMatch[1]);
+    if (Number.isFinite(parsed) && parsed >= 2) {
+      return Math.min(20, parsed);
+    }
+  }
+
   const zhMatch = trimmed.match(ZH_NUMBER_RE);
-  if (zhMatch?.[1]) {
-    const parsed = zhNumeralToNumber(zhMatch[1]);
+  const zhRaw = zhMatch?.[1] || trimmed.match(ZH_SIMPLE_QUIZ_COUNT_RE)?.[1];
+  if (zhRaw) {
+    const parsed = zhNumeralToNumber(zhRaw);
     if (parsed && parsed >= 2) {
       return Math.min(20, parsed);
     }
@@ -220,11 +242,13 @@ const buildQuizSequencePrompt = (args: {
   const usedWords = args.usedWords.filter((item) => item.length > 0).slice(-10);
   if (args.language.startsWith('zh')) {
     return [
-      `请为同一套英语测验一次性生成 ${args.questionCount} 道四选一题（从第 ${args.startIndex} 题开始，总目标 ${args.targetCount} 题）。`,
+      `请为同一套英语测验生成 ${args.questionCount} 道四选一题（从第 ${args.startIndex} 题开始，总目标 ${args.targetCount} 题）。`,
       `用户原始需求：${args.seedPrompt}`,
       usedWords.length > 0 ? `避免重复这些词：${usedWords.join('、')}。` : '',
       `必须返回 ${args.questionCount} 个 quiz artifact（每题一个）。`,
-      'content 只允许简短引导语，不要泄露答案，不要在 content 给解析。',
+      'content 只允许一句简短引导语，不要泄露答案，不要在 content 给解析。',
+      '每题 explanation 限制在 2 句内（中英混合总计不超过 120 字）。',
+      '严格输出结构化 JSON，不要额外代码块包裹，不要输出多余文本。',
       '题目要按序编号并覆盖不同场景。',
     ]
       .filter(Boolean)
@@ -232,11 +256,13 @@ const buildQuizSequencePrompt = (args: {
   }
 
   return [
-    `Generate ${args.questionCount} multiple-choice quiz questions in one response (starting from #${args.startIndex}, total target ${args.targetCount}).`,
+    `Generate ${args.questionCount} multiple-choice quiz questions (starting from #${args.startIndex}, total target ${args.targetCount}).`,
     `Original user intent: ${args.seedPrompt}`,
     usedWords.length > 0 ? `Avoid repeating these target words: ${usedWords.join(', ')}.` : '',
     `Return exactly ${args.questionCount} quiz artifacts (one artifact per question).`,
-    'Keep content as a short instruction only. Do not reveal answers in content.',
+    'Keep content as one short instruction only. Do not reveal answers in content.',
+    'Keep each explanation within 2 short sentences, max 120 characters in total.',
+    'Return strict structured JSON only, no markdown fences and no extra prose.',
     'Diversify contexts across questions.',
   ]
     .filter(Boolean)
@@ -557,7 +583,7 @@ const MessageBubble = ({
       {/* Message Content */}
       <div className={cn(
         'flex flex-col min-w-0',
-        isUser ? 'items-end max-w-[92%] lg:max-w-[74%]' : 'items-start w-full max-w-[900px]'
+        isUser ? 'items-end max-w-[90%] lg:max-w-[72%]' : 'items-start w-full max-w-[780px] xl:max-w-[820px]'
       )}>
         {isUser ? (
           <div className="relative overflow-hidden px-4 py-3 rounded-2xl bg-emerald-600 text-white rounded-br-sm">
@@ -792,6 +818,9 @@ export default function ChatPage() {
     lastSources,
     lastToolRuns,
     lastContextMeta,
+    lastMemoryUsed,
+    lastMemoryWrites,
+    lastMemoryTraceId,
     chatError,
     sendMessage,
     submitQuizAttempt,
@@ -832,6 +861,7 @@ export default function ChatPage() {
   const handledSequenceQuizIdsRef = useRef<Set<string>>(new Set());
   const quizBatchRequestingRef = useRef(false);
   const quizPrefetchAttemptedRef = useRef(false);
+  const quizBackgroundPrefetchRef = useRef(false);
 
   const syncQuizSequence = useCallback((next: QuizSequenceState | null) => {
     quizSequenceRef.current = next;
@@ -840,17 +870,38 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!quizRunState) return;
+    const current = quizSequenceRef.current;
+    if (
+      current &&
+      quizRunState.targetCount === current.targetCount &&
+      quizRunState.answeredCount <= current.answeredCount
+    ) {
+      return;
+    }
+
     syncQuizSequence({
       targetCount: quizRunState.targetCount,
       answeredCount: quizRunState.answeredCount,
       seedPrompt: quizRunState.seedPrompt,
       usedWords: quizRunState.usedWords,
+      startedAt: quizRunState.startedAt,
     });
   }, [quizRunState, syncQuizSequence]);
 
+  useEffect(() => {
+    if (!quizSequence || !currentSessionId || quizRunState) return;
+    if (quizSequence.answeredCount >= quizSequence.targetCount) return;
+    const started = startQuizRun(quizSequence.targetCount, quizSequence.seedPrompt, currentSessionId);
+    if (!started) return;
+    syncQuizSequence({
+      ...quizSequence,
+      startedAt: started.startedAt,
+    });
+  }, [currentSessionId, quizRunState, quizSequence, startQuizRun, syncQuizSequence]);
+
   const contentWidthClass = sidebarOpen
-    ? 'max-w-[980px]'
-    : 'max-w-[1060px]';
+    ? 'max-w-[820px]'
+    : 'max-w-[900px]';
 
   const [quizCanvasIndex, setQuizCanvasIndex] = useState(0);
   const quizArtifactsRef = useRef<QuizRunArtifactEntry[]>([]);
@@ -897,11 +948,13 @@ export default function ChatPage() {
 
   const quizRunArtifacts = useMemo<QuizRunArtifactEntry[]>(() => {
     if (!quizSequence) return [];
+    const runStartedAt = quizSequence.startedAt || 0;
 
     const entries: QuizRunArtifactEntry[] = [];
     const seen = new Set<string>();
 
     for (const message of messages) {
+      if (runStartedAt > 0 && message.createdAt < runStartedAt - 500) continue;
       if (!message.artifacts || message.role !== 'assistant') continue;
       for (const artifact of message.artifacts) {
         if (artifact.type !== 'quiz') continue;
@@ -924,6 +977,7 @@ export default function ChatPage() {
       setQuizCanvasIndex(0);
       quizBatchRequestingRef.current = false;
       quizPrefetchAttemptedRef.current = false;
+      quizBackgroundPrefetchRef.current = false;
       return;
     }
 
@@ -940,9 +994,18 @@ export default function ChatPage() {
     setQuizCanvasIndex(0);
     quizBatchRequestingRef.current = false;
     quizPrefetchAttemptedRef.current = false;
+    quizBackgroundPrefetchRef.current = false;
   }, [currentSessionId]);
 
   const activeQuizRunArtifact = quizRunArtifacts[quizCanvasIndex] || null;
+  const quizCompleted = Boolean(quizSequence && quizSequence.answeredCount >= quizSequence.targetCount);
+  const quizDisplayIndex = quizSequence
+    ? (quizCompleted
+        ? quizSequence.targetCount
+        : activeQuizRunArtifact
+          ? Math.min(quizSequence.targetCount, quizCanvasIndex + 1)
+          : Math.min(quizSequence.targetCount, quizSequence.answeredCount + 1))
+    : 0;
 
   // Auto scroll to bottom when user is near bottom.
   useEffect(() => {
@@ -989,12 +1052,14 @@ export default function ChatPage() {
     const text = input.trim();
     const requestedQuizCount = parseRequestedQuizCount(text);
     const shouldStartQuizSequence = Boolean(requestedQuizCount && requestedQuizCount >= 2);
+    const startedAt = Date.now();
     const nextSequence = shouldStartQuizSequence
       ? {
           targetCount: requestedQuizCount!,
           answeredCount: 0,
           seedPrompt: text,
           usedWords: [],
+          startedAt,
         }
       : null;
     const payload = shouldStartQuizSequence
@@ -1002,30 +1067,35 @@ export default function ChatPage() {
           language,
           seedPrompt: text,
           startIndex: 1,
-          questionCount: requestedQuizCount!,
+          questionCount: 1,
           targetCount: requestedQuizCount!,
           usedWords: [],
         })
       : text;
     let startedRunId: string | undefined;
     let startedRunTarget = requestedQuizCount || undefined;
+    let startedRunStartedAt = startedAt;
 
     if (shouldStartQuizSequence && nextSequence) {
       syncQuizSequence(nextSequence);
       setQuizCanvasIndex(0);
       quizBatchRequestingRef.current = false;
       quizPrefetchAttemptedRef.current = false;
+      quizBackgroundPrefetchRef.current = false;
       if (currentSessionId) {
         const started = startQuizRun(nextSequence.targetCount, nextSequence.seedPrompt, currentSessionId);
         startedRunId = started?.runId;
         startedRunTarget = started?.targetCount || nextSequence.targetCount;
+        startedRunStartedAt = started?.startedAt || startedAt;
       }
+      syncQuizSequence({ ...nextSequence, startedAt: startedRunStartedAt });
       handledSequenceQuizIdsRef.current.clear();
     } else if (quizSequenceRef.current) {
       syncQuizSequence(null);
       setQuizCanvasIndex(0);
       quizBatchRequestingRef.current = false;
       quizPrefetchAttemptedRef.current = false;
+      quizBackgroundPrefetchRef.current = false;
       clearQuizRun(currentSessionId);
       handledSequenceQuizIdsRef.current.clear();
     }
@@ -1039,7 +1109,7 @@ export default function ChatPage() {
 
     await sendMessage(text, {
       mode: shouldStartQuizSequence ? 'quiz' : chatMode,
-      searchMode,
+      searchMode: shouldStartQuizSequence ? 'off' : searchMode,
       trigger: 'manual_input',
       apiContentOverride: shouldStartQuizSequence ? payload : undefined,
       quizRun:
@@ -1065,6 +1135,7 @@ export default function ChatPage() {
     setQuizCanvasIndex(0);
     quizBatchRequestingRef.current = false;
     quizPrefetchAttemptedRef.current = false;
+    quizBackgroundPrefetchRef.current = false;
     clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
@@ -1089,6 +1160,7 @@ export default function ChatPage() {
     setQuizCanvasIndex(0);
     quizBatchRequestingRef.current = false;
     quizPrefetchAttemptedRef.current = false;
+    quizBackgroundPrefetchRef.current = false;
     clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
@@ -1113,6 +1185,7 @@ export default function ChatPage() {
     setQuizCanvasIndex(0);
     quizBatchRequestingRef.current = false;
     quizPrefetchAttemptedRef.current = false;
+    quizBackgroundPrefetchRef.current = false;
     clearQuizRun(currentSessionId);
     handledSequenceQuizIdsRef.current.clear();
     setInput('');
@@ -1139,6 +1212,39 @@ export default function ChatPage() {
     setChatMode('chat');
     requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
+
+  const handleRememberInput = useCallback(async () => {
+    const text = input.trim();
+    if (!text) return;
+    try {
+      const result = await rememberMemoryItems({
+        items: [text],
+        kind: 'preference',
+      });
+      toast.success(
+        language.startsWith('zh')
+          ? `已记住 ${result.writes?.length || 0} 条内容`
+          : `Remembered ${result.writes?.length || 0} item(s)`,
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : (language.startsWith('zh') ? '记忆写入失败' : 'Failed to remember'));
+    }
+  }, [input, language]);
+
+  const handleForgetInput = useCallback(async () => {
+    const text = input.trim();
+    if (!text) return;
+    try {
+      const result = await deleteMemoryItems({ query: text });
+      toast.success(
+        language.startsWith('zh')
+          ? `已删除 ${result.deletedCount} 条匹配记忆`
+          : `Deleted ${result.deletedCount} matching memory item(s)`,
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : (language.startsWith('zh') ? '记忆删除失败' : 'Failed to delete memory'));
+    }
+  }, [input, language]);
 
   // Handle key press
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -1272,26 +1378,32 @@ export default function ChatPage() {
       runId?: string;
     }) => {
       if (args.questionCount <= 0) return;
-      const prompt = buildQuizSequencePrompt({
-        language,
-        seedPrompt: args.sequence.seedPrompt,
-        startIndex: args.startIndex,
-        questionCount: args.questionCount,
-        targetCount: args.sequence.targetCount,
-        usedWords: args.sequence.usedWords,
-      });
       quizBatchRequestingRef.current = true;
       try {
+        const activeSequence = quizSequenceRef.current;
+        if (!activeSequence) return;
+        if (args.runId && quizRunState?.runId && quizRunState.runId !== args.runId) return;
+
+        const questionIndex = Math.max(1, args.startIndex);
+        const prompt = buildQuizSequencePrompt({
+          language,
+          seedPrompt: args.sequence.seedPrompt,
+          startIndex: questionIndex,
+          questionCount: 1,
+          targetCount: args.sequence.targetCount,
+          usedWords: args.sequence.usedWords,
+        });
+
         await sendMessage(args.sequence.seedPrompt, {
           mode: 'quiz',
-          searchMode,
+          searchMode: 'off',
           trigger: 'quiz_button',
           apiContentOverride: prompt,
           hideUserMessage: true,
           quizRun: args.runId
             ? {
                 runId: args.runId,
-                questionIndex: args.startIndex,
+                questionIndex,
                 targetCount: args.sequence.targetCount,
               }
             : undefined,
@@ -1306,35 +1418,13 @@ export default function ChatPage() {
         quizBatchRequestingRef.current = false;
       }
     },
-    [language, searchMode, sendMessage],
+    [language, quizRunState?.runId, sendMessage],
   );
 
-  useEffect(() => {
-    if (!quizSequence || isLoading || quizBatchRequestingRef.current || quizPrefetchAttemptedRef.current) {
-      return;
-    }
-    if (quizRunArtifacts.length <= 0 || quizSequence.answeredCount > 0) {
-      return;
-    }
-
-    const missingCount = quizSequence.targetCount - quizRunArtifacts.length;
-    if (missingCount <= 0) {
-      return;
-    }
-
-    quizPrefetchAttemptedRef.current = true;
-    void requestQuizBatch({
-      sequence: quizSequence,
-      startIndex: quizRunArtifacts.length + 1,
-      questionCount: missingCount,
-      runId: quizRunState?.runId,
-    });
-  }, [isLoading, quizRunArtifacts.length, quizRunState?.runId, quizSequence, requestQuizBatch]);
-
   const handleQuizSubmit = useCallback(
-    async (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => {
+    (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => {
       if (!currentSessionId) return;
-      await submitQuizAttempt({
+      void submitQuizAttempt({
         quizId,
         sessionId: currentSessionId,
         selected,
@@ -1342,11 +1432,19 @@ export default function ChatPage() {
         durationMs,
         sourceMode: chatMode,
       });
-      completeMissionTask('task_quiz_today');
+      void Promise.resolve()
+        .then(() => completeMissionTask('task_quiz_today'))
+        .catch(() => {
+          // Non-critical mission sync should not block quiz progression.
+        });
       if (!isCorrect) {
         const artifact = findQuizArtifact(quizId);
         if (artifact) {
-          addReviewCardFromQuiz(artifact);
+          try {
+            addReviewCardFromQuiz(artifact);
+          } catch {
+            // Review-card fallback should not block quiz flow.
+          }
 
           const normalizeTag = (value: string): FeedbackIssue['tag'] => {
             if (value === 'task_response') return 'task_response';
@@ -1365,46 +1463,40 @@ export default function ChatPage() {
                 ? 'grammar'
                 : 'lexical';
 
-          saveAiFeedbackRecord(chatUserId, {
-            attemptId: `chat_quiz_${quizId}_${Date.now()}`,
-            scores: {
-              taskResponse: 5.5,
-              coherenceCohesion: 5.5,
-              lexicalResource: inferredTag === 'lexical' || inferredTag === 'collocation' ? 5 : 6,
-              grammaticalRangeAccuracy: inferredTag === 'grammar' || inferredTag === 'tense' ? 5 : 6,
-              overallBand: 5.5,
-            },
-            issues: [
-              {
-                tag: inferredTag,
-                severity: 'medium',
-                message: language.startsWith('zh') ? '来自对话测验的错误回流。' : 'Captured from chat quiz attempt.',
-                suggestion: language.startsWith('zh')
-                  ? '建议完成对应补救微课并加入复习。'
-                  : 'Take the remediation micro-lesson and review this card again.',
+          try {
+            saveAiFeedbackRecord(chatUserId, {
+              attemptId: `chat_quiz_${quizId}_${Date.now()}`,
+              scores: {
+                taskResponse: 5.5,
+                coherenceCohesion: 5.5,
+                lexicalResource: inferredTag === 'lexical' || inferredTag === 'collocation' ? 5 : 6,
+                grammaticalRangeAccuracy: inferredTag === 'grammar' || inferredTag === 'tense' ? 5 : 6,
+                overallBand: 5.5,
               },
-            ],
-            rewrites: [artifact.payload.explanation],
-            nextActions: [
-              language.startsWith('zh') ? '完成 1 次补救练习' : 'Complete 1 remediation drill',
-              language.startsWith('zh') ? '24 小时后再次测验' : 'Retry in 24 hours',
-            ],
-            confidence: 0.7,
-            provider: 'fallback',
-            createdAt: new Date().toISOString(),
-          });
+              issues: [
+                {
+                  tag: inferredTag,
+                  severity: 'medium',
+                  message: language.startsWith('zh') ? '来自对话测验的错误回流。' : 'Captured from chat quiz attempt.',
+                  suggestion: language.startsWith('zh')
+                    ? '建议完成对应补救微课并加入复习。'
+                    : 'Take the remediation micro-lesson and review this card again.',
+                },
+              ],
+              rewrites: [artifact.payload.explanation],
+              nextActions: [
+                language.startsWith('zh') ? '完成 1 次补救练习' : 'Complete 1 remediation drill',
+                language.startsWith('zh') ? '24 小时后再次测验' : 'Retry in 24 hours',
+              ],
+              confidence: 0.7,
+              provider: 'fallback',
+              createdAt: new Date().toISOString(),
+            });
+          } catch {
+            // Feedback record persistence is non-blocking for quiz progression.
+          }
         }
       }
-      toast.success(
-        isCorrect
-          ? language.startsWith('zh')
-            ? '回答正确，继续保持'
-            : 'Correct answer'
-          : language.startsWith('zh')
-            ? '已记录错误，建议复习'
-            : 'Attempt saved',
-      );
-
       const sequence = quizSequenceRef.current;
       if (!sequence || handledSequenceQuizIdsRef.current.has(quizId)) {
         return;
@@ -1425,17 +1517,19 @@ export default function ChatPage() {
         : sequence.usedWords;
 
       if (nextAnsweredCount >= sequence.targetCount) {
-        syncQuizSequence(null);
-        setQuizCanvasIndex(0);
+        const completedSequence: QuizSequenceState = {
+          ...sequence,
+          answeredCount: sequence.targetCount,
+          usedWords: nextUsedWords,
+          startedAt: sequence.startedAt,
+        };
+        syncQuizSequence(completedSequence);
+        setQuizCanvasIndex(Math.max(0, Math.min(sequence.targetCount - 1, quizArtifactsRef.current.length - 1)));
         quizBatchRequestingRef.current = false;
         quizPrefetchAttemptedRef.current = false;
+        quizBackgroundPrefetchRef.current = false;
         clearQuizRun(currentSessionId);
         handledSequenceQuizIdsRef.current.clear();
-        toast.success(
-          language.startsWith('zh')
-            ? `已完成 ${sequence.targetCount} 题连续测验`
-            : `Completed ${sequence.targetCount} quiz questions`,
-        );
         return;
       }
 
@@ -1443,6 +1537,7 @@ export default function ChatPage() {
         ...sequence,
         answeredCount: nextAnsweredCount,
         usedWords: nextUsedWords,
+        startedAt: sequence.startedAt,
       };
       syncQuizSequence(nextSequence);
       setQuizCanvasIndex(Math.max(0, Math.min(nextAnsweredCount, quizArtifactsRef.current.length - 1)));
@@ -1454,12 +1549,6 @@ export default function ChatPage() {
           : undefined;
       const availableCount = quizArtifactsRef.current.length;
       if (nextAnsweredCount < availableCount) {
-        toast.info(
-          language.startsWith('zh')
-            ? `继续下一题（${nextQuestionIndex}/${nextSequence.targetCount}）`
-            : `Next question (${nextQuestionIndex}/${nextSequence.targetCount})`,
-          { duration: 2200 },
-        );
         return;
       }
 
@@ -1467,17 +1556,10 @@ export default function ChatPage() {
       if (missingCount <= 0 || quizBatchRequestingRef.current) {
         return;
       }
-
-      toast.info(
-        language.startsWith('zh')
-          ? `正在生成剩余题目（${nextQuestionIndex}-${nextSequence.targetCount}）`
-          : `Generating remaining questions (${nextQuestionIndex}-${nextSequence.targetCount})`,
-        { duration: 2200 },
-      );
       void requestQuizBatch({
         sequence: nextSequence,
         startIndex: nextQuestionIndex,
-        questionCount: missingCount,
+        questionCount: 1,
         runId: persistedRunId || quizRunState?.runId,
       });
     },
@@ -1497,6 +1579,45 @@ export default function ChatPage() {
       submitQuizAttempt,
     ],
   );
+
+  useEffect(() => {
+    if (!quizSequence || isLoading || quizBatchRequestingRef.current || quizPrefetchAttemptedRef.current) {
+      return;
+    }
+    if (quizSequence.answeredCount > 0 || quizRunArtifacts.length > 0) {
+      return;
+    }
+
+    quizPrefetchAttemptedRef.current = true;
+    void requestQuizBatch({
+      sequence: quizSequence,
+      startIndex: 1,
+      questionCount: 1,
+      runId: quizRunState?.runId,
+    });
+  }, [isLoading, quizRunArtifacts.length, quizRunState?.runId, quizSequence, requestQuizBatch]);
+
+  useEffect(() => {
+    if (!quizSequence || isLoading || quizBatchRequestingRef.current || quizBackgroundPrefetchRef.current) {
+      return;
+    }
+    if (quizRunArtifacts.length <= 0 || quizRunArtifacts.length >= quizSequence.targetCount) {
+      return;
+    }
+
+    const missingCount = quizSequence.targetCount - quizRunArtifacts.length;
+    if (missingCount <= 0) {
+      return;
+    }
+
+    quizBackgroundPrefetchRef.current = true;
+    void requestQuizBatch({
+      sequence: quizSequence,
+      startIndex: quizRunArtifacts.length + 1,
+      questionCount: 1,
+      runId: quizRunState?.runId,
+    });
+  }, [isLoading, quizRunArtifacts.length, quizRunState?.runId, quizSequence, requestQuizBatch]);
 
   const syncLabel =
     syncState.source === 'remote'
@@ -1612,10 +1733,12 @@ export default function ChatPage() {
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => {
+                    stopGeneration();
                     syncQuizSequence(null);
                     setQuizCanvasIndex(0);
                     quizBatchRequestingRef.current = false;
                     quizPrefetchAttemptedRef.current = false;
+                    quizBackgroundPrefetchRef.current = false;
                     clearQuizRun(currentSessionId);
                     handledSequenceQuizIdsRef.current.clear();
                     void createSession();
@@ -1640,7 +1763,7 @@ export default function ChatPage() {
                       <div
                         key={session.id}
                         className={cn(
-                          'group flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-all overflow-hidden',
+                          'group flex items-center gap-2.5 p-3 rounded-lg cursor-pointer transition-all',
                           currentSessionId === session.id
                             ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800'
                             : 'hover:bg-muted border border-transparent'
@@ -1653,6 +1776,7 @@ export default function ChatPage() {
                               answeredCount: recovered.answeredCount,
                               seedPrompt: recovered.seedPrompt,
                               usedWords: recovered.usedWords,
+                              startedAt: recovered.startedAt,
                             });
                             setQuizCanvasIndex(Math.max(0, Math.min(recovered.answeredCount, recovered.targetCount - 1)));
                           } else {
@@ -1661,6 +1785,7 @@ export default function ChatPage() {
                           }
                           quizBatchRequestingRef.current = false;
                           quizPrefetchAttemptedRef.current = false;
+                          quizBackgroundPrefetchRef.current = false;
                           handledSequenceQuizIdsRef.current.clear();
                           switchSession(session.id);
                         }}
@@ -1684,7 +1809,14 @@ export default function ChatPage() {
                             e.stopPropagation();
                             deleteSession(session.id);
                           }}
-                          className="flex-shrink-0 p-1.5 rounded-md text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-all"
+                          className={cn(
+                            'inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border transition-colors',
+                            'border-border/70 bg-background/70 text-muted-foreground',
+                            'hover:border-red-300 hover:bg-red-100 hover:text-red-600',
+                            'dark:hover:border-red-800 dark:hover:bg-red-950/40',
+                            currentSessionId === session.id ? 'border-emerald-300/50' : '',
+                          )}
+                          aria-label={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
                           title={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -1736,8 +1868,8 @@ export default function ChatPage() {
                     <span>·</span>
                     <span className="text-emerald-600">
                       {language.startsWith('zh')
-                        ? `连续测验 ${quizSequence.answeredCount + 1}/${quizSequence.targetCount}`
-                        : `Quiz run ${quizSequence.answeredCount + 1}/${quizSequence.targetCount}`}
+                        ? `连续测验 ${quizDisplayIndex}/${quizSequence.targetCount}`
+                        : `Quiz run ${quizDisplayIndex}/${quizSequence.targetCount}`}
                     </span>
                   </>
                 )}
@@ -1750,10 +1882,12 @@ export default function ChatPage() {
               variant="outline"
               size="sm"
               onClick={() => {
+                stopGeneration();
                 syncQuizSequence(null);
                 setQuizCanvasIndex(0);
                 quizBatchRequestingRef.current = false;
                 quizPrefetchAttemptedRef.current = false;
+                quizBackgroundPrefetchRef.current = false;
                 clearQuizRun(currentSessionId);
                 handledSequenceQuizIdsRef.current.clear();
                 void createSession();
@@ -1790,6 +1924,14 @@ export default function ChatPage() {
               <div className="py-4 space-y-2">
                 {messages.map((message) => (
                   (() => {
+                    const hideMessageDuringQuizRun =
+                      Boolean(quizSequence) &&
+                      message.role === 'assistant' &&
+                      message.createdAt >= ((quizSequence?.startedAt || 0) - 500);
+                    if (hideMessageDuringQuizRun) {
+                      return null;
+                    }
+
                     const hasQuizArtifact =
                       message.role === 'assistant' &&
                       Array.isArray(message.artifacts) &&
@@ -1944,6 +2086,33 @@ export default function ChatPage() {
           </div>
         )}
 
+        {(lastMemoryUsed.length > 0 || lastMemoryWrites.length > 0) && (
+          <div className="px-4 pb-2">
+            <div className={cn(contentWidthClass, 'mx-auto rounded-xl border border-cyan-300/45 bg-cyan-50/55 dark:bg-cyan-900/20 p-3')}>
+              <p className="text-xs font-medium text-cyan-700 dark:text-cyan-300">
+                {language.startsWith('zh') ? '记忆透明卡' : 'Memory transparency'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {lastMemoryUsed.length > 0
+                  ? language.startsWith('zh')
+                    ? `本轮命中 ${lastMemoryUsed.length} 条记忆`
+                    : `${lastMemoryUsed.length} memory items used this turn`
+                  : language.startsWith('zh')
+                    ? '本轮未命中历史记忆'
+                    : 'No historical memory used this turn'}
+                {lastMemoryWrites.length > 0
+                  ? language.startsWith('zh')
+                    ? `，新增 ${lastMemoryWrites.length} 条记忆`
+                    : `, ${lastMemoryWrites.length} memory writes saved`
+                  : ''}
+              </p>
+              {lastMemoryTraceId && (
+                <p className="text-[10px] text-muted-foreground mt-1">trace: {lastMemoryTraceId}</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {quizSequence && (
           <div className="px-4 pb-2">
             <div
@@ -1954,23 +2123,31 @@ export default function ChatPage() {
             >
               <p className="text-xs text-emerald-700 dark:text-emerald-300">
                 {language.startsWith('zh')
-                  ? `连续测验进行中：已完成 ${quizSequence.answeredCount}/${quizSequence.targetCount} 题`
-                  : `Quiz streak in progress: ${quizSequence.answeredCount}/${quizSequence.targetCount} completed`}
+                  ? quizCompleted
+                    ? `连续测验已完成：${quizSequence.targetCount}/${quizSequence.targetCount} 题`
+                    : `连续测验进行中：已完成 ${quizSequence.answeredCount}/${quizSequence.targetCount} 题`
+                  : quizCompleted
+                    ? `Quiz completed: ${quizSequence.targetCount}/${quizSequence.targetCount}`
+                    : `Quiz streak in progress: ${quizSequence.answeredCount}/${quizSequence.targetCount} completed`}
               </p>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs text-emerald-700 hover:text-emerald-800"
                 onClick={() => {
+                  stopGeneration();
                   syncQuizSequence(null);
                   setQuizCanvasIndex(0);
                   quizBatchRequestingRef.current = false;
                   quizPrefetchAttemptedRef.current = false;
+                  quizBackgroundPrefetchRef.current = false;
                   clearQuizRun(currentSessionId);
                   handledSequenceQuizIdsRef.current.clear();
                 }}
               >
-                {language.startsWith('zh') ? '结束连续测验' : 'End quiz run'}
+                {language.startsWith('zh')
+                  ? (quizCompleted ? '收起测验画布' : '结束连续测验')
+                  : (quizCompleted ? 'Close quiz canvas' : 'End quiz run')}
               </Button>
             </div>
           </div>
@@ -2063,9 +2240,31 @@ export default function ChatPage() {
                         <Globe className="h-3.5 w-3.5 mr-1.5" />
                         {language.startsWith('zh') ? '强制搜索本条' : 'Search this input'}
                       </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full text-xs"
+                        onClick={handleRememberInput}
+                        disabled={isLoading || !input.trim()}
+                      >
+                        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                        {language.startsWith('zh') ? '记住这条输入' : 'Remember this input'}
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full text-xs"
+                        onClick={handleForgetInput}
+                        disabled={isLoading || !input.trim()}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                        {language.startsWith('zh') ? '别记这条输入' : 'Forget matching memory'}
+                      </Button>
                     </div>
 
-                    {(lastAgentMeta?.triggerReason || lastContextMeta) && (
+                    {(lastAgentMeta?.triggerReason || lastContextMeta || lastMemoryUsed.length > 0 || lastMemoryWrites.length > 0) && (
                       <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-[11px] text-muted-foreground space-y-1">
                         {lastAgentMeta?.triggerReason && (
                           <p>{language.startsWith('zh') ? '触发原因' : 'Trigger'}: {lastAgentMeta.triggerReason}</p>
@@ -2086,6 +2285,33 @@ export default function ChatPage() {
                                 : ' · searched'
                               : ''}
                           </p>
+                        )}
+                        {(lastMemoryUsed.length > 0 || lastMemoryWrites.length > 0) && (
+                          <div className="pt-1 border-t border-border/60 space-y-1">
+                            {lastMemoryUsed.length > 0 && (
+                              <p>
+                                {language.startsWith('zh') ? '命中记忆' : 'Memory used'}: {lastMemoryUsed.length}
+                                {' · '}
+                                {lastMemoryUsed
+                                  .slice(0, 2)
+                                  .map((item) => `${item.kind}(${Math.round(item.score * 100)}%)`)
+                                  .join(', ')}
+                              </p>
+                            )}
+                            {lastMemoryWrites.length > 0 && (
+                              <p>
+                                {language.startsWith('zh') ? '新增记忆' : 'Memory writes'}: {lastMemoryWrites.length}
+                                {' · '}
+                                {lastMemoryWrites
+                                  .slice(0, 2)
+                                  .map((item) => `${item.kind}/${item.reason}`)
+                                  .join(', ')}
+                              </p>
+                            )}
+                            {lastMemoryTraceId && (
+                              <p className="text-[10px] opacity-75">trace: {lastMemoryTraceId}</p>
+                            )}
+                          </div>
                         )}
                       </div>
                     )}

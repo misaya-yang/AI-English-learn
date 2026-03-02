@@ -12,6 +12,8 @@ import type {
   ChatMode,
   ChatQuizAttempt,
   ContextMeta,
+  MemoryUsedTrace,
+  MemoryWriteTrace,
   QuizRunState,
   SendMessageOptions,
   ToolRun,
@@ -52,6 +54,8 @@ interface FailedRequestContext {
   searchMode: NonNullable<SendMessageOptions['searchMode']>;
   canvasSyncToParent: boolean;
   featureFlags: SendMessageOptions['featureFlags'];
+  memoryPolicy?: SendMessageOptions['memoryPolicy'];
+  memoryControl?: SendMessageOptions['memoryControl'];
   quizRun?: SendMessageOptions['quizRun'];
   trigger: NonNullable<SendMessageOptions['trigger']>;
 }
@@ -64,14 +68,14 @@ const CHAT_CANVAS_SESSION_MAP_KEY = 'vocabdaily-canvas-child-session-map';
 const CHAT_QUIZ_RUNS_STORAGE_KEY = 'vocabdaily-chat-quiz-runs';
 // Keep enough recent turns to support 5-10 round coherent tutoring dialogues.
 const MAX_HISTORY_TURNS = 10;
-const MAX_CONTEXT_CHARS = 900;
-const MAX_USER_CHARS = 900;
-const CHAT_REQUEST_TIMEOUT_MS = 90000;
+const MAX_CONTEXT_CHARS = 760;
+const MAX_USER_CHARS = 760;
+const CHAT_REQUEST_TIMEOUT_MS = 60000;
 const MAX_TOKENS_BY_MODE: Record<ChatMode, number> = {
-  chat: 900,
-  study: 1100,
-  quiz: 1800,
-  canvas: 1500,
+  chat: 800,
+  study: 980,
+  quiz: 620,
+  canvas: 1200,
 };
 const TEMPERATURE_BY_MODE: Record<ChatMode, number> = {
   chat: 0.55,
@@ -192,6 +196,343 @@ const normalizeAssistantReplyContent = (raw: unknown): string => {
   }
 
   return deFenced;
+};
+
+const parseEmbeddedEnvelope = (
+  raw: unknown,
+): {
+  content: string;
+  artifacts: ChatArtifact[];
+  sources: ChatSource[];
+} => {
+  if (typeof raw !== 'string') {
+    return { content: '', artifacts: [], sources: [] };
+  }
+
+  const text = raw
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```$/i, '')
+    .trim();
+
+  if (!text) {
+    return { content: '', artifacts: [], sources: [] };
+  }
+
+  const tryParse = (input: string): Record<string, unknown> | null => {
+    try {
+      const parsed = JSON.parse(input);
+      return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const collectLooseJsonObjects = (input: string): Array<Record<string, unknown>> => {
+    const list: Array<Record<string, unknown>> = [];
+    let depth = 0;
+    let start = -1;
+    let inString = false;
+    let escaped = false;
+
+    for (let index = 0; index < input.length; index += 1) {
+      const char = input[index];
+
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = false;
+        }
+        continue;
+      }
+
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+
+      if (char === '{') {
+        if (depth === 0) start = index;
+        depth += 1;
+        continue;
+      }
+
+      if (char !== '}') continue;
+      if (depth <= 0) continue;
+
+      depth -= 1;
+      if (depth === 0 && start >= 0) {
+        const maybe = tryParse(input.slice(start, index + 1));
+        if (maybe) {
+          list.push(maybe);
+        }
+        start = -1;
+      }
+    }
+
+    return list;
+  };
+
+  const parsedDirect = tryParse(text);
+  let parsed = parsedDirect;
+
+  if (!parsed) {
+    let depth = 0;
+    let start = -1;
+    let inString = false;
+    let escaped = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const char = text[index];
+
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = false;
+        }
+        continue;
+      }
+
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+
+      if (char === '{') {
+        if (depth === 0) start = index;
+        depth += 1;
+        continue;
+      }
+
+      if (char !== '}') continue;
+      if (depth <= 0) continue;
+
+      depth -= 1;
+      if (depth === 0 && start >= 0) {
+        parsed = tryParse(text.slice(start, index + 1));
+        if (parsed) break;
+        start = -1;
+      }
+    }
+  }
+
+  if (!parsed) {
+    const looseObjects = collectLooseJsonObjects(text);
+    const looseArtifacts: ChatArtifact[] = [];
+    let looseContent = '';
+    let looseSources: ChatSource[] = [];
+
+    for (const obj of looseObjects) {
+      if (!looseContent) {
+        if (typeof obj.content === 'string' && obj.content.trim()) {
+          looseContent = obj.content.trim();
+        } else if (typeof obj.message === 'string' && obj.message.trim()) {
+          looseContent = obj.message.trim();
+        }
+      }
+
+      if (looseSources.length === 0 && Array.isArray(obj.sources)) {
+        looseSources = obj.sources
+          .filter((item): item is ChatSource => {
+            return Boolean(
+              item &&
+                typeof item === 'object' &&
+                typeof (item as Partial<ChatSource>).url === 'string' &&
+                (item as Partial<ChatSource>).url!.trim().length > 0,
+            );
+          })
+          .map((item, index) => {
+            const typed = item as Partial<ChatSource>;
+            const url = typed.url!.trim();
+            let domain = '';
+            try {
+              domain = new URL(url).hostname;
+            } catch {
+              domain = typeof typed.domain === 'string' ? typed.domain : 'unknown';
+            }
+            return {
+              id: typeof typed.id === 'string' && typed.id.trim() ? typed.id : `source_${index + 1}`,
+              title: typeof typed.title === 'string' && typed.title.trim() ? typed.title : domain,
+              url,
+              domain,
+              publishedAt: typeof typed.publishedAt === 'string' && typed.publishedAt.trim() ? typed.publishedAt : undefined,
+              snippet: typeof typed.snippet === 'string' ? typed.snippet : '',
+              confidence: typeof typed.confidence === 'number' && Number.isFinite(typed.confidence)
+                ? Math.max(0, Math.min(1, typed.confidence))
+                : 0.6,
+            } satisfies ChatSource;
+          });
+      }
+
+      if (Array.isArray(obj.artifacts)) {
+        looseArtifacts.push(...normalizeArtifacts(obj.artifacts));
+      }
+
+      if (typeof obj.type === 'string' && obj.type === 'quiz' && obj.payload && typeof obj.payload === 'object') {
+        looseArtifacts.push(...normalizeArtifacts([{ type: 'quiz', payload: obj.payload }]));
+      }
+
+      if (
+        typeof obj.quizId === 'string' &&
+        typeof obj.stem === 'string' &&
+        Array.isArray(obj.options) &&
+        typeof obj.answerKey === 'string'
+      ) {
+        looseArtifacts.push(
+          ...normalizeArtifacts([
+            {
+              type: 'quiz',
+              payload: {
+                quizId: obj.quizId,
+                title: typeof obj.title === 'string' ? obj.title : 'Quick quiz',
+                questionType: typeof obj.questionType === 'string' ? obj.questionType : 'multiple_choice',
+                stem: obj.stem,
+                options: obj.options,
+                answerKey: obj.answerKey,
+                explanation: typeof obj.explanation === 'string' ? obj.explanation : '',
+                difficulty: typeof obj.difficulty === 'string' ? obj.difficulty : 'medium',
+                skills: Array.isArray(obj.skills) ? obj.skills : [],
+                estimatedSeconds: typeof obj.estimatedSeconds === 'number' ? obj.estimatedSeconds : 45,
+                targetWord: typeof obj.targetWord === 'string' ? obj.targetWord : undefined,
+                tags: Array.isArray(obj.tags) ? obj.tags : undefined,
+              },
+            },
+          ]),
+        );
+      }
+    }
+
+    const dedupedArtifacts = normalizeArtifacts(looseArtifacts);
+    if (dedupedArtifacts.length > 0 || looseContent || looseSources.length > 0) {
+      return {
+        content: looseContent,
+        artifacts: dedupedArtifacts,
+        sources: looseSources,
+      };
+    }
+
+    return { content: '', artifacts: [], sources: [] };
+  }
+
+  const content =
+    (typeof parsed.content === 'string' && parsed.content.trim()) ||
+    (typeof parsed.message === 'string' && parsed.message.trim()) ||
+    (typeof parsed.text === 'string' && parsed.text.trim()) ||
+    '';
+
+  const artifacts = normalizeArtifacts(Array.isArray(parsed.artifacts) ? parsed.artifacts : []);
+  const sources = Array.isArray(parsed.sources)
+    ? parsed.sources
+        .filter((item): item is ChatSource => {
+          return Boolean(
+            item &&
+              typeof item === 'object' &&
+              typeof (item as Partial<ChatSource>).url === 'string' &&
+              (item as Partial<ChatSource>).url!.trim().length > 0,
+          );
+        })
+        .map((item, index) => {
+          const typed = item as Partial<ChatSource>;
+          const url = typed.url!.trim();
+          let domain = '';
+          try {
+            domain = new URL(url).hostname;
+          } catch {
+            domain = typeof typed.domain === 'string' ? typed.domain : 'unknown';
+          }
+          return {
+            id: typeof typed.id === 'string' && typed.id.trim() ? typed.id : `source_${index + 1}`,
+            title:
+              typeof typed.title === 'string' && typed.title.trim()
+                ? typed.title
+                : domain,
+            url,
+            domain,
+            publishedAt: typeof typed.publishedAt === 'string' && typed.publishedAt.trim() ? typed.publishedAt : undefined,
+            snippet: typeof typed.snippet === 'string' ? typed.snippet : '',
+            confidence: typeof typed.confidence === 'number' && Number.isFinite(typed.confidence)
+              ? Math.max(0, Math.min(1, typed.confidence))
+              : 0.6,
+          } satisfies ChatSource;
+        })
+    : [];
+
+  return {
+    content,
+    artifacts,
+    sources,
+  };
+};
+
+const parseLooseQuizArtifactFromText = (raw: string): ChatArtifact | null => {
+  if (!raw.trim()) return null;
+
+  const text = raw
+    .replace(/^```(?:markdown|md|text)?\s*/i, '')
+    .replace(/```$/i, '')
+    .trim();
+
+  if (!text) return null;
+
+  const optionPattern = /(?:^|\n)\s*([A-D1-4])[\.\)\:：]\s*(.+)/g;
+  const matches = [...text.matchAll(optionPattern)];
+  if (matches.length < 2) return null;
+
+  const firstOptionIndex = matches[0].index ?? -1;
+  if (firstOptionIndex < 0) return null;
+
+  const stem = text.slice(0, firstOptionIndex).replace(/^(?:题目|问题|Question|Q|情境|Scenario)\s*[:：]\s*/i, '').trim();
+  if (!stem) return null;
+
+  const options = matches
+    .map((match) => {
+      const rawId = match[1].toUpperCase();
+      const id = /^[1-4]$/.test(rawId) ? String.fromCharCode(64 + Number(rawId)) : rawId;
+      const optionText = (match[2] || '').trim();
+      if (!optionText) return null;
+      return { id, text: optionText };
+    })
+    .filter((item): item is { id: string; text: string } => Boolean(item));
+
+  if (options.length < 2) return null;
+
+  const answerMatch = text.match(/(?:correct answer|answer|正确答案|答案)\s*[:：]?\s*([A-D1-4])/i);
+  if (!answerMatch?.[1]) return null;
+  const rawAnswer = answerMatch[1].toUpperCase();
+  const answerKey = /^[1-4]$/.test(rawAnswer) ? String.fromCharCode(64 + Number(rawAnswer)) : rawAnswer;
+  if (!options.some((option) => option.id === answerKey)) return null;
+
+  const explanationMatch = text.match(/(?:解析|explanation|why)\s*[:：]\s*([\s\S]{0,800})/i);
+  const explanation = (explanationMatch?.[1] || '').trim();
+
+  return {
+    type: 'quiz',
+    payload: {
+      quizId: `quiz_loose_${crypto.randomUUID()}`,
+      title: 'Quick quiz',
+      questionType: 'multiple_choice',
+      stem,
+      options,
+      answerKey,
+      explanation: explanation || 'Choose the option that best fits the context.',
+      difficulty: 'medium',
+      skills: [],
+      estimatedSeconds: 45,
+    },
+  };
 };
 
 // Generate title from first user message
@@ -511,6 +852,9 @@ export function useSupabaseChat() {
   const [lastSources, setLastSources] = useState<ChatSource[]>([]);
   const [lastToolRuns, setLastToolRuns] = useState<ToolRun[]>([]);
   const [lastContextMeta, setLastContextMeta] = useState<ContextMeta | null>(null);
+  const [lastMemoryUsed, setLastMemoryUsed] = useState<MemoryUsedTrace[]>([]);
+  const [lastMemoryWrites, setLastMemoryWrites] = useState<MemoryWriteTrace[]>([]);
+  const [lastMemoryTraceId, setLastMemoryTraceId] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const failedRequestRef = useRef<FailedRequestContext | null>(null);
@@ -1033,23 +1377,7 @@ export function useSupabaseChat() {
     );
   }, [updateSessions, userId]);
 
-  const deleteSession = useCallback(async (sessionId: string) => {
-    let remoteOk = true;
-    try {
-      const { error } = await supabase
-        .from('chat_sessions')
-        .delete()
-        .eq('id', sessionId)
-        .eq('user_id', userId);
-
-      if (error) {
-        remoteOk = false;
-      }
-    } catch (error) {
-      console.error('Error deleting session:', error);
-      remoteOk = false;
-    }
-
+  const deleteSession = useCallback((sessionId: string) => {
     const remaining = sessions.filter((session) => session.id !== sessionId);
     updateSessions((prev) => prev.filter((session) => session.id !== sessionId));
     persistQuizRuns((prev) => {
@@ -1061,14 +1389,36 @@ export function useSupabaseChat() {
 
     if (currentSessionId === sessionId) {
       setCurrentSessionId(remaining.length > 0 ? remaining[0].id : null);
+      setStreamingContent('');
+      setIsLoading(false);
+      setChatError(null);
     }
 
-    if (!remoteOk) {
-      setSyncState((prev) => ({
-        source: 'local',
-        pendingSyncCount: prev.pendingSyncCount + 1,
-      }));
-    }
+    void (async () => {
+      let remoteOk = true;
+      try {
+        const [attemptsRes, itemsRes, messagesRes, sessionRes] = await Promise.all([
+          supabase.from('chat_quiz_attempts').delete().eq('session_id', sessionId).eq('user_id', userId),
+          supabase.from('chat_quiz_items').delete().eq('session_id', sessionId).eq('user_id', userId),
+          supabase.from('chat_messages').delete().eq('session_id', sessionId),
+          supabase.from('chat_sessions').delete().eq('id', sessionId).eq('user_id', userId),
+        ]);
+
+        if (attemptsRes.error || itemsRes.error || messagesRes.error || sessionRes.error) {
+          remoteOk = false;
+        }
+      } catch (error) {
+        console.error('Error deleting session:', error);
+        remoteOk = false;
+      }
+
+      if (!remoteOk) {
+        setSyncState((prev) => ({
+          source: 'local',
+          pendingSyncCount: prev.pendingSyncCount + 1,
+        }));
+      }
+    })();
   }, [currentSessionId, persistQuizRuns, sessions, updateSessions, userId]);
 
   const switchSession = useCallback((sessionId: string) => {
@@ -1098,24 +1448,26 @@ export function useSupabaseChat() {
             (artifact): artifact is Extract<ChatArtifact, { type: 'quiz' }> => artifact.type === 'quiz',
           ) || [];
 
-        for (const quiz of quizzes) {
+        if (quizzes.length > 0) {
           try {
-            await supabase.from('chat_quiz_items').insert({
-              id: quiz.payload.quizId,
-              session_id: sessionId,
-              user_id: userId,
-              message_id: assistantMessage.id,
-              title: quiz.payload.title,
-              stem: quiz.payload.stem,
-              options: quiz.payload.options,
-              answer_key_hash: quiz.payload.answerKey,
-              explanation: quiz.payload.explanation,
-              difficulty: quiz.payload.difficulty,
-              skills: quiz.payload.skills,
-              question_type: quiz.payload.questionType,
-              estimated_seconds: quiz.payload.estimatedSeconds,
-              created_at: new Date(assistantMessage.createdAt).toISOString(),
-            });
+            await supabase.from('chat_quiz_items').insert(
+              quizzes.map((quiz) => ({
+                id: quiz.payload.quizId,
+                session_id: sessionId,
+                user_id: userId,
+                message_id: assistantMessage.id,
+                title: quiz.payload.title,
+                stem: quiz.payload.stem,
+                options: quiz.payload.options,
+                answer_key_hash: quiz.payload.answerKey,
+                explanation: quiz.payload.explanation,
+                difficulty: quiz.payload.difficulty,
+                skills: quiz.payload.skills,
+                question_type: quiz.payload.questionType,
+                estimated_seconds: quiz.payload.estimatedSeconds,
+                created_at: new Date(assistantMessage.createdAt).toISOString(),
+              })),
+            );
           } catch {
             // Optional table may not exist yet.
           }
@@ -1173,6 +1525,11 @@ export function useSupabaseChat() {
           enableStudyArtifacts: true,
           allowAutoQuiz: shouldAllowAutoQuizForInput(context.mode, latestUserInputForIntent, effectiveQuizRun),
         };
+        const requiresStructuredQuiz =
+          context.mode === 'quiz' ||
+          Boolean(context.quizRun?.runId) ||
+          Boolean(context.featureFlags?.forceQuiz);
+        const isQuizTurn = requiresStructuredQuiz;
 
         const result = await invokeEdgeFunction<ChatEdgeResponse>(
           'ai-chat',
@@ -1186,23 +1543,32 @@ export function useSupabaseChat() {
               mode: 'english-learning-coach',
               currentMode: context.mode,
             },
-            toolContext: {
-              availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
-              responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
-            },
+            toolContext: isQuizTurn
+              ? {
+                  availableTools: [],
+                  responseTemplate: ['direct_answer'],
+                }
+              : {
+                  availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
+                  responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
+                },
             agentConfig: {
-              totalTokens: 2200,
-              compactThreshold: 0.8,
+              totalTokens: isQuizTurn ? 1200 : 2200,
+              compactThreshold: isQuizTurn ? 0.72 : 0.8,
             },
             searchPolicy: {
-              mode: context.searchMode,
+              mode: context.mode === 'quiz' ? 'off' : context.searchMode,
               alwaysShowSources: true,
-              maxSearchCalls: 2,
-              maxPerMinute: 8,
+              maxSearchCalls: context.mode === 'quiz' ? 1 : 2,
+              maxPerMinute: context.mode === 'quiz' ? 5 : 8,
             },
             memoryPolicy: {
-              topK: 6,
+              topK: context.memoryPolicy?.topK ?? (isQuizTurn ? 2 : 6),
+              minSimilarity: context.memoryPolicy?.minSimilarity ?? (isQuizTurn ? 0.3 : 0.24),
+              writeMode: context.memoryPolicy?.writeMode ?? 'stable_only',
+              allowSensitiveStore: context.memoryPolicy?.allowSensitiveStore ?? false,
             },
+            memoryControl: context.memoryControl,
             canvasContext:
               context.mode === 'canvas'
                 ? {
@@ -1220,54 +1586,99 @@ export function useSupabaseChat() {
           { signal: abortControllerRef.current.signal },
         );
 
-        const replyContent = normalizeAssistantReplyContent(result.content);
-        if (!replyContent) {
+        const embeddedEnvelope = parseEmbeddedEnvelope(result.content);
+        const replyContent = embeddedEnvelope.content || normalizeAssistantReplyContent(result.content);
+        const hasRawArtifacts =
+          (Array.isArray(result.artifacts) && result.artifacts.length > 0) ||
+          embeddedEnvelope.artifacts.length > 0;
+        if (!replyContent && !hasRawArtifacts) {
           throw new EdgeFunctionError('AI returned malformed content. Please retry.', {
             status: 502,
             code: 'malformed_content',
           });
         }
 
+        const mergedSources = Array.isArray(result.sources) && result.sources.length > 0
+          ? result.sources
+          : embeddedEnvelope.sources;
+
         const sourceArtifact: ChatArtifact[] =
-          Array.isArray(result.sources) && result.sources.length > 0
+          mergedSources.length > 0
             ? [
                 {
                   type: 'web_sources',
                   payload: {
                     title: 'Web sources',
-                    sources: result.sources,
+                    sources: mergedSources,
                   },
                 },
               ]
             : [];
 
-        const artifacts = normalizeArtifacts([...(result.artifacts || []), ...sourceArtifact]);
-        const hasQuizArtifact = artifacts.some((artifact) => artifact.type === 'quiz');
-        const safeReplyContent = hasQuizArtifact ? '' : replyContent;
+        let artifacts = normalizeArtifacts([
+          ...(result.artifacts || []),
+          ...embeddedEnvelope.artifacts,
+          ...sourceArtifact,
+        ]);
+        let hasQuizArtifact = artifacts.some((artifact) => artifact.type === 'quiz');
+
+        if (requiresStructuredQuiz && !hasQuizArtifact) {
+          const recoveredQuiz = parseLooseQuizArtifactFromText(replyContent);
+          if (recoveredQuiz) {
+            artifacts = normalizeArtifacts([...artifacts, recoveredQuiz]);
+            hasQuizArtifact = artifacts.some((artifact) => artifact.type === 'quiz');
+          }
+        }
+
+        if (requiresStructuredQuiz && !hasQuizArtifact) {
+          throw new EdgeFunctionError('AI did not return a structured quiz item. Please retry.', {
+            status: 502,
+            code: 'quiz_artifact_missing',
+          });
+        }
+        const safeReplyContent = hasQuizArtifact || Boolean(context.quizRun?.runId) ? '' : replyContent;
         setLastAgentMeta(result.agentMeta || null);
         setLastRenderState(result.renderState || null);
-        setLastSources(Array.isArray(result.sources) ? result.sources : []);
+        setLastSources(mergedSources);
         setLastToolRuns(Array.isArray(result.toolRuns) ? result.toolRuns : []);
         setLastContextMeta(result.contextMeta || null);
+        setLastMemoryUsed(Array.isArray(result.memoryUsed) ? result.memoryUsed : []);
+        setLastMemoryWrites(Array.isArray(result.memoryWrites) ? result.memoryWrites : []);
+        setLastMemoryTraceId(typeof result.memoryTraceId === 'string' ? result.memoryTraceId : null);
 
         void trackExperimentEvent('chat_reply_received', {
           mode: context.mode,
           trigger: context.trigger,
           hasArtifacts: artifacts.length > 0,
           artifactTypes: artifacts.map((artifact) => artifact.type),
-          sourceCount: Array.isArray(result.sources) ? result.sources.length : 0,
+          sourceCount: mergedSources.length,
           searchTriggered: Boolean(result.contextMeta?.searchTriggered),
+          memoryUsed: Array.isArray(result.memoryUsed) ? result.memoryUsed.length : 0,
+          memoryWrites: Array.isArray(result.memoryWrites) ? result.memoryWrites.length : 0,
         });
 
-        const chunks = safeReplyContent.match(/[\s\S]{1,48}/g) || [safeReplyContent];
-        for (const chunk of chunks) {
+        const chunks = safeReplyContent.match(/[\s\S]{1,120}/g) || [safeReplyContent];
+        let lastFlushAt = performance.now();
+        for (let index = 0; index < chunks.length; index += 1) {
+          const chunk = chunks[index];
           if (abortControllerRef.current?.signal.aborted) {
             throw new DOMException('Aborted', 'AbortError');
           }
           fullContent += chunk;
+          const now = performance.now();
+          const isLast = index === chunks.length - 1;
+          const shouldFlush = isLast || now - lastFlushAt >= 16;
+          if (!shouldFlush) continue;
+
           setStreamingContent(fullContent);
-          setLastRenderState({ stage: 'streaming', progress: Math.min(0.98, fullContent.length / Math.max(safeReplyContent.length, 1)) });
-          await new Promise((resolve) => setTimeout(resolve, 2));
+          setLastRenderState({
+            stage: 'streaming',
+            progress: Math.min(0.98, fullContent.length / Math.max(safeReplyContent.length, 1)),
+          });
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => resolve());
+          });
+          lastFlushAt = performance.now();
         }
 
         const assistantMessage: ChatMessage = {
@@ -1279,6 +1690,27 @@ export function useSupabaseChat() {
         };
 
         await appendAssistantMessage(context.sessionId, assistantMessage);
+        if (context.quizRun?.runId) {
+          const firstQuizArtifact = artifacts.find(
+            (artifact): artifact is Extract<ChatArtifact, { type: 'quiz' }> => artifact.type === 'quiz',
+          );
+          if (firstQuizArtifact) {
+            persistQuizRuns((prev) => {
+              const existing = prev[context.sessionId];
+              if (!existing || existing.runId !== context.quizRun?.runId) {
+                return prev;
+              }
+              return {
+                ...prev,
+                [context.sessionId]: {
+                  ...existing,
+                  status: 'awaiting_answer',
+                  currentQuizId: firstQuizArtifact.payload.quizId,
+                },
+              };
+            });
+          }
+        }
         failedRequestRef.current = null;
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
@@ -1315,7 +1747,7 @@ export function useSupabaseChat() {
         abortControllerRef.current = null;
       }
     },
-    [appendAssistantMessage, getCanvasChildSessionId, streamingContent, trackExperimentEvent],
+    [appendAssistantMessage, getCanvasChildSessionId, persistQuizRuns, streamingContent, trackExperimentEvent],
   );
 
   const sendMessage = useCallback(async (content: string, options: SendMessageOptions = {}) => {
@@ -1351,51 +1783,53 @@ export function useSupabaseChat() {
       !hideUserMessage && (isNewSession || (sessionSnapshot && sessionSnapshot.messages.length === 0));
     const newTitle = shouldUpdateTitle ? generateTitle(displayContent) : undefined;
 
-    let remoteMessageSaved = true;
     if (!hideUserMessage) {
-      try {
-        const { error: messageInsertError } = await supabase.from('chat_messages').insert({
-          id: userMessage.id,
-          session_id: sessionId,
-          role: userMessage.role,
-          content: userMessage.content,
-          created_at: new Date(userMessage.createdAt).toISOString(),
-        });
+      void (async () => {
+        let remoteMessageSaved = true;
+        try {
+          const { error: messageInsertError } = await supabase.from('chat_messages').insert({
+            id: userMessage.id,
+            session_id: sessionId,
+            role: userMessage.role,
+            content: userMessage.content,
+            created_at: new Date(userMessage.createdAt).toISOString(),
+          });
 
-        if (messageInsertError) {
+          if (messageInsertError) {
+            remoteMessageSaved = false;
+          }
+
+          if (newTitle) {
+            const { error: titleError } = await supabase
+              .from('chat_sessions')
+              .update({ title: newTitle, updated_at: new Date(now).toISOString() })
+              .eq('id', sessionId)
+              .eq('user_id', userId);
+            if (titleError) {
+              remoteMessageSaved = false;
+            }
+          } else {
+            const { error: updateError } = await supabase
+              .from('chat_sessions')
+              .update({ updated_at: new Date(now).toISOString() })
+              .eq('id', sessionId)
+              .eq('user_id', userId);
+            if (updateError) {
+              remoteMessageSaved = false;
+            }
+          }
+        } catch (error) {
+          console.error('Error saving user message:', error);
           remoteMessageSaved = false;
         }
 
-        if (newTitle) {
-          const { error: titleError } = await supabase
-            .from('chat_sessions')
-            .update({ title: newTitle, updated_at: new Date(now).toISOString() })
-            .eq('id', sessionId)
-            .eq('user_id', userId);
-          if (titleError) {
-            remoteMessageSaved = false;
-          }
-        } else {
-          const { error: updateError } = await supabase
-            .from('chat_sessions')
-            .update({ updated_at: new Date(now).toISOString() })
-            .eq('id', sessionId)
-            .eq('user_id', userId);
-          if (updateError) {
-            remoteMessageSaved = false;
-          }
+        if (!remoteMessageSaved) {
+          setSyncState((prev) => ({
+            source: 'local',
+            pendingSyncCount: prev.pendingSyncCount + 1,
+          }));
         }
-      } catch (error) {
-        console.error('Error saving user message:', error);
-        remoteMessageSaved = false;
-      }
-    }
-
-    if (!remoteMessageSaved) {
-      setSyncState((prev) => ({
-        source: 'local',
-        pendingSyncCount: prev.pendingSyncCount + 1,
-      }));
+      })();
     }
 
     if (!hideUserMessage) {
@@ -1439,7 +1873,11 @@ export function useSupabaseChat() {
         : (sessionSnapshot?.messages || []);
 
     const historyMessages = localSnapshotMessages
-      .filter((message) => message.role === 'user' || message.role === 'assistant')
+      .filter(
+        (message) =>
+          (message.role === 'user' || message.role === 'assistant') &&
+          message.content.trim().length > 0,
+      )
       .slice(-MAX_HISTORY_TURNS);
 
     const apiMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
@@ -1479,6 +1917,8 @@ export function useSupabaseChat() {
       searchMode,
       canvasSyncToParent,
       featureFlags: options.featureFlags,
+      memoryPolicy: options.memoryPolicy,
+      memoryControl: options.memoryControl,
       quizRun: options.quizRun,
       trigger,
     });
@@ -1614,12 +2054,17 @@ export function useSupabaseChat() {
   const deleteAllSessions = useCallback(async () => {
     let remoteOk = true;
     try {
-      const { error } = await supabase
-        .from('chat_sessions')
-        .delete()
-        .eq('user_id', userId);
+      const sessionIds = sessions.map((session) => session.id);
+      const attemptsRes = await supabase.from('chat_quiz_attempts').delete().eq('user_id', userId);
+      const itemsRes = await supabase.from('chat_quiz_items').delete().eq('user_id', userId);
+      let messagesError: unknown = null;
+      if (sessionIds.length > 0) {
+        const messagesRes = await supabase.from('chat_messages').delete().in('session_id', sessionIds);
+        messagesError = messagesRes.error;
+      }
+      const sessionsRes = await supabase.from('chat_sessions').delete().eq('user_id', userId);
 
-      if (error) {
+      if (attemptsRes.error || itemsRes.error || messagesError || sessionsRes.error) {
         remoteOk = false;
       }
     } catch (error) {
@@ -1634,6 +2079,9 @@ export function useSupabaseChat() {
     setLastSources([]);
     setLastToolRuns([]);
     setLastContextMeta(null);
+    setLastMemoryUsed([]);
+    setLastMemoryWrites([]);
+    setLastMemoryTraceId(null);
     setQuizRunsBySession({});
     localStorage.removeItem(CHAT_SESSIONS_STORAGE_KEY);
     localStorage.removeItem(CHAT_CURRENT_SESSION_KEY);
@@ -1647,7 +2095,7 @@ export function useSupabaseChat() {
     } else {
       setSyncState({ source: 'remote', pendingSyncCount: 0 });
     }
-  }, [userId]);
+  }, [sessions, userId]);
 
   return {
     sessions,
@@ -1665,6 +2113,9 @@ export function useSupabaseChat() {
     lastSources,
     lastToolRuns,
     lastContextMeta,
+    lastMemoryUsed,
+    lastMemoryWrites,
+    lastMemoryTraceId,
     chatError,
     sendMessage,
     submitQuizAttempt,

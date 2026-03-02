@@ -96,14 +96,69 @@ export const callDeepSeek = async (payload: {
 };
 
 export const extractFirstJsonObject = <T>(text: string): T | null => {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start < 0 || end <= start) return null;
+  if (!text) return null;
 
-  const candidate = text.slice(start, end + 1);
-  try {
-    return JSON.parse(candidate) as T;
-  } catch {
-    return null;
+  const source = text
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```$/i, '')
+    .trim();
+  const len = source.length;
+  if (len === 0) return null;
+
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = 0; index < len; index += 1) {
+    const char = source[index];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (char === '{') {
+      if (depth === 0) {
+        start = index;
+      }
+      depth += 1;
+      continue;
+    }
+
+    if (char !== '}') {
+      continue;
+    }
+
+    if (depth <= 0) {
+      continue;
+    }
+
+    depth -= 1;
+    if (depth === 0 && start >= 0) {
+      const candidate = source.slice(start, index + 1);
+      try {
+        return JSON.parse(candidate) as T;
+      } catch {
+        start = -1;
+      }
+    }
   }
+
+  return null;
 };

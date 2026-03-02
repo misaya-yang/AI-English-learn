@@ -13,6 +13,11 @@ This folder contains the first version of the AI gateway and content/member endp
 - `billing-create-checkout`
 - `billing-webhook-stripe`
 - `billing-webhook-alipay`
+- `memory-list`
+- `memory-remember`
+- `memory-delete`
+- `memory-pin`
+- `memory-clear-expired`
 
 ## Required secrets
 
@@ -24,6 +29,9 @@ Set in Supabase project secrets:
 - `SUPABASE_ANON_KEY`
 - `APP_BASE_URL`
 - `TAVILY_API_KEY` (optional; web search is skipped when absent)
+- `EMBEDDING_API_URL` (optional; if absent, local hash embeddings are used)
+- `EMBEDDING_API_KEY` (optional)
+- `EMBEDDING_MODEL` (optional)
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_PRO_MONTHLY`
@@ -47,4 +55,9 @@ supabase functions deploy ai-validate-content
 supabase functions deploy billing-create-checkout
 supabase functions deploy billing-webhook-stripe
 supabase functions deploy billing-webhook-alipay
+supabase functions deploy memory-list
+supabase functions deploy memory-remember
+supabase functions deploy memory-delete
+supabase functions deploy memory-pin
+supabase functions deploy memory-clear-expired
 ```

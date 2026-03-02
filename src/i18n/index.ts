@@ -54,6 +54,7 @@ const en = {
     vocabulary: 'My Vocabulary',
     analytics: 'Progress',
     chat: 'AI Tutor',
+    memory: 'Memory Center',
     wordOfTheDay: 'Word of the Day',
     features: 'Features',
     howItWorks: 'How It Works',
@@ -350,6 +351,12 @@ const en = {
       },
       badges: 'Badges',
     },
+    memory: {
+      title: 'Memory Center',
+      subtitle: 'Manage what the agent remembers about your learning',
+      empty: 'No memory items yet',
+      privacyHint: 'Privacy-first memory control',
+    },
     settings: {
       title: 'Settings',
       appearance: {
@@ -458,6 +465,7 @@ const zh = {
     vocabulary: '我的词库',
     analytics: '学习进度',
     chat: 'AI 家教',
+    memory: '记忆中心',
     wordOfTheDay: '每日一词',
     features: '功能特性',
     howItWorks: '如何使用',
@@ -753,6 +761,12 @@ const zh = {
         retention: '记忆保留曲线',
       },
       badges: '徽章',
+    },
+    memory: {
+      title: '记忆中心',
+      subtitle: '管理 AI 对你学习状态的长期记忆',
+      empty: '暂无记忆数据',
+      privacyHint: '隐私优先，可查可删',
     },
     settings: {
       title: '设置',

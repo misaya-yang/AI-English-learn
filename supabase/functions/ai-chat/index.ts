@@ -3,7 +3,14 @@ import { callDeepSeek, extractFirstJsonObject, type DeepSeekMessage } from '../_
 import { requireAuthenticatedUser } from '../_shared/auth.ts';
 import { adminInsert } from '../_shared/supabase-admin.ts';
 import { buildContextPackage } from '../_shared/context-engine.ts';
-import { persistContextSnapshot, persistTurnMemory, retrieveMemory } from '../_shared/memory-engine.ts';
+import {
+  forgetExplicitMemory,
+  persistContextSnapshot,
+  persistTurnMemory,
+  rememberExplicitMemory,
+  retrieveMemory,
+  type MemoryKind,
+} from '../_shared/memory-engine.ts';
 import { routeTools } from '../_shared/tool-router.ts';
 import {
   buildContractPrompt,
@@ -213,16 +220,91 @@ Deno.serve(async (req) => {
           syncState: 'not_applicable',
         };
 
+    const memoryPolicy = body.memoryPolicy && typeof body.memoryPolicy === 'object'
+      ? (body.memoryPolicy as Record<string, unknown>)
+      : {};
+
     const memoryTopK =
-      body.memoryPolicy && typeof body.memoryPolicy === 'object' && Number.isFinite(body.memoryPolicy.topK)
-        ? Math.max(1, Math.min(10, Number(body.memoryPolicy.topK)))
+      Number.isFinite(memoryPolicy.topK)
+        ? Math.max(1, Math.min(10, Number(memoryPolicy.topK)))
         : 6;
+
+    const memoryMinSimilarity =
+      Number.isFinite(memoryPolicy.minSimilarity)
+        ? Math.max(0, Math.min(1, Number(memoryPolicy.minSimilarity)))
+        : 0.24;
+
+    const memoryWriteMode =
+      memoryPolicy.writeMode === 'balanced'
+        ? 'balanced'
+        : 'stable_only';
+
+    const memoryAllowSensitiveStore = memoryPolicy.allowSensitiveStore === true;
+
+    const memoryKindFilter =
+      Array.isArray(memoryPolicy.kindFilter)
+        ? memoryPolicy.kindFilter
+            .filter((item): item is MemoryKind =>
+              item === 'profile' ||
+              item === 'preference' ||
+              item === 'weakness_tag' ||
+              item === 'goal' ||
+              item === 'error_trace' ||
+              item === 'tool_fact')
+        : undefined;
+
+    const memoryControl = body.memoryControl && typeof body.memoryControl === 'object'
+      ? (body.memoryControl as Record<string, unknown>)
+      : {};
+
+    const explicitRemember =
+      Array.isArray(memoryControl.explicitRemember)
+        ? memoryControl.explicitRemember
+            .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+            .slice(0, 6)
+        : [];
+
+    const explicitRememberKind =
+      memoryControl.explicitRememberKind === 'profile' ||
+      memoryControl.explicitRememberKind === 'preference' ||
+      memoryControl.explicitRememberKind === 'weakness_tag' ||
+      memoryControl.explicitRememberKind === 'goal' ||
+      memoryControl.explicitRememberKind === 'error_trace' ||
+      memoryControl.explicitRememberKind === 'tool_fact'
+        ? memoryControl.explicitRememberKind
+        : 'preference';
+
+    const explicitForget = memoryControl.explicitForget && typeof memoryControl.explicitForget === 'object'
+      ? (memoryControl.explicitForget as Record<string, unknown>)
+      : {};
+
+    if (
+      Array.isArray(explicitForget.ids) ||
+      Array.isArray(explicitForget.dedupeKeys) ||
+      typeof explicitForget.query === 'string'
+    ) {
+      await forgetExplicitMemory({
+        userId: auth.userId,
+        sessionId,
+        ids: Array.isArray(explicitForget.ids)
+          ? explicitForget.ids.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          : undefined,
+        dedupeKeys: Array.isArray(explicitForget.dedupeKeys)
+          ? explicitForget.dedupeKeys.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          : undefined,
+        query: typeof explicitForget.query === 'string' ? explicitForget.query : undefined,
+      });
+    }
+
+    const memoryTraceId = crypto.randomUUID();
 
     const memories = await retrieveMemory({
       userId: auth.userId,
       sessionId,
       query: latestUserMessage,
       topK: memoryTopK,
+      minSimilarity: memoryMinSimilarity,
+      kindFilter: memoryKindFilter,
     });
 
     const toolRouting = await routeTools({
@@ -313,6 +395,15 @@ Deno.serve(async (req) => {
       quizRun: normalizedQuizRun && normalizedQuizRun.runId
         ? normalizedQuizRun
         : undefined,
+      memoryUsed: memories.slice(0, 6).map((memory) => ({
+        id: memory.id,
+        kind: memory.kind,
+        contentPreview: memory.content.slice(0, 140),
+        confidence: memory.confidence,
+        score: Number(memory.retrievalScore ?? 0),
+        isPinned: memory.isPinned,
+      })),
+      memoryTraceId,
     });
 
     const artifactsWithSources = ensureWebSourcesArtifact(payload.artifacts || [], payload.sources);
@@ -334,7 +425,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    await persistTurnMemory({
+    const explicitWrites = explicitRemember.length > 0
+      ? await rememberExplicitMemory({
+          userId: auth.userId,
+          sessionId,
+          items: explicitRemember,
+          kind: explicitRememberKind,
+          allowSensitiveStore: memoryAllowSensitiveStore,
+        })
+      : [];
+
+    const turnWrites = await persistTurnMemory({
       userId: auth.userId,
       sessionId,
       learningContext: body.learningContext && typeof body.learningContext === 'object' ? body.learningContext : undefined,
@@ -342,7 +443,13 @@ Deno.serve(async (req) => {
       assistantMessage: finalPayload.content,
       toolFacts: (finalPayload.sources || []).map((source) => `${source.title}: ${source.snippet}`),
       hadError: finalPayload.toolRuns?.some((run) => run.status === 'error') || false,
+      memoryPolicy: {
+        writeMode: memoryWriteMode,
+        allowSensitiveStore: memoryAllowSensitiveStore,
+      },
     });
+
+    finalPayload.memoryWrites = [...explicitWrites, ...turnWrites];
 
     await persistToolAudit({
       userId: auth.userId,

@@ -29,6 +29,7 @@ import PricingPage from '@/pages/PricingPage';
 const AnalyticsPage = lazy(() => import('@/pages/dashboard/AnalyticsPage'));
 const ChatPage = lazy(() => import('@/pages/dashboard/ChatPage'));
 const ExamPrepPage = lazy(() => import('@/pages/dashboard/ExamPrepPage'));
+const MemoryCenterPage = lazy(() => import('@/pages/dashboard/MemoryCenterPage'));
 
 const RouteFallback = () => (
   <div className="flex h-[40vh] items-center justify-center text-sm text-muted-foreground">
@@ -65,12 +66,13 @@ function App() {
                 <Route path="vocabulary" element={<VocabularyBankPage />} />
                 <Route path="analytics" element={<Suspense fallback={<RouteFallback />}><AnalyticsPage /></Suspense>} />
                 <Route path="chat" element={<Suspense fallback={<RouteFallback />}><ChatPage /></Suspense>} />
+                <Route path="memory" element={<Suspense fallback={<RouteFallback />}><MemoryCenterPage /></Suspense>} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
               </Route>
             </Routes>
           </Router>
-          <Toaster position="top-center" richColors />
+          <Toaster position="bottom-right" richColors />
         </UserDataProvider>
       </AuthProvider>
     </ThemeProvider>

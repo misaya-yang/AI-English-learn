@@ -107,6 +107,24 @@ export interface QuizRunMeta {
   targetCount: number;
 }
 
+export interface MemoryUsedTrace {
+  id: string;
+  kind: string;
+  contentPreview: string;
+  confidence: number;
+  score: number;
+  isPinned: boolean;
+}
+
+export interface MemoryWriteTrace {
+  id?: string;
+  kind: string;
+  contentPreview: string;
+  confidence: number;
+  dedupeKey: string;
+  reason: 'stable' | 'tool_fact' | 'error_trace' | 'explicit';
+}
+
 export interface ChatEnvelope {
   content: string;
   artifacts?: ChatArtifact[];
@@ -117,11 +135,20 @@ export interface ChatEnvelope {
   toolRuns?: ToolRun[];
   contextMeta?: ContextMeta;
   canvasSessionMeta?: CanvasSessionMeta;
+  memoryUsed?: MemoryUsedTrace[];
+  memoryWrites?: MemoryWriteTrace[];
+  memoryTraceId?: string;
 }
 
 const sanitizeText = (value: unknown): string => {
   if (typeof value !== 'string') return '';
   return value.trim();
+};
+
+const clampText = (value: unknown, limit: number): string => {
+  const text = sanitizeText(value);
+  if (!text) return '';
+  return text.slice(0, Math.max(1, limit)).trim();
 };
 
 const sanitizeFallbackText = (value: unknown): string => {
@@ -176,7 +203,8 @@ const normalizeQuizPayload = (payload: unknown): QuizArtifactPayload | null => {
     .filter((option): option is { id: string; text: string } =>
       Boolean(option && typeof option.id === 'string' && option.id.trim().length > 0 && typeof option.text === 'string' && option.text.trim().length > 0),
     )
-    .map((option) => ({ id: option.id.trim(), text: option.text.trim() }));
+    .map((option) => ({ id: option.id.trim(), text: option.text.trim().slice(0, 140) }))
+    .slice(0, 4);
 
   if (options.length < 2 || !options.some((option) => option.id === raw.answerKey)) {
     return null;
@@ -184,20 +212,32 @@ const normalizeQuizPayload = (payload: unknown): QuizArtifactPayload | null => {
 
   return {
     quizId: normalizeQuizId(raw.quizId, sanitizeText(raw.stem)),
-    title: sanitizeText(raw.title) || 'Quick quiz',
+    title: clampText(raw.title, 80) || 'Quick quiz',
     questionType:
       raw.questionType === 'true_false' || raw.questionType === 'fill_blank' || raw.questionType === 'multiple_choice'
         ? raw.questionType
         : 'multiple_choice',
-    stem: sanitizeText(raw.stem),
+    stem: clampText(raw.stem, 420),
     options,
     answerKey: String(raw.answerKey),
-    explanation: sanitizeText(raw.explanation),
+    explanation: clampText(raw.explanation, 220) || 'Please review the correct option and retry once.',
     difficulty: raw.difficulty === 'easy' || raw.difficulty === 'hard' ? raw.difficulty : 'medium',
-    skills: Array.isArray(raw.skills) ? raw.skills.filter((skill): skill is string => typeof skill === 'string') : [],
-    estimatedSeconds: Number.isFinite(raw.estimatedSeconds) ? Number(raw.estimatedSeconds) : 45,
-    targetWord: typeof raw.targetWord === 'string' ? raw.targetWord.trim() : undefined,
-    tags: Array.isArray(raw.tags) ? raw.tags.filter((tag): tag is string => typeof tag === 'string') : undefined,
+    skills: Array.isArray(raw.skills)
+      ? raw.skills
+          .filter((skill): skill is string => typeof skill === 'string')
+          .map((skill) => skill.trim())
+          .filter((skill) => skill.length > 0)
+          .slice(0, 6)
+      : [],
+    estimatedSeconds: Number.isFinite(raw.estimatedSeconds) ? Math.max(10, Math.min(180, Number(raw.estimatedSeconds))) : 45,
+    targetWord: typeof raw.targetWord === 'string' ? raw.targetWord.trim().slice(0, 48) : undefined,
+    tags: Array.isArray(raw.tags)
+      ? raw.tags
+          .filter((tag): tag is string => typeof tag === 'string')
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0)
+          .slice(0, 8)
+      : undefined,
   };
 };
 
@@ -426,6 +466,62 @@ const normalizeQuizRunMeta = (value: unknown): QuizRunMeta | undefined => {
   };
 };
 
+const normalizeMemoryUsed = (value: unknown): MemoryUsedTrace[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry): MemoryUsedTrace | null => {
+      if (!entry || typeof entry !== 'object') return null;
+      const raw = entry as Partial<MemoryUsedTrace>;
+      const id = sanitizeText(raw.id);
+      const kind = sanitizeText(raw.kind);
+      const contentPreview = sanitizeText(raw.contentPreview);
+      if (!id || !kind || !contentPreview) return null;
+
+      return {
+        id,
+        kind,
+        contentPreview,
+        confidence: clampConfidence(raw.confidence, 0.72),
+        score: Number.isFinite(raw.score) ? Number(raw.score) : 0,
+        isPinned: Boolean(raw.isPinned),
+      };
+    })
+    .filter((entry): entry is MemoryUsedTrace => Boolean(entry));
+};
+
+const normalizeMemoryWrites = (value: unknown): MemoryWriteTrace[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry): MemoryWriteTrace | null => {
+      if (!entry || typeof entry !== 'object') return null;
+      const raw = entry as Partial<MemoryWriteTrace>;
+      const kind = sanitizeText(raw.kind);
+      const contentPreview = sanitizeText(raw.contentPreview);
+      const dedupeKey = sanitizeText(raw.dedupeKey);
+      const reason =
+        raw.reason === 'stable' ||
+        raw.reason === 'tool_fact' ||
+        raw.reason === 'error_trace' ||
+        raw.reason === 'explicit'
+          ? raw.reason
+          : null;
+
+      if (!kind || !contentPreview || !dedupeKey || !reason) return null;
+
+      return {
+        id: sanitizeText(raw.id) || undefined,
+        kind,
+        contentPreview,
+        confidence: clampConfidence(raw.confidence, 0.7),
+        dedupeKey,
+        reason,
+      };
+    })
+    .filter((entry): entry is MemoryWriteTrace => Boolean(entry));
+};
+
 export const normalizeEnvelope = (
   envelope: unknown,
   options: {
@@ -439,6 +535,9 @@ export const normalizeEnvelope = (
     canvasSessionMeta?: CanvasSessionMeta;
     renderState?: ChatRenderState;
     quizRun?: QuizRunMeta;
+    memoryUsed?: MemoryUsedTrace[];
+    memoryWrites?: MemoryWriteTrace[];
+    memoryTraceId?: string;
   },
 ): ChatEnvelope => {
   const raw = envelope && typeof envelope === 'object' ? (envelope as Partial<ChatEnvelope>) : null;
@@ -485,6 +584,9 @@ export const normalizeEnvelope = (
     toolRuns: mergedToolRuns.length > 0 ? mergedToolRuns : undefined,
     contextMeta: options.contextMeta || normalizeContextMeta(raw?.contextMeta),
     canvasSessionMeta: options.canvasSessionMeta || normalizeCanvasSessionMeta(raw?.canvasSessionMeta),
+    memoryUsed: options.memoryUsed || normalizeMemoryUsed(raw?.memoryUsed),
+    memoryWrites: options.memoryWrites || normalizeMemoryWrites(raw?.memoryWrites),
+    memoryTraceId: sanitizeText(options.memoryTraceId) || sanitizeText(raw?.memoryTraceId) || undefined,
   };
 };
 
