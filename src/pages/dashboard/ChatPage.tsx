@@ -2162,7 +2162,7 @@ export default function ChatPage() {
         )}
 
         {/* Input Area - Enhanced */}
-        <div className="border-t border-border bg-background/95 backdrop-blur p-4">
+        <div className="border-t border-border bg-background p-4">
           <div className={cn(contentWidthClass, 'mx-auto relative')}>
             <AnimatePresence initial={false}>
               {toolsExpanded && (
@@ -2171,7 +2171,7 @@ export default function ChatPage() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.98 }}
                   transition={{ duration: 0.18 }}
-                  className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border/90 bg-background/96 shadow-xl p-3"
+                  className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl p-3"
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground">
