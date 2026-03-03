@@ -231,6 +231,128 @@ const normalizeAssistantReplyContent = (raw: unknown): string => {
   return deFenced;
 };
 
+const readJsonStringLiteral = (input: string, openingQuoteIndex: number): { value: string; endIndex: number } | null => {
+  if (openingQuoteIndex < 0 || input[openingQuoteIndex] !== '"') return null;
+  let cursor = openingQuoteIndex + 1;
+  let escaped = false;
+  let encoded = '';
+
+  while (cursor < input.length) {
+    const char = input[cursor];
+    if (escaped) {
+      encoded += char;
+      escaped = false;
+      cursor += 1;
+      continue;
+    }
+
+    if (char === '\\') {
+      encoded += char;
+      escaped = true;
+      cursor += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      try {
+        return {
+          value: JSON.parse(`"${encoded}"`) as string,
+          endIndex: cursor,
+        };
+      } catch {
+        return {
+          value: encoded,
+          endIndex: cursor,
+        };
+      }
+    }
+
+    encoded += char;
+    cursor += 1;
+  }
+
+  return null;
+};
+
+const extractJsonLikeStringField = (input: string, fieldNames: string[]): string => {
+  for (const fieldName of fieldNames) {
+    const pattern = new RegExp(`"${fieldName}"\\s*:`, 'i');
+    const match = pattern.exec(input);
+    if (!match) continue;
+
+    let cursor = match.index + match[0].length;
+    while (cursor < input.length && /\s/.test(input[cursor])) cursor += 1;
+    if (input[cursor] !== '"') continue;
+
+    const parsed = readJsonStringLiteral(input, cursor);
+    if (parsed?.value?.trim()) {
+      return parsed.value.trim();
+    }
+  }
+
+  return '';
+};
+
+const extractJsonLikeArrayField = (input: string, fieldName: string): unknown[] => {
+  const pattern = new RegExp(`"${fieldName}"\\s*:`, 'i');
+  const match = pattern.exec(input);
+  if (!match) return [];
+
+  let cursor = match.index + match[0].length;
+  while (cursor < input.length && /\s/.test(input[cursor])) cursor += 1;
+  if (input[cursor] !== '[') return [];
+
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = cursor; index < input.length; index += 1) {
+    const char = input[index];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (char === '[') {
+      if (depth === 0) start = index;
+      depth += 1;
+      continue;
+    }
+
+    if (char === ']') {
+      if (depth <= 0) continue;
+      depth -= 1;
+      if (depth === 0 && start >= 0) {
+        const rawArray = input.slice(start, index + 1);
+        try {
+          const parsed = JSON.parse(rawArray);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+    }
+  }
+
+  return [];
+};
+
 const parseEmbeddedEnvelope = (
   raw: unknown,
 ): {
@@ -363,6 +485,50 @@ const parseEmbeddedEnvelope = (
   }
 
   if (!parsed) {
+    const rescuedContent = extractJsonLikeStringField(text, ['content', 'message', 'text']);
+    const rescuedArtifacts = normalizeArtifacts(extractJsonLikeArrayField(text, 'artifacts'));
+    const rescuedSources = extractJsonLikeArrayField(text, 'sources')
+      .filter((item): item is ChatSource => {
+        return Boolean(
+          item &&
+            typeof item === 'object' &&
+            typeof (item as Partial<ChatSource>).url === 'string' &&
+            (item as Partial<ChatSource>).url!.trim().length > 0,
+        );
+      })
+      .map((item, index) => {
+        const typed = item as Partial<ChatSource>;
+        const url = typed.url!.trim();
+        let domain = '';
+        try {
+          domain = new URL(url).hostname;
+        } catch {
+          domain = typeof typed.domain === 'string' ? typed.domain : 'unknown';
+        }
+        return {
+          id: typeof typed.id === 'string' && typed.id.trim() ? typed.id : `source_${index + 1}`,
+          title:
+            typeof typed.title === 'string' && typed.title.trim()
+              ? typed.title
+              : domain,
+          url,
+          domain,
+          publishedAt: typeof typed.publishedAt === 'string' && typed.publishedAt.trim() ? typed.publishedAt : undefined,
+          snippet: typeof typed.snippet === 'string' ? typed.snippet : '',
+          confidence: typeof typed.confidence === 'number' && Number.isFinite(typed.confidence)
+            ? Math.max(0, Math.min(1, typed.confidence))
+            : 0.6,
+        } satisfies ChatSource;
+      });
+
+    if (rescuedContent || rescuedArtifacts.length > 0 || rescuedSources.length > 0) {
+      return {
+        content: rescuedContent,
+        artifacts: rescuedArtifacts,
+        sources: rescuedSources,
+      };
+    }
+
     const looseObjects = collectLooseJsonObjects(text);
     const looseArtifacts: ChatArtifact[] = [];
     let looseContent = '';
@@ -507,6 +673,47 @@ const parseEmbeddedEnvelope = (
     content,
     artifacts,
     sources,
+  };
+};
+
+const toWebSourcesArtifact = (sources: ChatSource[]): ChatArtifact[] => {
+  if (sources.length === 0) return [];
+  return normalizeArtifacts([
+    {
+      type: 'web_sources',
+      payload: {
+        title: 'Sources',
+        sources,
+      },
+    },
+  ]);
+};
+
+const normalizePersistedAssistantPayload = (
+  rawContent: unknown,
+  rawArtifacts?: unknown,
+): { content: string; artifacts?: ChatArtifact[] } => {
+  const contentValue = typeof rawContent === 'string' ? rawContent : '';
+  const extracted = extractArtifactsFromContent(contentValue);
+  const embedded = parseEmbeddedEnvelope(extracted.content);
+  const cleanedContent =
+    embedded.content ||
+    normalizeAssistantReplyContent(extracted.content) ||
+    extracted.content;
+
+  const explicitArtifacts = Array.isArray(rawArtifacts) ? normalizeArtifacts(rawArtifacts) : [];
+  const sourceArtifacts = toWebSourcesArtifact(embedded.sources);
+  const mergedArtifacts = explicitArtifacts.length > 0
+    ? explicitArtifacts
+    : embedded.artifacts.length > 0
+      ? [...embedded.artifacts, ...sourceArtifacts]
+      : extracted.artifacts.length > 0
+        ? extracted.artifacts
+        : sourceArtifacts;
+
+  return {
+    content: cleanedContent,
+    artifacts: mergedArtifacts.length > 0 ? mergedArtifacts : undefined,
   };
 };
 
@@ -660,17 +867,25 @@ function normalizeLocalSessions(raw: unknown): ChatSession[] {
             );
           })
           .map((message) => {
-            const parsed = extractArtifactsFromContent(message.content);
-            const artifacts = Array.isArray((message as { artifacts?: unknown }).artifacts)
-              ? normalizeArtifacts((message as { artifacts?: unknown }).artifacts)
-              : parsed.artifacts;
+            const normalized =
+              message.role === 'assistant' || message.role === 'system'
+                ? normalizePersistedAssistantPayload(
+                    message.content,
+                    (message as { artifacts?: unknown }).artifacts,
+                  )
+                : {
+                    content: message.content,
+                    artifacts: Array.isArray((message as { artifacts?: unknown }).artifacts)
+                      ? normalizeArtifacts((message as { artifacts?: unknown }).artifacts)
+                      : undefined,
+                  };
 
             return {
               id: message.id,
               role: message.role,
-              content: parsed.content,
+              content: normalized.content,
               createdAt: parseTimestamp(message.createdAt, fallbackNow),
-              artifacts: artifacts.length > 0 ? artifacts : undefined,
+              artifacts: normalized.artifacts,
             };
           })
       : [];
@@ -1070,13 +1285,16 @@ export function useSupabaseChat() {
       const remoteMessageIdsBySession = new Map<string, Set<string>>();
 
       messagesData.forEach((message) => {
-        const parsed = extractArtifactsFromContent(message.content);
+        const normalized =
+          message.role === 'assistant' || message.role === 'system'
+            ? normalizePersistedAssistantPayload(message.content)
+            : { content: message.content, artifacts: undefined as ChatArtifact[] | undefined };
         const chatMessage: ChatMessage = {
           id: message.id,
           role: message.role,
-          content: parsed.content,
+          content: normalized.content,
           createdAt: new Date(message.created_at).getTime(),
-          artifacts: parsed.artifacts.length > 0 ? parsed.artifacts : undefined,
+          artifacts: normalized.artifacts,
         };
 
         const existing = remoteMessagesBySession.get(message.session_id) || [];
@@ -1553,6 +1771,8 @@ export function useSupabaseChat() {
         const normalizedUserIntent = latestUserInputForIntent.toLowerCase().trim();
         const isSimpleGreetingTurn = SIMPLE_GREETING_PATTERN.test(normalizedUserIntent);
         const suppressQuizForThisTurn = shouldSuppressQuizForInput(latestUserInputForIntent);
+        const explicitQuizRequest =
+          !suppressQuizForThisTurn && QUIZ_EXPLICIT_REQUEST_PATTERN.test(normalizedUserIntent);
         const disableAutoSearchForThisTurn = shouldDisableAutoSearch(
           context.mode,
           latestUserInputForIntent,
@@ -1560,17 +1780,19 @@ export function useSupabaseChat() {
         );
         const effectiveSearchMode = disableAutoSearchForThisTurn || isSimpleGreetingTurn ? 'off' : context.searchMode;
         const effectiveQuizRun = suppressQuizForThisTurn ? undefined : context.quizRun;
+        const requiresStructuredQuiz =
+          context.mode === 'quiz' ||
+          Boolean(effectiveQuizRun?.runId) ||
+          Boolean(context.featureFlags?.forceQuiz) ||
+          explicitQuizRequest;
         const mergedFeatureFlags = {
           ...(context.featureFlags || {}),
           enableQuizArtifacts: true,
           enableStudyArtifacts: true,
+          forceQuiz: requiresStructuredQuiz || undefined,
           allowAutoQuiz: shouldAllowAutoQuizForInput(context.mode, latestUserInputForIntent, effectiveQuizRun),
           conciseGreeting: isSimpleGreetingTurn || undefined,
         };
-        const requiresStructuredQuiz =
-          context.mode === 'quiz' ||
-          Boolean(context.quizRun?.runId) ||
-          Boolean(context.featureFlags?.forceQuiz);
         const isQuizTurn = requiresStructuredQuiz;
         const useLightweightGreetingPath = isSimpleGreetingTurn && !isQuizTurn;
 
