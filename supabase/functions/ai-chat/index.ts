@@ -29,6 +29,7 @@ Focus on vocabulary usage, grammar correction, collocations, and example-driven 
 
 const MAX_INCOMING_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 960;
+const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|你好|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好)[!,.?，。！？\s]*$/i;
 
 const clipText = (value: string, limit: number): string => {
   if (value.length <= limit) return value;
@@ -62,6 +63,8 @@ const extractLatestUserMessage = (messages: DeepSeekMessage[]): string => {
   const latest = [...messages].reverse().find((message) => message.role === 'user');
   return latest?.content?.trim() || '';
 };
+
+const isChineseText = (value: string): boolean => /[\u3400-\u9fff]/.test(value);
 
 const ensureWebSourcesArtifact = (artifacts: ChatArtifact[], sources: ChatEnvelope['sources']): ChatArtifact[] => {
   if (!sources || sources.length === 0) return artifacts;
@@ -192,6 +195,8 @@ Deno.serve(async (req) => {
 
     const safeMessages = toSafeMessages(body.messages);
     const latestUserMessage = extractLatestUserMessage(safeMessages);
+    const conciseGreetingRequested = Boolean(featureFlags.conciseGreeting);
+    const conciseGreetingTurn = conciseGreetingRequested && SIMPLE_GREETING_PATTERN.test(latestUserMessage.toLowerCase());
 
     const sessionId =
       (typeof body.sessionId === 'string' && body.sessionId.trim().length > 0
@@ -219,6 +224,48 @@ Deno.serve(async (req) => {
       : {
           syncState: 'not_applicable',
         };
+
+    if (conciseGreetingTurn) {
+      const content = isChineseText(latestUserMessage)
+        ? '你好！我在这儿。你今天想先练口语、词汇还是语法？'
+        : "Hi! I'm here. What would you like to practice first: speaking, vocabulary, or grammar?";
+
+      return jsonResponse({
+        content,
+        provider: 'edge',
+        artifacts: [],
+        agentMeta: {
+          triggerReason: 'concise_greeting',
+          confidence: 0.96,
+          schemaVersion: 'chat_v2',
+          latencyMs: 0,
+        },
+        renderState: {
+          stage: 'streaming',
+          progress: 1,
+        },
+        quizRun: body.quizRun && typeof body.quizRun === 'object' ? {
+          runId: typeof body.quizRun.runId === 'string' ? body.quizRun.runId : '',
+          questionIndex: Number(body.quizRun.questionIndex) || 1,
+          targetCount: Number(body.quizRun.targetCount) || 1,
+        } : undefined,
+        contextMeta: {
+          inputTokensEst: Math.max(12, Math.min(160, Math.floor(latestUserMessage.length * 1.3))),
+          budgetUsed: {
+            system: 0,
+            recentTurns: 0,
+            memory: 0,
+            toolObservations: 0,
+            reserve: 0,
+          },
+          compacted: false,
+          memoryHits: 0,
+          searchTriggered: false,
+        },
+        memoryUsed: [],
+        memoryWrites: [],
+      });
+    }
 
     const memoryPolicy = body.memoryPolicy && typeof body.memoryPolicy === 'object'
       ? (body.memoryPolicy as Record<string, unknown>)
@@ -344,6 +391,7 @@ Deno.serve(async (req) => {
       forceQuiz: Boolean(featureFlags.forceQuiz),
       allowAutoQuiz: Boolean(featureFlags.allowAutoQuiz),
       requireSources: toolRouting.sources.length > 0 || Boolean(body.searchPolicy?.alwaysShowSources),
+      conciseGreeting: conciseGreetingTurn,
     });
 
     const modelMessages: DeepSeekMessage[] = [

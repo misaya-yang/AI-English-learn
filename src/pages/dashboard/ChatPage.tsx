@@ -117,12 +117,16 @@ const QUIZ_SUMMARY_SUPPRESS_RE =
   /(总结|總結|复盘|復盤|分析|建议|建議|改进|改進|回顾|回顧|review|summary|summarize|feedback|plan|建议我|建議我)/i;
 const ARABIC_QUIZ_COUNT_RE =
   /(\d{1,2})\s*(?:道|题|題|个|個)?\s*(?:题|題|questions?|question|道|quiz|quizzes|单词|詞彙|vocab|words?)/i;
+const HYPHENATED_EN_QUIZ_COUNT_RE =
+  /(\d{1,2})\s*[-–—]\s*(?:question|questions|quiz|quizzes|q(?:uestion)?s?)/i;
 const FLEX_QUIZ_COUNT_RE =
   /(\d{1,2})\s*(?:道|题|題|个|個)[^\n\r]{0,16}?(?:题|題|question|questions|quiz|测验|測驗|测试|測試|单词|詞彙|vocab|words?)/i;
 const ZH_NUMBER_RE = /([零一二三四五六七八九十两兩]{1,3})\s*(?:道|题|題|个|個)[^\n\r]{0,12}?(?:题|題|question|questions|quiz|测验|測驗|测试|測試|单词|詞彙|vocab|words?)/i;
 const ZH_SIMPLE_QUIZ_COUNT_RE = /([零一二三四五六七八九十两兩]{1,3})\s*(?:道|题|題)/;
 const EN_NUMBER_WORD_RE =
   /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b/i;
+const HYPHENATED_EN_WORD_QUIZ_COUNT_RE =
+  /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s*[-–—]\s*(?:question|questions|quiz|quizzes)\b/i;
 
 const EN_WORD_TO_NUMBER: Record<string, number> = {
   two: 2,
@@ -192,6 +196,22 @@ const parseRequestedQuizCount = (text: string): number | null => {
   const hasQuizRequestAction = QUIZ_REQUEST_ACTION_RE.test(trimmed);
   if (hasSummaryIntent && !hasQuizRequestAction) {
     return null;
+  }
+
+  const hyphenatedArabicMatch = trimmed.match(HYPHENATED_EN_QUIZ_COUNT_RE);
+  if (hyphenatedArabicMatch?.[1]) {
+    const parsed = Number(hyphenatedArabicMatch[1]);
+    if (Number.isFinite(parsed) && parsed >= 2) {
+      return Math.min(20, parsed);
+    }
+  }
+
+  const hyphenatedWordMatch = trimmed.toLowerCase().match(HYPHENATED_EN_WORD_QUIZ_COUNT_RE)?.[1];
+  if (hyphenatedWordMatch) {
+    const parsed = EN_WORD_TO_NUMBER[hyphenatedWordMatch];
+    if (parsed && parsed >= 2) {
+      return Math.min(20, parsed);
+    }
   }
 
   const arabicMatch = trimmed.match(ARABIC_QUIZ_COUNT_RE);
@@ -444,69 +464,56 @@ const ThinkingStatusCard = ({ label, language, isStreaming, toolRuns }: Thinking
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex gap-3 py-3"
+      className="flex gap-3 py-2"
     >
       <Avatar className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-cyan-100 dark:from-emerald-900/40 dark:to-cyan-900/30">
         <AvatarFallback>
           <Loader2 className="h-4 w-4 text-emerald-600 animate-spin" />
         </AvatarFallback>
       </Avatar>
-      <div className="relative flex-1 overflow-hidden rounded-2xl rounded-bl-sm border border-emerald-300/30 bg-emerald-50/60 dark:bg-emerald-900/15 p-3">
-        <motion.div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(100deg, transparent 10%, rgba(16, 185, 129, 0.18) 48%, transparent 86%)',
-            backgroundSize: '220% 100%',
-          }}
-          animate={{ backgroundPosition: ['-120% 0%', '130% 0%'] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
-        />
-
-        <div className="relative z-10">
-          <p className="text-sm font-medium">{label}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {isStreaming
-              ? language.startsWith('zh')
-                ? '正在渲染并流式输出内容...'
-                : 'Rendering and streaming response...'
-              : language.startsWith('zh')
-                ? '正在分析上下文与学习状态...'
-                : 'Analyzing context and learning state...'}
-          </p>
-
-          <div className="mt-2 h-1.5 rounded-full bg-emerald-100/70 dark:bg-emerald-900/40 overflow-hidden">
-            <motion.div
-              className="h-full w-1/2 rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-500"
-              animate={{ x: ['-120%', '180%'] }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          </div>
-
-          {latestRuns.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {latestRuns.map((run, idx) => {
-                const statusClass =
-                  run.status === 'success'
-                    ? 'border-emerald-300/60 text-emerald-700 dark:text-emerald-300'
-                    : run.status === 'error'
-                      ? 'border-red-300/60 text-red-600 dark:text-red-300'
-                      : run.status === 'rate_limited'
-                        ? 'border-amber-300/60 text-amber-700 dark:text-amber-300'
-                        : 'border-border text-muted-foreground';
-
-                return (
-                  <span
-                    key={`${run.name}-${idx}`}
-                    className={cn('rounded-full border bg-background/70 px-2 py-0.5 text-[11px]', statusClass)}
-                  >
-                    {run.name}
-                  </span>
-                );
-              })}
-            </div>
-          )}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 text-sm">
+          <p className="font-medium">{label}</p>
+          <motion.span
+            aria-hidden
+            className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"
+            animate={{ opacity: [0.25, 1, 0.25] }}
+            transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {isStreaming
+            ? language.startsWith('zh')
+              ? '正在流式输出...'
+              : 'Streaming response...'
+            : language.startsWith('zh')
+              ? '正在组织回答...'
+              : 'Composing response...'}
+        </p>
+
+        {latestRuns.length > 0 && (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {latestRuns.map((run, idx) => {
+              const statusClass =
+                run.status === 'success'
+                  ? 'border-emerald-300/60 text-emerald-700 dark:text-emerald-300'
+                  : run.status === 'error'
+                    ? 'border-red-300/60 text-red-600 dark:text-red-300'
+                    : run.status === 'rate_limited'
+                      ? 'border-amber-300/60 text-amber-700 dark:text-amber-300'
+                      : 'border-border text-muted-foreground';
+
+              return (
+                <span
+                  key={`${run.name}-${idx}`}
+                  className={cn('rounded-full border bg-background/70 px-2 py-0.5 text-[11px]', statusClass)}
+                >
+                  {run.name}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -583,7 +590,7 @@ const MessageBubble = ({
       {/* Message Content */}
       <div className={cn(
         'flex flex-col min-w-0',
-        isUser ? 'items-end max-w-[90%] lg:max-w-[72%]' : 'items-start w-full max-w-[780px] xl:max-w-[820px]'
+        isUser ? 'items-end max-w-[90%] lg:max-w-[70%]' : 'items-start w-full max-w-[640px] xl:max-w-[680px]'
       )}>
         {isUser ? (
           <div className="relative overflow-hidden px-4 py-3 rounded-2xl bg-emerald-600 text-white rounded-br-sm">
@@ -900,8 +907,8 @@ export default function ChatPage() {
   }, [currentSessionId, quizRunState, quizSequence, startQuizRun, syncQuizSequence]);
 
   const contentWidthClass = sidebarOpen
-    ? 'max-w-[820px]'
-    : 'max-w-[900px]';
+    ? 'max-w-[720px]'
+    : 'max-w-[760px]';
 
   const [quizCanvasIndex, setQuizCanvasIndex] = useState(0);
   const quizArtifactsRef = useRef<QuizRunArtifactEntry[]>([]);
@@ -909,8 +916,8 @@ export default function ChatPage() {
   const loadingStages = useMemo(
     () =>
       language.startsWith('zh')
-        ? ['正在解析学习意图', '正在检索学习资料', '正在组织教学答案', '正在渲染内容']
-        : ['Understanding your goal', 'Retrieving learning context', 'Composing teaching response', 'Rendering output'],
+        ? ['正在回复', '正在组织回答', '正在输出中']
+        : ['Thinking', 'Composing response', 'Streaming'],
     [language],
   );
 
@@ -1763,7 +1770,7 @@ export default function ChatPage() {
                       <div
                         key={session.id}
                         className={cn(
-                          'group flex items-center gap-2.5 p-3 rounded-lg cursor-pointer transition-all',
+                          'group flex items-center gap-2.5 p-3 pr-2 rounded-lg cursor-pointer transition-all',
                           currentSessionId === session.id
                             ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800'
                             : 'hover:bg-muted border border-transparent'
@@ -1810,16 +1817,17 @@ export default function ChatPage() {
                             deleteSession(session.id);
                           }}
                           className={cn(
-                            'inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border transition-colors',
-                            'border-border/70 bg-background/70 text-muted-foreground',
-                            'hover:border-red-300 hover:bg-red-100 hover:text-red-600',
-                            'dark:hover:border-red-800 dark:hover:bg-red-950/40',
+                            'inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border shadow-sm transition-colors',
+                            'border-red-300/55 bg-red-50/60 text-red-600 dark:border-red-800/70 dark:bg-red-950/35 dark:text-red-300',
+                            'hover:border-red-400 hover:bg-red-100/80 hover:text-red-700',
+                            'dark:hover:border-red-700 dark:hover:bg-red-950/55',
+                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             currentSessionId === session.id ? 'border-emerald-300/50' : '',
                           )}
                           aria-label={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
                           title={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     ))
@@ -1916,7 +1924,7 @@ export default function ChatPage() {
         </div>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 min-h-0 px-4" ref={messagesScrollAreaRef}>
+        <ScrollArea className="flex-1 min-h-0 px-4 md:px-6 lg:px-8" ref={messagesScrollAreaRef}>
           <div className={cn(contentWidthClass, 'mx-auto')}>
             {messages.length === 0 ? (
               <WelcomeMessage onPromptClick={handleQuickPrompt} t={t} prompts={quickPrompts} />
@@ -2354,6 +2362,8 @@ export default function ChatPage() {
 
               <textarea
                 ref={inputRef}
+                id="chat-input"
+                name="chat-input"
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}

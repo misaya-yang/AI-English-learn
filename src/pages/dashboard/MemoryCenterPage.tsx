@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Pin, PinOff, RefreshCw, Trash2, Search, Sparkles, Shield, Clock3 } from 'lucide-react';
+import { AuthRequiredError, EdgeFunctionError } from '@/services/aiGateway';
 import {
   clearExpiredMemoryItems,
   deleteMemoryItems,
@@ -54,6 +55,27 @@ export default function MemoryCenterPage() {
   const [kind, setKind] = useState<MemoryKind | 'all'>('all');
   const [error, setError] = useState<string | null>(null);
 
+  const toFriendlyErrorMessage = useCallback((err: unknown): string => {
+    if (err instanceof AuthRequiredError) {
+      return language.startsWith('zh')
+        ? '登录状态已失效，请重新登录后再试。'
+        : 'Your session has expired. Please sign in again.';
+    }
+
+    if (err instanceof EdgeFunctionError) {
+      if (err.status === 0 || err.status >= 500 || err.status === 404) {
+        return language.startsWith('zh')
+          ? '记忆服务暂时不可用，请稍后重试。'
+          : 'Memory service is temporarily unavailable. Please try again later.';
+      }
+      return err.message;
+    }
+
+    return language.startsWith('zh')
+      ? '记忆加载失败，请稍后重试。'
+      : 'Failed to load memory. Please try again later.';
+  }, [language]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -65,12 +87,11 @@ export default function MemoryCenterPage() {
       });
       setItems(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load memory';
-      setError(message);
+      setError(toFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, [kind, query]);
+  }, [kind, query, toFriendlyErrorMessage]);
 
   useEffect(() => {
     void load();
@@ -93,10 +114,10 @@ export default function MemoryCenterPage() {
               : 'Pin removed',
         );
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to update pin status');
+        toast.error(toFriendlyErrorMessage(err));
       }
     },
-    [language],
+    [language, toFriendlyErrorMessage],
   );
 
   const handleDelete = useCallback(async (item: MemoryItemView) => {
@@ -111,9 +132,9 @@ export default function MemoryCenterPage() {
           : `Deleted ${result.deletedCount} memory item(s)`,
       );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete memory item');
+      toast.error(toFriendlyErrorMessage(err));
     }
-  }, [language]);
+  }, [language, toFriendlyErrorMessage]);
 
   const handleClearExpired = useCallback(async () => {
     try {
@@ -125,9 +146,9 @@ export default function MemoryCenterPage() {
       );
       await load();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to clear expired memory');
+      toast.error(toFriendlyErrorMessage(err));
     }
-  }, [language, load]);
+  }, [language, load, toFriendlyErrorMessage]);
 
   return (
     <div className="space-y-4">

@@ -87,6 +87,9 @@ const TEMPERATURE_BY_MODE: Record<ChatMode, number> = {
 const QUIZ_EXPLICIT_REQUEST_PATTERN = /(quiz|mcq|multiple choice|give me .*question|ask me .*question|给我.{0,10}(道|个)?题|出.{0,8}题|来.{0,8}题|下一题|第\s*\d+\s*题|选择题|测验题|再给我.{0,8}题|继续.{0,8}题)/i;
 const REFLECTION_REQUEST_PATTERN = /(summary|summarize|plan|roadmap|review|feedback|weakness|strength|next step|总结|复盘|计划|训练计划|薄弱点|优势|下一步|回顾|评估)/i;
 const QUIZ_SUPPRESS_PATTERN = /(不要出题|不要测验|只做总结|只总结|复述|停止测验|结束测验|stop quiz|no quiz|don't give (me )?(a )?quiz)/i;
+const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|你好|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好)[!,.?，。！？\s]*$/i;
+const FACTUAL_SEARCH_HINT_PATTERN = /(latest|today|news|price|law|policy|research|statistics|官网|来源|出处|citation|web ?search|联网|最新|时效|新闻|数据|查一下|搜一下|检索)/i;
+const LOCAL_TUTORING_PATTERN = /(collocation|搭配|grammar|语法|rewrite|改写|translate|翻译|example sentence|例句|pronunciation|发音|词义|意思|difference|区别|用法|造句|quiz|测验|选择题|goal|target|学习目标|目标|speaking|口语|warm-?up|travel)/i;
 
 const shouldAllowAutoQuizForInput = (
   mode: ChatMode,
@@ -96,6 +99,10 @@ const shouldAllowAutoQuizForInput = (
   const normalized = userInput.toLowerCase().trim();
   const suppressQuiz = QUIZ_SUPPRESS_PATTERN.test(normalized);
   if (suppressQuiz) {
+    return false;
+  }
+
+  if (SIMPLE_GREETING_PATTERN.test(normalized)) {
     return false;
   }
 
@@ -121,6 +128,27 @@ const shouldAllowAutoQuizForInput = (
 const shouldSuppressQuizForInput = (userInput: string): boolean =>
   QUIZ_SUPPRESS_PATTERN.test(userInput.toLowerCase().trim());
 
+const shouldDisableAutoSearch = (
+  mode: ChatMode,
+  userInput: string,
+  searchMode: NonNullable<SendMessageOptions['searchMode']>,
+): boolean => {
+  if (searchMode !== 'auto') return false;
+  const normalized = userInput.toLowerCase().trim();
+  if (!normalized) return false;
+  if (SIMPLE_GREETING_PATTERN.test(normalized)) return true;
+  if (mode === 'quiz' || QUIZ_EXPLICIT_REQUEST_PATTERN.test(normalized)) return true;
+  if (FACTUAL_SEARCH_HINT_PATTERN.test(normalized)) return false;
+  return LOCAL_TUTORING_PATTERN.test(normalized);
+};
+
+const isChineseInput = (value: string): boolean => /[\u3400-\u9fff]/.test(value);
+
+const buildFastGreetingReply = (userInput: string): string =>
+  isChineseInput(userInput)
+    ? '你好！我在这儿。你今天想先练口语、词汇还是语法？'
+    : "Hi! I'm here. What would you like to practice first: speaking, vocabulary, or grammar?";
+
 // System prompt for English tutor
 const SYSTEM_PROMPT = `You are an expert English tutor specializing in helping Chinese-speaking learners. Your responses should be:
 
@@ -141,6 +169,11 @@ When correcting grammar:
 - Show the correct form
 - Provide examples
 - Explain why it's wrong
+
+For simple greetings (for example: "hi", "hello", "你好"):
+- Reply in 1-2 short sentences
+- Do not use long sections, bullet lists, or study plans
+- Ask at most one short follow-up question
 
 Keep responses concise but comprehensive. Use markdown formatting for clarity.`;
 
@@ -1517,19 +1550,29 @@ export function useSupabaseChat() {
         const latestUserInputForIntent = [...context.apiMessages]
           .reverse()
           .find((message) => message.role === 'user')?.content || '';
+        const normalizedUserIntent = latestUserInputForIntent.toLowerCase().trim();
+        const isSimpleGreetingTurn = SIMPLE_GREETING_PATTERN.test(normalizedUserIntent);
         const suppressQuizForThisTurn = shouldSuppressQuizForInput(latestUserInputForIntent);
+        const disableAutoSearchForThisTurn = shouldDisableAutoSearch(
+          context.mode,
+          latestUserInputForIntent,
+          context.searchMode,
+        );
+        const effectiveSearchMode = disableAutoSearchForThisTurn || isSimpleGreetingTurn ? 'off' : context.searchMode;
         const effectiveQuizRun = suppressQuizForThisTurn ? undefined : context.quizRun;
         const mergedFeatureFlags = {
           ...(context.featureFlags || {}),
           enableQuizArtifacts: true,
           enableStudyArtifacts: true,
           allowAutoQuiz: shouldAllowAutoQuizForInput(context.mode, latestUserInputForIntent, effectiveQuizRun),
+          conciseGreeting: isSimpleGreetingTurn || undefined,
         };
         const requiresStructuredQuiz =
           context.mode === 'quiz' ||
           Boolean(context.quizRun?.runId) ||
           Boolean(context.featureFlags?.forceQuiz);
         const isQuizTurn = requiresStructuredQuiz;
+        const useLightweightGreetingPath = isSimpleGreetingTurn && !isQuizTurn;
 
         const result = await invokeEdgeFunction<ChatEdgeResponse>(
           'ai-chat',
@@ -1548,23 +1591,28 @@ export function useSupabaseChat() {
                   availableTools: [],
                   responseTemplate: ['direct_answer'],
                 }
+              : useLightweightGreetingPath
+                ? {
+                    availableTools: [],
+                    responseTemplate: ['direct_answer'],
+                  }
               : {
                   availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
                   responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
                 },
             agentConfig: {
-              totalTokens: isQuizTurn ? 1200 : 2200,
-              compactThreshold: isQuizTurn ? 0.72 : 0.8,
+              totalTokens: isQuizTurn ? 1200 : useLightweightGreetingPath ? 420 : 2200,
+              compactThreshold: isQuizTurn ? 0.72 : useLightweightGreetingPath ? 0.7 : 0.8,
             },
             searchPolicy: {
-              mode: context.mode === 'quiz' ? 'off' : context.searchMode,
+              mode: context.mode === 'quiz' || useLightweightGreetingPath ? 'off' : effectiveSearchMode,
               alwaysShowSources: true,
-              maxSearchCalls: context.mode === 'quiz' ? 1 : 2,
-              maxPerMinute: context.mode === 'quiz' ? 5 : 8,
+              maxSearchCalls: context.mode === 'quiz' || effectiveSearchMode === 'off' || useLightweightGreetingPath ? 1 : 2,
+              maxPerMinute: context.mode === 'quiz' || useLightweightGreetingPath ? 5 : 8,
             },
             memoryPolicy: {
-              topK: context.memoryPolicy?.topK ?? (isQuizTurn ? 2 : 6),
-              minSimilarity: context.memoryPolicy?.minSimilarity ?? (isQuizTurn ? 0.3 : 0.24),
+              topK: context.memoryPolicy?.topK ?? (isQuizTurn ? 2 : useLightweightGreetingPath ? 2 : 6),
+              minSimilarity: context.memoryPolicy?.minSimilarity ?? (isQuizTurn ? 0.3 : useLightweightGreetingPath ? 0.28 : 0.24),
               writeMode: context.memoryPolicy?.writeMode ?? 'stable_only',
               allowSensitiveStore: context.memoryPolicy?.allowSensitiveStore ?? false,
             },
@@ -1580,8 +1628,8 @@ export function useSupabaseChat() {
             mode: context.mode,
             quizRun: effectiveQuizRun,
             featureFlags: mergedFeatureFlags,
-            temperature: TEMPERATURE_BY_MODE[context.mode],
-            maxTokens: MAX_TOKENS_BY_MODE[context.mode],
+            temperature: useLightweightGreetingPath ? 0.45 : TEMPERATURE_BY_MODE[context.mode],
+            maxTokens: useLightweightGreetingPath ? 180 : MAX_TOKENS_BY_MODE[context.mode],
           },
           { signal: abortControllerRef.current.signal },
         );
@@ -1888,6 +1936,14 @@ export function useSupabaseChat() {
       { role: 'user', content: clipForContext(apiUserContent, MAX_USER_CHARS) },
     ];
 
+    const normalizedInput = apiUserContent.toLowerCase().trim();
+    const shouldUseFastGreetingReply =
+      SIMPLE_GREETING_PATTERN.test(normalizedInput) &&
+      mode !== 'quiz' &&
+      mode !== 'canvas' &&
+      !options.quizRun?.runId &&
+      !options.featureFlags?.forceQuiz;
+
     void trackExperimentEvent('chat_message_sent', {
       mode,
       searchMode,
@@ -1910,6 +1966,39 @@ export function useSupabaseChat() {
       },
     });
 
+    if (shouldUseFastGreetingReply) {
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: buildFastGreetingReply(apiUserContent),
+        createdAt: Date.now(),
+      };
+
+      await appendAssistantMessage(sessionId, assistantMessage);
+      setChatError(null);
+      setLastRenderState(null);
+      setLastToolRuns([]);
+      setLastSources([]);
+      setLastContextMeta(null);
+      setLastMemoryUsed([]);
+      setLastMemoryWrites([]);
+      setLastMemoryTraceId(null);
+      failedRequestRef.current = null;
+
+      void trackExperimentEvent('chat_reply_received', {
+        mode,
+        trigger,
+        hasArtifacts: false,
+        artifactTypes: [],
+        sourceCount: 0,
+        searchTriggered: false,
+        memoryUsed: 0,
+        memoryWrites: 0,
+        fastGreetingPath: true,
+      });
+      return;
+    }
+
     await requestAssistantReply({
       sessionId,
       apiMessages,
@@ -1922,7 +2011,7 @@ export function useSupabaseChat() {
       quizRun: options.quizRun,
       trigger,
     });
-  }, [createSession, currentSessionId, isLoading, requestAssistantReply, sessions, trackExperimentEvent, updateSessions, userId]);
+  }, [appendAssistantMessage, createSession, currentSessionId, isLoading, requestAssistantReply, sessions, trackExperimentEvent, updateSessions, userId]);
 
   const retryLastFailedMessage = useCallback(async () => {
     if (isLoading) return;

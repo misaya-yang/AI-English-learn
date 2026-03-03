@@ -49,18 +49,37 @@ const jsonHeaders = async (): Promise<HeadersInit> => {
   };
 };
 
+const tokenHeaders = (token: string): HeadersInit => {
+  return {
+    'Content-Type': 'application/json',
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 export const invokeEdgeFunction = async <T>(
   name: string,
   body: unknown,
   options: InvokeOptions = {},
 ): Promise<T> => {
   try {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
-      method: 'POST',
-      headers: await jsonHeaders(),
-      body: JSON.stringify(body),
-      signal: options.signal,
-    });
+    const endpoint = `${SUPABASE_URL}/functions/v1/${name}`;
+    const run = async (headers: HeadersInit) =>
+      fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+        signal: options.signal,
+      });
+
+    let response = await run(await jsonHeaders());
+    if (response.status === 401 && !options.signal?.aborted) {
+      const { data: refreshed, error } = await supabase.auth.refreshSession();
+      const retryToken = refreshed.session?.access_token;
+      if (!error && retryToken) {
+        response = await run(tokenHeaders(retryToken));
+      }
+    }
 
     if (!response.ok) {
       const requestId =

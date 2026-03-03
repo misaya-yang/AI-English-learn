@@ -596,11 +596,13 @@ export const buildContractPrompt = (
     forceQuiz?: boolean;
     allowAutoQuiz?: boolean;
     requireSources?: boolean;
+    conciseGreeting?: boolean;
   } = {},
 ): string => {
   const forceQuiz = Boolean(options.forceQuiz) || mode === 'quiz';
   const allowAutoQuiz = Boolean(options.allowAutoQuiz);
   const requireSources = Boolean(options.requireSources);
+  const conciseGreeting = Boolean(options.conciseGreeting);
 
   const quizRule = forceQuiz
     ? 'You MUST include quiz artifact(s). If the user asks for multiple questions, return one artifact per question in the same response.'
@@ -611,6 +613,19 @@ export const buildContractPrompt = (
   const sourceRule = requireSources
     ? 'You MUST cite concrete evidence from provided tool observations. Keep source ids intact.'
     : 'Do not fabricate sources. If no source is provided, answer from internal knowledge and say uncertainty when needed.';
+
+  if (conciseGreeting) {
+    return [
+      'Return ONLY one valid JSON object. Do not use markdown fences.',
+      'JSON schema: { "content": "string", "artifacts": [], "agentMeta": { "triggerReason": "string", "confidence": 0.0, "schemaVersion": "chat_v2" } }',
+      'Greeting mode constraints:',
+      '- Keep content within 1-2 short sentences.',
+      '- No bullet lists, no sections, no study plan, no quiz artifact.',
+      '- Ask at most one short follow-up question.',
+      'If user writes in Chinese, reply in Chinese; otherwise reply in English.',
+      `Mode=${mode}.`,
+    ].join('\n');
+  }
 
   return [
     'Return ONLY one valid JSON object. Do not use markdown fences.',
