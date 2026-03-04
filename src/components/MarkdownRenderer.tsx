@@ -77,12 +77,22 @@ const InlineCode: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className }) => {
   const safeContent = sanitizeMarkdownContent(content);
+  const hasMarkdownSyntax = /[`*_#[\]|>-]|(?:\n\s*\d+\.)|(?:\n\s*[-*+]\s)/.test(safeContent);
+  const hasCodeFence = /```/.test(safeContent);
+
+  if (!hasMarkdownSyntax) {
+    return (
+      <div className={cn('markdown-content max-w-none', className)}>
+        <p className="text-[15px] leading-8 whitespace-pre-wrap">{safeContent}</p>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('markdown-content prose prose-sm dark:prose-invert max-w-none', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight, rehypeRaw]}
+        rehypePlugins={hasCodeFence ? [rehypeHighlight, rehypeRaw] : [rehypeRaw]}
         components={{
           // Custom code blocks
           code({

@@ -105,6 +105,7 @@ export interface QuizRunMeta {
   runId: string;
   questionIndex: number;
   targetCount: number;
+  status?: 'idle' | 'awaiting_answer' | 'grading' | 'requesting_next' | 'completed';
 }
 
 export interface MemoryUsedTrace {
@@ -130,6 +131,9 @@ export interface ChatEnvelope {
   artifacts?: ChatArtifact[];
   agentMeta?: AgentMeta;
   renderState?: ChatRenderState;
+  perfMeta?: {
+    latencyMs: number;
+  };
   quizRun?: QuizRunMeta;
   sources?: ChatSource[];
   toolRuns?: ToolRun[];
@@ -463,6 +467,14 @@ const normalizeQuizRunMeta = (value: unknown): QuizRunMeta | undefined => {
     runId,
     questionIndex: Math.max(1, Math.floor(questionIndex)),
     targetCount: Math.max(1, Math.floor(targetCount)),
+    status:
+      raw.status === 'idle' ||
+      raw.status === 'awaiting_answer' ||
+      raw.status === 'grading' ||
+      raw.status === 'requesting_next' ||
+      raw.status === 'completed'
+        ? raw.status
+        : undefined,
   };
 };
 
@@ -555,6 +567,8 @@ export const normalizeEnvelope = (
 
     return value
       .replace(/(?:^|\n)\s*(?:answer|correct answer|正确答案|答案)\s*[:：].*(?:\n|$)/gi, '\n')
+      .replace(/(?:^|\n)\s*(?:正确选项|答案选项)\s*[:：]\s*[A-D]\b.*(?:\n|$)/gi, '\n')
+      .replace(/(?:^|\n)\s*(?:the answer is|the correct option is)\s*[A-D]\b.*(?:\n|$)/gi, '\n')
       .replace(/(?:^|\n)\s*(?:解析|analysis)\s*[:：][\s\S]*/i, '')
       .trim();
   };
@@ -579,6 +593,7 @@ export const normalizeEnvelope = (
       latencyMs: Number.isFinite(raw?.agentMeta?.latencyMs) ? Number(raw?.agentMeta?.latencyMs) : options.latencyMs,
     },
     renderState: options.renderState || normalizeRenderState(raw?.renderState),
+    perfMeta: { latencyMs: Math.max(0, options.latencyMs) },
     quizRun: options.quizRun || normalizeQuizRunMeta(raw?.quizRun),
     sources: mergedSources.length > 0 ? mergedSources : undefined,
     toolRuns: mergedToolRuns.length > 0 ? mergedToolRuns : undefined,
@@ -597,12 +612,14 @@ export const buildContractPrompt = (
     allowAutoQuiz?: boolean;
     requireSources?: boolean;
     conciseGreeting?: boolean;
+    revealAnswerAfterSubmit?: boolean;
   } = {},
 ): string => {
   const forceQuiz = Boolean(options.forceQuiz) || mode === 'quiz';
   const allowAutoQuiz = Boolean(options.allowAutoQuiz);
   const requireSources = Boolean(options.requireSources);
   const conciseGreeting = Boolean(options.conciseGreeting);
+  const revealAnswerAfterSubmit = Boolean(options.revealAnswerAfterSubmit);
 
   const quizRule = forceQuiz
     ? 'You MUST include quiz artifact(s). If the user asks for multiple questions, return one artifact per question in the same response.'
@@ -640,6 +657,9 @@ export const buildContractPrompt = (
     'Quiz payload schema:',
     '{ quizId, title, questionType, stem, options[{id,text}], answerKey, explanation, difficulty, skills[], estimatedSeconds, targetWord?, tags? }',
     'When quiz artifact is present, never reveal answer key in content before user submission.',
+    revealAnswerAfterSubmit
+      ? 'Never reveal answer details in content. Put answerKey and explanation only inside quiz artifact fields.'
+      : '',
     'For quiz questions, keep content to short setup only; put evaluative details in artifact explanation.',
     'Write concise educational response for Chinese-speaking English learners.',
     'Use format: direct answer -> examples -> Chinese key points -> next actions.',

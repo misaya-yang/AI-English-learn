@@ -185,6 +185,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const mode = normalizeMode(body.mode);
+    const responseStyle = body.responseStyle === 'concise' ? 'concise' : 'coach';
     const systemPrompt = typeof body.systemPrompt === 'string' && body.systemPrompt.trim().length > 0
       ? body.systemPrompt
       : DEFAULT_SYSTEM_PROMPT;
@@ -244,10 +245,21 @@ Deno.serve(async (req) => {
           stage: 'streaming',
           progress: 1,
         },
+        perfMeta: {
+          latencyMs: 0,
+        },
         quizRun: body.quizRun && typeof body.quizRun === 'object' ? {
           runId: typeof body.quizRun.runId === 'string' ? body.quizRun.runId : '',
           questionIndex: Number(body.quizRun.questionIndex) || 1,
           targetCount: Number(body.quizRun.targetCount) || 1,
+          status:
+            body.quizRun.status === 'idle' ||
+            body.quizRun.status === 'awaiting_answer' ||
+            body.quizRun.status === 'grading' ||
+            body.quizRun.status === 'requesting_next' ||
+            body.quizRun.status === 'completed'
+              ? body.quizRun.status
+              : undefined,
         } : undefined,
         contextMeta: {
           inputTokensEst: Math.max(12, Math.min(160, Math.floor(latestUserMessage.length * 1.3))),
@@ -392,11 +404,21 @@ Deno.serve(async (req) => {
       allowAutoQuiz: Boolean(featureFlags.allowAutoQuiz),
       requireSources: toolRouting.sources.length > 0 || Boolean(body.searchPolicy?.alwaysShowSources),
       conciseGreeting: conciseGreetingTurn,
+      revealAnswerAfterSubmit:
+        body.quizPolicy &&
+        typeof body.quizPolicy === 'object' &&
+        body.quizPolicy.revealAnswer === 'after_submit',
     });
+
+    const stylePrompt =
+      responseStyle === 'concise'
+        ? 'Output style: concise. Keep the answer in <= 3 short paragraphs unless quiz artifact is required.'
+        : 'Output style: coach. Keep a clear teaching flow with concise explanations.';
 
     const modelMessages: DeepSeekMessage[] = [
       { role: 'system', content: systemPrompt },
       { role: 'system', content: contractPrompt },
+      { role: 'system', content: stylePrompt },
       ...(contextBuild.contextPrompt ? [{ role: 'system', content: contextBuild.contextPrompt } as DeepSeekMessage] : []),
       ...contextBuild.modelMessages,
     ];
@@ -418,6 +440,14 @@ Deno.serve(async (req) => {
           runId: typeof body.quizRun.runId === 'string' ? body.quizRun.runId : '',
           questionIndex: Number(body.quizRun.questionIndex) || 1,
           targetCount: Number(body.quizRun.targetCount) || 1,
+          status:
+            body.quizRun.status === 'idle' ||
+            body.quizRun.status === 'awaiting_answer' ||
+            body.quizRun.status === 'grading' ||
+            body.quizRun.status === 'requesting_next' ||
+            body.quizRun.status === 'completed'
+              ? body.quizRun.status
+              : undefined,
         }
       : undefined;
 

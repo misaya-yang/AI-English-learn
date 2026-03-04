@@ -96,6 +96,26 @@ export interface QuizRunState {
   completedAt?: number;
 }
 
+export interface QuizQuestionProgress {
+  runId: string;
+  quizId: string;
+  questionIndex: number;
+  targetCount: number;
+  answeredCount: number;
+  canAdvance: boolean;
+  isCompleted: boolean;
+}
+
+export interface QuizCanvasState {
+  runId: string;
+  activeQuizId?: string;
+  activeIndex: number;
+  totalLoaded: number;
+  answeredCount: number;
+  targetCount: number;
+  hasPendingQuestion: boolean;
+}
+
 export interface ContextMeta {
   inputTokensEst: number;
   budgetUsed: {
@@ -134,6 +154,22 @@ export interface CanvasSessionMeta {
   syncState?: 'isolated' | 'synced' | 'not_applicable';
 }
 
+export interface ChatFastPathDecision {
+  enabled: boolean;
+  reason:
+    | 'simple_greeting'
+    | 'short_clarification'
+    | 'quiz_forced'
+    | 'canvas_mode'
+    | 'normal';
+}
+
+export interface ChatPerfSnapshot {
+  ttftMs: number | null;
+  nextQuestionMs: number | null;
+  lastUpdatedAt: number | null;
+}
+
 export type ChatArtifact =
   | QuizArtifact
   | StudyPlanArtifact
@@ -154,10 +190,14 @@ export interface ChatEdgeResponse {
   artifacts?: ChatArtifact[];
   agentMeta?: AgentMeta;
   renderState?: ChatRenderState;
+  perfMeta?: {
+    latencyMs: number;
+  };
   quizRun?: {
     runId: string;
     questionIndex: number;
     targetCount: number;
+    status?: QuizRunState['status'];
   };
   sources?: ChatSource[];
   toolRuns?: ToolRun[];
@@ -171,6 +211,10 @@ export interface ChatEdgeResponse {
 export interface SendMessageOptions {
   mode?: ChatMode;
   searchMode?: SearchMode;
+  responseStyle?: 'concise' | 'coach';
+  quizPolicy?: {
+    revealAnswer?: 'after_submit';
+  };
   canvasSyncToParent?: boolean;
   apiContentOverride?: string;
   hideUserMessage?: boolean;
@@ -200,6 +244,7 @@ export interface SendMessageOptions {
     runId: string;
     questionIndex: number;
     targetCount: number;
+    status?: QuizRunState['status'];
   };
   trigger?: 'manual_input' | 'quick_prompt' | 'quiz_button' | 'retry';
 }
@@ -209,6 +254,8 @@ export interface ChatQuizAttempt {
   quizId: string;
   sessionId: string;
   userId: string;
+  runId?: string;
+  questionIndex?: number;
   selected: string;
   isCorrect: boolean;
   durationMs: number;

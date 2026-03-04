@@ -103,6 +103,10 @@ const runAuthSmoke = async (browser, credentials) => {
       fallbackVisible: false,
       requestTimedOut: false,
       sessionHistoryVisible: false,
+      multiTurnOk: false,
+      multiTurnRounds: 0,
+      quizCanvasVisible: false,
+      quizLeakedAnswer: false,
     },
     practice: {
       writingQuotaResolved: false,
@@ -129,22 +133,57 @@ const runAuthSmoke = async (browser, credentials) => {
 
     await page.goto(`${BASE_URL}/dashboard/chat`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     const prompt = `e2e smoke ${Date.now()} give me 2 collocations with bilingual examples`;
-    await page.fill('textarea', prompt);
-
-    const aiResponsePromise = page.waitForResponse(
-      (response) =>
-        response.url().includes('/functions/v1/ai-chat') &&
-        response.request().method() === 'POST',
-      { timeout: 60000 },
-    );
-
-    await page.keyboard.press('Enter');
+    const sendTurn = async (message) => {
+      await page.fill('textarea', message);
+      const aiResponsePromise = page.waitForResponse(
+        (response) =>
+          response.url().includes('/functions/v1/ai-chat') &&
+          response.request().method() === 'POST',
+        { timeout: 60000 },
+      );
+      await page.keyboard.press('Enter');
+      const aiResponse = await aiResponsePromise;
+      await page.waitForTimeout(1200);
+      return aiResponse.status();
+    };
 
     try {
-      const aiResponse = await aiResponsePromise;
-      authReport.chat.aiStatus = aiResponse.status();
+      authReport.chat.aiStatus = await sendTurn(prompt);
     } catch {
       authReport.chat.requestTimedOut = true;
+    }
+
+    const multiTurnPrompts = [
+      'Give me one collocation with "commit" and Chinese explanation.',
+      'Now use it in a short dialogue.',
+      'Rewrite that dialogue in a more formal tone.',
+      'Give me one grammar correction exercise based on it.',
+      'Explain the correction briefly in Chinese.',
+    ];
+
+    let multiTurnOk = true;
+    for (const turn of multiTurnPrompts) {
+      try {
+        const status = await sendTurn(turn);
+        if (status !== 200) {
+          multiTurnOk = false;
+          break;
+        }
+        authReport.chat.multiTurnRounds += 1;
+      } catch {
+        multiTurnOk = false;
+        break;
+      }
+    }
+    authReport.chat.multiTurnOk = multiTurnOk && authReport.chat.multiTurnRounds >= 5;
+
+    try {
+      await sendTurn('请给我4道连续英语情景选择题，不要提前公布答案，我每答一题你再给下一题。');
+      const quizBody = (await page.textContent('body')) || '';
+      authReport.chat.quizCanvasVisible = /连续测验画布|Quiz Canvas/i.test(quizBody);
+      authReport.chat.quizLeakedAnswer = /正确答案是|the correct answer is|答案[:：]\s*[A-D]/i.test(quizBody);
+    } catch {
+      authReport.chat.quizCanvasVisible = false;
     }
 
     await page.waitForTimeout(3000);
@@ -216,6 +255,9 @@ const main = async () => {
       auth.chat.aiStatus !== 200 ||
       auth.chat.fallbackVisible ||
       auth.chat.requestTimedOut ||
+      !auth.chat.multiTurnOk ||
+      !auth.chat.quizCanvasVisible ||
+      auth.chat.quizLeakedAnswer ||
       !auth.practice.writingQuotaResolved ||
       auth.pricing.stripeUrlMalformed
     ),

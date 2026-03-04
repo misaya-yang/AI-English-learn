@@ -67,6 +67,9 @@ const toStandardEventName = (eventName: string): LearningEventName | string => {
     chat_message_sent: 'chat.message_sent',
     chat_reply_received: 'chat.reply_received',
     quiz_attempt_submitted: 'chat.quiz_attempted',
+    chat_ttft: 'chat.ttft',
+    chat_quiz_next_latency: 'chat.quiz_next_latency',
+    chat_fast_path_hit: 'chat.fast_path_hit',
   };
 
   return mapping[eventName] || eventName;

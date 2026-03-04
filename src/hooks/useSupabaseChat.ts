@@ -7,7 +7,9 @@ import type {
   AgentMeta,
   ChatArtifact,
   ChatEdgeResponse,
+  ChatFastPathDecision,
   ChatRenderState,
+  ChatPerfSnapshot,
   ChatSource,
   ChatMode,
   ChatQuizAttempt,
@@ -51,9 +53,11 @@ interface FailedRequestContext {
   sessionId: string;
   apiMessages: Array<{ role: 'user' | 'assistant'; content: string }>;
   mode: ChatMode;
+  responseStyle: NonNullable<SendMessageOptions['responseStyle']>;
   searchMode: NonNullable<SendMessageOptions['searchMode']>;
   canvasSyncToParent: boolean;
   featureFlags: SendMessageOptions['featureFlags'];
+  quizPolicy?: SendMessageOptions['quizPolicy'];
   memoryPolicy?: SendMessageOptions['memoryPolicy'];
   memoryControl?: SendMessageOptions['memoryControl'];
   quizRun?: SendMessageOptions['quizRun'];
@@ -1103,10 +1107,21 @@ export function useSupabaseChat() {
   const [lastMemoryUsed, setLastMemoryUsed] = useState<MemoryUsedTrace[]>([]);
   const [lastMemoryWrites, setLastMemoryWrites] = useState<MemoryWriteTrace[]>([]);
   const [lastMemoryTraceId, setLastMemoryTraceId] = useState<string | null>(null);
+  const [chatPerf, setChatPerf] = useState<ChatPerfSnapshot>({
+    ttftMs: null,
+    nextQuestionMs: null,
+    lastUpdatedAt: null,
+  });
+  const [lastFastPathDecision, setLastFastPathDecision] = useState<ChatFastPathDecision>({
+    enabled: false,
+    reason: 'normal',
+  });
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const failedRequestRef = useRef<FailedRequestContext | null>(null);
   const canvasSessionMapRef = useRef<Record<string, string>>({});
+  const requestStartAtRef = useRef<number | null>(null);
+  const nextQuestionRequestAtRef = useRef<number | null>(null);
 
   const currentSession = sessions.find((session) => session.id === currentSessionId) || null;
   const quizRunState = currentSessionId ? quizRunsBySession[currentSessionId] || null : null;
@@ -1343,6 +1358,8 @@ export function useSupabaseChat() {
             quizId,
             sessionId: String(row.session_id || ''),
             userId,
+            runId: typeof row.run_id === 'string' && row.run_id.trim().length > 0 ? row.run_id : undefined,
+            questionIndex: Number.isFinite(Number(row.question_index)) ? Number(row.question_index) : undefined,
             selected: String(row.selected_option || ''),
             isCorrect: Boolean(row.is_correct),
             durationMs: Number(row.duration_ms || 0),
@@ -1643,6 +1660,7 @@ export function useSupabaseChat() {
       setStreamingContent('');
       setIsLoading(false);
       setChatError(null);
+      setChatPerf({ ttftMs: null, nextQuestionMs: null, lastUpdatedAt: null });
     }
 
     void (async () => {
@@ -1677,6 +1695,7 @@ export function useSupabaseChat() {
     setStreamingContent('');
     setIsLoading(false);
     setChatError(null);
+    setChatPerf((prev) => ({ ...prev, lastUpdatedAt: Date.now() }));
   }, []);
 
   const appendAssistantMessage = useCallback(
@@ -1753,6 +1772,7 @@ export function useSupabaseChat() {
       setStreamingContent('');
       setChatError(null);
       setLastRenderState({ stage: 'planning', progress: 0.1 });
+      requestStartAtRef.current = performance.now();
 
       abortControllerRef.current = new AbortController();
       let timeoutHandle: number | null = null;
@@ -1791,10 +1811,11 @@ export function useSupabaseChat() {
           enableStudyArtifacts: true,
           forceQuiz: requiresStructuredQuiz || undefined,
           allowAutoQuiz: shouldAllowAutoQuizForInput(context.mode, latestUserInputForIntent, effectiveQuizRun),
-          conciseGreeting: isSimpleGreetingTurn || undefined,
+          conciseGreeting: isSimpleGreetingTurn || context.responseStyle === 'concise' || undefined,
         };
         const isQuizTurn = requiresStructuredQuiz;
-        const useLightweightGreetingPath = isSimpleGreetingTurn && !isQuizTurn;
+        const conciseResponseRequested = context.responseStyle === 'concise';
+        const useLightweightGreetingPath = (isSimpleGreetingTurn || conciseResponseRequested) && !isQuizTurn;
 
         const result = await invokeEdgeFunction<ChatEdgeResponse>(
           'ai-chat',
@@ -1848,6 +1869,8 @@ export function useSupabaseChat() {
                   }
                 : undefined,
             mode: context.mode,
+            responseStyle: context.responseStyle,
+            quizPolicy: context.quizPolicy,
             quizRun: effectiveQuizRun,
             featureFlags: mergedFeatureFlags,
             temperature: useLightweightGreetingPath ? 0.45 : TEMPERATURE_BY_MODE[context.mode],
@@ -1855,6 +1878,27 @@ export function useSupabaseChat() {
           },
           { signal: abortControllerRef.current.signal },
         );
+
+        if (requestStartAtRef.current !== null) {
+          const ttftMs = Math.max(0, Math.round(performance.now() - requestStartAtRef.current));
+          setChatPerf((prev) => ({
+            ...prev,
+            ttftMs,
+            lastUpdatedAt: Date.now(),
+          }));
+
+          void recordLearningEvent({
+            userId,
+            eventName: 'chat.ttft',
+            sessionId: context.sessionId,
+            payload: {
+              mode: context.mode,
+              trigger: context.trigger,
+              ttftMs,
+              providerLatencyMs: result.perfMeta?.latencyMs ?? result.agentMeta?.latencyMs ?? null,
+            },
+          });
+        }
 
         const embeddedEnvelope = parseEmbeddedEnvelope(result.content);
         const replyContent = embeddedEnvelope.content || normalizeAssistantReplyContent(result.content);
@@ -1965,6 +2009,26 @@ export function useSupabaseChat() {
             (artifact): artifact is Extract<ChatArtifact, { type: 'quiz' }> => artifact.type === 'quiz',
           );
           if (firstQuizArtifact) {
+            if (nextQuestionRequestAtRef.current !== null) {
+              const nextQuestionMs = Math.max(0, Math.round(performance.now() - nextQuestionRequestAtRef.current));
+              nextQuestionRequestAtRef.current = null;
+              setChatPerf((prev) => ({
+                ...prev,
+                nextQuestionMs,
+                lastUpdatedAt: Date.now(),
+              }));
+              void recordLearningEvent({
+                userId,
+                eventName: 'chat.quiz_next_latency',
+                sessionId: context.sessionId,
+                payload: {
+                  runId: context.quizRun.runId,
+                  questionIndex: context.quizRun.questionIndex,
+                  targetCount: context.quizRun.targetCount,
+                  nextQuestionMs,
+                },
+              });
+            }
             persistQuizRuns((prev) => {
               const existing = prev[context.sessionId];
               if (!existing || existing.runId !== context.quizRun?.runId) {
@@ -2015,9 +2079,10 @@ export function useSupabaseChat() {
         setStreamingContent('');
         setLastRenderState((prev) => (prev ? { ...prev, progress: 1 } : null));
         abortControllerRef.current = null;
+        requestStartAtRef.current = null;
       }
     },
-    [appendAssistantMessage, getCanvasChildSessionId, persistQuizRuns, streamingContent, trackExperimentEvent],
+    [appendAssistantMessage, getCanvasChildSessionId, persistQuizRuns, streamingContent, trackExperimentEvent, userId],
   );
 
   const sendMessage = useCallback(async (content: string, options: SendMessageOptions = {}) => {
@@ -2033,7 +2098,9 @@ export function useSupabaseChat() {
 
     const now = Date.now();
     const mode: ChatMode = options.mode || 'study';
+    const responseStyle: NonNullable<SendMessageOptions['responseStyle']> = options.responseStyle || 'coach';
     const searchMode = options.searchMode || 'auto';
+    const quizPolicy = options.quizPolicy || { revealAnswer: 'after_submit' as const };
     const canvasSyncToParent = Boolean(options.canvasSyncToParent);
     const hideUserMessage = Boolean(options.hideUserMessage);
     const trigger = options.trigger || 'manual_input';
@@ -2166,9 +2233,21 @@ export function useSupabaseChat() {
       !options.quizRun?.runId &&
       !options.featureFlags?.forceQuiz;
 
+    setLastFastPathDecision({
+      enabled: shouldUseFastGreetingReply,
+      reason: shouldUseFastGreetingReply
+        ? 'simple_greeting'
+        : mode === 'canvas'
+          ? 'canvas_mode'
+          : options.featureFlags?.forceQuiz
+            ? 'quiz_forced'
+            : 'normal',
+    });
+
     void trackExperimentEvent('chat_message_sent', {
       mode,
       searchMode,
+      responseStyle,
       trigger,
       sessionId,
       synthetic: hideUserMessage,
@@ -2218,14 +2297,30 @@ export function useSupabaseChat() {
         memoryWrites: 0,
         fastGreetingPath: true,
       });
+      void recordLearningEvent({
+        userId,
+        eventName: 'chat.fast_path_hit',
+        sessionId,
+        payload: {
+          mode,
+          trigger,
+          reason: 'simple_greeting',
+        },
+      });
       return;
+    }
+
+    if (hideUserMessage && options.quizRun?.runId && Number(options.quizRun.questionIndex) > 1) {
+      nextQuestionRequestAtRef.current = performance.now();
     }
 
     await requestAssistantReply({
       sessionId,
       apiMessages,
       mode,
+      responseStyle,
       searchMode,
+      quizPolicy,
       canvasSyncToParent,
       featureFlags: options.featureFlags,
       memoryPolicy: options.memoryPolicy,
@@ -2250,6 +2345,8 @@ export function useSupabaseChat() {
     async (args: {
       quizId: string;
       sessionId: string;
+      runId?: string;
+      questionIndex?: number;
       selected: string;
       isCorrect: boolean;
       durationMs: number;
@@ -2260,6 +2357,8 @@ export function useSupabaseChat() {
         quizId: args.quizId,
         sessionId: args.sessionId,
         userId,
+        runId: args.runId,
+        questionIndex: args.questionIndex,
         selected: args.selected,
         isCorrect: args.isCorrect,
         durationMs: args.durationMs,
@@ -2286,6 +2385,8 @@ export function useSupabaseChat() {
         sessionId: attempt.sessionId,
         payload: {
           quizId: attempt.quizId,
+          runId: attempt.runId,
+          questionIndex: attempt.questionIndex,
           isCorrect: attempt.isCorrect,
           durationMs: attempt.durationMs,
           sourceMode: attempt.sourceMode,
@@ -2298,6 +2399,8 @@ export function useSupabaseChat() {
           quiz_id: attempt.quizId,
           session_id: attempt.sessionId,
           user_id: attempt.userId,
+          run_id: attempt.runId || null,
+          question_index: attempt.questionIndex ?? null,
           selected_option: attempt.selected,
           is_correct: attempt.isCorrect,
           duration_ms: attempt.durationMs,
@@ -2315,6 +2418,70 @@ export function useSupabaseChat() {
     },
     [persistQuizAttemptMap, trackExperimentEvent, userId],
   );
+
+  const goToNextQuizQuestion = useCallback((args: {
+    sessionId: string;
+    runId?: string;
+    currentQuizId?: string;
+  }) => {
+    nextQuestionRequestAtRef.current = performance.now();
+    let nextState: QuizRunState | null = null;
+    persistQuizRuns((prev) => {
+      const existing = prev[args.sessionId];
+      if (!existing) return prev;
+      if (args.runId && existing.runId !== args.runId) return prev;
+      if (existing.status === 'completed') {
+        nextState = existing;
+        return prev;
+      }
+
+      nextState = {
+        ...existing,
+        status: 'requesting_next',
+        currentQuizId: args.currentQuizId || existing.currentQuizId,
+      };
+      return {
+        ...prev,
+        [args.sessionId]: nextState,
+      };
+    });
+    return nextState;
+  }, [persistQuizRuns]);
+
+  const submitQuizAnswer = useCallback(async (args: {
+    quizId: string;
+    sessionId: string;
+    runId?: string;
+    questionIndex?: number;
+    selected: string;
+    isCorrect: boolean;
+    durationMs: number;
+    sourceMode: ChatMode;
+    usedWord?: string;
+  }) => {
+    const attempt = await submitQuizAttempt({
+      quizId: args.quizId,
+      sessionId: args.sessionId,
+      runId: args.runId,
+      questionIndex: args.questionIndex,
+      selected: args.selected,
+      isCorrect: args.isCorrect,
+      durationMs: args.durationMs,
+      sourceMode: args.sourceMode,
+    });
+
+    const nextRun = advanceQuizRun({
+      sessionId: args.sessionId,
+      quizId: args.quizId,
+      isCorrect: args.isCorrect,
+      usedWord: args.usedWord,
+    });
+
+    return {
+      attempt,
+      nextRun,
+    };
+  }, [advanceQuizRun, submitQuizAttempt]);
 
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {
@@ -2393,6 +2560,7 @@ export function useSupabaseChat() {
     setLastMemoryUsed([]);
     setLastMemoryWrites([]);
     setLastMemoryTraceId(null);
+    setChatPerf({ ttftMs: null, nextQuestionMs: null, lastUpdatedAt: null });
     setQuizRunsBySession({});
     localStorage.removeItem(CHAT_SESSIONS_STORAGE_KEY);
     localStorage.removeItem(CHAT_CURRENT_SESSION_KEY);
@@ -2427,11 +2595,15 @@ export function useSupabaseChat() {
     lastMemoryUsed,
     lastMemoryWrites,
     lastMemoryTraceId,
+    chatPerf,
+    lastFastPathDecision,
     chatError,
     sendMessage,
     submitQuizAttempt,
+    submitQuizAnswer,
     startQuizRun,
     advanceQuizRun,
+    goToNextQuizQuestion,
     recoverQuizRunFromSession,
     clearQuizRun,
     createSession,
