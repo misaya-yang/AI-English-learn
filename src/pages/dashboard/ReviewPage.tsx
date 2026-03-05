@@ -15,7 +15,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import type { WordData } from '@/data/words';
+import { wordsDatabase, type WordData } from '@/data/words';
+import type { UserProgress } from '@/data/localStorage';
 import { speakEnglishText } from '@/services/tts';
 
 interface ReviewItem {
@@ -30,6 +31,45 @@ interface ReviewCardProps {
   item: ReviewItem;
   isRevealed: boolean;
   onReveal: () => void;
+}
+
+const FALLBACK_REVIEW_COUNT = 10;
+
+function buildReviewItems(dueWords: UserProgress[], dailyWords: WordData[]): ReviewItem[] {
+  const wordsById = new Map<string, WordData>();
+  [...dailyWords, ...wordsDatabase].forEach((word) => {
+    if (!wordsById.has(word.id)) {
+      wordsById.set(word.id, word);
+    }
+  });
+
+  const dueItems = dueWords
+    .map((dueWord) => {
+      const word = wordsById.get(dueWord.wordId);
+      if (!word) return null;
+      return {
+        wordId: dueWord.wordId,
+        word,
+        reviewCount: dueWord.reviewCount,
+        easeFactor: dueWord.easeFactor,
+        nextReview: dueWord.nextReview,
+      } as ReviewItem;
+    })
+    .filter((item): item is ReviewItem => item !== null);
+
+  if (dueItems.length > 0) {
+    return dueItems;
+  }
+
+  return dailyWords
+    .slice(0, Math.min(FALLBACK_REVIEW_COUNT, dailyWords.length))
+    .map((word) => ({
+      wordId: word.id,
+      word,
+      reviewCount: 0,
+      easeFactor: 2.5,
+      nextReview: null,
+    }));
 }
 
 function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
@@ -123,39 +163,24 @@ export default function ReviewPage() {
   const [isComplete, setIsComplete] = useState(false);
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
 
-  // Build review items from dueWords and dailyWords
+  const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
+
+  // Initialize review set before the session starts.
+  // Keep the set stable during a session to avoid index drift while dueWords updates after each rating.
   useEffect(() => {
-    const items: ReviewItem[] = [];
-    
-    // Add due words from progress
-    dueWords.forEach((dueWord) => {
-      const word = dailyWords.find(w => w.id === dueWord.wordId);
-      if (word) {
-        items.push({
-          wordId: dueWord.wordId,
-          word,
-          reviewCount: dueWord.reviewCount,
-          easeFactor: dueWord.easeFactor,
-          nextReview: dueWord.nextReview,
-        });
-      }
-    });
-    
-    // If no due words, use some daily words for practice
-    if (items.length === 0 && dailyWords.length > 0) {
-      dailyWords.slice(0, 5).forEach((word) => {
-        items.push({
-          wordId: word.id,
-          word,
-          reviewCount: 0,
-          easeFactor: 2.5,
-          nextReview: null,
-        });
-      });
+    const sessionStarted = totalReviewed > 0 || currentIndex > 0 || isRevealed;
+    if (sessionStarted || isComplete) {
+      return;
     }
-    
-    setReviewItems(items);
-  }, [dueWords, dailyWords]);
+
+    setReviewItems(buildReviewItems(dueWords, dailyWords));
+  }, [dueWords, dailyWords, totalReviewed, currentIndex, isRevealed, isComplete]);
+
+  useEffect(() => {
+    if (reviewItems.length > 0 && currentIndex >= reviewItems.length) {
+      setIsComplete(true);
+    }
+  }, [currentIndex, reviewItems.length]);
 
   const currentItem = reviewItems[currentIndex];
   const progress = reviewItems.length > 0 ? ((currentIndex) / reviewItems.length) * 100 : 0;
@@ -196,6 +221,7 @@ export default function ReviewPage() {
   };
 
   const handleRestart = () => {
+    setReviewItems(buildReviewItems(dueWords, dailyWords));
     setCurrentIndex(0);
     setIsRevealed(false);
     setSessionStats({ again: 0, hard: 0, good: 0, easy: 0 });
@@ -226,7 +252,6 @@ export default function ReviewPage() {
   }
 
   if (isComplete) {
-    const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
     const accuracy = totalReviewed > 0 
       ? Math.round(((sessionStats.good + sessionStats.easy) / totalReviewed) * 100) 
       : 0;
