@@ -733,8 +733,8 @@ export default function ChatPage() {
   }, [currentSessionId, quizRunState, quizSequence, startQuizRun, syncQuizSequence]);
 
   const contentWidthClass = sidebarOpen
-    ? 'max-w-[860px]'
-    : 'max-w-[920px]';
+    ? 'max-w-[760px] 2xl:max-w-[820px]'
+    : 'max-w-[840px] 2xl:max-w-[900px]';
 
   const [quizCanvasIndex, setQuizCanvasIndex] = useState(0);
   const quizArtifactsRef = useRef<QuizRunArtifactEntry[]>([]);
@@ -1678,8 +1678,8 @@ export default function ChatPage() {
                             deleteSession(session.id);
                           }}
                           className={cn(
-                            'inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border shadow-sm transition-colors',
-                            'border-red-300/55 bg-red-50/60 text-red-600 dark:border-red-800/70 dark:bg-red-950/35 dark:text-red-300',
+                            'inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border shadow-sm transition-colors opacity-100',
+                            'border-red-300/60 bg-red-50/70 text-red-600 dark:border-red-800/80 dark:bg-red-950/40 dark:text-red-300',
                             'hover:border-red-400 hover:bg-red-100/80 hover:text-red-700',
                             'dark:hover:border-red-700 dark:hover:bg-red-950/55',
                             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -2046,7 +2046,7 @@ export default function ChatPage() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.98 }}
                   transition={{ duration: 0.18 }}
-                  className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl p-3"
+                  className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border/90 bg-popover/95 text-popover-foreground shadow-xl backdrop-blur-md p-3"
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground">

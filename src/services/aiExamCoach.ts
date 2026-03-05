@@ -12,6 +12,9 @@ import type {
 import { invokeEdgeFunction } from './aiGateway';
 
 const nowIso = (): string => new Date().toISOString();
+const FEEDBACK_CACHE_KEY = 'vocabdaily_writing_feedback_cache_v1';
+const FEEDBACK_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 3;
+const EDGE_FEEDBACK_TIMEOUT_MS = 9000;
 
 const clampBand = (value: number): number => {
   if (!Number.isFinite(value)) return 5.5;
@@ -137,6 +140,253 @@ const buildFallbackFeedback = (
   };
 };
 
+const hashText = (input: string): string => {
+  let hash = 2166136261;
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash +=
+      (hash << 1) +
+      (hash << 4) +
+      (hash << 7) +
+      (hash << 8) +
+      (hash << 24);
+  }
+  return (hash >>> 0).toString(36);
+};
+
+const isBrowser = (): boolean => typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+
+const readFeedbackCache = (): Record<string, { feedback: AiFeedback; savedAt: string }> => {
+  if (!isBrowser()) return {};
+  try {
+    const raw = localStorage.getItem(FEEDBACK_CACHE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Record<string, { feedback: AiFeedback; savedAt: string }>;
+  } catch {
+    return {};
+  }
+};
+
+const writeFeedbackCache = (cache: Record<string, { feedback: AiFeedback; savedAt: string }>): void => {
+  if (!isBrowser()) return;
+  localStorage.setItem(FEEDBACK_CACHE_KEY, JSON.stringify(cache));
+};
+
+const getCachedFeedback = (key: string): AiFeedback | null => {
+  const cache = readFeedbackCache();
+  const hit = cache[key];
+  if (!hit) return null;
+  const age = Date.now() - new Date(hit.savedAt).getTime();
+  if (!Number.isFinite(age) || age > FEEDBACK_CACHE_TTL_MS) {
+    delete cache[key];
+    writeFeedbackCache(cache);
+    return null;
+  }
+  return {
+    ...hit.feedback,
+    provider: 'cache',
+  };
+};
+
+const setCachedFeedback = (key: string, feedback: AiFeedback): void => {
+  const cache = readFeedbackCache();
+  cache[key] = {
+    feedback,
+    savedAt: nowIso(),
+  };
+  const keys = Object.keys(cache);
+  if (keys.length > 120) {
+    keys
+      .sort((a, b) => new Date(cache[b].savedAt).getTime() - new Date(cache[a].savedAt).getTime())
+      .slice(120)
+      .forEach((expiredKey) => {
+        delete cache[expiredKey];
+      });
+  }
+  writeFeedbackCache(cache);
+};
+
+export interface PromptGenerationInput {
+  taskType: 'task1' | 'task2';
+  difficulty: 'easy' | 'medium' | 'hard';
+  topic: string;
+}
+
+export interface PromptGenerationOutput {
+  prompt: string;
+  taskType: 'task1' | 'task2';
+  topic: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+export interface WritingOutlineResult {
+  intro: string;
+  body1: string;
+  body2: string;
+  conclusion: string;
+  checklist: string[];
+}
+
+export interface VocabUpgradeSuggestion {
+  from: string;
+  to: string;
+  rationale: string;
+  example: string;
+}
+
+const TASK2_TEMPLATES: Record<'easy' | 'medium' | 'hard', string[]> = {
+  easy: [
+    'Some people think {{topic}} should receive more public funding than other priorities. To what extent do you agree or disagree?',
+    'In many places, people debate whether {{topic}} is the best way to improve daily life. Discuss both views and give your opinion.',
+  ],
+  medium: [
+    'Governments face limited budgets. Should they prioritize {{topic}} over long-term infrastructure? Discuss both sides and give your view.',
+    'Some argue that focusing on {{topic}} brings immediate benefits, while others believe it creates long-term risks. To what extent do you agree?',
+  ],
+  hard: [
+    'To what extent should policymakers treat {{topic}} as a strategic investment rather than a social expense? Give reasons and relevant examples.',
+    'Critically evaluate whether prioritizing {{topic}} improves equity and productivity simultaneously. Discuss both views and present your position.',
+  ],
+};
+
+const TASK1_TEMPLATES: Record<'easy' | 'medium' | 'hard', string[]> = {
+  easy: [
+    'The chart compares changes in {{topic}} from 2010 to 2025 in three groups. Summarize the main features and make comparisons where relevant.',
+    'The line graph shows trends in {{topic}} over a 15-year period. Summarize key information and report major changes.',
+  ],
+  medium: [
+    'The table and bar chart illustrate data about {{topic}} in five cities. Summarize the main features and compare significant differences.',
+    'The charts present how {{topic}} changed across age groups between 2005 and 2025. Summarize key trends and notable contrasts.',
+  ],
+  hard: [
+    'The diagrams and data table show changes in {{topic}} before and after a policy intervention. Summarize key features and compare outcomes precisely.',
+    'The multi-source visuals describe shifts in {{topic}} by region and time. Summarize critical trends and highlight outliers.',
+  ],
+};
+
+const pickOne = <T>(items: T[]): T => items[Math.floor(Math.random() * items.length)];
+
+export const generateRandomIeltsPrompt = (input: PromptGenerationInput): PromptGenerationOutput => {
+  const topic = input.topic.trim() || 'urban transport';
+  const templates = input.taskType === 'task1' ? TASK1_TEMPLATES : TASK2_TEMPLATES;
+  const template = pickOne(templates[input.difficulty]);
+  const prompt = template.replace(/\{\{topic\}\}/g, topic);
+  return {
+    prompt,
+    taskType: input.taskType,
+    topic,
+    difficulty: input.difficulty,
+  };
+};
+
+export const buildQuickOutline = (args: {
+  prompt: string;
+  taskType: 'task1' | 'task2';
+}): WritingOutlineResult => {
+  if (args.taskType === 'task1') {
+    return {
+      intro: 'Paraphrase the chart/table topic in one sentence and mention the time period.',
+      body1: 'Report the main overall trend first (increase/decrease/stable) with one key comparison.',
+      body2: 'Add secondary trends and one notable contrast or outlier with precise data language.',
+      conclusion: 'Task 1 usually does not need a long conclusion; one brief summary sentence is enough.',
+      checklist: [
+        'Use past tense if data is historical.',
+        'Avoid opinions and personal arguments.',
+        'Highlight 2-3 key features, not every number.',
+      ],
+    };
+  }
+
+  return {
+    intro: 'State your position clearly and paraphrase the question.',
+    body1: 'Main reason 1 -> explanation -> concrete example.',
+    body2: 'Main reason 2 (or counterargument + rebuttal) -> explanation -> example.',
+    conclusion: 'Restate your position and summarize key reasoning in one concise sentence.',
+    checklist: [
+      'Keep one main idea per paragraph.',
+      'Use connectors naturally: however, therefore, in contrast.',
+      'Include specific examples, not abstract claims only.',
+    ],
+  };
+};
+
+const VOCAB_MAP: Array<{ from: string; to: string; rationale: string }> = [
+  { from: 'very important', to: 'crucial', rationale: 'More precise academic emphasis.' },
+  { from: 'a lot of', to: 'a substantial number of', rationale: 'More formal quantification.' },
+  { from: 'good', to: 'beneficial', rationale: 'Avoid vague evaluative adjective.' },
+  { from: 'bad', to: 'detrimental', rationale: 'Formal negative evaluation.' },
+  { from: 'big problem', to: 'pressing challenge', rationale: 'Higher-band collocation.' },
+  { from: 'many people think', to: 'it is widely argued that', rationale: 'Academic reporting phrase.' },
+  { from: 'can help', to: 'can facilitate', rationale: 'Formal verb alternative.' },
+  { from: 'make better', to: 'enhance', rationale: 'Concise high-frequency academic verb.' },
+];
+
+export const enhanceVocabularyDraft = (answer: string): VocabUpgradeSuggestion[] => {
+  const lower = answer.toLowerCase();
+  const found: VocabUpgradeSuggestion[] = [];
+  for (const item of VOCAB_MAP) {
+    if (!lower.includes(item.from)) continue;
+    found.push({
+      from: item.from,
+      to: item.to,
+      rationale: item.rationale,
+      example: `Try replacing "${item.from}" with "${item.to}" in one sentence.`,
+    });
+    if (found.length >= 8) break;
+  }
+  return found;
+};
+
+export const previewFastWritingFeedback = (args: {
+  attemptId: string;
+  prompt: string;
+  answer: string;
+  taskType: 'task1' | 'task2';
+}): AiFeedback => buildFallbackFeedback(args.attemptId, args.prompt, args.answer, args.taskType);
+
+interface ChatEdgeResponse {
+  content: string;
+}
+
+export const askWritingTutor = async (args: {
+  userId: string;
+  taskType: 'task1' | 'task2';
+  prompt: string;
+  draft: string;
+  question: string;
+}): Promise<string> => {
+  const userPrompt = [
+    `IELTS ${args.taskType.toUpperCase()} writing question: ${args.prompt}`,
+    `Student draft (for context): ${args.draft || '(empty draft)'}`,
+    `Student asks: ${args.question}`,
+    'Respond in concise bilingual coaching style: English first, then Chinese summary.',
+  ].join('\n\n');
+
+  try {
+    const result = await invokeEdgeFunction<ChatEdgeResponse>('ai-chat', {
+      mode: 'study',
+      responseStyle: 'concise',
+      stream: false,
+      messages: [{ role: 'user', content: userPrompt }],
+      searchPolicy: {
+        mode: 'off',
+        alwaysShowSources: false,
+        maxSearchCalls: 0,
+        maxPerMinute: 4,
+      },
+      featureFlags: {
+        enableQuizArtifacts: false,
+        enableStudyArtifacts: true,
+        forceQuiz: false,
+        allowAutoQuiz: false,
+      },
+    });
+    return result.content?.trim() || 'Tutor is temporarily unavailable.';
+  } catch {
+    return 'Tutor is temporarily unavailable. 建议先聚焦一个段落：先写清观点，再补一个具体例子。';
+  }
+};
+
 export const gradeIeltsWriting = async (args: {
   userId: string;
   attemptId: string;
@@ -145,6 +395,22 @@ export const gradeIeltsWriting = async (args: {
   taskType: 'task1' | 'task2';
   sourceContext?: string;
 }): Promise<AiFeedback> => {
+  const cacheKey = hashText(`${args.taskType}::${args.prompt}::${args.answer}`);
+  const cached = getCachedFeedback(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const fallback = previewFastWritingFeedback({
+    attemptId: args.attemptId,
+    prompt: args.prompt,
+    answer: args.answer,
+    taskType: args.taskType,
+  });
+
+  const controller = new AbortController();
+  const timeoutHandle = window.setTimeout(() => controller.abort(), EDGE_FEEDBACK_TIMEOUT_MS);
+
   try {
     const result = await invokeEdgeFunction<AiFeedback>('ai-grade-writing', {
       userId: args.userId,
@@ -154,20 +420,24 @@ export const gradeIeltsWriting = async (args: {
       examType: 'IELTS',
       taskType: args.taskType,
       sourceContext: args.sourceContext,
-    });
+    }, { signal: controller.signal });
 
     if (result?.scores?.overallBand) {
-      return {
+      const normalized = {
         ...result,
         provider: result.provider || 'edge',
         createdAt: result.createdAt || nowIso(),
       };
+      setCachedFeedback(cacheKey, normalized);
+      return normalized;
     }
   } catch {
     // Fall through to local fallback feedback.
+  } finally {
+    window.clearTimeout(timeoutHandle);
   }
 
-  return buildFallbackFeedback(args.attemptId, args.prompt, args.answer, args.taskType);
+  return fallback;
 };
 
 export const generateSimulationItem = async (args: {

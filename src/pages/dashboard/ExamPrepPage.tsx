@@ -15,8 +15,12 @@ import {
   saveItemAttempt,
 } from '@/data/examContent';
 import {
+  askWritingTutor,
+  buildQuickOutline,
   consumeExamFeatureQuota,
   createAttempt,
+  enhanceVocabularyDraft,
+  generateRandomIeltsPrompt,
   generateMicroLessonFromErrors,
   generateSimulationItem,
   gradeIeltsWriting,
@@ -45,6 +49,13 @@ export default function ExamPrepPage() {
   const [writingPrompt, setWritingPrompt] = useState('');
   const [writingAnswer, setWritingAnswer] = useState('');
   const [feedback, setFeedback] = useState<AiFeedback | null>(null);
+  const [promptTopic, setPromptTopic] = useState('urban transport');
+  const [promptDifficulty, setPromptDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [outline, setOutline] = useState<ReturnType<typeof buildQuickOutline> | null>(null);
+  const [vocabSuggestions, setVocabSuggestions] = useState<ReturnType<typeof enhanceVocabularyDraft>>([]);
+  const [tutorQuestion, setTutorQuestion] = useState('');
+  const [tutorReply, setTutorReply] = useState('');
+  const [feedbackLatencyMs, setFeedbackLatencyMs] = useState<number | null>(null);
   const [simItem, setSimItem] = useState<ExamItem | null>(null);
   const [microUnit, setMicroUnit] = useState<ContentUnit | null>(null);
 
@@ -113,6 +124,65 @@ export default function ExamPrepPage() {
     setRemainingQuota(quota.remaining);
   };
 
+  const handleGeneratePrompt = () => {
+    const generated = generateRandomIeltsPrompt({
+      taskType,
+      difficulty: promptDifficulty,
+      topic: promptTopic,
+    });
+    setWritingPrompt(generated.prompt);
+    setOutline(null);
+    setVocabSuggestions([]);
+    toast.success('已生成新题目');
+  };
+
+  const handleBuildOutline = () => {
+    if (!writingPrompt.trim()) {
+      toast.error('请先提供题目');
+      return;
+    }
+    setOutline(
+      buildQuickOutline({
+        prompt: writingPrompt,
+        taskType,
+      }),
+    );
+  };
+
+  const handleEnhanceVocabulary = () => {
+    if (!writingAnswer.trim()) {
+      toast.error('请先输入作文草稿');
+      return;
+    }
+    const suggestions = enhanceVocabularyDraft(writingAnswer);
+    setVocabSuggestions(suggestions);
+    if (suggestions.length === 0) {
+      toast.info('暂未发现可替换的常见低阶表达');
+      return;
+    }
+    toast.success(`已识别 ${suggestions.length} 条可升级表达`);
+  };
+
+  const handleAskTutor = async () => {
+    if (!tutorQuestion.trim()) {
+      toast.error('请先输入你想问教练的问题');
+      return;
+    }
+    setLoading(true);
+    try {
+      const reply = await askWritingTutor({
+        userId,
+        taskType,
+        prompt: writingPrompt,
+        draft: writingAnswer,
+        question: tutorQuestion.trim(),
+      });
+      setTutorReply(reply);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmitWriting = async () => {
     if (!selectedItem) {
       toast.error('请选择一个课程单元');
@@ -132,6 +202,7 @@ export default function ExamPrepPage() {
 
     setLoading(true);
     try {
+      const startedAt = performance.now();
       const attempt = createAttempt({
         userId,
         itemId: selectedItem.id,
@@ -151,6 +222,7 @@ export default function ExamPrepPage() {
 
       saveAiFeedbackRecord(userId, result);
       setFeedback(result);
+      setFeedbackLatencyMs(Math.max(0, Math.round(performance.now() - startedAt)));
       await refreshQuota();
       toast.success(`反馈完成，Overall Band ${result.scores.overallBand}`);
     } catch (error) {
@@ -344,7 +416,7 @@ export default function ExamPrepPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-3">
+          <div className="grid md:grid-cols-3 gap-3">
             <div className="space-y-2">
               <Label>Task Type</Label>
               <Select value={taskType} onValueChange={(value: 'task1' | 'task2') => setTaskType(value)}>
@@ -357,6 +429,46 @@ export default function ExamPrepPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label>Topic</Label>
+              <Textarea
+                value={promptTopic}
+                onChange={(event) => setPromptTopic(event.target.value)}
+                className="min-h-[44px] h-[44px] py-2"
+                placeholder="e.g. public transport / education"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Difficulty</Label>
+              <Select
+                value={promptDifficulty}
+                onValueChange={(value: 'easy' | 'medium' | 'hard') => setPromptDifficulty(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleGeneratePrompt} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              随机题目
+            </Button>
+            <Button variant="outline" onClick={handleBuildOutline} disabled={loading}>
+              <ListChecks className="h-4 w-4 mr-2" />
+              快速提纲
+            </Button>
+            <Button variant="outline" onClick={handleEnhanceVocabulary} disabled={loading}>
+              <Sparkles className="h-4 w-4 mr-2" />
+              词汇升级建议
+            </Button>
           </div>
 
           <div className="space-y-2">
@@ -378,11 +490,69 @@ export default function ExamPrepPage() {
             获取结构化评分反馈
           </Button>
 
+          {outline && (
+            <div className="rounded-lg border p-4 space-y-2">
+              <p className="text-sm font-semibold">Outline Builder</p>
+              <p className="text-sm"><span className="font-medium">Intro:</span> {outline.intro}</p>
+              <p className="text-sm"><span className="font-medium">Body 1:</span> {outline.body1}</p>
+              <p className="text-sm"><span className="font-medium">Body 2:</span> {outline.body2}</p>
+              <p className="text-sm"><span className="font-medium">Conclusion:</span> {outline.conclusion}</p>
+              <ul className="list-disc ml-5 text-sm space-y-1">
+                {outline.checklist.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {vocabSuggestions.length > 0 && (
+            <div className="rounded-lg border p-4 space-y-2">
+              <p className="text-sm font-semibold">Vocabulary Enhancer</p>
+              <div className="space-y-2">
+                {vocabSuggestions.map((item, index) => (
+                  <div key={`${item.from}-${index}`} className="rounded-md border p-2">
+                    <p className="text-sm">
+                      <span className="font-medium">{item.from}</span> → <span className="font-medium text-emerald-600">{item.to}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground">{item.rationale}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{item.example}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="rounded-lg border p-4 space-y-3">
+            <p className="text-sm font-semibold">AI Tutor (Real-time guidance)</p>
+            <Textarea
+              value={tutorQuestion}
+              onChange={(event) => setTutorQuestion(event.target.value)}
+              className="min-h-[72px]"
+              placeholder="例如：我的第二段论证太弱，如何改到 7 分逻辑？"
+            />
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={handleAskTutor} disabled={loading}>
+                <Bot className="h-4 w-4 mr-2" />
+                问教练
+              </Button>
+            </div>
+            {tutorReply && (
+              <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm whitespace-pre-wrap">
+                {tutorReply}
+              </div>
+            )}
+          </div>
+
           {feedback && (
             <div className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Feedback Result</h3>
-                <Badge variant="outline">Provider: {feedback.provider}</Badge>
+                <div className="flex items-center gap-2">
+                  {feedbackLatencyMs !== null && (
+                    <Badge variant="outline">Latency: {feedbackLatencyMs}ms</Badge>
+                  )}
+                  <Badge variant="outline">Provider: {feedback.provider}</Badge>
+                </div>
               </div>
 
               <div className="grid md:grid-cols-5 gap-2">

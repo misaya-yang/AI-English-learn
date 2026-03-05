@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -152,6 +153,27 @@ export default function PracticePage() {
   const [isQuotaLoading, setIsQuotaLoading] = useState(false);
   const [isWritingSubmitting, setIsWritingSubmitting] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [listeningQueue, setListeningQueue] = useState<WordData[]>([]);
+  const [listeningInput, setListeningInput] = useState('');
+  const [listeningResult, setListeningResult] = useState<{
+    isCorrect: boolean;
+    expected: string;
+    submitted: string;
+  } | null>(null);
+  const listeningInputRef = useRef<HTMLInputElement | null>(null);
+
+  const listeningWords = listeningQueue;
+
+  useEffect(() => {
+    if (!selectedMode) return;
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setScore(0);
+    setIsComplete(false);
+    setListeningInput('');
+    setListeningResult(null);
+  }, [selectedMode]);
 
   // Generate quiz questions when mode is selected
   useEffect(() => {
@@ -160,6 +182,13 @@ export default function PracticePage() {
     if (selectedMode === 'quiz' || selectedMode === 'fill_blank') {
       const questions = generateQuizQuestions(dailyWords, selectedMode);
       setQuizQuestions(questions);
+    }
+
+    if (selectedMode === 'listening') {
+      setListeningQueue(dailyWords.slice(0, 10));
+      requestAnimationFrame(() => {
+        listeningInputRef.current?.focus();
+      });
     }
 
     if (selectedMode === 'writing') {
@@ -203,7 +232,8 @@ export default function PracticePage() {
   }, [selectedMode, dailyWords, userId]);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
-  const progress = quizQuestions.length > 0 ? ((currentQuestionIndex) / quizQuestions.length) * 100 : 0;
+  const totalQuestions = selectedMode === 'listening' ? listeningWords.length : quizQuestions.length;
+  const progress = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
 
   const handleAnswer = () => {
     if (!selectedAnswer || !currentQuestion) return;
@@ -321,6 +351,8 @@ export default function PracticePage() {
     setShowResult(false);
     setScore(0);
     setIsComplete(false);
+    setListeningInput('');
+    setListeningResult(null);
     setWritingInput('');
     setWritingFeedback(null);
     setQuizQuestions([]);
@@ -328,6 +360,64 @@ export default function PracticePage() {
 
   const playAudio = (text: string) => {
     void speakEnglishText(text);
+  };
+
+  const normalizeListeningAnswer = (value: string): string =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[“”"'.!?,:;()\[\]{}]/g, '')
+      .replace(/\s+/g, ' ');
+
+  const handleListeningCheck = () => {
+    const currentWord = listeningWords[currentQuestionIndex];
+    if (!currentWord || !listeningInput.trim()) return;
+
+    const isCorrect = normalizeListeningAnswer(listeningInput) === normalizeListeningAnswer(currentWord.word);
+    setListeningResult({
+      isCorrect,
+      expected: currentWord.word,
+      submitted: listeningInput.trim(),
+    });
+
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      toast.success('Correct! +10 XP');
+    } else {
+      toast.error(`Not quite. Correct answer: ${currentWord.word}`);
+    }
+
+    void recordLearningEvent({
+      userId,
+      eventName: 'practice.listening_submitted',
+      payload: {
+        isCorrect,
+        word: currentWord.word,
+        answer: listeningInput.trim(),
+        questionIndex: currentQuestionIndex + 1,
+      },
+    });
+  };
+
+  const handleListeningNext = () => {
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex < listeningWords.length) {
+      setCurrentQuestionIndex(nextIndex);
+      setListeningInput('');
+      setListeningResult(null);
+      requestAnimationFrame(() => {
+        listeningInputRef.current?.focus();
+      });
+      const nextWord = listeningWords[nextIndex];
+      if (nextWord?.word) {
+        playAudio(nextWord.word);
+      }
+      return;
+    }
+
+    setIsComplete(true);
+    addStudySession(listeningWords.length, score, score * 10, 10);
+    completeMissionTask('task_quiz_today');
   };
 
   if (!selectedMode) {
@@ -490,6 +580,23 @@ export default function PracticePage() {
   }
 
   if (selectedMode === 'listening') {
+    const currentWord = listeningWords[currentQuestionIndex];
+
+    if (!currentWord) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mb-4">
+            <Target className="h-8 w-8 text-emerald-600" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">No words available</h3>
+          <p className="text-muted-foreground mb-4">Please learn some words first</p>
+          <Button variant="outline" onClick={() => setSelectedMode(null)}>
+            Back to Modes
+          </Button>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
@@ -504,6 +611,16 @@ export default function PracticePage() {
 
         <Card>
           <CardContent className="p-6">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">
+                  Question {currentQuestionIndex + 1} of {listeningWords.length}
+                </span>
+                <span className="text-sm font-medium">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+
             <div className="text-center py-8">
               <Headphones className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Listening Practice</h3>
@@ -511,35 +628,62 @@ export default function PracticePage() {
                 Click the play button to hear a word, then type what you hear.
               </p>
               
-              {dailyWords.length > 0 && (
-                <div className="space-y-4">
-                  <Button
-                    size="lg"
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => playAudio(dailyWords[0].word)}
-                  >
-                    <Headphones className="h-5 w-5 mr-2" />
-                    Play Word
-                  </Button>
-                  
-                  <div className="max-w-sm mx-auto">
-                    <input
-                      type="text"
-                      placeholder="Type what you hear..."
-                      className="w-full p-3 border rounded-lg text-center"
-                    />
-                  </div>
-                  
+              <div className="space-y-4">
+                <Button
+                  size="lg"
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => playAudio(currentWord.word)}
+                >
+                  <Headphones className="h-5 w-5 mr-2" />
+                  Play Word
+                </Button>
+
+                <div className="max-w-sm mx-auto">
+                  <Input
+                    ref={listeningInputRef}
+                    type="text"
+                    value={listeningInput}
+                    onChange={(event) => setListeningInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter') return;
+                      if (!listeningResult) {
+                        handleListeningCheck();
+                      } else {
+                        handleListeningNext();
+                      }
+                    }}
+                    placeholder="Type what you hear..."
+                    className="h-14 text-center text-lg !bg-white !text-slate-900 dark:!bg-slate-900 dark:!text-slate-100 caret-emerald-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  />
+                </div>
+
+                {!listeningResult ? (
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      toast.success('Great effort! The word was: ' + dailyWords[0].word);
-                    }}
+                    onClick={handleListeningCheck}
+                    disabled={!listeningInput.trim()}
                   >
                     Check Answer
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="space-y-3">
+                    <div
+                      className={cn(
+                        'mx-auto max-w-md rounded-lg border px-3 py-2 text-sm',
+                        listeningResult.isCorrect
+                          ? 'border-emerald-500/60 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
+                          : 'border-red-500/60 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300',
+                      )}
+                    >
+                      {listeningResult.isCorrect ? 'Correct!' : `Expected: ${listeningResult.expected}`}
+                    </div>
+                    <Button onClick={handleListeningNext} className="bg-emerald-600 hover:bg-emerald-700">
+                      {currentQuestionIndex < listeningWords.length - 1 ? 'Next Question' : 'Finish Listening Quiz'}
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -548,7 +692,8 @@ export default function PracticePage() {
   }
 
   if (isComplete) {
-    const accuracy = Math.round((score / quizQuestions.length) * 100);
+    const safeTotal = Math.max(totalQuestions, 1);
+    const accuracy = Math.round((score / safeTotal) * 100);
     return (
       <div className="max-w-lg mx-auto">
         <motion.div
@@ -564,7 +709,7 @@ export default function PracticePage() {
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-white dark:bg-card p-4 rounded-lg">
-              <p className="text-3xl font-bold text-emerald-600">{score}/{quizQuestions.length}</p>
+              <p className="text-3xl font-bold text-emerald-600">{score}/{safeTotal}</p>
               <p className="text-sm text-muted-foreground">Correct</p>
             </div>
             <div className="bg-white dark:bg-card p-4 rounded-lg">

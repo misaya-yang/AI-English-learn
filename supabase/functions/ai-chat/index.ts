@@ -30,6 +30,7 @@ Focus on vocabulary usage, grammar correction, collocations, and example-driven 
 const MAX_INCOMING_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 960;
 const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|hello there|你好(?:呀|啊|喔)?|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好|在吗|在嗎|在不在)[!,.?，。！？\s]*$/i;
+const FACTUAL_SEARCH_HINT_PATTERN = /(latest|today|news|price|law|policy|research|statistics|官网|来源|出处|citation|web ?search|联网|最新|时效|新闻|数据|查一下|搜一下|检索)/i;
 
 const clipText = (value: string, limit: number): string => {
   if (value.length <= limit) return value;
@@ -160,6 +161,16 @@ const toMemoryUsed = (memories: Array<{
     isPinned: Boolean(memory.isPinned),
   }));
 
+type ToolRoutingResult = Awaited<ReturnType<typeof routeTools>>;
+
+const EMPTY_TOOL_ROUTING: ToolRoutingResult = {
+  observations: [],
+  sources: [],
+  sourcePointers: [],
+  toolRuns: [],
+  searchTriggered: false,
+};
+
 const persistToolAudit = async (args: {
   userId: string;
   sessionId?: string;
@@ -248,6 +259,14 @@ Deno.serve(async (req) => {
       !normalizedQuizRun?.runId &&
       mode !== 'quiz' &&
       mode !== 'canvas';
+    const shouldBypassHeavyLookup =
+      !conciseGreetingTurn &&
+      !normalizedQuizRun?.runId &&
+      mode !== 'quiz' &&
+      mode !== 'canvas' &&
+      latestUserMessage.length > 0 &&
+      latestUserMessage.length <= 80 &&
+      !FACTUAL_SEARCH_HINT_PATTERN.test(latestUserMessage.toLowerCase());
 
     const sessionId =
       (typeof body.sessionId === 'string' && body.sessionId.trim().length > 0
@@ -395,23 +414,27 @@ Deno.serve(async (req) => {
 
     const memoryTraceId = crypto.randomUUID();
 
-    const memories = await retrieveMemory({
-      userId: auth.userId,
-      sessionId,
-      query: latestUserMessage,
-      topK: memoryTopK,
-      minSimilarity: memoryMinSimilarity,
-      kindFilter: memoryKindFilter,
-    });
+    const memories = shouldBypassHeavyLookup
+      ? []
+      : await retrieveMemory({
+          userId: auth.userId,
+          sessionId,
+          query: latestUserMessage,
+          topK: memoryTopK,
+          minSimilarity: memoryMinSimilarity,
+          kindFilter: memoryKindFilter,
+        });
 
-    const toolRouting = await routeTools({
-      userId: auth.userId,
-      sessionId,
-      mode,
-      userInput: latestUserMessage,
-      searchPolicy: body.searchPolicy,
-      featureFlags,
-    });
+    const toolRouting = shouldBypassHeavyLookup
+      ? EMPTY_TOOL_ROUTING
+      : await routeTools({
+          userId: auth.userId,
+          sessionId,
+          mode,
+          userInput: latestUserMessage,
+          searchPolicy: body.searchPolicy,
+          featureFlags,
+        });
 
     const contextBuild = buildContextPackage({
       mode,

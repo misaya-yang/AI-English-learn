@@ -75,7 +75,7 @@ export interface AiFeedback {
   rewrites: string[];
   nextActions: string[];
   confidence: number;
-  provider: 'edge' | 'fallback';
+  provider: 'edge' | 'fallback' | 'cache';
   createdAt: string;
 }
 

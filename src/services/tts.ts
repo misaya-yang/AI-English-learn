@@ -81,12 +81,21 @@ const scoreVoice = (voice: SpeechSynthesisVoice, language: string): number => {
   return score;
 };
 
+const isLikelyEnglishVoice = (voice: SpeechSynthesisVoice): boolean => {
+  const lang = voice.lang.toLowerCase();
+  if (lang.startsWith('en')) return true;
+  const name = voice.name.toLowerCase();
+  return name.includes('english') || name.includes('en-us') || name.includes('en-gb');
+};
+
 const pickBestVoice = (voices: SpeechSynthesisVoice[], language: string): SpeechSynthesisVoice | null => {
   if (voices.length === 0) return null;
+  const englishCandidates = voices.filter((voice) => isLikelyEnglishVoice(voice));
+  const pool = englishCandidates.length > 0 ? englishCandidates : voices;
   let best: SpeechSynthesisVoice | null = null;
   let bestScore = -Infinity;
 
-  for (const voice of voices) {
+  for (const voice of pool) {
     const currentScore = scoreVoice(voice, language);
     if (currentScore > bestScore) {
       bestScore = currentScore;
@@ -113,11 +122,14 @@ export const speakEnglishText = async (
   const language = options?.language || 'en-US';
   const voices = cachedVoices.length > 0 ? cachedVoices : await waitForVoices();
   const chosen = pickBestVoice(voices, language);
+  if (!chosen) {
+    return false;
+  }
 
   const utterance = new SpeechSynthesisUtterance(content);
-  utterance.lang = chosen?.lang || language;
-  utterance.voice = chosen || null;
-  utterance.rate = options?.rate ?? 0.92;
+  utterance.lang = chosen.lang || language;
+  utterance.voice = chosen;
+  utterance.rate = options?.rate ?? 0.96;
   utterance.pitch = options?.pitch ?? 1;
   utterance.volume = 1;
 

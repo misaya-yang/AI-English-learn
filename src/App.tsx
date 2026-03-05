@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 import TodayPage from '@/pages/dashboard/TodayPage';
 import ReviewPage from '@/pages/dashboard/ReviewPage';
 import PracticePage from '@/pages/dashboard/PracticePage';
+import ExamPrepPage from '@/pages/dashboard/ExamPrepPage';
 import VocabularyBankPage from '@/pages/dashboard/VocabularyBankPage';
 import SettingsPage from '@/pages/dashboard/SettingsPage';
 import ProfilePage from '@/pages/dashboard/ProfilePage';
@@ -29,7 +30,6 @@ import PricingPage from '@/pages/PricingPage';
 
 const AnalyticsPage = lazyWithRetry(() => import('@/pages/dashboard/AnalyticsPage'), 'analytics');
 const ChatPage = lazyWithRetry(() => import('@/pages/dashboard/ChatPage'), 'chat');
-const ExamPrepPage = lazyWithRetry(() => import('@/pages/dashboard/ExamPrepPage'), 'exam');
 const MemoryCenterPage = lazyWithRetry(() => import('@/pages/dashboard/MemoryCenterPage'), 'memory');
 
 const RouteFallback = () => (
@@ -63,7 +63,7 @@ function App() {
                 <Route path="today" element={<TodayPage />} />
                 <Route path="review" element={<ReviewPage />} />
                 <Route path="practice" element={<PracticePage />} />
-                <Route path="exam" element={<Suspense fallback={<RouteFallback />}><ExamPrepPage /></Suspense>} />
+                <Route path="exam" element={<ExamPrepPage />} />
                 <Route path="vocabulary" element={<VocabularyBankPage />} />
                 <Route path="analytics" element={<Suspense fallback={<RouteFallback />}><AnalyticsPage /></Suspense>} />
                 <Route path="chat" element={<Suspense fallback={<RouteFallback />}><ChatPage /></Suspense>} />

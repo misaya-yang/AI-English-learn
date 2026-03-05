@@ -1738,6 +1738,20 @@ export function useSupabaseChat() {
 
   const appendAssistantMessage = useCallback(
     async (sessionId: string, assistantMessage: ChatMessage) => {
+      // Optimistically render first so short replies (for example greetings) feel instant.
+      updateSessions((prev) =>
+        prev.map((session) => {
+          if (session.id === sessionId) {
+            return {
+              ...session,
+              messages: [...session.messages, assistantMessage],
+              updatedAt: Date.now(),
+            };
+          }
+          return session;
+        }),
+      );
+
       try {
         const { error } = await supabase.from('chat_messages').insert({
           id: assistantMessage.id,
@@ -1787,19 +1801,6 @@ export function useSupabaseChat() {
           pendingSyncCount: prev.pendingSyncCount + 1,
         }));
       }
-
-      updateSessions((prev) =>
-        prev.map((session) => {
-          if (session.id === sessionId) {
-            return {
-              ...session,
-              messages: [...session.messages, assistantMessage],
-              updatedAt: Date.now(),
-            };
-          }
-          return session;
-        }),
-      );
     },
     [updateSessions, userId],
   );
@@ -2322,8 +2323,6 @@ export function useSupabaseChat() {
     const normalizedInput = apiUserContent.toLowerCase().trim();
     const shouldUseFastGreetingReply =
       isSimpleGreetingInput(normalizedInput) &&
-      mode !== 'quiz' &&
-      mode !== 'canvas' &&
       !options.quizRun?.runId &&
       !options.featureFlags?.forceQuiz;
 
@@ -2369,7 +2368,7 @@ export function useSupabaseChat() {
         createdAt: Date.now(),
       };
 
-      await appendAssistantMessage(sessionId, assistantMessage);
+      void appendAssistantMessage(sessionId, assistantMessage);
       setChatError(null);
       setLastRenderState(null);
       setLastToolRuns([]);
