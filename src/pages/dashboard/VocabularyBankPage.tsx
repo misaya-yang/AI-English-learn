@@ -27,6 +27,7 @@ import { wordsDatabase, type WordData } from '@/data/words';
 import type { UserProgress } from '@/data/localStorage';
 import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportResult, ImportRowError } from '@/data/wordBooks';
 import { toast } from 'sonner';
+import { speakEnglishText } from '@/services/tts';
 
 interface VocabularyItem {
   word: WordData;
@@ -131,11 +132,7 @@ export default function VocabularyBankPage() {
   };
 
   const playAudio = (word: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
+    void speakEnglishText(word);
   };
 
   const handleMarkAsLearned = (wordId: string) => {

@@ -28,6 +28,7 @@ import type { WordData } from '@/data/words';
 import { toast } from 'sonner';
 import { getRecommendedUnit } from '@/data/examContent';
 import { recordLearningEvent } from '@/services/learningEvents';
+import { speakEnglishText } from '@/services/tts';
 
 interface WordCardProps {
   word: WordData;
@@ -42,11 +43,7 @@ function WordCard({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard }: 
   const [activeTab, setActiveTab] = useState('definition');
 
   const playAudio = (text: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
+    void speakEnglishText(text);
   };
 
   return (

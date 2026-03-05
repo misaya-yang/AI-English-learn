@@ -25,6 +25,7 @@ import {
 import { motion } from 'framer-motion';
 import { wordsDatabase, type WordData, getWordOfTheDay, getPreviousWords } from '@/data/words';
 import { cn } from '@/lib/utils';
+import { speakEnglishText } from '@/services/tts';
 
 // Generate mock previous words data for the last 30 days
 const generatePreviousWordsData = (): { date: string; word: WordData }[] => {
@@ -58,11 +59,7 @@ export default function WordOfTheDayPage() {
   const wordsPerPage = 10;
 
   const playAudio = (text: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
+    void speakEnglishText(text);
   };
 
   const shareWord = async (word: WordData) => {

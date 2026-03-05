@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import type { WordData } from '@/data/words';
+import { speakEnglishText } from '@/services/tts';
 
 interface ReviewItem {
   wordId: string;
@@ -35,11 +36,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
   const { word } = item;
 
   const playAudio = (text: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
+    void speakEnglishText(text);
   };
 
   return (

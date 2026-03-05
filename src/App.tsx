@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { Toaster } from '@/components/ui/sonner';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
 
 // Pages
 import LandingPage from '@/pages/LandingPage';
@@ -26,10 +27,10 @@ import ProfilePage from '@/pages/dashboard/ProfilePage';
 import WordOfTheDayPage from '@/pages/WordOfTheDayPage';
 import PricingPage from '@/pages/PricingPage';
 
-const AnalyticsPage = lazy(() => import('@/pages/dashboard/AnalyticsPage'));
-const ChatPage = lazy(() => import('@/pages/dashboard/ChatPage'));
-const ExamPrepPage = lazy(() => import('@/pages/dashboard/ExamPrepPage'));
-const MemoryCenterPage = lazy(() => import('@/pages/dashboard/MemoryCenterPage'));
+const AnalyticsPage = lazyWithRetry(() => import('@/pages/dashboard/AnalyticsPage'), 'analytics');
+const ChatPage = lazyWithRetry(() => import('@/pages/dashboard/ChatPage'), 'chat');
+const ExamPrepPage = lazyWithRetry(() => import('@/pages/dashboard/ExamPrepPage'), 'exam');
+const MemoryCenterPage = lazyWithRetry(() => import('@/pages/dashboard/MemoryCenterPage'), 'memory');
 
 const RouteFallback = () => (
   <div className="flex h-[40vh] items-center justify-center text-sm text-muted-foreground">

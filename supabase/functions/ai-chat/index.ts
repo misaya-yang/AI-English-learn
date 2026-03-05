@@ -1,5 +1,5 @@
 import { corsHeaders, jsonResponse } from '../_shared/cors.ts';
-import { callDeepSeek, extractFirstJsonObject, type DeepSeekMessage } from '../_shared/deepseek.ts';
+import { callDeepSeek, callDeepSeekStream, extractFirstJsonObject, type DeepSeekMessage } from '../_shared/deepseek.ts';
 import { requireAuthenticatedUser } from '../_shared/auth.ts';
 import { adminInsert } from '../_shared/supabase-admin.ts';
 import { buildContextPackage } from '../_shared/context-engine.ts';
@@ -29,7 +29,7 @@ Focus on vocabulary usage, grammar correction, collocations, and example-driven 
 
 const MAX_INCOMING_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 960;
-const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|你好|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好)[!,.?，。！？\s]*$/i;
+const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|hello there|你好(?:呀|啊|喔)?|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好|在吗|在嗎|在不在)[!,.?，。！？\s]*$/i;
 
 const clipText = (value: string, limit: number): string => {
   if (value.length <= limit) return value;
@@ -115,6 +115,51 @@ const ensureCanvasSummaryArtifact = (
   ];
 };
 
+const normalizeQuizRun = (raw: unknown):
+  | {
+      runId: string;
+      questionIndex: number;
+      targetCount: number;
+      status?: 'idle' | 'awaiting_answer' | 'grading' | 'requesting_next' | 'completed';
+    }
+  | undefined => {
+  if (!raw || typeof raw !== 'object') {
+    return undefined;
+  }
+
+  const quizRun = raw as Record<string, unknown>;
+  return {
+    runId: typeof quizRun.runId === 'string' ? quizRun.runId : '',
+    questionIndex: Number(quizRun.questionIndex) || 1,
+    targetCount: Number(quizRun.targetCount) || 1,
+    status:
+      quizRun.status === 'idle' ||
+      quizRun.status === 'awaiting_answer' ||
+      quizRun.status === 'grading' ||
+      quizRun.status === 'requesting_next' ||
+      quizRun.status === 'completed'
+        ? quizRun.status
+        : undefined,
+  };
+};
+
+const toMemoryUsed = (memories: Array<{
+  id: string;
+  kind: string;
+  content: string;
+  confidence: number;
+  retrievalScore?: number;
+  isPinned?: boolean;
+}>) =>
+  memories.slice(0, 6).map((memory) => ({
+    id: memory.id,
+    kind: memory.kind,
+    contentPreview: memory.content.slice(0, 140),
+    confidence: memory.confidence,
+    score: Number(memory.retrievalScore ?? 0),
+    isPinned: Boolean(memory.isPinned),
+  }));
+
 const persistToolAudit = async (args: {
   userId: string;
   sessionId?: string;
@@ -196,8 +241,13 @@ Deno.serve(async (req) => {
 
     const safeMessages = toSafeMessages(body.messages);
     const latestUserMessage = extractLatestUserMessage(safeMessages);
-    const conciseGreetingRequested = Boolean(featureFlags.conciseGreeting);
-    const conciseGreetingTurn = conciseGreetingRequested && SIMPLE_GREETING_PATTERN.test(latestUserMessage.toLowerCase());
+    const wantsStream = body.stream !== false;
+    const normalizedQuizRun = normalizeQuizRun(body.quizRun);
+    const conciseGreetingTurn =
+      SIMPLE_GREETING_PATTERN.test(latestUserMessage.toLowerCase()) &&
+      !normalizedQuizRun?.runId &&
+      mode !== 'quiz' &&
+      mode !== 'canvas';
 
     const sessionId =
       (typeof body.sessionId === 'string' && body.sessionId.trim().length > 0
@@ -248,19 +298,7 @@ Deno.serve(async (req) => {
         perfMeta: {
           latencyMs: 0,
         },
-        quizRun: body.quizRun && typeof body.quizRun === 'object' ? {
-          runId: typeof body.quizRun.runId === 'string' ? body.quizRun.runId : '',
-          questionIndex: Number(body.quizRun.questionIndex) || 1,
-          targetCount: Number(body.quizRun.targetCount) || 1,
-          status:
-            body.quizRun.status === 'idle' ||
-            body.quizRun.status === 'awaiting_answer' ||
-            body.quizRun.status === 'grading' ||
-            body.quizRun.status === 'requesting_next' ||
-            body.quizRun.status === 'completed'
-              ? body.quizRun.status
-              : undefined,
-        } : undefined,
+        quizRun: normalizedQuizRun,
         contextMeta: {
           inputTokensEst: Math.max(12, Math.min(160, Math.floor(latestUserMessage.length * 1.3))),
           budgetUsed: {
@@ -399,6 +437,192 @@ Deno.serve(async (req) => {
         : undefined,
     });
 
+    const allowQuizArtifact = mode === 'quiz' || Boolean(featureFlags.forceQuiz) || Boolean(featureFlags.allowAutoQuiz);
+    const requiresStructuredReply =
+      mode === 'quiz' ||
+      mode === 'canvas' ||
+      Boolean(normalizedQuizRun?.runId) ||
+      Boolean(featureFlags.forceQuiz) ||
+      Boolean(featureFlags.allowAutoQuiz);
+
+    if (wantsStream && !requiresStructuredReply) {
+      const streamStylePrompt =
+        responseStyle === 'concise'
+          ? 'Output style: concise markdown. Use <= 3 short paragraphs unless user asks for more. Keep natural spacing between English words.'
+          : 'Output style: coach. Keep concise, practical teaching guidance in readable markdown. Keep natural spacing between English words.';
+
+      const streamModelMessages: DeepSeekMessage[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'system', content: streamStylePrompt },
+        ...(contextBuild.contextPrompt ? [{ role: 'system', content: contextBuild.contextPrompt } as DeepSeekMessage] : []),
+        ...contextBuild.modelMessages,
+      ];
+
+      const encoder = new TextEncoder();
+      const responseStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          const writeEvent = (event: Record<string, unknown>) => {
+            controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
+          };
+
+          void (async () => {
+            try {
+              writeEvent({
+                type: 'meta',
+                data: {
+                  renderState: {
+                    stage: toolRouting.searchTriggered ? 'searching' : 'planning',
+                    progress: 0.12,
+                  },
+                  contextMeta: {
+                    ...contextBuild.contextMeta,
+                    memoryHits: memories.length,
+                    searchTriggered: toolRouting.searchTriggered,
+                  },
+                },
+              });
+
+              const start = Date.now();
+              let emittedStreamingStage = false;
+              let completion = '';
+
+              for await (const delta of callDeepSeekStream({
+                messages: streamModelMessages,
+                temperature: Number(body.temperature) || 0.6,
+                maxTokens: Number(body.maxTokens) || 2000,
+              })) {
+                if (!delta) continue;
+                completion += delta;
+                if (!emittedStreamingStage) {
+                  emittedStreamingStage = true;
+                  writeEvent({
+                    type: 'meta',
+                    data: {
+                      renderState: {
+                        stage: 'streaming',
+                        progress: 0.2,
+                      },
+                    },
+                  });
+                }
+                writeEvent({ type: 'delta', delta });
+              }
+
+              const latencyMs = Date.now() - start;
+              const finalContent = completion.trim();
+              if (!finalContent) {
+                throw new Error('Streamed completion is empty');
+              }
+
+              const finalArtifacts = ensureWebSourcesArtifact([], toolRouting.sources);
+              const memoryUsed = toMemoryUsed(memories);
+
+              const finalPayload: ChatEnvelope & { provider: 'edge' } = {
+                content: finalContent,
+                provider: 'edge',
+                artifacts: finalArtifacts.length > 0 ? finalArtifacts : undefined,
+                agentMeta: {
+                  triggerReason: 'stream_text',
+                  confidence: 0.82,
+                  schemaVersion: 'chat_v2_stream',
+                  latencyMs,
+                },
+                renderState: {
+                  stage: 'streaming',
+                  progress: 1,
+                },
+                perfMeta: {
+                  latencyMs,
+                },
+                quizRun: normalizedQuizRun && normalizedQuizRun.runId ? normalizedQuizRun : undefined,
+                sources: toolRouting.sources.length > 0 ? toolRouting.sources : undefined,
+                toolRuns: toolRouting.toolRuns.length > 0 ? toolRouting.toolRuns : undefined,
+                contextMeta: {
+                  ...contextBuild.contextMeta,
+                  memoryHits: memories.length,
+                  searchTriggered: toolRouting.searchTriggered,
+                },
+                canvasSessionMeta,
+                memoryUsed,
+                memoryWrites: [],
+                memoryTraceId,
+              };
+
+              if (contextBuild.compactedSummary && sessionId) {
+                await persistContextSnapshot({
+                  userId: auth.userId,
+                  sessionId,
+                  summary: contextBuild.compactedSummary,
+                  compactedFromCount: contextBuild.modelMessages.length,
+                  sourcePointers: toolRouting.sourcePointers,
+                });
+              }
+
+              const explicitWrites = explicitRemember.length > 0
+                ? await rememberExplicitMemory({
+                    userId: auth.userId,
+                    sessionId,
+                    items: explicitRemember,
+                    kind: explicitRememberKind,
+                    allowSensitiveStore: memoryAllowSensitiveStore,
+                  })
+                : [];
+
+              const turnWrites = await persistTurnMemory({
+                userId: auth.userId,
+                sessionId,
+                learningContext:
+                  body.learningContext && typeof body.learningContext === 'object'
+                    ? body.learningContext
+                    : undefined,
+                userMessage: latestUserMessage,
+                assistantMessage: finalPayload.content,
+                toolFacts: (finalPayload.sources || []).map((source) => `${source.title}: ${source.snippet}`),
+                hadError: finalPayload.toolRuns?.some((run) => run.status === 'error') || false,
+                memoryPolicy: {
+                  writeMode: memoryWriteMode,
+                  allowSensitiveStore: memoryAllowSensitiveStore,
+                },
+              });
+
+              finalPayload.memoryWrites = [...explicitWrites, ...turnWrites];
+
+              await persistToolAudit({
+                userId: auth.userId,
+                sessionId,
+                toolRuns: finalPayload.toolRuns,
+                sources: finalPayload.sources,
+              });
+
+              writeEvent({
+                type: 'done',
+                payload: finalPayload,
+              });
+            } catch (streamError) {
+              writeEvent({
+                type: 'error',
+                error: {
+                  code: 'stream_failed',
+                  message: streamError instanceof Error ? streamError.message : String(streamError),
+                },
+              });
+            } finally {
+              controller.close();
+            }
+          })();
+        },
+      });
+
+      return new Response(responseStream, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/x-ndjson; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'X-Accel-Buffering': 'no',
+        },
+      });
+    }
+
     const contractPrompt = buildContractPrompt(mode, {
       forceQuiz: Boolean(featureFlags.forceQuiz),
       allowAutoQuiz: Boolean(featureFlags.allowAutoQuiz),
@@ -412,8 +636,8 @@ Deno.serve(async (req) => {
 
     const stylePrompt =
       responseStyle === 'concise'
-        ? 'Output style: concise. Keep the answer in <= 3 short paragraphs unless quiz artifact is required.'
-        : 'Output style: coach. Keep a clear teaching flow with concise explanations.';
+        ? 'Output style: concise. Keep the answer in <= 3 short paragraphs unless quiz artifact is required. Keep natural spacing between English words.'
+        : 'Output style: coach. Keep a clear teaching flow with concise explanations. Keep natural spacing between English words.';
 
     const modelMessages: DeepSeekMessage[] = [
       { role: 'system', content: systemPrompt },
@@ -432,24 +656,6 @@ Deno.serve(async (req) => {
     const latencyMs = Date.now() - start;
 
     const parsed = extractFirstJsonObject<unknown>(completion);
-
-    const allowQuizArtifact = mode === 'quiz' || Boolean(featureFlags.forceQuiz) || Boolean(featureFlags.allowAutoQuiz);
-
-    const normalizedQuizRun = body.quizRun && typeof body.quizRun === 'object'
-      ? {
-          runId: typeof body.quizRun.runId === 'string' ? body.quizRun.runId : '',
-          questionIndex: Number(body.quizRun.questionIndex) || 1,
-          targetCount: Number(body.quizRun.targetCount) || 1,
-          status:
-            body.quizRun.status === 'idle' ||
-            body.quizRun.status === 'awaiting_answer' ||
-            body.quizRun.status === 'grading' ||
-            body.quizRun.status === 'requesting_next' ||
-            body.quizRun.status === 'completed'
-              ? body.quizRun.status
-              : undefined,
-        }
-      : undefined;
 
     const renderState: ChatRenderState = {
       stage: toolRouting.searchTriggered ? 'searching' : 'composing',
@@ -473,14 +679,7 @@ Deno.serve(async (req) => {
       quizRun: normalizedQuizRun && normalizedQuizRun.runId
         ? normalizedQuizRun
         : undefined,
-      memoryUsed: memories.slice(0, 6).map((memory) => ({
-        id: memory.id,
-        kind: memory.kind,
-        contentPreview: memory.content.slice(0, 140),
-        confidence: memory.confidence,
-        score: Number(memory.retrievalScore ?? 0),
-        isPinned: memory.isPinned,
-      })),
+      memoryUsed: toMemoryUsed(memories),
       memoryTraceId,
     });
 

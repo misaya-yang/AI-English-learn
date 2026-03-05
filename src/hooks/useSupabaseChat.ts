@@ -1,6 +1,11 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { supabase, getAnonymousUserId } from '@/lib/supabase';
-import { AuthRequiredError, EdgeFunctionError, invokeEdgeFunction } from '@/services/aiGateway';
+import {
+  AuthRequiredError,
+  EdgeFunctionError,
+  invokeEdgeFunction,
+  invokeEdgeFunctionStream,
+} from '@/services/aiGateway';
 import { attachArtifactsToContent, extractArtifactsFromContent, normalizeArtifacts } from '@/services/chatArtifacts';
 import { recordLearningEvent } from '@/services/learningEvents';
 import type {
@@ -91,9 +96,42 @@ const TEMPERATURE_BY_MODE: Record<ChatMode, number> = {
 const QUIZ_EXPLICIT_REQUEST_PATTERN = /(quiz|mcq|multiple choice|give me .*question|ask me .*question|给我.{0,10}(道|个)?题|出.{0,8}题|来.{0,8}题|下一题|第\s*\d+\s*题|选择题|测验题|再给我.{0,8}题|继续.{0,8}题)/i;
 const REFLECTION_REQUEST_PATTERN = /(summary|summarize|plan|roadmap|review|feedback|weakness|strength|next step|总结|复盘|计划|训练计划|薄弱点|优势|下一步|回顾|评估)/i;
 const QUIZ_SUPPRESS_PATTERN = /(不要出题|不要测验|只做总结|只总结|复述|停止测验|结束测验|stop quiz|no quiz|don't give (me )?(a )?quiz)/i;
-const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|你好|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好)[!,.?，。！？\s]*$/i;
+const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|hello there|你好(?:呀|啊|喔)?|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好|在吗|在嗎|在不在)[!,.?，。！？\s]*$/i;
 const FACTUAL_SEARCH_HINT_PATTERN = /(latest|today|news|price|law|policy|research|statistics|官网|来源|出处|citation|web ?search|联网|最新|时效|新闻|数据|查一下|搜一下|检索)/i;
 const LOCAL_TUTORING_PATTERN = /(collocation|搭配|grammar|语法|rewrite|改写|translate|翻译|example sentence|例句|pronunciation|发音|词义|意思|difference|区别|用法|造句|quiz|测验|选择题|goal|target|学习目标|目标|speaking|口语|warm-?up|travel)/i;
+const SIMPLE_GREETING_TOKENS = new Set([
+  'hi',
+  'hello',
+  'hey',
+  'yo',
+  'hellothere',
+  '你好',
+  '你好呀',
+  '你好啊',
+  '你好喔',
+  '您好',
+  '嗨',
+  '哈喽',
+  '哈囉',
+  '早上好',
+  '下午好',
+  '晚上好',
+  '在吗',
+  '在嗎',
+  '在不在',
+]);
+
+const isSimpleGreetingInput = (value: string): boolean => {
+  const input = value.trim();
+  if (!input || input.length > 24) return false;
+  if (SIMPLE_GREETING_PATTERN.test(input)) return true;
+
+  const compact = input
+    .toLowerCase()
+    .replace(/[\s"'`~!@#$%^&*()_+\-=[\]{};:\\|,.<>/?，。！？、：；【】（）《》]/g, '');
+
+  return SIMPLE_GREETING_TOKENS.has(compact);
+};
 
 const shouldAllowAutoQuizForInput = (
   mode: ChatMode,
@@ -106,7 +144,7 @@ const shouldAllowAutoQuizForInput = (
     return false;
   }
 
-  if (SIMPLE_GREETING_PATTERN.test(normalized)) {
+  if (isSimpleGreetingInput(normalized)) {
     return false;
   }
 
@@ -140,7 +178,7 @@ const shouldDisableAutoSearch = (
   if (searchMode !== 'auto') return false;
   const normalized = userInput.toLowerCase().trim();
   if (!normalized) return false;
-  if (SIMPLE_GREETING_PATTERN.test(normalized)) return true;
+  if (isSimpleGreetingInput(normalized)) return true;
   if (mode === 'quiz' || QUIZ_EXPLICIT_REQUEST_PATTERN.test(normalized)) return true;
   if (FACTUAL_SEARCH_HINT_PATTERN.test(normalized)) return false;
   return LOCAL_TUTORING_PATTERN.test(normalized);
@@ -1789,7 +1827,7 @@ export function useSupabaseChat() {
           .reverse()
           .find((message) => message.role === 'user')?.content || '';
         const normalizedUserIntent = latestUserInputForIntent.toLowerCase().trim();
-        const isSimpleGreetingTurn = SIMPLE_GREETING_PATTERN.test(normalizedUserIntent);
+        const isSimpleGreetingTurn = isSimpleGreetingInput(normalizedUserIntent);
         const suppressQuizForThisTurn = shouldSuppressQuizForInput(latestUserInputForIntent);
         const explicitQuizRequest =
           !suppressQuizForThisTurn && QUIZ_EXPLICIT_REQUEST_PATTERN.test(normalizedUserIntent);
@@ -1817,69 +1855,12 @@ export function useSupabaseChat() {
         const conciseResponseRequested = context.responseStyle === 'concise';
         const useLightweightGreetingPath = (isSimpleGreetingTurn || conciseResponseRequested) && !isQuizTurn;
 
-        const result = await invokeEdgeFunction<ChatEdgeResponse>(
-          'ai-chat',
-          {
-            sessionId: context.sessionId,
-            messages: context.apiMessages,
-            systemPrompt: SYSTEM_PROMPT,
-            learningContext: {
-              locale: 'zh-CN',
-              app: 'VocabDaily',
-              mode: 'english-learning-coach',
-              currentMode: context.mode,
-            },
-            toolContext: isQuizTurn
-              ? {
-                  availableTools: [],
-                  responseTemplate: ['direct_answer'],
-                }
-              : useLightweightGreetingPath
-                ? {
-                    availableTools: [],
-                    responseTemplate: ['direct_answer'],
-                  }
-              : {
-                  availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
-                  responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
-                },
-            agentConfig: {
-              totalTokens: isQuizTurn ? 1200 : useLightweightGreetingPath ? 420 : 2200,
-              compactThreshold: isQuizTurn ? 0.72 : useLightweightGreetingPath ? 0.7 : 0.8,
-            },
-            searchPolicy: {
-              mode: context.mode === 'quiz' || useLightweightGreetingPath ? 'off' : effectiveSearchMode,
-              alwaysShowSources: true,
-              maxSearchCalls: context.mode === 'quiz' || effectiveSearchMode === 'off' || useLightweightGreetingPath ? 1 : 2,
-              maxPerMinute: context.mode === 'quiz' || useLightweightGreetingPath ? 5 : 8,
-            },
-            memoryPolicy: {
-              topK: context.memoryPolicy?.topK ?? (isQuizTurn ? 2 : useLightweightGreetingPath ? 2 : 6),
-              minSimilarity: context.memoryPolicy?.minSimilarity ?? (isQuizTurn ? 0.3 : useLightweightGreetingPath ? 0.28 : 0.24),
-              writeMode: context.memoryPolicy?.writeMode ?? 'stable_only',
-              allowSensitiveStore: context.memoryPolicy?.allowSensitiveStore ?? false,
-            },
-            memoryControl: context.memoryControl,
-            canvasContext:
-              context.mode === 'canvas'
-                ? {
-                    parentSessionId: context.sessionId,
-                    childSessionId: getCanvasChildSessionId(context.sessionId),
-                    syncToParent: context.canvasSyncToParent,
-                  }
-                : undefined,
-            mode: context.mode,
-            responseStyle: context.responseStyle,
-            quizPolicy: context.quizPolicy,
-            quizRun: effectiveQuizRun,
-            featureFlags: mergedFeatureFlags,
-            temperature: useLightweightGreetingPath ? 0.45 : TEMPERATURE_BY_MODE[context.mode],
-            maxTokens: useLightweightGreetingPath ? 180 : MAX_TOKENS_BY_MODE[context.mode],
-          },
-          { signal: abortControllerRef.current.signal },
-        );
-
-        if (requestStartAtRef.current !== null) {
+        let ttftCaptured = false;
+        const captureTtft = (providerLatencyMs?: number | null) => {
+          if (ttftCaptured || requestStartAtRef.current === null) {
+            return;
+          }
+          ttftCaptured = true;
           const ttftMs = Math.max(0, Math.round(performance.now() - requestStartAtRef.current));
           setChatPerf((prev) => ({
             ...prev,
@@ -1895,10 +1876,118 @@ export function useSupabaseChat() {
               mode: context.mode,
               trigger: context.trigger,
               ttftMs,
-              providerLatencyMs: result.perfMeta?.latencyMs ?? result.agentMeta?.latencyMs ?? null,
+              providerLatencyMs: providerLatencyMs ?? null,
             },
           });
+        };
+
+        const requestPayload = {
+          sessionId: context.sessionId,
+          messages: context.apiMessages,
+          systemPrompt: SYSTEM_PROMPT,
+          learningContext: {
+            locale: 'zh-CN',
+            app: 'VocabDaily',
+            mode: 'english-learning-coach',
+            currentMode: context.mode,
+          },
+          toolContext: isQuizTurn
+            ? {
+                availableTools: [],
+                responseTemplate: ['direct_answer'],
+              }
+            : useLightweightGreetingPath
+              ? {
+                  availableTools: [],
+                  responseTemplate: ['direct_answer'],
+                }
+            : {
+                availableTools: ['lookup_collocations', 'explain_error', 'generate_practice'],
+                responseTemplate: ['direct_answer', 'examples', 'zh_key_points', 'next_actions'],
+              },
+          agentConfig: {
+            totalTokens: isQuizTurn ? 1200 : useLightweightGreetingPath ? 420 : 2200,
+            compactThreshold: isQuizTurn ? 0.72 : useLightweightGreetingPath ? 0.7 : 0.8,
+          },
+          searchPolicy: {
+            mode: context.mode === 'quiz' || useLightweightGreetingPath ? 'off' : effectiveSearchMode,
+            alwaysShowSources: true,
+            maxSearchCalls: context.mode === 'quiz' || effectiveSearchMode === 'off' || useLightweightGreetingPath ? 1 : 2,
+            maxPerMinute: context.mode === 'quiz' || useLightweightGreetingPath ? 5 : 8,
+          },
+          memoryPolicy: {
+            topK: context.memoryPolicy?.topK ?? (isQuizTurn ? 2 : useLightweightGreetingPath ? 2 : 6),
+            minSimilarity: context.memoryPolicy?.minSimilarity ?? (isQuizTurn ? 0.3 : useLightweightGreetingPath ? 0.28 : 0.24),
+            writeMode: context.memoryPolicy?.writeMode ?? 'stable_only',
+            allowSensitiveStore: context.memoryPolicy?.allowSensitiveStore ?? false,
+          },
+          memoryControl: context.memoryControl,
+          canvasContext:
+            context.mode === 'canvas'
+              ? {
+                  parentSessionId: context.sessionId,
+                  childSessionId: getCanvasChildSessionId(context.sessionId),
+                  syncToParent: context.canvasSyncToParent,
+                }
+              : undefined,
+          mode: context.mode,
+          responseStyle: context.responseStyle,
+          quizPolicy: context.quizPolicy,
+          quizRun: effectiveQuizRun,
+          featureFlags: mergedFeatureFlags,
+          temperature: useLightweightGreetingPath ? 0.45 : TEMPERATURE_BY_MODE[context.mode],
+          maxTokens: useLightweightGreetingPath ? 180 : MAX_TOKENS_BY_MODE[context.mode],
+        };
+
+        const shouldUseEdgeStreaming =
+          !isQuizTurn &&
+          context.mode !== 'canvas' &&
+          !Boolean(effectiveQuizRun?.runId);
+
+        let usedEdgeStreaming = false;
+        let result: ChatEdgeResponse;
+
+        if (shouldUseEdgeStreaming) {
+          usedEdgeStreaming = true;
+          result = await invokeEdgeFunctionStream<ChatEdgeResponse>(
+            'ai-chat',
+            {
+              ...requestPayload,
+              stream: true,
+            },
+            {
+              onMeta: (meta) => {
+                if (!meta || typeof meta !== 'object') return;
+                const data = meta as { renderState?: ChatRenderState; contextMeta?: ContextMeta };
+                if (data.renderState) {
+                  setLastRenderState(data.renderState);
+                }
+                if (data.contextMeta) {
+                  setLastContextMeta(data.contextMeta);
+                }
+              },
+              onDelta: (delta) => {
+                if (!delta) return;
+                captureTtft();
+                fullContent += delta;
+                setStreamingContent(fullContent);
+                setLastRenderState({ stage: 'streaming' });
+              },
+            },
+            { signal: abortControllerRef.current.signal },
+          );
+        } else {
+          result = await invokeEdgeFunction<ChatEdgeResponse>(
+            'ai-chat',
+            {
+              ...requestPayload,
+              stream: false,
+            },
+            { signal: abortControllerRef.current.signal },
+          );
         }
+
+        captureTtft(result.perfMeta?.latencyMs ?? result.agentMeta?.latencyMs ?? null);
 
         const embeddedEnvelope = parseEmbeddedEnvelope(result.content);
         const replyContent = embeddedEnvelope.content || normalizeAssistantReplyContent(result.content);
@@ -1971,28 +2060,33 @@ export function useSupabaseChat() {
           memoryWrites: Array.isArray(result.memoryWrites) ? result.memoryWrites.length : 0,
         });
 
-        const chunks = safeReplyContent.match(/[\s\S]{1,120}/g) || [safeReplyContent];
-        let lastFlushAt = performance.now();
-        for (let index = 0; index < chunks.length; index += 1) {
-          const chunk = chunks[index];
-          if (abortControllerRef.current?.signal.aborted) {
-            throw new DOMException('Aborted', 'AbortError');
-          }
-          fullContent += chunk;
-          const now = performance.now();
-          const isLast = index === chunks.length - 1;
-          const shouldFlush = isLast || now - lastFlushAt >= 16;
-          if (!shouldFlush) continue;
+        if (!usedEdgeStreaming) {
+          const chunks = safeReplyContent.match(/[\s\S]{1,120}/g) || [safeReplyContent];
+          let lastFlushAt = performance.now();
+          for (let index = 0; index < chunks.length; index += 1) {
+            const chunk = chunks[index];
+            if (abortControllerRef.current?.signal.aborted) {
+              throw new DOMException('Aborted', 'AbortError');
+            }
+            fullContent += chunk;
+            const now = performance.now();
+            const isLast = index === chunks.length - 1;
+            const shouldFlush = isLast || now - lastFlushAt >= 16;
+            if (!shouldFlush) continue;
 
+            setStreamingContent(fullContent);
+            setLastRenderState({
+              stage: 'streaming',
+              progress: Math.min(0.98, fullContent.length / Math.max(safeReplyContent.length, 1)),
+            });
+            await new Promise<void>((resolve) => {
+              requestAnimationFrame(() => resolve());
+            });
+            lastFlushAt = performance.now();
+          }
+        } else if (!fullContent && safeReplyContent) {
+          fullContent = safeReplyContent;
           setStreamingContent(fullContent);
-          setLastRenderState({
-            stage: 'streaming',
-            progress: Math.min(0.98, fullContent.length / Math.max(safeReplyContent.length, 1)),
-          });
-          await new Promise<void>((resolve) => {
-            requestAnimationFrame(() => resolve());
-          });
-          lastFlushAt = performance.now();
         }
 
         const assistantMessage: ChatMessage = {
@@ -2227,7 +2321,7 @@ export function useSupabaseChat() {
 
     const normalizedInput = apiUserContent.toLowerCase().trim();
     const shouldUseFastGreetingReply =
-      SIMPLE_GREETING_PATTERN.test(normalizedInput) &&
+      isSimpleGreetingInput(normalizedInput) &&
       mode !== 'quiz' &&
       mode !== 'canvas' &&
       !options.quizRun?.runId &&

@@ -161,7 +161,7 @@ export default function DashboardLayout() {
         <div className="px-3 py-2 mb-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Crafted by uu</span>
+            <span>Crafted for uu</span>
           </div>
         </div>
 

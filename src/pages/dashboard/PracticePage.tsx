@@ -30,6 +30,7 @@ import type { AiFeedback } from '@/types/examContent';
 import { getContentItemsByUnit, getContentUnits, getQuotaSnapshot, saveAiFeedbackRecord, saveItemAttempt } from '@/data/examContent';
 import { consumeExamFeatureQuota, createAttempt, gradeIeltsWriting } from '@/services/aiExamCoach';
 import { recordLearningEvent } from '@/services/learningEvents';
+import { speakEnglishText } from '@/services/tts';
 
 // Quiz question types
 interface QuizQuestion {
@@ -326,11 +327,7 @@ export default function PracticePage() {
   };
 
   const playAudio = (text: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
+    void speakEnglishText(text);
   };
 
   if (!selectedMode) {
