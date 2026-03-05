@@ -273,6 +273,11 @@ export const saveItemAttempt = (attempt: ItemAttempt): void => {
   setAttemptMap(map);
 };
 
+export const getItemAttempts = (userId: string, limit = 200): ItemAttempt[] => {
+  const map = getAttemptMap();
+  return (map[userId] || []).slice(0, limit);
+};
+
 export const saveAiFeedbackRecord = (userId: string, feedback: AiFeedback): void => {
   const map = getFeedbackMap();
   const list = map[userId] || [];

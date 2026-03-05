@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +50,9 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function VocabularyBankPage() {
+  const [searchParams] = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+
   const {
     wordBooks,
     activeBook,
@@ -65,9 +69,17 @@ export default function VocabularyBankPage() {
     markWordAsMastered,
   } = useUserData();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
+
+  const queryParam = searchParams.get('q') || '';
+
+  useEffect(() => {
+    if (queryParam) {
+      setSearchQuery(queryParam);
+    }
+  }, [queryParam]);
 
   const builtInWordIdSet = useMemo(() => new Set(wordsDatabase.map((word) => word.id)), []);
 

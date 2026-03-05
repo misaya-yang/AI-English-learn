@@ -77,6 +77,13 @@ export interface AiFeedback {
   confidence: number;
   provider: 'edge' | 'fallback' | 'cache';
   createdAt: string;
+  prompt?: string;
+  taskType?: 'task1' | 'task2';
+  trackId?: string;
+  unitId?: string;
+  answerPreview?: string;
+  latencyMs?: number;
+  sourceMode?: 'manual' | 'simulation';
 }
 
 export interface ItemAttempt {

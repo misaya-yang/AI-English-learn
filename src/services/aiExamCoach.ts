@@ -14,7 +14,7 @@ import { invokeEdgeFunction } from './aiGateway';
 const nowIso = (): string => new Date().toISOString();
 const FEEDBACK_CACHE_KEY = 'vocabdaily_writing_feedback_cache_v1';
 const FEEDBACK_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 3;
-const EDGE_FEEDBACK_TIMEOUT_MS = 9000;
+const EDGE_FEEDBACK_TIMEOUT_MS = 7800;
 
 const clampBand = (value: number): number => {
   if (!Number.isFinite(value)) return 5.5;
@@ -409,7 +409,7 @@ export const gradeIeltsWriting = async (args: {
   });
 
   const controller = new AbortController();
-  const timeoutHandle = window.setTimeout(() => controller.abort(), EDGE_FEEDBACK_TIMEOUT_MS);
+  const timeoutHandle = globalThis.setTimeout(() => controller.abort(), EDGE_FEEDBACK_TIMEOUT_MS);
 
   try {
     const result = await invokeEdgeFunction<AiFeedback>('ai-grade-writing', {
@@ -434,7 +434,7 @@ export const gradeIeltsWriting = async (args: {
   } catch {
     // Fall through to local fallback feedback.
   } finally {
-    window.clearTimeout(timeoutHandle);
+    globalThis.clearTimeout(timeoutHandle);
   }
 
   return fallback;
