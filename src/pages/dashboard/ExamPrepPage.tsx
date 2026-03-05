@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -332,12 +332,9 @@ export default function ExamPrepPage() {
     return feedbackHistory.filter((item) => new Date(item.createdAt).getTime() >= start.getTime()).length;
   }, [feedbackHistory]);
 
-  const attempts = useMemo(() => getItemAttempts(userId, 400), [userId, dataVersion]);
+  const attempts = getItemAttempts(userId, 400);
 
-  const allWritingUnits = useMemo(
-    () => getContentUnits({ examType: 'IELTS', skill: 'writing' }),
-    [dataVersion],
-  );
+  const allWritingUnits = getContentUnits({ examType: 'IELTS', skill: 'writing' });
 
   const unitProgressMap = useMemo(() => {
     const attemptedItemIds = new Set(attempts.map((attempt) => attempt.itemId));
@@ -395,7 +392,7 @@ export default function ExamPrepPage() {
   const currentBand = feedback?.scores.overallBand || feedbackHistory[0]?.scores.overallBand || 0;
   const targetProgress = Math.round(Math.min(100, (currentBand / targetBand) * 100));
 
-  const errorGraph = useMemo(() => getErrorGraph(userId), [userId, feedbackHistory, dataVersion]);
+  const errorGraph = getErrorGraph(userId);
   const errorAnalytics = useMemo(() => {
     const total = Math.max(1, errorGraph.reduce((sum, node) => sum + node.count, 0));
     return errorGraph.slice(0, 6).map((node) => ({
@@ -407,16 +404,16 @@ export default function ExamPrepPage() {
 
   const topWeakTag = (activeErrorTag || errorGraph[0]?.tag || null) as FeedbackIssue['tag'] | null;
 
-  const refreshQuota = async () => {
+  const refreshQuota = useCallback(async () => {
     const quota = await getQuotaSnapshot(userId);
     setRemainingQuota(quota.remaining);
-  };
+  }, [userId]);
 
-  const refreshFeedbackState = () => {
+  const refreshFeedbackState = useCallback(() => {
     const history = getAiFeedbackHistory(userId, 12);
     setFeedbackHistory(history);
     setFeedback(getLatestAiFeedback(userId));
-  };
+  }, [userId]);
 
   const resetCoachPanels = () => {
     setOutline(null);
@@ -472,7 +469,7 @@ export default function ExamPrepPage() {
     };
 
     void loadEntitlement();
-  }, [userId]);
+  }, [refreshFeedbackState, refreshQuota, userId]);
 
   useEffect(() => {
     const raw = localStorage.getItem(draftKey);

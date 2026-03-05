@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
@@ -72,14 +72,6 @@ export default function VocabularyBankPage() {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
-
-  const queryParam = searchParams.get('q') || '';
-
-  useEffect(() => {
-    if (queryParam) {
-      setSearchQuery(queryParam);
-    }
-  }, [queryParam]);
 
   const builtInWordIdSet = useMemo(() => new Set(wordsDatabase.map((word) => word.id)), []);
 
