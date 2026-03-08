@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo, type ComponentType } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -9,43 +9,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import {
-  Send,
-  Bot,
-  User,
   Sparkles,
   Lightbulb,
   BookOpen,
   MessageSquare,
   RotateCcw,
   Copy,
-  ThumbsUp,
-  ThumbsDown,
-  StopCircle,
   MoreVertical,
-  Trash2,
   Plus,
-  History,
   Menu,
-  Edit2,
-  Check,
   AlertTriangle,
   RefreshCw,
   FlaskConical,
   NotebookPen,
-  Layers3,
   GraduationCap,
-  Globe,
-  Link2,
-  Wand2,
-  ChevronUp,
   Loader2,
   ChevronLeft,
   ChevronRight,
@@ -55,7 +32,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useSupabaseChat } from '@/hooks/useSupabaseChat';
 import { INIT_ALL_SQL } from '@/lib/supabase';
-import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { useTranslation } from 'react-i18next';
 import type { ChatArtifact, ChatMode } from '@/types/chatAgent';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -66,9 +42,17 @@ import type { FeedbackIssue } from '@/types/examContent';
 import { saveAiFeedbackRecord } from '@/data/examContent';
 import { deleteMemoryItems, rememberMemoryItems } from '@/services/memoryCenter';
 import { buildQuizSequencePrompt, parseRequestedQuizCount } from '@/features/chat/quizSequence';
+import { ChatComposer } from '@/features/chat/components/ChatComposer';
+import { ChatHistorySidebar } from '@/features/chat/components/ChatHistorySidebar';
+import { ChatMemoryBanner } from '@/features/chat/components/ChatMemoryBanner';
+import { ChatMessageBubble } from '@/features/chat/components/ChatMessageBubble';
+import { ChatWelcome } from '@/features/chat/components/ChatWelcome';
+import { QuizArtifactCard } from '@/features/chat/components/QuizArtifactCard';
+import type { ChatModeOption, QuickPromptOption } from '@/features/chat/types';
+import { buildChatGoalContext, deriveChatWeakTags } from '@/features/chat/utils/learnerContext';
 
 // Quick prompt suggestions - English prompts for learning (not translated)
-const getQuickPrompts = (t: any) => [
+const getQuickPrompts = (t: (key: string) => string): QuickPromptOption[] => [
   {
     icon: BookOpen,
     text: 'Explain the difference between "affect" and "effect"',
@@ -91,7 +75,7 @@ const getQuickPrompts = (t: any) => [
   },
 ];
 
-const CHAT_MODE_OPTIONS: Array<{ id: ChatMode; label: string; labelZh: string; icon: ComponentType<{ className?: string }> }> = [
+const CHAT_MODE_OPTIONS: ChatModeOption[] = [
   { id: 'chat', label: 'Chat', labelZh: '对话', icon: MessageSquare },
   { id: 'study', label: 'Study', labelZh: '学习', icon: GraduationCap },
   { id: 'quiz', label: 'Quiz', labelZh: '测验', icon: FlaskConical },
@@ -111,167 +95,6 @@ interface QuizRunArtifactEntry {
   artifact: Extract<ChatArtifact, { type: 'quiz' }>;
   createdAt: number;
 }
-
-interface QuizCardProps {
-  artifact: Extract<ChatArtifact, { type: 'quiz' }>;
-  sessionId: string | null;
-  mode: ChatMode;
-  hasAttempt: boolean;
-  attemptedOption?: string;
-  onSubmit: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void | Promise<void>;
-  onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
-  onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
-  t: any;
-  language: string;
-}
-
-const QuizArtifactCard = ({
-  artifact,
-  sessionId,
-  mode,
-  hasAttempt,
-  attemptedOption,
-  onSubmit,
-  onAddReviewCard,
-  onGenerateLesson,
-  t,
-  language,
-}: QuizCardProps) => {
-  const [selected, setSelected] = useState('');
-  const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [localAttempted, setLocalAttempted] = useState(hasAttempt);
-  const [localSelected, setLocalSelected] = useState(attemptedOption || '');
-
-  useEffect(() => {
-    setLocalAttempted(hasAttempt);
-    setLocalSelected(attemptedOption || '');
-  }, [attemptedOption, hasAttempt]);
-
-  const effectiveSelected = localSelected || selected;
-  const isCorrect = effectiveSelected === artifact.payload.answerKey;
-  const canSubmit = !!sessionId && !localAttempted && selected.length > 0;
-
-  return (
-    <div className="mt-2 p-0 space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{artifact.payload.title}</p>
-        <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-          {artifact.payload.difficulty}
-        </span>
-      </div>
-
-      <p className="text-sm leading-relaxed">{artifact.payload.stem}</p>
-
-      <div className="space-y-2">
-        {artifact.payload.options.map((option) => {
-          const checked = effectiveSelected === option.id;
-          const disabled = localAttempted;
-          const optionIsCorrect = localAttempted && option.id === artifact.payload.answerKey;
-          const optionIsWrongSelected = localAttempted && checked && option.id !== artifact.payload.answerKey;
-
-          return (
-            <button
-              key={option.id}
-              onClick={() => {
-                if (disabled) return;
-                if (!startedAt) {
-                  setStartedAt(Date.now());
-                }
-                setSelected(option.id);
-              }}
-              className={cn(
-                'w-full text-left rounded-lg border px-3 py-2 text-sm transition-colors',
-                checked ? 'border-emerald-500 bg-emerald-100/80 dark:bg-emerald-900/50' : 'border-border hover:border-emerald-400/60',
-                optionIsCorrect && 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/60',
-                optionIsWrongSelected && 'border-red-500 bg-red-50 dark:bg-red-950/40',
-              )}
-              disabled={disabled}
-            >
-              {option.text}
-            </button>
-          );
-        })}
-      </div>
-
-      {!localAttempted ? (
-        <Button
-          size="sm"
-          className="bg-emerald-600 hover:bg-emerald-700"
-          disabled={!canSubmit}
-          onClick={() => {
-            if (!sessionId || !selected) return;
-            const durationMs = startedAt ? Math.max(1200, Date.now() - startedAt) : 1200;
-            const correct = selected === artifact.payload.answerKey;
-            onSubmit(artifact.payload.quizId, selected, correct, durationMs);
-            setLocalSelected(selected);
-            setLocalAttempted(true);
-          }}
-        >
-          {language.startsWith('zh') ? '提交答案' : 'Submit'}
-        </Button>
-      ) : (
-        <div className="rounded-lg border border-border bg-background/70 px-3 py-2 text-sm">
-          <p className={cn('font-medium', isCorrect ? 'text-emerald-600' : 'text-red-500')}>
-            {isCorrect ? (language.startsWith('zh') ? '回答正确' : 'Correct') : (language.startsWith('zh') ? '回答不正确' : 'Not quite')}
-          </p>
-          <p className="mt-1 text-muted-foreground">{artifact.payload.explanation}</p>
-        </div>
-      )}
-
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onAddReviewCard(artifact)}
-        >
-          <Layers3 className="h-3.5 w-3.5 mr-1.5" />
-          {language.startsWith('zh') ? '加入复习卡' : 'Add to review'}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onGenerateLesson(artifact)}
-        >
-          <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-          {language.startsWith('zh') ? '生成补救微课' : 'Generate micro lesson'}
-        </Button>
-        <span className="text-xs text-muted-foreground self-center">
-          {mode.toUpperCase()} · {artifact.payload.estimatedSeconds}s
-        </span>
-      </div>
-    </div>
-  );
-};
-
-// Welcome message component
-const WelcomeMessage = ({ onPromptClick, t, prompts }: { onPromptClick: (text: string) => void; t: any; prompts: any[] }) => (
-  <div className="flex flex-col items-center justify-center py-8 px-4">
-    <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/40 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-      <Bot className="h-8 w-8 text-emerald-600" />
-    </div>
-    <h2 className="text-2xl font-bold mb-2 text-center">{t('chat.welcomeTitle')}</h2>
-    <p className="text-muted-foreground text-center max-w-md mb-8">
-      {t('chat.welcomeDesc')}
-    </p>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
-      {prompts.map((prompt: any, index: number) => (
-        <button
-          key={index}
-          onClick={() => onPromptClick(prompt.text)}
-          className="flex items-start gap-3 p-4 rounded-xl border border-border hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 transition-all text-left"
-        >
-          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-            <prompt.icon className="h-4 w-4 text-emerald-600" />
-          </div>
-          <div>
-            <p className="text-sm font-medium">{prompt.textZh}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{prompt.text}</p>
-          </div>
-        </button>
-      ))}
-    </div>
-  </div>
-);
 
 interface ThinkingStatusCardProps {
   label: string;
@@ -342,305 +165,26 @@ const ThinkingStatusCard = ({ label, language, isStreaming, toolRuns }: Thinking
   );
 };
 
-// Message bubble component
-interface MessageBubbleProps {
-  message: {
-    id: string;
-    role: 'user' | 'assistant' | 'system';
-    content: string;
-    createdAt: number;
-    artifacts?: ChatArtifact[];
-  };
-  isStreaming?: boolean;
-  t: any;
-  language: string;
-  sessionId: string | null;
-  mode: ChatMode;
-  attemptedQuizMap: Record<string, { selected: string }>;
-  onSubmitQuiz: (quizId: string, selected: string, isCorrect: boolean, durationMs: number) => void | Promise<void>;
-  onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
-  onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
-  onUseCanvasSummary: (summary: string) => void;
-}
-
-const MessageBubble = ({
-  message,
-  isStreaming,
-  t,
-  language,
-  sessionId,
-  mode,
-  attemptedQuizMap,
-  onSubmitQuiz,
-  onAddReviewCard,
-  onGenerateLesson,
-  onUseCanvasSummary,
-}: MessageBubbleProps & { t: any }) => {
-  const isUser = message.role === 'user';
-  const quizArtifacts =
-    message.artifacts?.filter(
-      (artifact): artifact is Extract<ChatArtifact, { type: 'quiz' }> => artifact.type === 'quiz',
-    ) || [];
-  const hasUnansweredQuiz = quizArtifacts.some((artifact) => !attemptedQuizMap[artifact.payload.quizId]);
-  const shouldHideAssistantText = !isUser && !isStreaming && hasUnansweredQuiz;
-  
-  const copyToClipboard = useCallback(() => {
-    navigator.clipboard.writeText(message.content);
-    toast.success(t('chat.copySuccess'));
-  }, [message.content, t]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn(
-        'flex gap-3 py-4 group',
-        isUser ? 'flex-row-reverse' : 'flex-row'
-      )}
-    >
-      {/* Avatar */}
-      <Avatar className={cn(
-        'w-8 h-8 flex-shrink-0',
-        isUser 
-          ? 'bg-gradient-to-br from-blue-100 to-indigo-100' 
-          : 'bg-gradient-to-br from-emerald-100 to-teal-100'
-      )}>
-        <AvatarFallback className="text-xs">
-          {isUser ? <User className="h-4 w-4 text-blue-600" /> : <Bot className="h-4 w-4 text-emerald-600" />}
-        </AvatarFallback>
-      </Avatar>
-
-      {/* Message Content */}
-      <div className={cn(
-        'flex flex-col min-w-0',
-        isUser ? 'items-end max-w-[90%] lg:max-w-[70%]' : 'items-start w-full max-w-[760px] xl:max-w-[800px]'
-      )}>
-        {isUser ? (
-          <div className="relative overflow-hidden px-4 py-3 rounded-2xl bg-emerald-600 text-white rounded-br-sm">
-            <p className="relative z-10 text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-            {isStreaming && (
-              <span className="relative z-10 inline-block w-2 h-4 bg-emerald-100 animate-pulse ml-1 align-middle" />
-            )}
-          </div>
-        ) : (
-          <div className="relative w-full">
-            {isStreaming && (
-              <motion.div
-                aria-hidden
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(100deg, transparent 8%, rgba(16, 185, 129, 0.12) 46%, transparent 82%)',
-                  backgroundSize: '200% 100%',
-                }}
-                animate={{ backgroundPosition: ['-120% 0%', '120% 0%'] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
-              />
-            )}
-            {!shouldHideAssistantText && message.content.trim().length > 0 && (
-              <div className="relative z-10 prose dark:prose-invert max-w-none">
-                <MarkdownRenderer content={message.content} />
-                {isStreaming && (
-                  <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-1 align-middle" />
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {!isUser &&
-          !isStreaming &&
-          message.artifacts?.map((artifact, index) => {
-            if (artifact.type === 'quiz') {
-              const attempt = attemptedQuizMap[artifact.payload.quizId];
-              return (
-                <QuizArtifactCard
-                  key={`${message.id}-quiz-${index}`}
-                  artifact={artifact}
-                  sessionId={sessionId}
-                  mode={mode}
-                  hasAttempt={!!attempt}
-                  attemptedOption={attempt?.selected}
-                  onSubmit={onSubmitQuiz}
-                  onAddReviewCard={onAddReviewCard}
-                  onGenerateLesson={onGenerateLesson}
-                  t={t}
-                  language={language}
-                />
-              );
-            }
-
-            if (artifact.type === 'web_sources') {
-              return (
-                <div
-                  key={`${message.id}-sources-${index}`}
-                  className="mt-3 rounded-xl border border-blue-300/40 bg-blue-50/50 dark:bg-blue-900/20 p-3 space-y-2"
-                >
-                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                    {artifact.payload.title || (language.startsWith('zh') ? '资料来源' : 'Sources')}
-                  </p>
-                  <div className="space-y-2">
-                    {artifact.payload.sources.map((source) => (
-                      <a
-                        key={source.id}
-                        href={source.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block rounded-lg border border-blue-200/60 dark:border-blue-800/60 bg-background/70 px-3 py-2 hover:border-blue-400/70 transition-colors"
-                      >
-                        <div className="flex items-start gap-2">
-                          <Link2 className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-xs font-medium truncate">{source.title}</p>
-                            <p className="text-[11px] text-muted-foreground truncate">{source.domain}</p>
-                            {source.snippet && (
-                              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{source.snippet}</p>
-                            )}
-                          </div>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              );
-            }
-
-            if (artifact.type === 'canvas_summary') {
-              return (
-                <div
-                  key={`${message.id}-canvas-summary-${index}`}
-                  className="mt-3 rounded-xl border border-violet-300/40 bg-violet-50/50 dark:bg-violet-900/20 p-3 space-y-2"
-                >
-                  <p className="text-xs font-semibold text-violet-700 dark:text-violet-300">
-                    {artifact.payload.title}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{artifact.payload.summary}</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    onClick={() => onUseCanvasSummary(artifact.payload.summary)}
-                  >
-                    {language.startsWith('zh') ? '同步到主对话输入框' : 'Sync summary to input'}
-                  </Button>
-                </div>
-              );
-            }
-
-            return null;
-          })}
-
-        {/* Actions */}
-        {!isUser && !isStreaming && (
-          <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={copyToClipboard}
-              className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-              title="复制"
-            >
-              <Copy className="h-3.5 w-3.5" />
-            </button>
-            <button
-              className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-              title="有用"
-            >
-              <ThumbsUp className="h-3.5 w-3.5" />
-            </button>
-            <button
-              className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-              title="无用"
-            >
-              <ThumbsDown className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-};
-
-// Editable session title component
-const EditableTitle = ({ 
-  title, 
-  onSave 
-}: { 
-  title: string; 
-  onSave: (newTitle: string) => void;
-}) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(title);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const handleSave = () => {
-    if (editValue.trim() && editValue !== title) {
-      onSave(editValue.trim());
-    }
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    } else if (e.key === 'Escape') {
-      setEditValue(title);
-      setIsEditing(false);
-    }
-  };
-
-  if (isEditing) {
-    return (
-      <div className="flex items-center gap-1 flex-1 min-w-0">
-        <input
-          ref={inputRef}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleSave}
-          className="flex-1 min-w-0 text-sm bg-transparent border-b border-emerald-500 outline-none px-1"
-        />
-        <button
-          onClick={handleSave}
-          className="p-1 rounded hover:bg-emerald-100 text-emerald-600"
-        >
-          <Check className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-1 flex-1 min-w-0 group/title">
-      <p className="text-sm font-medium truncate flex-1" title={title}>{title}</p>
-      <button
-        onClick={() => setIsEditing(true)}
-        className="opacity-0 group-hover/title:opacity-100 p-1 rounded hover:bg-muted text-muted-foreground transition-all"
-      >
-        <Edit2 className="h-3 w-3" />
-      </button>
-    </div>
-  );
-};
-
 // Main Chat Page Component
 export default function ChatPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const { user } = useAuth();
   const chatUserId = user?.id || 'guest';
-  const { addCustomWord, completeMissionTask } = useUserData();
+  const {
+    activeBook,
+    addCustomWord,
+    completeMissionTask,
+    dailyMission,
+    dueWords,
+    learningProfile,
+  } = useUserData();
   const {
     sessions,
     currentSessionId,
     messages,
     isLoading,
     streamingContent,
-    syncState,
     quizAttemptsById,
     quizRunState,
     lastAgentMeta,
@@ -738,6 +282,28 @@ export default function ChatPage() {
 
   const [quizCanvasIndex, setQuizCanvasIndex] = useState(0);
   const quizArtifactsRef = useRef<QuizRunArtifactEntry[]>([]);
+
+  const chatWeakTags = useMemo(
+    () =>
+      deriveChatWeakTags({
+        learningProfile,
+        activeBookName: activeBook?.name,
+        dueCount: dueWords.length,
+        dailyMission,
+      }),
+    [activeBook?.name, dailyMission, dueWords.length, learningProfile],
+  );
+
+  const goalContext = useMemo(
+    () =>
+      buildChatGoalContext({
+        learningProfile,
+        activeBookName: activeBook?.name,
+        dueCount: dueWords.length,
+        dailyMission,
+      }),
+    [activeBook?.name, dailyMission, dueWords.length, learningProfile],
+  );
 
   const loadingStages = useMemo(
     () =>
@@ -952,6 +518,9 @@ export default function ChatPage() {
     }
 
     await sendMessage(text, {
+      surface: 'chat',
+      goalContext,
+      weakTags: chatWeakTags,
       mode: shouldStartQuizSequence ? 'quiz' : chatMode,
       responseStyle: shouldStartQuizSequence ? 'coach' : 'coach',
       searchMode: shouldStartQuizSequence ? 'off' : searchMode,
@@ -974,7 +543,7 @@ export default function ChatPage() {
         forceQuiz: shouldStartQuizSequence || undefined,
       },
     });
-  }, [chatMode, clearQuizRun, currentSessionId, input, isLoading, language, quizRunState, searchMode, sendMessage, startQuizRun, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, input, isLoading, language, quizRunState, searchMode, sendMessage, startQuizRun, syncQuizSequence]);
 
   // Handle quick prompt
   const handleQuickPrompt = useCallback((text: string) => {
@@ -987,6 +556,9 @@ export default function ChatPage() {
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
     sendMessage(text, {
+      surface: 'chat',
+      goalContext,
+      weakTags: chatWeakTags,
       mode: chatMode,
       responseStyle: 'coach',
       searchMode,
@@ -997,7 +569,7 @@ export default function ChatPage() {
         allowAutoQuiz: chatMode === 'study' || chatMode === 'quiz',
       },
     });
-  }, [chatMode, clearQuizRun, currentSessionId, searchMode, sendMessage, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, searchMode, sendMessage, syncQuizSequence]);
 
   const handleManualQuiz = useCallback(() => {
     const text =
@@ -1013,6 +585,9 @@ export default function ChatPage() {
     handledSequenceQuizIdsRef.current.clear();
     setToolsExpanded(false);
     void sendMessage(text, {
+      surface: 'chat',
+      goalContext,
+      weakTags: chatWeakTags,
       mode: chatMode,
       responseStyle: 'coach',
       searchMode,
@@ -1025,7 +600,7 @@ export default function ChatPage() {
         allowAutoQuiz: true,
       },
     });
-  }, [chatMode, clearQuizRun, currentSessionId, language, searchMode, sendMessage, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, language, searchMode, sendMessage, syncQuizSequence]);
 
   const handleForceWebSearch = useCallback(() => {
     const text = input.trim();
@@ -1045,6 +620,9 @@ export default function ChatPage() {
     }
 
     void sendMessage(text, {
+      surface: 'chat',
+      goalContext,
+      weakTags: chatWeakTags,
       mode: chatMode,
       responseStyle: 'coach',
       searchMode: 'force',
@@ -1056,7 +634,7 @@ export default function ChatPage() {
         forceWebSearch: true,
       },
     });
-  }, [chatMode, clearQuizRun, currentSessionId, input, isLoading, sendMessage, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, input, isLoading, sendMessage, syncQuizSequence]);
 
   const handleUseCanvasSummary = useCallback((summary: string) => {
     setInput(summary);
@@ -1246,6 +824,9 @@ export default function ChatPage() {
         });
 
         await sendMessage(args.sequence.seedPrompt, {
+          surface: 'chat',
+          goalContext,
+          weakTags: chatWeakTags,
           mode: 'quiz',
           responseStyle: 'coach',
           searchMode: 'off',
@@ -1272,7 +853,7 @@ export default function ChatPage() {
         quizBatchRequestingRef.current = false;
       }
     },
-    [language, quizRunState?.runId, sendMessage],
+    [chatWeakTags, goalContext, language, quizRunState?.runId, sendMessage],
   );
 
   const handleQuizSubmit = useCallback(
@@ -1483,19 +1064,6 @@ export default function ChatPage() {
     });
   }, [isLoading, quizRunArtifacts.length, quizRunState?.runId, quizSequence, requestQuizBatch]);
 
-  const syncLabel =
-    syncState.source === 'remote'
-      ? language.startsWith('zh')
-        ? '云端同步'
-        : 'Cloud Sync'
-      : syncState.source === 'merged'
-        ? language.startsWith('zh')
-          ? '云端+本地回补'
-          : 'Cloud + Local Sync'
-        : language.startsWith('zh')
-          ? '本地模式'
-          : 'Local Mode';
-
   const loadingLabel = (() => {
     if (lastRenderState?.stage === 'planning') {
       return language.startsWith('zh') ? '正在理解问题' : 'Understanding request';
@@ -1589,125 +1157,50 @@ export default function ChatPage() {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="flex-shrink-0 border-r border-border bg-card overflow-hidden min-h-0"
           >
-            <div className="flex flex-col h-full min-h-0 w-[280px]">
-              {/* Sidebar Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <History className="h-4 w-4" />
-                  {t('chat.history')}
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    stopGeneration();
-                    syncQuizSequence(null);
-                    setQuizCanvasIndex(0);
-                    quizBatchRequestingRef.current = false;
-                    quizPrefetchAttemptedRef.current = false;
-                    quizBackgroundPrefetchRef.current = false;
-                    clearQuizRun(currentSessionId);
-                    handledSequenceQuizIdsRef.current.clear();
-                    void createSession();
-                  }}
-                  title={t('chat.newConversation')}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Session List */}
-              <ScrollArea className="flex-1 min-h-0">
-                <div className="p-2 space-y-1">
-                  {sessions.length === 0 ? (
-                    <div className="text-center py-8 px-4">
-                      <MessageSquare className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground">{t('chat.emptyHistory')}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{t('chat.emptyHistoryHint')}</p>
-                    </div>
-                  ) : (
-                    sessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className={cn(
-                          'group flex items-center gap-2.5 p-3 pr-2 rounded-lg cursor-pointer transition-all',
-                          currentSessionId === session.id
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800'
-                            : 'hover:bg-muted border border-transparent'
-                        )}
-                        onClick={() => {
-                          const recovered = recoverQuizRunFromSession(session.id);
-                          if (recovered) {
-                            syncQuizSequence({
-                              targetCount: recovered.targetCount,
-                              answeredCount: recovered.answeredCount,
-                              seedPrompt: recovered.seedPrompt,
-                              usedWords: recovered.usedWords,
-                              startedAt: recovered.startedAt,
-                            });
-                            setQuizCanvasIndex(Math.max(0, Math.min(recovered.answeredCount, recovered.targetCount - 1)));
-                          } else {
-                            syncQuizSequence(null);
-                            setQuizCanvasIndex(0);
-                          }
-                          quizBatchRequestingRef.current = false;
-                          quizPrefetchAttemptedRef.current = false;
-                          quizBackgroundPrefetchRef.current = false;
-                          handledSequenceQuizIdsRef.current.clear();
-                          switchSession(session.id);
-                        }}
-                      >
-                        <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <div className="flex-1 min-w-0 overflow-hidden">
-                          {currentSessionId === session.id ? (
-                            <EditableTitle 
-                              title={session.title} 
-                              onSave={(newTitle) => updateSessionTitle(session.id, newTitle)}
-                            />
-                          ) : (
-                            <p className="text-sm font-medium truncate">{session.title}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            {session.messages.length} {t('common.messages')} · {formatDate(session.updatedAt)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteSession(session.id);
-                          }}
-                          className={cn(
-                            'inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border shadow-sm transition-colors opacity-100',
-                            'border-red-300/60 bg-red-50/70 text-red-600 dark:border-red-800/80 dark:bg-red-950/40 dark:text-red-300',
-                            'hover:border-red-400 hover:bg-red-100/80 hover:text-red-700',
-                            'dark:hover:border-red-700 dark:hover:bg-red-950/55',
-                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            currentSessionId === session.id ? 'border-emerald-300/50' : '',
-                          )}
-                          aria-label={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
-                          title={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-
-              {/* Sidebar Footer */}
-              <div className="p-3 border-t border-border">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-sm"
-                  onClick={() => deleteAllSessions()}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {t('chat.deleteAll')}
-                </Button>
-              </div>
-            </div>
+            <ChatHistorySidebar
+              sessions={sessions}
+              currentSessionId={currentSessionId}
+              t={t}
+              language={language}
+              formatDate={formatDate}
+              onCreateSession={() => {
+                stopGeneration();
+                syncQuizSequence(null);
+                setQuizCanvasIndex(0);
+                quizBatchRequestingRef.current = false;
+                quizPrefetchAttemptedRef.current = false;
+                quizBackgroundPrefetchRef.current = false;
+                clearQuizRun(currentSessionId);
+                handledSequenceQuizIdsRef.current.clear();
+                void createSession();
+              }}
+              onSelectSession={(sessionId) => {
+                const recovered = recoverQuizRunFromSession(sessionId);
+                if (recovered) {
+                  syncQuizSequence({
+                    targetCount: recovered.targetCount,
+                    answeredCount: recovered.answeredCount,
+                    seedPrompt: recovered.seedPrompt,
+                    usedWords: recovered.usedWords,
+                    startedAt: recovered.startedAt,
+                  });
+                  setQuizCanvasIndex(
+                    Math.max(0, Math.min(recovered.answeredCount, recovered.targetCount - 1)),
+                  );
+                } else {
+                  syncQuizSequence(null);
+                  setQuizCanvasIndex(0);
+                }
+                quizBatchRequestingRef.current = false;
+                quizPrefetchAttemptedRef.current = false;
+                quizBackgroundPrefetchRef.current = false;
+                handledSequenceQuizIdsRef.current.clear();
+                switchSession(sessionId);
+              }}
+              onUpdateSessionTitle={updateSessionTitle}
+              onDeleteSession={deleteSession}
+              onDeleteAllSessions={() => deleteAllSessions()}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1788,7 +1281,12 @@ export default function ChatPage() {
         <ScrollArea className="flex-1 min-h-0 px-4 md:px-6 lg:px-8" ref={messagesScrollAreaRef}>
           <div className={cn(contentWidthClass, 'mx-auto')}>
             {messages.length === 0 ? (
-              <WelcomeMessage onPromptClick={handleQuickPrompt} t={t} prompts={quickPrompts} />
+              <ChatWelcome
+                title={t('chat.welcomeTitle')}
+                description={t('chat.welcomeDesc')}
+                prompts={quickPrompts}
+                onPromptClick={handleQuickPrompt}
+              />
             ) : (
               <div className="py-4 space-y-2">
                 {hiddenMessageCount > 0 && (
@@ -1826,7 +1324,7 @@ export default function ChatPage() {
 
                     return (
                       <div key={message.id} className="group">
-                        <MessageBubble
+                        <ChatMessageBubble
                           message={message}
                           t={t}
                           language={language}
@@ -1898,7 +1396,6 @@ export default function ChatPage() {
                           onSubmit={handleQuizSubmit}
                           onAddReviewCard={addReviewCardFromQuiz}
                           onGenerateLesson={generateLessonFromQuiz}
-                          t={t}
                           language={language}
                         />
                       ) : (
@@ -1914,7 +1411,7 @@ export default function ChatPage() {
 
                 {/* Streaming message */}
                 {isLoading && streamingContent && !quizSequence && (
-                  <MessageBubble
+                  <ChatMessageBubble
                     message={{
                       id: 'streaming',
                       role: 'assistant',
@@ -1969,32 +1466,13 @@ export default function ChatPage() {
           </div>
         )}
 
-        {(lastMemoryUsed.length > 0 || lastMemoryWrites.length > 0) && (
-          <div className="px-4 pb-2">
-            <div className={cn(contentWidthClass, 'mx-auto rounded-xl border border-cyan-300/45 bg-cyan-50/55 dark:bg-cyan-900/20 p-3')}>
-              <p className="text-xs font-medium text-cyan-700 dark:text-cyan-300">
-                {language.startsWith('zh') ? '记忆透明卡' : 'Memory transparency'}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {lastMemoryUsed.length > 0
-                  ? language.startsWith('zh')
-                    ? `本轮命中 ${lastMemoryUsed.length} 条记忆`
-                    : `${lastMemoryUsed.length} memory items used this turn`
-                  : language.startsWith('zh')
-                    ? '本轮未命中历史记忆'
-                    : 'No historical memory used this turn'}
-                {lastMemoryWrites.length > 0
-                  ? language.startsWith('zh')
-                    ? `，新增 ${lastMemoryWrites.length} 条记忆`
-                    : `, ${lastMemoryWrites.length} memory writes saved`
-                  : ''}
-              </p>
-              {lastMemoryTraceId && (
-                <p className="text-[10px] text-muted-foreground mt-1">trace: {lastMemoryTraceId}</p>
-              )}
-            </div>
-          </div>
-        )}
+        <ChatMemoryBanner
+          language={language}
+          contentWidthClass={contentWidthClass}
+          memoryUsed={lastMemoryUsed}
+          memoryWrites={lastMemoryWrites}
+          memoryTraceId={lastMemoryTraceId}
+        />
 
         {quizSequence && (
           <div className="px-4 pb-2">
@@ -2036,300 +1514,47 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* Input Area - Enhanced */}
-        <div className="border-t border-border bg-background p-4">
-          <div className={cn(contentWidthClass, 'mx-auto relative')}>
-            <AnimatePresence initial={false}>
-              {toolsExpanded && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                  transition={{ duration: 0.18 }}
-                  className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border/90 bg-popover/95 text-popover-foreground shadow-xl backdrop-blur-md p-3"
-                >
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {language.startsWith('zh') ? 'Agent 工具与模式' : 'Agent tools & mode'}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => setToolsExpanded(false)}
-                    >
-                      <ChevronUp className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {CHAT_MODE_OPTIONS.map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => setChatMode(option.id)}
-                          className={cn(
-                            'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
-                            chatMode === option.id
-                              ? 'border-emerald-500 bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                              : 'border-border hover:border-emerald-400/60',
-                          )}
-                        >
-                          <option.icon className="h-3.5 w-3.5" />
-                          <span>{language.startsWith('zh') ? option.labelZh : option.label}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-full text-xs"
-                        onClick={handleManualQuiz}
-                        disabled={isLoading}
-                      >
-                        <FlaskConical className="h-3.5 w-3.5 mr-1.5" />
-                        {language.startsWith('zh') ? '马上测我' : 'Quiz me now'}
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant={searchMode === 'auto' ? 'default' : 'outline'}
-                        className={cn(
-                          'h-8 rounded-full text-xs',
-                          searchMode === 'auto' ? 'bg-blue-600 hover:bg-blue-700 text-white' : '',
-                        )}
-                        onClick={() => setSearchMode((prev) => (prev === 'auto' ? 'off' : 'auto'))}
-                        disabled={isLoading}
-                      >
-                        <Globe className="h-3.5 w-3.5 mr-1.5" />
-                        {searchMode === 'auto'
-                          ? language.startsWith('zh')
-                            ? '联网检索：自动'
-                            : 'WebSearch: Auto'
-                          : language.startsWith('zh')
-                            ? '联网检索：关闭'
-                            : 'WebSearch: Off'}
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-full text-xs"
-                        onClick={handleForceWebSearch}
-                        disabled={isLoading || !input.trim()}
-                      >
-                        <Globe className="h-3.5 w-3.5 mr-1.5" />
-                        {language.startsWith('zh') ? '强制搜索本条' : 'Search this input'}
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-full text-xs"
-                        onClick={handleRememberInput}
-                        disabled={isLoading || !input.trim()}
-                      >
-                        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                        {language.startsWith('zh') ? '记住这条输入' : 'Remember this input'}
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-full text-xs"
-                        onClick={handleForgetInput}
-                        disabled={isLoading || !input.trim()}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                        {language.startsWith('zh') ? '别记这条输入' : 'Forget matching memory'}
-                      </Button>
-                    </div>
-
-                    {(lastAgentMeta?.triggerReason || lastContextMeta || lastMemoryUsed.length > 0 || lastMemoryWrites.length > 0) && (
-                      <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-[11px] text-muted-foreground space-y-1">
-                        {lastAgentMeta?.triggerReason && (
-                          <p>{language.startsWith('zh') ? '触发原因' : 'Trigger'}: {lastAgentMeta.triggerReason}</p>
-                        )}
-                        {lastContextMeta && (
-                          <p>
-                            {language.startsWith('zh') ? '上下文' : 'Context'}: {lastContextMeta.inputTokensEst}t ·
-                            {lastContextMeta.compacted
-                              ? language.startsWith('zh')
-                                ? ' 已压缩'
-                                : ' compacted'
-                              : language.startsWith('zh')
-                                ? ' 未压缩'
-                                : ' raw'}
-                            {lastContextMeta.searchTriggered
-                              ? language.startsWith('zh')
-                                ? ' · 已搜索'
-                                : ' · searched'
-                              : ''}
-                          </p>
-                        )}
-                        {(lastMemoryUsed.length > 0 || lastMemoryWrites.length > 0) && (
-                          <div className="pt-1 border-t border-border/60 space-y-1">
-                            {lastMemoryUsed.length > 0 && (
-                              <p>
-                                {language.startsWith('zh') ? '命中记忆' : 'Memory used'}: {lastMemoryUsed.length}
-                                {' · '}
-                                {lastMemoryUsed
-                                  .slice(0, 2)
-                                  .map((item) => `${item.kind}(${Math.round(item.score * 100)}%)`)
-                                  .join(', ')}
-                              </p>
-                            )}
-                            {lastMemoryWrites.length > 0 && (
-                              <p>
-                                {language.startsWith('zh') ? '新增记忆' : 'Memory writes'}: {lastMemoryWrites.length}
-                                {' · '}
-                                {lastMemoryWrites
-                                  .slice(0, 2)
-                                  .map((item) => `${item.kind}/${item.reason}`)
-                                  .join(', ')}
-                              </p>
-                            )}
-                            {lastMemoryTraceId && (
-                              <p className="text-[10px] opacity-75">trace: {lastMemoryTraceId}</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Quick Prompts (only when no messages) */}
-            {messages.length === 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
-                {quickPrompts.slice(0, 3).map((prompt, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickPrompt(prompt.text)}
-                    className="flex-shrink-0 px-4 py-2 text-sm rounded-full border border-border hover:border-emerald-500/50 hover:bg-emerald-50/50 transition-all whitespace-nowrap"
-                  >
-                    {prompt.textZh}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Input */}
-            <div className="relative flex gap-2 items-end bg-card rounded-2xl border border-border/80 p-3 focus-within:border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/15 transition-all">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'mb-1 h-10 w-10 rounded-xl border transition-colors',
-                  toolsExpanded
-                    ? 'border-emerald-400 bg-emerald-100/70 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'border-border hover:border-emerald-400/50',
-                )}
-                onClick={() => setToolsExpanded((current) => !current)}
-                title={language.startsWith('zh') ? '工具与模式' : 'Tools & mode'}
-              >
-                <Wand2 className="h-4 w-4" />
-              </Button>
-
-              <textarea
-                ref={inputRef}
-                id="chat-input"
-                name="chat-input"
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder={t('chat.placeholder')}
-                disabled={isLoading}
-                rows={1}
-                className="flex-1 bg-transparent resize-none outline-none min-h-[44px] max-h-[200px] py-2.5 px-1 text-base"
-              />
-              
-              <div className="flex items-center gap-2 pb-1">
-                {isLoading ? (
-                  <Button
-                    onClick={stopGeneration}
-                    variant="outline"
-                    size="icon"
-                    className="rounded-xl h-10 w-10 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
-                  >
-                    <StopCircle className="h-5 w-5" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleSend}
-                    disabled={!input.trim()}
-                    className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 w-10 p-0 disabled:opacity-50"
-                  >
-                    <Send className="h-5 w-5" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground mt-2 text-center flex items-center justify-center gap-2">
-              <span className="flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                {t('common.poweredBy')}
-              </span>
-              <span>·</span>
-              <span>
-                {language.startsWith('zh') ? '模式' : 'Mode'}: {language.startsWith('zh')
-                  ? CHAT_MODE_OPTIONS.find((option) => option.id === chatMode)?.labelZh
-                  : CHAT_MODE_OPTIONS.find((option) => option.id === chatMode)?.label}
-              </span>
-              <span>·</span>
-              <span>
-                {language.startsWith('zh') ? '检索' : 'Search'}: {searchMode === 'auto'
-                  ? (language.startsWith('zh') ? '自动' : 'Auto')
-                  : (language.startsWith('zh') ? '关闭' : 'Off')}
-              </span>
-              <span>·</span>
-              <span>{t('common.markdownSupport')}</span>
-              <span>·</span>
-              <span>{t('common.streaming')}</span>
-              {(lastSources.length > 0 || lastToolRuns.length > 0) && (
-                <>
-                  <span>·</span>
-                  <span>
-                    {language.startsWith('zh')
-                      ? `来源 ${lastSources.length} / 工具 ${lastToolRuns.length}`
-                      : `Sources ${lastSources.length} / Tools ${lastToolRuns.length}`}
-                  </span>
-                </>
-              )}
-              {(chatPerf.ttftMs !== null || chatPerf.nextQuestionMs !== null) && (
-                <>
-                  <span>·</span>
-                  <span>
-                    {language.startsWith('zh') ? '性能' : 'Perf'}:
-                    {chatPerf.ttftMs !== null
-                      ? ` TTFT ${chatPerf.ttftMs}ms`
-                      : ''}
-                    {chatPerf.nextQuestionMs !== null
-                      ? ` · Next ${chatPerf.nextQuestionMs}ms`
-                      : ''}
-                  </span>
-                </>
-              )}
-              <span>·</span>
-              <span className={cn(
-                "flex items-center gap-1",
-                syncState.source === 'remote'
-                  ? 'text-emerald-600'
-                  : syncState.source === 'merged'
-                    ? 'text-blue-600'
-                    : 'text-amber-600'
-              )}>
-                {syncState.source === 'remote' ? '✓' : syncState.source === 'merged' ? '↻' : '⚠'} {syncLabel}
-                {syncState.pendingSyncCount > 0 ? ` (${syncState.pendingSyncCount})` : ''}
-              </span>
-            </p>
-          </div>
-        </div>
+        <ChatComposer
+          language={language}
+          contentWidthClass={contentWidthClass}
+          toolsExpanded={toolsExpanded}
+          onToggleTools={() => setToolsExpanded((current) => !current)}
+          onCloseTools={() => setToolsExpanded(false)}
+          chatModeOptions={CHAT_MODE_OPTIONS}
+          currentMode={chatMode}
+          onSelectMode={setChatMode}
+          searchMode={searchMode}
+          onToggleSearchMode={() => setSearchMode((prev) => (prev === 'auto' ? 'off' : 'auto'))}
+          onManualQuiz={handleManualQuiz}
+          onForceWebSearch={handleForceWebSearch}
+          onRememberInput={handleRememberInput}
+          onForgetInput={handleForgetInput}
+          canSearchInput={Boolean(input.trim())}
+          canRememberInput={Boolean(input.trim())}
+          canForgetInput={Boolean(input.trim())}
+          isLoading={isLoading}
+          quickPrompts={quickPrompts}
+          showQuickPrompts={messages.length === 0}
+          onQuickPrompt={handleQuickPrompt}
+          inputRef={inputRef}
+          input={input}
+          onInputChange={handleInputChange}
+          onInputKeyDown={handleKeyDown}
+          placeholder={t('chat.placeholder')}
+          onSend={handleSend}
+          onStop={stopGeneration}
+          poweredByLabel={t('common.poweredBy')}
+          markdownSupportLabel={t('common.markdownSupport')}
+          streamingLabel={t('common.streaming')}
+          lastAgentMeta={lastAgentMeta}
+          lastContextMeta={lastContextMeta}
+          lastMemoryUsed={lastMemoryUsed}
+          lastMemoryWrites={lastMemoryWrites}
+          lastMemoryTraceId={lastMemoryTraceId}
+          lastSources={lastSources}
+          lastToolRuns={lastToolRuns}
+          chatPerf={chatPerf}
+        />
       </div>
     </div>
   );

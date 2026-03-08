@@ -14,6 +14,7 @@ import {
   Check,
   RotateCcw,
   Brain,
+  Clock3,
   ChevronLeft,
   ChevronRight,
   Bookmark,
@@ -21,6 +22,9 @@ import {
   Star,
   TrendingUp,
   BookOpen,
+  MessageCircleMore,
+  ShieldCheck,
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +33,7 @@ import { toast } from 'sonner';
 import { getRecommendedUnit } from '@/data/examContent';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { speakEnglishText } from '@/services/tts';
+import { useLearningOverviewQuery } from '@/features/learning/hooks/useLearningOverviewQuery';
 
 interface WordCardProps {
   word: WordData;
@@ -308,6 +313,8 @@ export default function TodayPage() {
     dailyWords,
     activeBook,
     activeBookSummary,
+    dueWords,
+    learningProfile,
     markWordAsLearned,
     refreshDailyWords,
     dailyMission,
@@ -320,40 +327,53 @@ export default function TodayPage() {
   const [hardWords, setHardWords] = useState<Set<string>>(new Set());
   const [bookmarkedWords, setBookmarkedWords] = useState<Set<string>>(new Set());
 
-  // Use dailyWords from context
   const words = dailyWords.length > 0 ? dailyWords : [];
   const currentWord = words[currentWordIndex];
   const progress = words.length > 0 ? (learnedWords.size / words.length) * 100 : 0;
   const recommendedUnit = getRecommendedUnit(userId);
 
   useEffect(() => {
-    // Refresh daily words when component mounts
     refreshDailyWords();
     refreshDailyMission();
   }, [refreshDailyWords, refreshDailyMission]);
 
+  const learningOverviewQuery = useLearningOverviewQuery({
+    userId,
+    mission: dailyMission,
+    profile: learningProfile,
+    dueWordsCount: dueWords.length,
+    dailyWordsCount: words.length,
+    learnedTodayCount: learnedWords.size,
+    recommendedUnitTitle: recommendedUnit?.title || null,
+    activeBookName: activeBook?.name || null,
+  });
+
+  const missionCard = learningOverviewQuery.data?.missionCard;
+  const weaknesses = learningOverviewQuery.data?.weaknesses || [];
+  const adaptiveDifficulty = learningOverviewQuery.data?.adaptiveDifficulty;
+  const activityPoints = learningOverviewQuery.data?.activity || [];
+
   const handleFlip = (wordId: string) => {
     setFlippedCards((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(wordId)) {
-        newSet.delete(wordId);
+      const next = new Set(prev);
+      if (next.has(wordId)) {
+        next.delete(wordId);
       } else {
-        newSet.add(wordId);
+        next.add(wordId);
       }
-      return newSet;
+      return next;
     });
   };
 
   const handleMarkStatus = (status: 'learned' | 'hard') => {
     if (!currentWord) return;
-    
+
     if (status === 'learned') {
-      // Check if already learned
       if (learnedWords.has(currentWord.id)) {
         toast.info('这个单词已经标记为已学会');
         return;
       }
-      
+
       setLearnedWords((prev) => new Set(prev).add(currentWord.id));
       markWordAsLearned(currentWord.id);
       void recordLearningEvent({
@@ -369,16 +389,16 @@ export default function TodayPage() {
       if (learnedWords.size + 1 >= words.length) {
         completeMissionTask('task_vocab_today');
       }
+
       toast.success(`已学会 "${currentWord.word}"! +5 XP`, {
         icon: <Star className="h-4 w-4 text-yellow-500" />,
       });
-    } else if (status === 'hard') {
-      // Check if already marked as hard
+    } else {
       if (hardWords.has(currentWord.id)) {
         toast.info('这个单词已经标记为较难');
         return;
       }
-      
+
       setHardWords((prev) => new Set(prev).add(currentWord.id));
       void recordLearningEvent({
         userId,
@@ -393,37 +413,36 @@ export default function TodayPage() {
         icon: <Brain className="h-4 w-4 text-amber-500" />,
       });
     }
-    
-    // Auto advance to next word after a short delay
-    setTimeout(() => {
+
+    window.setTimeout(() => {
       if (currentWordIndex < words.length - 1) {
         setCurrentWordIndex((prev) => prev + 1);
         setFlippedCards(new Set());
       }
-    }, 800);
+    }, 700);
   };
 
   const handleBookmark = () => {
     if (!currentWord) return;
-    
+
     setBookmarkedWords((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(currentWord.id)) {
-        newSet.delete(currentWord.id);
+      const next = new Set(prev);
+      if (next.has(currentWord.id)) {
+        next.delete(currentWord.id);
         toast.info(`已取消收藏 "${currentWord.word}"`);
       } else {
-        newSet.add(currentWord.id);
+        next.add(currentWord.id);
         toast.success(`已收藏 "${currentWord.word}"`);
       }
-      return newSet;
+      return next;
     });
   };
 
   const handleShare = async () => {
     if (!currentWord) return;
-    
+
     const shareText = `我正在学习单词 "${currentWord.word}" - ${currentWord.definitionZh}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -431,12 +450,13 @@ export default function TodayPage() {
           text: shareText,
         });
       } catch {
-        // User cancelled
+        // user cancelled
       }
-    } else {
-      navigator.clipboard.writeText(shareText);
-      toast.success('已复制到剪贴板');
+      return;
     }
+
+    await navigator.clipboard.writeText(shareText);
+    toast.success('已复制到剪贴板');
   };
 
   const handlePrevious = () => {
@@ -453,397 +473,410 @@ export default function TodayPage() {
     }
   };
 
-  // Show generate button if no words
+  const missionDone = dailyMission?.tasks.filter((task) => task.done).length || 0;
+  const missionTotal = dailyMission?.tasks.length || 0;
+  const missionProgress = missionTotal > 0 ? Math.round((missionDone / missionTotal) * 100) : 0;
+
   if (words.length === 0) {
     return (
-      <motion.div 
-        className="flex flex-col items-center justify-center min-h-[60vh]"
-        initial={{ opacity: 0, scale: 0.9 }}
+      <motion.div
+        className="mx-auto flex min-h-[68vh] max-w-4xl flex-col items-center justify-center px-4 text-center"
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
       >
-        <motion.div 
-          className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20"
-          animate={{ 
-            scale: [1, 1.05, 1],
-            rotate: [0, 5, -5, 0]
-          }}
-          transition={{ 
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <Sparkles className="h-12 w-12 text-emerald-600" />
-        </motion.div>
-        <h2 className="text-3xl font-bold mb-2 text-emerald-600">准备好开始学习了吗？</h2>
-        <p className="text-muted-foreground mb-2 text-lg">
+        <div className="flex h-24 w-24 items-center justify-center rounded-[30px] bg-emerald-500/12 text-emerald-600 shadow-sm">
+          <Sparkles className="h-11 w-11" />
+        </div>
+        <h1 className="mt-6 text-3xl font-semibold tracking-tight">先确定今天的学习入口</h1>
+        <p className="mt-3 max-w-2xl text-base text-muted-foreground">
           {activeBook
-            ? `当前词书：${activeBook.name}`
-            : '请先选择词书，再开始每日学习'}
+            ? `当前词书是《${activeBook.name}》。先生成今天的新词，再根据到期复习和弱项安排下一步。`
+            : '你还没有激活词书。先选词书或导入 deck，再开始今天的任务链路。'}
         </p>
-        <p className="text-sm text-muted-foreground mb-8 text-center max-w-md">
-          每天只需 10-15 分钟，轻松积累词汇量
-        </p>
-        {activeBook ? (
-          <Button
-            size="lg"
-            className="bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-card px-8 py-6 text-lg transition-all hover:scale-105"
-            onClick={refreshDailyWords}
-          >
-            <Sparkles className="h-5 w-5 mr-2" />
-            生成今日单词
-          </Button>
-        ) : (
-          <Link to="/dashboard/vocabulary">
-            <Button
-              size="lg"
-              className="bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-card px-8 py-6 text-lg transition-all hover:scale-105"
-            >
-              <BookOpen className="h-5 w-5 mr-2" />
-              去选择词书
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          {activeBook ? (
+            <Button size="lg" className="rounded-2xl bg-emerald-600 px-6 hover:bg-emerald-700" onClick={refreshDailyWords}>
+              <Sparkles className="mr-2 h-5 w-5" />
+              生成今日任务
             </Button>
-          </Link>
-        )}
+          ) : (
+            <Button size="lg" className="rounded-2xl bg-emerald-600 px-6 hover:bg-emerald-700" asChild>
+              <Link to="/dashboard/vocabulary">
+                <BookOpen className="mr-2 h-5 w-5" />
+                去选择词书
+              </Link>
+            </Button>
+          )}
+          <Button size="lg" variant="outline" className="rounded-2xl px-6" asChild>
+            <Link to="/dashboard/chat">
+              <MessageCircleMore className="mr-2 h-5 w-5" />
+              让 AI 帮我规划
+            </Link>
+          </Button>
+        </div>
       </motion.div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <motion.div 
-        className="mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-emerald-600">
-              今日单词
-            </h1>
-            <p className="text-muted-foreground text-sm">{new Date().toLocaleDateString('zh-CN', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric',
-              weekday: 'long'
-            })}</p>
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary">
-                当前词书：{activeBook?.name || '未选择'}
-              </Badge>
-              <Badge variant="outline">
-                今日词量：{words.length} / {activeBookSummary.dailyGoal}
-              </Badge>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-medium">{learnedWords.size} / {words.length}</p>
-              <p className="text-xs text-muted-foreground">已学习</p>
-            </div>
-            <div className="relative w-14 h-14">
-              <svg className="w-14 h-14 transform -rotate-90">
-                <circle
-                  cx="28"
-                  cy="28"
-                  r="24"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  className="text-muted"
-                />
-                <circle
-                  cx="28"
-                  cy="28"
-                  r="24"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  strokeDasharray={`${2 * Math.PI * 24}`}
-                  strokeDashoffset={`${2 * Math.PI * 24 * (1 - progress / 100)}`}
-                  className="text-emerald-500 transition-all duration-500"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">
-                {Math.round(progress)}%
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
-          <motion.div 
-            className="h-full bg-gradient-to-r from-emerald-500 to-teal-500"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          />
-        </div>
-        {activeBookSummary.isNearlyCompleted && (
-          <p className="text-sm text-amber-600 mt-3">
-            当前词书已接近学完，建议切换词书或导入新词书。
-          </p>
-        )}
-        {recommendedUnit && (
-          <Card className="mt-4 border-emerald-200 dark:border-emerald-800">
-            <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium">AI 推荐补强微课：{recommendedUnit.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  预计 {recommendedUnit.estimatedMinutes} 分钟，针对近期高频错因
-                </p>
+    <div className="space-y-6">
+      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <Card className="overflow-hidden rounded-[30px] border-emerald-500/20 bg-gradient-to-br from-card via-card to-emerald-500/8">
+          <CardContent className="p-6 lg:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-3">
+                <Badge className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300">
+                  今日主任务 · {new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}
+                </Badge>
+                <div>
+                  <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
+                    {missionCard?.headlineZh || '先做最该做的一步'}
+                  </h1>
+                  <p className="mt-3 max-w-3xl text-base text-muted-foreground lg:text-lg">
+                    {missionCard?.supportZh || '今天先清掉复习压力，再用一轮针对性练习把薄弱点补上。'}
+                  </p>
+                </div>
               </div>
-              <Link to="/dashboard/exam">
-                <Button size="sm" variant="outline">
-                  去练习
+              <div className="flex items-center gap-3 rounded-2xl border bg-background/70 px-4 py-3">
+                <div className="text-right">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Mission</p>
+                  <p className="mt-1 text-2xl font-semibold text-emerald-600">{missionProgress}%</p>
+                </div>
+                <div className="h-14 w-px bg-border" />
+                <div className="text-right">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Time</p>
+                  <p className="mt-1 text-lg font-semibold">{missionCard?.estimatedMinutes || learningProfile.dailyMinutes} min</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-3xl border bg-background/75 p-5">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>今日任务完成度</span>
+                <span>{missionDone}/{missionTotal || 3}</span>
+              </div>
+              <div className="mt-3 h-2 rounded-full bg-muted">
+                <div className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all" style={{ width: `${missionProgress}%` }} />
+              </div>
+              {dailyMission ? (
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  {dailyMission.tasks.map((task) => (
+                    <button
+                      key={task.id}
+                      type="button"
+                      onClick={() => !task.done && completeMissionTask(task.id)}
+                      className={cn(
+                        'rounded-2xl border px-4 py-3 text-left transition-colors',
+                        task.done
+                          ? 'border-emerald-500/30 bg-emerald-500/8'
+                          : 'border-border bg-card hover:border-emerald-300/50 hover:bg-muted/60',
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className={cn('text-sm font-medium', task.done && 'text-emerald-700 dark:text-emerald-300')}>
+                            {task.titleZh}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">{task.title}</p>
+                        </div>
+                        {task.done ? <Check className="h-4 w-4 text-emerald-600" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button className="rounded-2xl bg-emerald-600 px-5 hover:bg-emerald-700" asChild>
+                <Link to={missionCard?.primaryAction.href || '/dashboard/today'}>
+                  {missionCard?.primaryAction.ctaZh || '继续今日任务'}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              {(missionCard?.secondaryActions || []).slice(0, 2).map((action) => (
+                <Button key={action.id} variant="outline" className="rounded-2xl px-5" asChild>
+                  <Link to={action.href}>{action.ctaZh}</Link>
                 </Button>
-              </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6">
+          <Card className="rounded-[28px] border-border/70">
+            <CardContent className="space-y-4 p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
+                  <BookOpen className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">当前学习底盘</p>
+                  <p className="text-sm text-muted-foreground">词书、复习压力和推荐补强会在这里收口。</p>
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="rounded-2xl border bg-muted/35 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Active book</p>
+                  <p className="mt-2 text-lg font-semibold">{activeBook?.name || '未选择词书'}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
+                </div>
+                <div className="rounded-2xl border bg-muted/35 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Review pressure</p>
+                  <p className="mt-2 text-lg font-semibold">{dueWords.length} 个到期复习</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {activeBookSummary.isNearlyCompleted ? '当前词书接近完成，建议准备下一本。' : '先处理到期复习，再推进新词，记忆效率更高。'}
+                  </p>
+                </div>
+              </div>
+              {adaptiveDifficulty ? (
+                <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/6 p-4">
+                  <div className="flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+                    <ShieldCheck className="h-4 w-4" />
+                    <p className="text-sm font-semibold">当前节奏：{adaptiveDifficulty.labelZh}</p>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">{adaptiveDifficulty.reason}</p>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
-        )}
-        {dailyMission && (
-          <Card className="mt-4 border-blue-200 dark:border-blue-800">
-            <CardContent className="py-3 px-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">今日任务 · {dailyMission.estimatedMinutes} 分钟</p>
-                <Badge variant="outline">{dailyMission.status}</Badge>
+
+          <Card className="rounded-[28px] border-border/70">
+            <CardContent className="space-y-4 p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">近期弱项</p>
+                  <p className="text-sm text-muted-foreground">从 review、practice 和写作反馈里聚合出来。</p>
+                </div>
+                {learningOverviewQuery.isLoading ? <Badge variant="outline">同步中</Badge> : null}
               </div>
-              <div className="space-y-1">
-                {dailyMission.tasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between text-xs">
-                    <span className={cn(task.done && 'line-through text-muted-foreground')}>
-                      {task.titleZh}
-                    </span>
-                    {!task.done && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-xs"
-                        onClick={() => completeMissionTask(task.id)}
-                      >
-                        完成
-                      </Button>
-                    )}
+              <div className="space-y-2">
+                {weaknesses.length > 0 ? weaknesses.map((weakness) => (
+                  <div key={weakness.tag} className="rounded-2xl border px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium">{weakness.titleZh}</p>
+                        <p className="text-xs text-muted-foreground">{weakness.title}</p>
+                      </div>
+                      <Badge variant={weakness.emphasis === 'urgent' ? 'destructive' : 'secondary'}>
+                        {weakness.count} 次
+                      </Badge>
+                    </div>
                   </div>
+                )) : (
+                  <div className="rounded-2xl border border-dashed px-4 py-5 text-sm text-muted-foreground">
+                    先完成一次练习或写作反馈，系统才会生成更可信的弱项图谱。
+                  </div>
+                )}
+              </div>
+              {recommendedUnit ? (
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/6 p-4">
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+                    <Target className="h-4 w-4" />
+                    <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">预计 {recommendedUnit.estimatedMinutes} 分钟，适合接在今天主任务之后。</p>
+                  <Button variant="outline" size="sm" className="mt-3 rounded-xl" asChild>
+                    <Link to="/dashboard/exam">去补强</Link>
+                  </Button>
+                </div>
+              ) : null}
+              {activityPoints.length > 0 ? (
+                <div>
+                  <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    最近 7 天活跃度
+                  </div>
+                  <div className="flex items-end gap-2">
+                    {activityPoints.map((point) => {
+                      const barHeight = Math.max(16, Math.min(72, point.words * 6 + point.xp * 0.35));
+                      return (
+                        <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
+                          <div
+                            className={cn(
+                              'w-full rounded-full transition-colors',
+                              point.active ? 'bg-gradient-to-t from-emerald-500 to-cyan-500' : 'bg-muted',
+                            )}
+                            style={{ height: `${barHeight}px` }}
+                          />
+                          <span className="text-[11px] text-muted-foreground">{point.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="rounded-[30px] border bg-card px-4 py-5 shadow-sm lg:px-6 lg:py-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">Vocabulary workspace</p>
+            <h2 className="mt-2 text-2xl font-semibold">先完成今天这组单词，再切到补强动作</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              新词学习仍然保留在同一页，但它现在从属于主任务，不再是整个产品唯一的入口。
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Badge variant="secondary" className="rounded-full px-3 py-1">已学会 {learnedWords.size}</Badge>
+            <Badge variant="outline" className="rounded-full px-3 py-1">较难 {hardWords.size}</Badge>
+            <Badge variant="outline" className="rounded-full px-3 py-1">收藏 {bookmarkedWords.size}</Badge>
+            <Badge variant="outline" className="rounded-full px-3 py-1">{Math.round(progress)}% 完成</Badge>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-6 xl:grid-cols-[280px_1fr]">
+          <Card className="rounded-[26px] border-border/70 bg-muted/35">
+            <CardContent className="space-y-4 p-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Current word</p>
+                <h3 className="mt-2 text-2xl font-semibold text-emerald-600">{currentWord?.word}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{currentWord?.definitionZh}</p>
+              </div>
+              <div className="rounded-2xl border bg-background/80 p-4">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>今天进度</span>
+                  <span>{currentWordIndex + 1} / {words.length}</span>
+                </div>
+                <div className="mt-3 h-2 rounded-full bg-muted">
+                  <div className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500" style={{ width: `${((currentWordIndex + 1) / words.length) * 100}%` }} />
+                </div>
+              </div>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-emerald-600" />预计还需 {Math.max(3, (words.length - learnedWords.size) * 2)} 分钟</div>
+                <div className="flex items-center gap-2"><Brain className="h-4 w-4 text-amber-500" />较难词会自动成为后续补强依据</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div>
+            <AnimatePresence mode="wait">
+              {currentWord ? (
+                <motion.div
+                  key={currentWord.id}
+                  initial={{ opacity: 0, x: 18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -18 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <WordCard
+                    word={currentWord}
+                    isFlipped={flippedCards.has(currentWord.id)}
+                    onFlip={() => handleFlip(currentWord.id)}
+                    onMarkStatus={handleMarkStatus}
+                    isLearned={learnedWords.has(currentWord.id)}
+                    isHard={hardWords.has(currentWord.id)}
+                  />
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+
+            <div className="mx-auto mt-6 flex max-w-md items-center justify-between">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePrevious}
+                disabled={currentWordIndex === 0}
+                className="h-12 w-12 rounded-full border-2"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+
+              <div className="flex gap-1.5 px-4">
+                {words.map((word, index) => (
+                  <button
+                    key={word.id}
+                    type="button"
+                    onClick={() => {
+                      setCurrentWordIndex(index);
+                      setFlippedCards(new Set());
+                    }}
+                    className={cn(
+                      'h-2.5 rounded-full transition-all duration-300',
+                      index === currentWordIndex
+                        ? 'w-8 bg-gradient-to-r from-emerald-500 to-cyan-500'
+                        : learnedWords.has(word.id)
+                          ? 'w-2.5 bg-emerald-400'
+                          : hardWords.has(word.id)
+                            ? 'w-2.5 bg-amber-400'
+                            : 'w-2.5 bg-muted hover:bg-muted-foreground/30',
+                    )}
+                    title={word.word}
+                  />
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
-      </motion.div>
 
-      {/* Word Card */}
-      <AnimatePresence mode="wait">
-        {currentWord && (
-          <motion.div 
-            className="mb-6"
-            key={currentWord.id}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <WordCard
-              word={currentWord}
-              isFlipped={flippedCards.has(currentWord.id)}
-              onFlip={() => handleFlip(currentWord.id)}
-              onMarkStatus={handleMarkStatus}
-              isLearned={learnedWords.has(currentWord.id)}
-              isHard={hardWords.has(currentWord.id)}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNext}
+                disabled={currentWordIndex === words.length - 1}
+                className="h-12 w-12 rounded-full border-2"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
 
-      {/* Navigation */}
-      <motion.div 
-        className="flex items-center justify-between max-w-md mx-auto mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handlePrevious}
-          disabled={currentWordIndex === 0}
-          className="h-12 w-12 rounded-full border-2 hover:bg-emerald-50 hover:border-emerald-500 transition-all disabled:opacity-30"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        
-        <div className="flex gap-1.5 px-4">
-          {words.map((word, index) => (
-            <motion.button
-              key={word.id}
-              onClick={() => {
-                setCurrentWordIndex(index);
-                setFlippedCards(new Set());
-              }}
-              className={cn(
-                'h-2.5 rounded-full transition-all duration-300',
-                index === currentWordIndex
-                  ? 'w-8 bg-gradient-to-r from-emerald-500 to-teal-500'
-                  : learnedWords.has(word.id)
-                  ? 'w-2.5 bg-emerald-400'
-                  : hardWords.has(word.id)
-                  ? 'w-2.5 bg-amber-400'
-                  : 'w-2.5 bg-muted hover:bg-muted-foreground/30'
-              )}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-              title={word.word}
-            />
-          ))}
+            <div className="mx-auto mt-6 flex max-w-md justify-center gap-3">
+              <Button
+                variant="outline"
+                className={cn(
+                  'flex-1 rounded-2xl border-2',
+                  hardWords.has(currentWord?.id || '')
+                    ? 'border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950/20'
+                    : 'hover:border-amber-400 hover:bg-amber-50 hover:text-amber-600',
+                )}
+                onClick={() => handleMarkStatus('hard')}
+                disabled={!currentWord || hardWords.has(currentWord.id)}
+              >
+                <Brain className="mr-2 h-4 w-4" />
+                {hardWords.has(currentWord?.id || '') ? '已标记' : '较难'}
+              </Button>
+              <Button
+                className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700"
+                onClick={() => handleMarkStatus('learned')}
+                disabled={!currentWord || learnedWords.has(currentWord.id)}
+              >
+                <Check className="mr-2 h-4 w-4" />
+                {learnedWords.has(currentWord?.id || '') ? '已学会' : '学会'}
+              </Button>
+              <Button variant="outline" size="icon" className="h-11 w-11 rounded-2xl" onClick={handleBookmark} disabled={!currentWord}>
+                <Bookmark className={cn('h-4 w-4', bookmarkedWords.has(currentWord?.id || '') && 'fill-current')} />
+              </Button>
+              <Button variant="outline" size="icon" className="h-11 w-11 rounded-2xl" onClick={handleShare} disabled={!currentWord}>
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
-        
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleNext}
-          disabled={currentWordIndex === words.length - 1}
-          className="h-12 w-12 rounded-full border-2 hover:bg-emerald-50 hover:border-emerald-500 transition-all disabled:opacity-30"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
-      </motion.div>
+      </section>
 
-      {/* Quick Actions */}
-      <motion.div 
-        className="flex justify-center gap-3 max-w-md mx-auto"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Button
-          variant="outline"
-          className={cn(
-            "flex-1 h-12 rounded-xl border-2 transition-all",
-            hardWords.has(currentWord?.id || '')
-              ? "bg-amber-50 border-amber-400 text-amber-600"
-              : "hover:bg-amber-50 hover:border-amber-400 hover:text-amber-600"
-          )}
-          onClick={() => handleMarkStatus('hard')}
-          disabled={!currentWord || hardWords.has(currentWord.id)}
-        >
-          <Brain className="h-5 w-5 mr-2" />
-          {hardWords.has(currentWord?.id || '') ? '已标记' : '较难'}
-        </Button>
-        <Button
-          variant="default"
-          className={cn(
-            "flex-1 h-12 rounded-xl shadow-lg transition-all",
-            learnedWords.has(currentWord?.id || '')
-              ? "bg-emerald-600"
-              : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25"
-          )}
-          onClick={() => handleMarkStatus('learned')}
-          disabled={!currentWord || learnedWords.has(currentWord.id)}
-        >
-          <Check className="h-5 w-5 mr-2" />
-          {learnedWords.has(currentWord?.id || '') ? '已学会' : '学会'}
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className={cn(
-            "h-12 w-12 rounded-xl border-2 transition-all",
-            bookmarkedWords.has(currentWord?.id || '')
-              ? "bg-blue-50 border-blue-400 text-blue-600"
-              : "hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600"
-          )}
-          onClick={handleBookmark}
-          disabled={!currentWord}
-        >
-          <Bookmark className={cn(
-            "h-5 w-5",
-            bookmarkedWords.has(currentWord?.id || '') && "fill-current"
-          )} />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-12 w-12 rounded-xl border-2 hover:bg-purple-50 hover:border-purple-400 hover:text-purple-600 transition-all"
-          onClick={handleShare}
-          disabled={!currentWord}
-        >
-          <Share2 className="h-5 w-5" />
-        </Button>
-      </motion.div>
-
-      {/* Stats summary */}
-      <motion.div 
-        className="mt-8 grid grid-cols-3 gap-4 max-w-md mx-auto"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      >
-        <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
-          <p className="text-2xl font-bold text-emerald-600">{learnedWords.size}</p>
-          <p className="text-xs text-muted-foreground">已学会</p>
-        </div>
-        <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-          <p className="text-2xl font-bold text-amber-600">{hardWords.size}</p>
-          <p className="text-xs text-muted-foreground">需复习</p>
-        </div>
-        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-          <p className="text-2xl font-bold text-blue-600">{bookmarkedWords.size}</p>
-          <p className="text-xs text-muted-foreground">已收藏</p>
-        </div>
-      </motion.div>
-
-      {/* Completion message */}
-      {learnedWords.size === words.length && words.length > 0 && (
+      {learnedWords.size === words.length && words.length > 0 ? (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className="mt-8 text-center p-8 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800"
+          className="rounded-[30px] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/8 to-cyan-500/8 p-6 text-center"
         >
-          <motion.div 
-            className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-card"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
-          >
-            <Check className="h-10 w-10 text-white" />
-          </motion.div>
-          <h3 className="text-2xl font-bold mb-2 text-emerald-600">太棒了! 🎉</h3>
-          <p className="text-muted-foreground mb-6">
-            您今天已学习所有 {words.length} 个单词！
-            <br />
-            <span className="text-sm">继续保持，积少成多！</span>
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-500 text-white">
+            <Check className="h-8 w-8" />
+          </div>
+          <h3 className="mt-5 text-2xl font-semibold">今天的新词任务已完成</h3>
+          <p className="mt-3 text-muted-foreground">
+            你已经学完今天的 {words.length} 个单词。现在最有价值的下一步，是去补一下弱项或者清空复习压力。
           </p>
-          <div className="flex gap-3 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCurrentWordIndex(0);
-                setFlippedCards(new Set());
-              }}
-              className="rounded-xl border-2 hover:bg-emerald-100 hover:border-emerald-400 transition-all"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              再次复习
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button variant="outline" className="rounded-2xl" asChild>
+              <Link to="/dashboard/review">去做复习</Link>
             </Button>
-            <Button
-              variant="default"
-              className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
-              onClick={() => {
-                setLearnedWords(new Set());
-                setHardWords(new Set());
-                setCurrentWordIndex(0);
-                toast.success('进度已重置');
-              }}
-            >
-              <TrendingUp className="h-4 w-4 mr-2" />
-              重新学习
+            <Button className="rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+              <Link to="/dashboard/practice">做一次短练习</Link>
             </Button>
           </div>
         </motion.div>
-      )}
+      ) : null}
     </div>
   );
 }

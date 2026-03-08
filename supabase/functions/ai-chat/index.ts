@@ -32,6 +32,42 @@ const MAX_MESSAGE_CHARS = 960;
 const SIMPLE_GREETING_PATTERN = /^(hi|hello|hey|yo|hello there|你好(?:呀|啊|喔)?|您好|嗨|哈喽|哈囉|早上好|下午好|晚上好|在吗|在嗎|在不在)[!,.?，。！？\s]*$/i;
 const FACTUAL_SEARCH_HINT_PATTERN = /(latest|today|news|price|law|policy|research|statistics|官网|来源|出处|citation|web ?search|联网|最新|时效|新闻|数据|查一下|搜一下|检索)/i;
 
+const normalizeSurface = (value: unknown): 'chat' | 'today' | 'exam' | 'practice' => {
+  return value === 'today' || value === 'exam' || value === 'practice' ? value : 'chat';
+};
+
+const toWeakTags = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+
+  return Array.from(
+    new Set(
+      value
+        .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+        .map((item) => item.trim())
+        .slice(0, 8),
+    ),
+  );
+};
+
+const buildPedagogicalSystemContext = (args: {
+  surface: 'chat' | 'today' | 'exam' | 'practice';
+  goalContext?: string;
+  weakTags: string[];
+}): string => {
+  const parts = [`Current product surface: ${args.surface}.`];
+
+  if (args.goalContext) {
+    parts.push(`Learner goal context: ${args.goalContext}`);
+  }
+
+  if (args.weakTags.length > 0) {
+    parts.push(`Current weak tags: ${args.weakTags.join(', ')}.`);
+  }
+
+  parts.push('Prioritize the most useful next learning action instead of generic advice.');
+  return parts.join(' ');
+};
+
 const clipText = (value: string, limit: number): string => {
   if (value.length <= limit) return value;
   const head = Math.max(220, Math.floor(limit * 0.75));
@@ -249,6 +285,25 @@ Deno.serve(async (req) => {
     const featureFlags = body.featureFlags && typeof body.featureFlags === 'object'
       ? (body.featureFlags as Record<string, unknown>)
       : {};
+    const surface = normalizeSurface(body.surface);
+    const goalContext =
+      typeof body.goalContext === 'string' && body.goalContext.trim().length > 0
+        ? body.goalContext.trim()
+        : undefined;
+    const weakTags = toWeakTags(body.weakTags);
+    const mergedLearningContext = {
+      ...(body.learningContext && typeof body.learningContext === 'object'
+        ? (body.learningContext as Record<string, unknown>)
+        : {}),
+      surface,
+      goalContext,
+      weakTags,
+    };
+    const pedagogicalSystemContext = buildPedagogicalSystemContext({
+      surface,
+      goalContext,
+      weakTags,
+    });
 
     const safeMessages = toSafeMessages(body.messages);
     const latestUserMessage = extractLatestUserMessage(safeMessages);
@@ -440,7 +495,7 @@ Deno.serve(async (req) => {
       mode,
       incomingMessages: safeMessages,
       dialogueContext: Array.isArray(body.dialogueContext) ? body.dialogueContext : [],
-      learningContext: body.learningContext && typeof body.learningContext === 'object' ? body.learningContext : undefined,
+      learningContext: mergedLearningContext,
       toolContext: body.toolContext && typeof body.toolContext === 'object' ? body.toolContext : undefined,
       memories: memories.map((item) => ({
         id: item.id,
@@ -476,6 +531,7 @@ Deno.serve(async (req) => {
 
       const streamModelMessages: DeepSeekMessage[] = [
         { role: 'system', content: systemPrompt },
+        { role: 'system', content: pedagogicalSystemContext },
         { role: 'system', content: streamStylePrompt },
         ...(contextBuild.contextPrompt ? [{ role: 'system', content: contextBuild.contextPrompt } as DeepSeekMessage] : []),
         ...contextBuild.modelMessages,
@@ -595,9 +651,7 @@ Deno.serve(async (req) => {
                 userId: auth.userId,
                 sessionId,
                 learningContext:
-                  body.learningContext && typeof body.learningContext === 'object'
-                    ? body.learningContext
-                    : undefined,
+                  mergedLearningContext,
                 userMessage: latestUserMessage,
                 assistantMessage: finalPayload.content,
                 toolFacts: (finalPayload.sources || []).map((source) => `${source.title}: ${source.snippet}`),
@@ -664,6 +718,7 @@ Deno.serve(async (req) => {
 
     const modelMessages: DeepSeekMessage[] = [
       { role: 'system', content: systemPrompt },
+      { role: 'system', content: pedagogicalSystemContext },
       { role: 'system', content: contractPrompt },
       { role: 'system', content: stylePrompt },
       ...(contextBuild.contextPrompt ? [{ role: 'system', content: contextBuild.contextPrompt } as DeepSeekMessage] : []),
@@ -738,7 +793,7 @@ Deno.serve(async (req) => {
     const turnWrites = await persistTurnMemory({
       userId: auth.userId,
       sessionId,
-      learningContext: body.learningContext && typeof body.learningContext === 'object' ? body.learningContext : undefined,
+      learningContext: mergedLearningContext,
       userMessage: latestUserMessage,
       assistantMessage: finalPayload.content,
       toolFacts: (finalPayload.sources || []).map((source) => `${source.title}: ${source.snippet}`),

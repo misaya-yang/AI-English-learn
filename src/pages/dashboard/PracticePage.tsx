@@ -32,72 +32,7 @@ import { getContentItemsByUnit, getContentUnits, getQuotaSnapshot, saveAiFeedbac
 import { consumeExamFeatureQuota, createAttempt, gradeIeltsWriting } from '@/services/aiExamCoach';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { speakEnglishText } from '@/services/tts';
-
-// Quiz question types
-interface QuizQuestion {
-  id: string;
-  word: WordData;
-  question: string;
-  questionZh: string;
-  options: string[];
-  correctAnswer: string;
-  type: 'multiple_choice' | 'fill_blank';
-}
-
-// Generate quiz questions from words
-const generateQuizQuestions = (words: WordData[], mode: 'quiz' | 'fill_blank'): QuizQuestion[] => {
-  const questions: QuizQuestion[] = [];
-  
-  words.forEach((word, index) => {
-    const otherWords = words.filter(w => w.id !== word.id);
-    
-    if (mode === 'quiz') {
-      // Multiple choice question - definition
-      const distractors = otherWords
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3)
-        .map(w => w.definition);
-      
-      questions.push({
-        id: `mc-${index}`,
-        word,
-        question: `What does "${word.word}" mean?`,
-        questionZh: `"${word.word}" 是什么意思？`,
-        options: [word.definition, ...distractors].sort(() => 0.5 - Math.random()),
-        correctAnswer: word.definition,
-        type: 'multiple_choice',
-      });
-    } else if (mode === 'fill_blank') {
-      // Fill in the blank question (if we have example sentences)
-      if (word.examples.length > 0) {
-        const example = word.examples[0];
-        const blankedSentence = example.en.replace(
-          new RegExp(`\\b${word.word}\\b`, 'gi'),
-          '______'
-        );
-        
-        if (blankedSentence !== example.en) {
-          const distractorWords = otherWords
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 3)
-            .map(w => w.word);
-          
-          questions.push({
-            id: `fb-${index}`,
-            word,
-            question: `Complete: "${blankedSentence}"`,
-            questionZh: `填空: "${example.zh}"`,
-            options: [word.word, ...distractorWords].sort(() => 0.5 - Math.random()),
-            correctAnswer: word.word,
-            type: 'fill_blank',
-          });
-        }
-      }
-    }
-  });
-  
-  return questions.slice(0, 10); // Limit to 10 questions
-};
+import { buildListeningQueue, buildPracticeQuestions, type PracticeQuestion as QuizQuestion } from '@/features/practice/runtime';
 
 const practiceModes = [
   {
@@ -180,15 +115,21 @@ export default function PracticePage() {
     let cancelled = false;
 
     if (selectedMode === 'quiz' || selectedMode === 'fill_blank') {
-      const questions = generateQuizQuestions(dailyWords, selectedMode);
+      const questions = buildPracticeQuestions(dailyWords, selectedMode, `${userId}:${selectedMode}`);
       setQuizQuestions(questions);
     }
 
     if (selectedMode === 'listening') {
-      setListeningQueue(dailyWords.slice(0, 10));
+      const nextQueue = buildListeningQueue(dailyWords, `${userId}:listening`);
+      setListeningQueue(nextQueue);
       requestAnimationFrame(() => {
         listeningInputRef.current?.focus();
       });
+      if (nextQueue[0]?.word) {
+        window.setTimeout(() => {
+          playAudio(nextQueue[0].word);
+        }, 120);
+      }
     }
 
     if (selectedMode === 'writing') {
@@ -366,7 +307,7 @@ export default function PracticePage() {
     value
       .trim()
       .toLowerCase()
-      .replace(/[“”"'.!?,:;()\[\]{}]/g, '')
+      .replace(/[“”"'.!?,:;()[\]{}]/g, '')
       .replace(/\s+/g, ' ');
 
   const handleListeningCheck = () => {

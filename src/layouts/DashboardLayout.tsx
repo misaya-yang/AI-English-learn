@@ -1,12 +1,12 @@
-import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useMemo, type ComponentType } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -16,55 +16,155 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTranslation } from 'react-i18next';
 import {
-  BookOpen,
+  BookText,
   Brain,
-  Calendar,
+  CalendarDays,
   ChevronRight,
   Flame,
+  LayoutGrid,
   Library,
   LogOut,
   Menu,
-  MessageCircle,
-  Moon,
-  Shield,
+  MessageCircleMore,
   Settings,
-  Sun,
+  Shield,
+  Sparkles,
   Target,
   Trophy,
   User,
+  WandSparkles,
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const getNavItems = (t: any) => [
-  { path: '/dashboard/today', label: t('nav.today'), icon: Calendar },
-  { path: '/dashboard/review', label: t('nav.review'), icon: Brain },
-  { path: '/dashboard/practice', label: t('nav.practice'), icon: Zap },
-  { path: '/dashboard/exam', label: t('nav.examPrep'), icon: Target },
-  { path: '/dashboard/vocabulary', label: t('nav.vocabulary'), icon: Library },
-  { path: '/dashboard/analytics', label: t('nav.analytics'), icon: Trophy },
-  { path: '/dashboard/chat', label: t('nav.chat'), icon: MessageCircle },
-  { path: '/dashboard/memory', label: t('nav.memory'), icon: Shield },
-];
+interface NavItem {
+  path: string;
+  label: string;
+  description: string;
+  icon: ComponentType<{ className?: string }>;
+  badge?: string | number | null;
+}
+
+const shellTitleMap: Record<string, { title: string; description: string }> = {
+  '/dashboard/today': {
+    title: 'Today',
+    description: '今天最值得做的一步，从这里开始。',
+  },
+  '/dashboard/review': {
+    title: 'Review',
+    description: '清掉到期复习，别让遗忘继续堆积。',
+  },
+  '/dashboard/practice': {
+    title: 'Practice',
+    description: '把弱项转成短练习，稳定补强。',
+  },
+  '/dashboard/chat': {
+    title: 'Coach',
+    description: '和 AI 家教做一轮真正带上下文的学习。',
+  },
+  '/dashboard/exam': {
+    title: 'Exam Prep',
+    description: '冲分路线、仿真题和结构化反馈都在这里。',
+  },
+  '/dashboard/vocabulary': {
+    title: 'Vocabulary',
+    description: '管理词书、导入 deck、维护你的底层词汇资产。',
+  },
+  '/dashboard/analytics': {
+    title: 'Analytics',
+    description: '查看真实学习数据，而不是随机生成的好看图表。',
+  },
+  '/dashboard/memory': {
+    title: 'Memory',
+    description: '管理长期记忆，决定 AI 该记住什么。',
+  },
+  '/dashboard/settings': {
+    title: 'Settings',
+    description: '调整偏好、反馈风格和系统行为。',
+  },
+  '/dashboard/profile': {
+    title: 'Profile',
+    description: '查看账号信息和学习身份。',
+  },
+};
 
 export default function DashboardLayout() {
   const { t } = useTranslation();
-  const { user, profile, logout, isAuthenticated, isLoading } = useAuth();
-  const { setTheme, resolvedTheme } = useTheme();
-  const { streak, xp, dueWords } = useUserData();
+  const { user, logout, isAuthenticated, isLoading } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
+  const { streak, xp, dueWords, dailyMission } = useUserData();
   const location = useLocation();
-  const navItems = getNavItems(t);
   const isChatRoute = location.pathname.startsWith('/dashboard/chat');
+
+  const primaryNav = useMemo<NavItem[]>(() => [
+    {
+      path: '/dashboard/today',
+      label: t('nav.today'),
+      description: '今日主任务与下一步动作',
+      icon: CalendarDays,
+    },
+    {
+      path: '/dashboard/review',
+      label: t('nav.review'),
+      description: '到期复习与稳态记忆',
+      icon: Brain,
+      badge: dueWords.length > 0 ? dueWords.length : null,
+    },
+    {
+      path: '/dashboard/practice',
+      label: t('nav.practice'),
+      description: '测验、听力、写作短练习',
+      icon: WandSparkles,
+    },
+    {
+      path: '/dashboard/chat',
+      label: 'Coach',
+      description: 'AI 家教与引导式学习',
+      icon: MessageCircleMore,
+    },
+    {
+      path: '/dashboard/exam',
+      label: t('nav.examPrep'),
+      description: 'IELTS 冲分与高价值反馈',
+      icon: Target,
+    },
+  ], [dueWords.length, t]);
+
+  const toolNav = useMemo<NavItem[]>(() => [
+    {
+      path: '/dashboard/vocabulary',
+      label: t('nav.vocabulary'),
+      description: '词书与词汇资产',
+      icon: Library,
+    },
+    {
+      path: '/dashboard/analytics',
+      label: t('nav.analytics'),
+      description: '学习数据与趋势',
+      icon: Trophy,
+    },
+    {
+      path: '/dashboard/memory',
+      label: t('nav.memory'),
+      description: '长期记忆管理',
+      icon: Shield,
+    },
+    {
+      path: '/dashboard/settings',
+      label: 'Settings',
+      description: '系统设置',
+      icon: Settings,
+    },
+  ], [t]);
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-emerald-600" />
       </div>
     );
   }
@@ -73,273 +173,253 @@ export default function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  const isActive = (path: string) => location.pathname === path;
+  const activeShell =
+    shellTitleMap[location.pathname] ||
+    shellTitleMap[primaryNav.find((item) => location.pathname.startsWith(item.path))?.path || '/dashboard/today'];
 
-  const NavContent = () => (
-    <nav className="flex flex-col gap-1">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const active = isActive(item.path);
-        const dueCount = item.path === '/dashboard/review' ? dueWords.length : 0;
+  const missionCompleted = dailyMission?.tasks.filter((task) => task.done).length || 0;
+  const missionTotal = dailyMission?.tasks.length || 0;
+  const missionProgress = missionTotal > 0 ? Math.round((missionCompleted / missionTotal) * 100) : 0;
 
-        return (
-          <TooltipProvider key={item.path} delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link to={item.path}>
-                  <Button
-                    variant={active ? 'default' : 'ghost'}
-                    className={cn(
-                      'w-full justify-start gap-3',
-                      active && 'bg-emerald-600 hover:bg-emerald-700'
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    {dueCount > 0 && (
-                      <Badge variant="secondary" className="bg-red-500 text-white">
-                        {dueCount}
-                      </Badge>
-                    )}
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="hidden lg:block">
-                <p>{item.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        );
-      })}
-    </nav>
-  );
+  const renderNavItem = (item: NavItem, compact = false) => {
+    const active = location.pathname === item.path;
+    const Icon = item.icon;
 
-  return (
-    <div className="h-screen bg-background flex overflow-hidden">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r bg-sidebar p-4">
-        {/* Logo */}
-        <Link to="/dashboard" className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
-            <BookOpen className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="font-bold text-lg leading-tight">VocabDaily</h1>
-            <p className="text-xs text-muted-foreground">AI 智能单词学习</p>
-          </div>
-        </Link>
-
-        {/* Streak & XP */}
-        <div className="mb-4 p-3 bg-muted rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Flame className="h-4 w-4 text-orange-500" />
-              <span className="text-sm font-medium">
-                {streak?.current || 0} day streak
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {xp?.total?.toLocaleString() || 0} XP
-            </span>
-          </div>
-          <Progress value={(xp?.today || 0)} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-1">
-            Level {xp?.level || 1} • {Math.round((xp?.today || 0))}% to next
-          </p>
-        </div>
-
-        <Separator className="mb-4" />
-
-        {/* Navigation */}
-        <div className="flex-1">
-          <NavContent />
-        </div>
-
-        <Separator className="my-4" />
-
-        {/* Developer Credit */}
-        <div className="px-3 py-2 mb-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Crafted for uu</span>
-          </div>
-        </div>
-
-        {/* Bottom Actions */}
-        <div className="space-y-1">
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link to="/dashboard/settings">
-                  <Button
-                    variant={isActive('/dashboard/settings') ? 'default' : 'ghost'}
-                    className={cn(
-                      'w-full justify-start gap-3',
-                      isActive('/dashboard/settings') && 'bg-emerald-600 hover:bg-emerald-700'
-                    )}
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>设置</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3"
-            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          >
-            {resolvedTheme === 'dark' ? (
-              <>
-                <Sun className="h-4 w-4" />
-                <span>Light Mode</span>
-              </>
-            ) : (
-              <>
-                <Moon className="h-4 w-4" />
-                <span>Dark Mode</span>
-              </>
+    return (
+      <Link key={item.path} to={item.path}>
+        <div
+          className={cn(
+            'group flex items-center gap-3 rounded-2xl border px-3 py-3 transition-all duration-150',
+            active
+              ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_10px_35px_-25px_rgba(16,185,129,0.8)]'
+              : 'border-transparent hover:border-border hover:bg-muted/60',
+          )}
+        >
+          <div
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-xl',
+              active ? 'bg-emerald-500 text-white' : 'bg-muted text-muted-foreground',
             )}
-          </Button>
-        </div>
-      </aside>
-
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="flex items-center justify-between p-4">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold">VocabDaily</span>
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 rounded-full">
-              <Flame className="h-4 w-4 text-orange-500" />
-              <span className="text-sm font-medium">{streak?.current || 0}</span>
-            </div>
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-64">
-                <div className="flex flex-col h-full">
-                  <div className="mb-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Avatar>
-                        <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user?.displayName || user?.email}</p>
-                        <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
-                      </div>
-                    </div>
-                    <Progress value={xp?.today || 0} className="h-2" />
-                  </div>
-
-                  <Separator className="mb-4" />
-
-                  <div className="flex-1">
-                    <NavContent />
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  <div className="space-y-1">
-                    <Link to="/dashboard/settings">
-                      <Button variant="ghost" className="w-full justify-start gap-3">
-                        <Settings className="h-4 w-4" />
-                        <span>Settings</span>
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-3"
-                      onClick={() => logout()}
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Sign Out</span>
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+          >
+            <Icon className="h-4 w-4" />
           </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="truncate text-sm font-semibold">{item.label}</p>
+              {item.badge ? (
+                <Badge className="rounded-full bg-emerald-600 px-2 text-[10px] text-white hover:bg-emerald-600">
+                  {item.badge}
+                </Badge>
+              ) : null}
+            </div>
+            {!compact ? <p className="truncate text-xs text-muted-foreground">{item.description}</p> : null}
+          </div>
+        </div>
+      </Link>
+    );
+  };
+
+  const mobileSheetBody = (
+    <div className="flex h-full flex-col gap-5 px-1">
+      <div className="rounded-2xl border bg-card p-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
+            <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
+          </div>
+        </div>
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>今日任务进度</span>
+            <span>{missionProgress}%</span>
+          </div>
+          <Progress value={missionProgress} className="h-2" />
         </div>
       </div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-0 lg:ml-0 overflow-hidden">
-        {/* Desktop Header */}
-        {!isChatRoute && (
-          <header className="hidden lg:flex items-center justify-between border-b bg-card/80 backdrop-blur px-6 py-3">
-          <div>
-            <h2 className="text-lg font-semibold">
-              {navItems.find((item) => isActive(item.path))?.label || 'Dashboard'}
-            </h2>
-          </div>
+      <div className="space-y-2">
+        <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Core</p>
+        {primaryNav.map((item) => renderNavItem(item))}
+      </div>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <LanguageSwitcher />
+      <div className="space-y-2">
+        <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tools</p>
+        {toolNav.map((item) => renderNavItem(item))}
+      </div>
+
+      <div className="mt-auto space-y-2 pb-4">
+        <Button className="w-full justify-start rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+          <Link to="/dashboard/today">
+            <Sparkles className="mr-2 h-4 w-4" />
+            继续今日任务
+          </Link>
+        </Button>
+        <Button variant="outline" className="w-full justify-start rounded-2xl" onClick={() => logout()}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign out
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      <aside className="hidden w-[312px] flex-col border-r bg-sidebar/80 px-5 py-5 lg:flex">
+        <Link to="/dashboard/today" className="flex items-center gap-3 rounded-2xl px-1 py-2">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm">
+            <BookText className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-base font-semibold">VocabDaily</p>
+            <p className="text-xs text-muted-foreground">A focused English learning cockpit</p>
+          </div>
+        </Link>
+
+        <div className="mt-5 rounded-3xl border bg-card px-4 py-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Today</p>
+              <p className="mt-1 text-lg font-semibold">继续今日任务</p>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
+              <Sparkles className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {dueWords.length > 0
+              ? `${dueWords.length} 个到期复习优先处理，做完后再推进新内容。`
+              : '今天先推进主任务，再做一次短练习把薄弱点补上。'}
+          </p>
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Mission progress</span>
+              <span>{missionCompleted}/{missionTotal || 3}</span>
+            </div>
+            <Progress value={missionProgress} className="h-2" />
+          </div>
+          <Button className="mt-4 w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+            <Link to="/dashboard/today">
+              Open today plan
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="mt-5 flex items-center gap-2 rounded-2xl border bg-card px-4 py-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
+            <Flame className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">{streak?.current || 0} day streak</p>
+            <p className="text-xs text-muted-foreground">{xp?.total?.toLocaleString() || 0} total XP</p>
+          </div>
+          <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
+        </div>
+
+        <div className="mt-6 space-y-2">
+          <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Core learning</p>
+          {primaryNav.map((item) => renderNavItem(item))}
+        </div>
+
+        <div className="mt-6 space-y-2">
+          <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tools</p>
+          {toolNav.map((item) => renderNavItem(item, true))}
+        </div>
+
+        <div className="mt-auto rounded-2xl border bg-card px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+              <p className="text-xs text-muted-foreground">Crafted for uu</p>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0]}</AvatarFallback>
+                <Button variant="ghost" className="rounded-xl px-2">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
                   </Avatar>
-                  <div className="text-left hidden xl:block">
-                    <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
-                    <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>My account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <Link to="/dashboard/profile">
                   <DropdownMenuItem>
                     <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+                    Profile
                   </DropdownMenuItem>
                 </Link>
                 <Link to="/dashboard/settings">
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    Settings
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
+                  <LayoutGrid className="mr-2 h-4 w-4" />
+                  {resolvedTheme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => logout()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign Out</span>
+                  Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          </header>
-        )}
+        </div>
+      </aside>
 
-        {/* Page Content */}
-        <div
-          className={cn(
-            'flex-1',
-            isChatRoute
-              ? 'p-0 pt-20 lg:pt-0 overflow-hidden min-h-0'
-              : 'p-4 lg:p-6 pt-20 lg:pt-6 overflow-auto min-h-0',
-          )}
-        >
-          <Outlet />
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <header className="border-b bg-background/88 backdrop-blur supports-[backdrop-filter]:bg-background/68">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-xl lg:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[320px] border-r bg-background p-4">
+                  {mobileSheetBody}
+                </SheetContent>
+              </Sheet>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  <span>{activeShell.title}</span>
+                  {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} due</Badge> : null}
+                </div>
+                <p className="truncate text-sm text-muted-foreground lg:text-base">{activeShell.description}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 lg:gap-3">
+              {!isChatRoute ? (
+                <Button variant="outline" className="hidden rounded-2xl lg:flex" asChild>
+                  <Link to="/dashboard/today">
+                    <Zap className="mr-2 h-4 w-4" />
+                    Continue today
+                  </Link>
+                </Button>
+              ) : null}
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </div>
+          </div>
+        </header>
+
+        <div className={cn('flex-1 min-h-0', isChatRoute ? 'overflow-hidden' : 'overflow-auto')}>
+          <div
+            className={cn(
+              'mx-auto w-full',
+              isChatRoute ? 'h-full max-w-none' : 'max-w-7xl px-4 py-5 lg:px-8 lg:py-7',
+            )}
+          >
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>

@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   RotateCcw,
   Volume2,
@@ -156,34 +155,23 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 }
 
 export default function ReviewPage() {
-  const { dailyWords, reviewWord, dueWords } = useUserData();
+  const { dailyWords, reviewWord, dueWords, dailyMission, completeMissionTask } = useUserData();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [sessionStats, setSessionStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 });
-  const [isComplete, setIsComplete] = useState(false);
-  const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
+  const [sessionQueue, setSessionQueue] = useState<ReviewItem[] | null>(null);
 
   const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
-
-  // Initialize review set before the session starts.
-  // Keep the set stable during a session to avoid index drift while dueWords updates after each rating.
-  useEffect(() => {
-    const sessionStarted = totalReviewed > 0 || currentIndex > 0 || isRevealed;
-    if (sessionStarted || isComplete) {
-      return;
-    }
-
-    setReviewItems(buildReviewItems(dueWords, dailyWords));
-  }, [dueWords, dailyWords, totalReviewed, currentIndex, isRevealed, isComplete]);
-
-  useEffect(() => {
-    if (reviewItems.length > 0 && currentIndex >= reviewItems.length) {
-      setIsComplete(true);
-    }
-  }, [currentIndex, reviewItems.length]);
+  const reviewItems = sessionQueue ?? buildReviewItems(dueWords, dailyWords);
+  const isComplete = reviewItems.length > 0 && currentIndex >= reviewItems.length;
+  const reviewTaskTarget =
+    Number(
+      dailyMission?.tasks.find((task) => task.id === 'task_review_today')?.meta?.target,
+    ) || reviewItems.length;
+  const reviewedProgress = reviewItems.length > 0 ? (totalReviewed / reviewItems.length) * 100 : 0;
 
   const currentItem = reviewItems[currentIndex];
-  const progress = reviewItems.length > 0 ? ((currentIndex) / reviewItems.length) * 100 : 0;
+  const progress = reviewItems.length > 0 ? reviewedProgress : 0;
 
   const handleReveal = () => {
     setIsRevealed(true);
@@ -191,6 +179,9 @@ export default function ReviewPage() {
 
   const handleRate = async (rating: 'again' | 'hard' | 'good' | 'easy') => {
     if (!currentItem) return;
+    if (!sessionQueue) {
+      setSessionQueue(reviewItems);
+    }
 
     // Update stats
     setSessionStats((prev) => ({
@@ -200,6 +191,9 @@ export default function ReviewPage() {
 
     // Call reviewWord from context
     reviewWord(currentItem.wordId, rating);
+    if (totalReviewed + 1 >= reviewTaskTarget) {
+      completeMissionTask('task_review_today');
+    }
 
     // Calculate next interval for display
     const intervals = {
@@ -215,17 +209,14 @@ export default function ReviewPage() {
     if (currentIndex < reviewItems.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setIsRevealed(false);
-    } else {
-      setIsComplete(true);
     }
   };
 
   const handleRestart = () => {
-    setReviewItems(buildReviewItems(dueWords, dailyWords));
+    setSessionQueue(null);
     setCurrentIndex(0);
     setIsRevealed(false);
     setSessionStats({ again: 0, hard: 0, good: 0, easy: 0 });
-    setIsComplete(false);
   };
 
   if (reviewItems.length === 0) {
@@ -319,8 +310,8 @@ export default function ReviewPage() {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-medium">{currentIndex + 1} / {reviewItems.length}</p>
-              <p className="text-xs text-muted-foreground">剩余</p>
+              <p className="text-sm font-medium">{totalReviewed} / {reviewItems.length}</p>
+              <p className="text-xs text-muted-foreground">已完成</p>
             </div>
           </div>
         </div>

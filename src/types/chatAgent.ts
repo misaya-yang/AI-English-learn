@@ -1,6 +1,13 @@
 export type ChatMode = 'chat' | 'study' | 'quiz' | 'canvas';
 
 export type SearchMode = 'off' | 'auto' | 'force';
+export type TutorSurface = 'chat' | 'today' | 'exam' | 'practice';
+export type FastPathKind =
+  | 'simple_greeting'
+  | 'short_clarification'
+  | 'quiz_forced'
+  | 'canvas_mode'
+  | 'normal';
 
 export type QuizQuestionType = 'multiple_choice' | 'true_false' | 'fill_blank';
 
@@ -156,12 +163,7 @@ export interface CanvasSessionMeta {
 
 export interface ChatFastPathDecision {
   enabled: boolean;
-  reason:
-    | 'simple_greeting'
-    | 'short_clarification'
-    | 'quiz_forced'
-    | 'canvas_mode'
-    | 'normal';
+  reason: FastPathKind;
 }
 
 export interface ChatPerfSnapshot {
@@ -209,6 +211,9 @@ export interface ChatEdgeResponse {
 }
 
 export interface SendMessageOptions {
+  surface?: TutorSurface;
+  goalContext?: string;
+  weakTags?: string[];
   mode?: ChatMode;
   searchMode?: SearchMode;
   responseStyle?: 'concise' | 'coach';

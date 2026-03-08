@@ -165,6 +165,7 @@ export type LearningEventName =
   | 'chat.quiz_next_latency'
   | 'chat.fast_path_hit'
   | 'practice.quiz_submitted'
+  | 'practice.listening_submitted'
   | 'practice.writing_submitted'
   | 'review.word_rated'
   | 'today.word_marked'
