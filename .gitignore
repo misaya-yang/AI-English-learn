@@ -4,3 +4,5 @@ dist/
 .DS_Store
 *.log
 functional-report*.json
+.codex-skill-build/
+codex-skill-build/
