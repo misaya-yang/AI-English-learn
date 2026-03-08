@@ -10,7 +10,7 @@ import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { queryClient } from '@/lib/queryClient';
 
 // Pages
-import LandingPage from '@/pages/LandingPage';
+import Home from '@/pages/Home';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
 import MagicLinkPage from '@/pages/auth/MagicLinkPage';
@@ -50,7 +50,7 @@ function App() {
             <Router>
               <Routes>
                 {/* Public Routes */}
-                <Route path="/" element={<LandingPage />} />
+                <Route path="/" element={<Home />} />
                 <Route path="/word-of-the-day" element={<WordOfTheDayPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
 
