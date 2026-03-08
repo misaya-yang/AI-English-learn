@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { BookOpen, Eye, EyeOff, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveAuthRedirect } from '@/lib/authRedirect';
+
+const specialCharacterRegex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register, isAuthenticated, validatePassword } = useAuth();
   const [formData, setFormData] = useState({
     displayName: '',
@@ -22,10 +26,11 @@ export default function RegisterPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [justRegistered, setJustRegistered] = useState(false);
+  const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
 
   // Redirect if already logged in
   if (isAuthenticated && !justRegistered) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={redirectTarget} replace />;
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +74,7 @@ export default function RegisterPage() {
       if (success) {
         setJustRegistered(true);
         toast.success('注册成功！请检查邮箱验证链接');
-        navigate('/onboarding');
+        navigate(`/onboarding${location.search}`);
       } else {
         toast.error(error || '注册失败');
       }
@@ -201,10 +206,10 @@ export default function RegisterPage() {
                   <div className="flex items-center gap-2 text-xs">
                     <Check
                       className={`h-3 w-3 ${
-                        /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? 'text-green-500' : 'text-muted-foreground'
+                        specialCharacterRegex.test(formData.password) ? 'text-green-500' : 'text-muted-foreground'
                       }`}
                     />
-                    <span className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
+                    <span className={specialCharacterRegex.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
                       包含特殊字符
                     </span>
                   </div>
@@ -264,7 +269,7 @@ export default function RegisterPage() {
 
             <p className="text-sm text-center text-muted-foreground">
               已有账号？{' '}
-              <Link to="/login" className="text-emerald-600 hover:text-emerald-700 font-medium">
+              <Link to={`/login${location.search}`} className="text-emerald-600 hover:text-emerald-700 font-medium">
                 立即登录
               </Link>
             </p>

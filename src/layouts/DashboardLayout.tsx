@@ -1,4 +1,4 @@
-import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useMemo, type ComponentType } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -64,7 +65,7 @@ const shellTitleMap: Record<string, { title: string; description: string }> = {
   },
   '/dashboard/chat': {
     title: 'Coach',
-    description: '和 AI 家教做一轮真正带上下文的学习。',
+    description: '做一轮带上下文的引导学习，把问题讲透。',
   },
   '/dashboard/exam': {
     title: 'Exam Prep',
@@ -94,7 +95,7 @@ const shellTitleMap: Record<string, { title: string; description: string }> = {
 
 export default function DashboardLayout() {
   const { t } = useTranslation();
-  const { user, logout, isAuthenticated, isLoading } = useAuth();
+  const { user, logout } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const { streak, xp, dueWords, dailyMission } = useUserData();
   const location = useLocation();
@@ -123,7 +124,7 @@ export default function DashboardLayout() {
     {
       path: '/dashboard/chat',
       label: 'Coach',
-      description: 'AI 家教与引导式学习',
+      description: '解释、引导和短测都从这里进入',
       icon: MessageCircleMore,
     },
     {
@@ -160,18 +161,6 @@ export default function DashboardLayout() {
       icon: Settings,
     },
   ], [t]);
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-emerald-600" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
 
   const activeShell =
     shellTitleMap[location.pathname] ||
@@ -267,69 +256,83 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="hidden w-[312px] flex-col border-r bg-sidebar/80 px-5 py-5 lg:flex">
+      <aside className="hidden h-screen min-h-0 w-[320px] flex-col border-r bg-sidebar/80 px-4 py-4 lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-2xl px-1 py-2">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm">
             <BookText className="h-5 w-5" />
           </div>
           <div>
             <p className="text-base font-semibold">VocabDaily</p>
-            <p className="text-xs text-muted-foreground">A focused English learning cockpit</p>
+            <p className="text-xs text-muted-foreground">Structured English learning</p>
           </div>
         </Link>
 
-        <div className="mt-5 rounded-3xl border bg-card px-4 py-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Today</p>
-              <p className="mt-1 text-lg font-semibold">继续今日任务</p>
+        <ScrollArea
+          type="always"
+          className={cn(
+            'mt-4 min-h-0 flex-1 pr-2',
+            '[&_[data-slot=scroll-area-scrollbar]]:w-3',
+            '[&_[data-slot=scroll-area-scrollbar]]:rounded-full',
+            '[&_[data-slot=scroll-area-thumb]]:bg-border/90',
+            '[&_[data-slot=scroll-area-thumb]]:shadow-sm',
+            'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/45',
+          )}
+        >
+          <div className="space-y-5 pb-4">
+            <div className="rounded-3xl border bg-card px-4 py-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Today</p>
+                  <p className="mt-1 text-lg font-semibold">继续今日任务</p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {dueWords.length > 0
+                  ? `${dueWords.length} 个到期复习优先处理，做完后再推进新内容。`
+                  : '先完成主任务，再用一次短练习把今天的弱项补上。'}
+              </p>
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Mission progress</span>
+                  <span>{missionCompleted}/{missionTotal || 3}</span>
+                </div>
+                <Progress value={missionProgress} className="h-2" />
+              </div>
+              <Button className="mt-4 w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+                <Link to="/dashboard/today">
+                  Open today plan
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
-              <Sparkles className="h-5 w-5" />
+
+            <div className="flex items-center gap-2 rounded-2xl border bg-card px-4 py-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
+                <Flame className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{streak?.current || 0} day streak</p>
+                <p className="text-xs text-muted-foreground">{xp?.total?.toLocaleString() || 0} total XP</p>
+              </div>
+              <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
+            </div>
+
+            <div className="space-y-2">
+              <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Core learning</p>
+              {primaryNav.map((item) => renderNavItem(item))}
+            </div>
+
+            <div className="space-y-2">
+              <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tools</p>
+              {toolNav.map((item) => renderNavItem(item, true))}
             </div>
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {dueWords.length > 0
-              ? `${dueWords.length} 个到期复习优先处理，做完后再推进新内容。`
-              : '今天先推进主任务，再做一次短练习把薄弱点补上。'}
-          </p>
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Mission progress</span>
-              <span>{missionCompleted}/{missionTotal || 3}</span>
-            </div>
-            <Progress value={missionProgress} className="h-2" />
-          </div>
-          <Button className="mt-4 w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
-            <Link to="/dashboard/today">
-              Open today plan
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+        </ScrollArea>
 
-        <div className="mt-5 flex items-center gap-2 rounded-2xl border bg-card px-4 py-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
-            <Flame className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium">{streak?.current || 0} day streak</p>
-            <p className="text-xs text-muted-foreground">{xp?.total?.toLocaleString() || 0} total XP</p>
-          </div>
-          <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
-        </div>
-
-        <div className="mt-6 space-y-2">
-          <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Core learning</p>
-          {primaryNav.map((item) => renderNavItem(item))}
-        </div>
-
-        <div className="mt-6 space-y-2">
-          <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tools</p>
-          {toolNav.map((item) => renderNavItem(item, true))}
-        </div>
-
-        <div className="mt-auto rounded-2xl border bg-card px-4 py-3">
+        <div className="mt-4 rounded-2xl border bg-card px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
@@ -398,10 +401,10 @@ export default function DashboardLayout() {
 
             <div className="flex items-center gap-2 lg:gap-3">
               {!isChatRoute ? (
-                <Button variant="outline" className="hidden rounded-2xl lg:flex" asChild>
+                <Button variant="ghost" className="hidden rounded-2xl border border-border/70 bg-card/70 lg:flex" asChild>
                   <Link to="/dashboard/today">
                     <Zap className="mr-2 h-4 w-4" />
-                    Continue today
+                    Continue
                   </Link>
                 </Button>
               ) : null}
@@ -415,7 +418,7 @@ export default function DashboardLayout() {
           <div
             className={cn(
               'mx-auto w-full',
-              isChatRoute ? 'h-full max-w-none' : 'max-w-7xl px-4 py-5 lg:px-8 lg:py-7',
+              isChatRoute ? 'h-full max-w-none' : 'max-w-[1360px] px-5 py-6 lg:px-10 lg:py-8',
             )}
           >
             <Outlet />

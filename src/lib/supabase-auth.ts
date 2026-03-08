@@ -18,6 +18,20 @@ export interface UserProfile {
 }
 
 const PROFILE_KEY_PREFIX = 'vocabdaily-profile-';
+const SPECIAL_CHARACTER_REGEX = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
+
+function clearStoredAuthCache(): void {
+  localStorage.removeItem('supabase_access_token');
+  localStorage.removeItem('supabase_refresh_token');
+  localStorage.removeItem('supabase_user');
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
+}
 
 function getProfileStorageKey(userId: string): string {
   return `${PROFILE_KEY_PREFIX}${userId}`;
@@ -81,7 +95,7 @@ export function validatePassword(password: string): PasswordValidation {
   }
   
   // Special character
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!SPECIAL_CHARACTER_REGEX.test(password)) {
     errors.push('密码需要包含至少一个特殊字符 (!@#$%^&*等)');
   }
   
@@ -91,7 +105,7 @@ export function validatePassword(password: string): PasswordValidation {
     (/[A-Z]/.test(password) ? 1 : 0) +
     (/[a-z]/.test(password) ? 1 : 0) +
     (/[0-9]/.test(password) ? 1 : 0) +
-    (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) ? 1 : 0);
+    (SPECIAL_CHARACTER_REGEX.test(password) ? 1 : 0);
   
   if (score >= 12 && password.length >= 10) {
     strength = 'strong';
@@ -279,38 +293,37 @@ export async function loginUser(
     };
     
     return { user, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login catch error:', error);
-    console.error('Error message:', error?.message);
-    console.error('Error stack:', error?.stack);
-    return { user: null, error: error?.message || '登录失败，请稍后重试' };
+    return { user: null, error: getErrorMessage(error, '登录失败，请稍后重试') };
   }
 }
 
 // Logout user
 export async function logoutUser(): Promise<void> {
   await supabase.auth.signOut();
-  localStorage.removeItem('supabase_access_token');
-  localStorage.removeItem('supabase_refresh_token');
-  localStorage.removeItem('supabase_user');
+  clearStoredAuthCache();
 }
 
-// Get current user from localStorage
+export async function getAuthSession() {
+  return supabase.auth.getSession();
+}
+
+// Get current user from active Supabase session
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
-    const userStr = localStorage.getItem('supabase_user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      return {
-        id: user.id,
-        email: user.email || '',
-        displayName: user.user_metadata?.display_name || user.email?.split('@')[0] || '',
-        createdAt: user.created_at || new Date().toISOString(),
-      };
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      clearStoredAuthCache();
+      return null;
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      clearStoredAuthCache();
       return null;
     }
 
@@ -331,14 +344,14 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
     // Add timeout for profile fetch
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Profile fetch timeout')), 3000);
     });
     
     const { data, error } = await Promise.race([
       supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
       timeoutPromise
-    ]) as any;
+    ]);
     
     if (error || !data) {
       return loadLocalProfile(userId);
@@ -422,12 +435,14 @@ export async function updateUserDisplayName(
 
 // Check if user is logged in
 export async function isLoggedIn(): Promise<boolean> {
-  const token = localStorage.getItem('supabase_access_token');
-  if (token) {
-    return true;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    clearStoredAuthCache();
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
   return !!session;
 }
 
@@ -436,9 +451,7 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
   return supabase.auth.onAuthStateChange((_event, session) => {
     const authUser = session?.user;
     if (!authUser) {
-      localStorage.removeItem('supabase_access_token');
-      localStorage.removeItem('supabase_refresh_token');
-      localStorage.removeItem('supabase_user');
+      clearStoredAuthCache();
       callback(null);
       return;
     }

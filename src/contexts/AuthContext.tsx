@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { 
   type AuthUser,
   type UserProfile,
+  getAuthSession,
   loginUser,
   registerUser,
   logoutUser,
@@ -9,7 +10,6 @@ import {
   getUserProfile,
   updateUserProfile,
   updateUserDisplayName,
-  isLoggedIn,
   onAuthStateChange,
   validatePassword,
   validateEmail,
@@ -32,6 +32,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -41,14 +48,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const loggedIn = await isLoggedIn();
-        if (loggedIn) {
-          const currentUser = await getCurrentUser();
-          setUser(currentUser);
-          if (currentUser) {
-            const userProfile = await getUserProfile(currentUser.id);
-            setProfile(userProfile);
-          }
+        const {
+          data: { session },
+        } = await getAuthSession();
+
+        if (!session) {
+          setUser(null);
+          setProfile(null);
+          return;
+        }
+
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+        if (currentUser) {
+          const userProfile = await getUserProfile(currentUser.id);
+          setProfile(userProfile);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -94,9 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       return { success: false, error: '登录失败，请稍后重试' };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('AuthContext: Login exception:', error);
-      return { success: false, error: error?.message || '登录失败，请稍后重试' };
+      return { success: false, error: getErrorMessage(error, '登录失败，请稍后重试') };
     }
   };
 
@@ -164,6 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

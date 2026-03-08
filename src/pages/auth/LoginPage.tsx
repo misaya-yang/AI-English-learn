@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,18 +8,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { BookOpen, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveAuthRedirect } from '@/lib/authRedirect';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, register, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
+
   // Redirect if already logged in
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={redirectTarget} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,15 +49,15 @@ export default function LoginPage() {
       
       if (success) {
         toast.success('登录成功！');
-        navigate('/dashboard');
+        navigate(redirectTarget, { replace: true });
       } else {
         console.error('Login failed:', error);
         toast.error(error || '电子邮箱或密码错误');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
       console.error('Login exception:', error);
-      toast.error(error?.message || '登录失败，请稍后重试');
+      toast.error(error instanceof Error ? error.message : '登录失败，请稍后重试');
     } finally {
       clearTimeout(timeoutId);
       setIsLoading(false);
@@ -70,7 +74,7 @@ export default function LoginPage() {
       const { success, error } = await login(demoEmail, demoPassword);
       if (success) {
         toast.success('欢迎使用演示账号！');
-        navigate('/dashboard');
+        navigate(redirectTarget, { replace: true });
       } else {
         const normalized = (error || '').toLowerCase();
         const shouldTryCreate =
@@ -93,7 +97,7 @@ export default function LoginPage() {
         const retry = await login(demoEmail, demoPassword);
         if (retry.success) {
           toast.success('欢迎使用演示账号！');
-          navigate('/dashboard');
+          navigate(redirectTarget, { replace: true });
           return;
         }
 
@@ -105,7 +109,7 @@ export default function LoginPage() {
           return;
         }
         toast.success('已创建临时演示账号');
-        navigate('/dashboard');
+        navigate(redirectTarget, { replace: true });
       }
     } catch {
       toast.error('登录失败');
@@ -213,7 +217,7 @@ export default function LoginPage() {
 
             <p className="text-sm text-center text-muted-foreground">
               还没有账号？{' '}
-              <Link to="/register" className="text-emerald-600 hover:text-emerald-700 font-medium">
+              <Link to={`/register${location.search}`} className="text-emerald-600 hover:text-emerald-700 font-medium">
                 立即注册
               </Link>
             </p>

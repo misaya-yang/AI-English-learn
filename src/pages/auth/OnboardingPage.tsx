@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { buildAuthRedirect, resolveAuthRedirect } from '@/lib/authRedirect';
 import type { CEFRLevel, Topic, LearningStyle } from '@/types';
 import { toast } from 'sonner';
 
@@ -51,8 +52,10 @@ const learningStyles: { id: LearningStyle; label: string; labelZh: string; descr
 export default function OnboardingPage() {
   const { updateUserProfile, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
   
   const [preferences, setPreferences] = useState({
     cefrLevel: 'B1' as CEFRLevel,
@@ -62,7 +65,7 @@ export default function OnboardingPage() {
   });
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={buildAuthRedirect('/onboarding')} replace />;
   }
 
   const totalSteps = 4;
@@ -94,7 +97,7 @@ export default function OnboardingPage() {
 
       if (success) {
         toast.success('Profile setup complete!');
-        navigate('/dashboard');
+        navigate(redirectTarget, { replace: true });
       } else {
         toast.error('Failed to save profile. Please try again.');
       }

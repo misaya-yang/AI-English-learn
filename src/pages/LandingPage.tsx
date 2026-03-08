@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { buildAuthRedirect } from '@/lib/authRedirect';
 import { cn } from '@/lib/utils';
 
 const outcomeCards = [
@@ -117,6 +118,7 @@ const plans = [
 export default function LandingPage() {
   const { isAuthenticated } = useAuth();
   const { setTheme, resolvedTheme } = useTheme();
+  const continuePath = isAuthenticated ? '/dashboard/today' : buildAuthRedirect('/dashboard/today');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleThemeToggle = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -148,7 +150,7 @@ export default function LandingPage() {
             </Button>
             {isAuthenticated ? (
               <Button className="rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
-                <Link to="/dashboard/today">Continue learning</Link>
+                <Link to={continuePath}>Continue learning</Link>
               </Button>
             ) : (
               <>
@@ -185,7 +187,7 @@ export default function LandingPage() {
               </Button>
               {isAuthenticated ? (
                 <Button className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
-                  <Link to="/dashboard/today">Continue learning</Link>
+                  <Link to={continuePath}>Continue learning</Link>
                 </Button>
               ) : (
                 <>
