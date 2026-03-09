@@ -32,8 +32,6 @@ import {
   Headphones,
   ChevronRight,
   Clock3,
-  Layers3,
-  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -452,15 +450,11 @@ export default function PracticePage() {
   };
 
   const renderModeSelector = () => (
-    <LearningRailSection
-      title="Mode switcher"
-      description="先定训练方式，再进入一个完整工作区。不要把所有入口同时摆在首屏。"
-    >
+    <LearningRailSection title="Mode switcher">
       <nav className="space-y-2" aria-label="Practice modes">
         {practiceModes.map((mode) => {
           const active = focusedModeId === mode.id;
           const Icon = mode.icon;
-          const blueprint = modeBlueprints[mode.id as keyof typeof modeBlueprints];
 
           return (
             <button
@@ -497,7 +491,6 @@ export default function PracticePage() {
                     ) : null}
                   </span>
                   <span className="mt-0.5 block text-xs text-white/45">{mode.nameZh}</span>
-                  <span className="mt-2 block text-xs leading-5 text-white/54">{blueprint.focus}</span>
                 </span>
               </div>
             </button>
@@ -509,35 +502,23 @@ export default function PracticePage() {
 
   const renderInsightRail = () => (
     <div className="space-y-6">
-      <LearningRailSection title="Next best move" description="解释为什么今天先练这一轮，而不是四个模式一起打开。">
-        <div className="space-y-3">
-          <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
-            <div className="flex items-center gap-2 text-emerald-300">
-              <Sparkles className="h-4 w-4" />
-              <p className="text-sm font-semibold">{focusedMode.nameZh} · {focusedMode.name}</p>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-white/58">{focusedBlueprint.reason}</p>
-            <p className="mt-3 text-sm leading-6 text-emerald-300">{focusedBlueprint.insight}</p>
-          </div>
-        </div>
-      </LearningRailSection>
-
-      <LearningRailSection title="Today at a glance" description="只保留会影响训练节奏的少量事实。">
+      <LearningRailSection title="Session">
         <LearningMetricStrip
           items={[
-            { label: 'Due', value: dueWords.length, accent: dueWords.length > 0 ? 'warm' : 'default', hint: '先清旧账，再做新练习。' },
-            { label: 'Ready', value: dailyWords.length, hint: '今天的素材会直接转成题目。' },
-            { label: 'Streak', value: streak.current, accent: 'emerald', hint: '稳住节奏，比偶尔猛冲更有效。' },
+            { label: 'Due', value: dueWords.length, accent: dueWords.length > 0 ? 'warm' : 'default' },
+            { label: 'Ready', value: dailyWords.length },
+            { label: 'Streak', value: streak.current, accent: 'emerald' },
           ]}
           className="border-t-0 pt-0"
         />
         <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
-          <div className="flex items-center gap-2 text-white/72">
-            <Layers3 className="h-4 w-4 text-emerald-300" />
-            <p className="text-sm font-medium">当前阶段</p>
-          </div>
-          <p className="mt-3 text-lg font-semibold text-white">{sessionStage}</p>
-          <p className="mt-2 text-sm leading-6 text-white/54">只做当前这一步，不要同时处理所有信息。</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Focus</p>
+          <p className="mt-2 text-lg font-semibold text-white">{focusedMode.nameZh}</p>
+          <p className="mt-1 text-sm text-white/54">{focusedBlueprint.insight}</p>
+        </div>
+        <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Stage</p>
+          <p className="mt-2 text-lg font-semibold text-white">{sessionStage}</p>
         </div>
         {selectedMode === 'writing' ? (
           <div className="rounded-[22px] border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
@@ -548,7 +529,6 @@ export default function PracticePage() {
             <p className="mt-3 text-2xl font-semibold text-white">
               {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
             </p>
-            <p className="mt-2 text-sm leading-6 text-white/58">把配额留给完整输出，不要浪费在半成品上。</p>
           </div>
         ) : null}
       </LearningRailSection>
@@ -558,18 +538,18 @@ export default function PracticePage() {
   const pageTitle = !selectedMode
     ? '先锁定今天最值得练的一种模式。'
     : !hasStarted
-      ? `准备进入 ${focusedMode.nameZh}，把这轮边界先定清楚。`
+      ? `准备进入 ${focusedMode.nameZh}`
       : isComplete
         ? '这轮短练习已经完成。'
-        : `把这一轮 ${focusedMode.nameZh} 做完，不要中途切走。`;
+        : `${focusedMode.nameZh} 进行中`;
 
   const pageDescription = !selectedMode
-    ? '练习页不该像模式广场。这里先给你一个清晰推荐，再把主要空间留给当前任务，减少干扰和无意义选择。'
+    ? undefined
     : !hasStarted
-      ? focusedBlueprint.reason
+      ? focusedBlueprint.insight
       : isComplete
-        ? '先看这轮结果，再决定是否换模式或重新来一遍。'
-        : focusedBlueprint.focus;
+        ? '看结果，再决定下一步。'
+        : undefined;
 
   const heroProgress =
     selectedMode && hasStarted && !isComplete && selectedMode !== 'writing'
@@ -587,9 +567,9 @@ export default function PracticePage() {
         progress={heroProgress}
         progressLabel="Session progress"
         metrics={[
-          { label: 'Recommended', value: focusedMode.nameZh, accent: 'emerald', hint: focusedBlueprint.labelZh },
-          { label: 'Estimated', value: `${focusedBlueprint.estimatedMinutes} min`, hint: '先把当前回合做完，不在中途加码。' },
-          { label: 'Prompts', value: focusedBlueprint.estimatedQuestions, hint: '小回合比大而散的训练更容易完成。' },
+          { label: 'Recommended', value: focusedMode.nameZh, accent: 'emerald' },
+          { label: 'Estimated', value: `${focusedBlueprint.estimatedMinutes} min` },
+          { label: 'Prompts', value: focusedBlueprint.estimatedQuestions },
         ]}
         actions={
           <>
@@ -634,9 +614,8 @@ export default function PracticePage() {
       <LearningWorkspaceSurface
         eyebrow="Recommended for today"
         title={`${focusedMode.name} · ${focusedMode.nameZh}`}
-        description="首屏只保留一个主动作。先看清楚为什么做这轮，再进入练习工作区。"
       >
-        <div className="space-y-7">
+        <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
               {focusedBlueprint.labelZh}
@@ -649,42 +628,17 @@ export default function PracticePage() {
             </Badge>
           </div>
 
-          <div className="max-w-3xl space-y-3">
-            <p className="text-lg leading-8 text-white">{focusedBlueprint.focus}</p>
-            <p className="text-base leading-7 text-white/58">{focusedBlueprint.reason}</p>
-          </div>
-
           {renderFactStrip([
-            { label: '训练目标', value: focusedMode.description, hint: '先把这轮任务边界说清楚。' },
-            { label: '预计时长', value: `${focusedBlueprint.estimatedMinutes} min`, hint: '给你一个可预期的完成成本。', accent: 'emerald' },
-            { label: '今日素材', value: `${dailyWords.length} words`, hint: '直接用今天的词，减少切换。' },
+            { label: '训练目标', value: focusedMode.description, hint: '' },
+            { label: '预计时长', value: `${focusedBlueprint.estimatedMinutes} min`, hint: '', accent: 'emerald' },
+            { label: '今日素材', value: `${dailyWords.length} words`, hint: '' },
           ])}
 
-          <div className="grid gap-4 border-t border-white/10 pt-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end">
-            <ol className="grid gap-3 sm:grid-cols-3">
-              {[
-                ['1', '先选模式', '决定是理解、回想、听辨还是输出。'],
-                ['2', '进入工作区', '只显示当前任务需要的信息。'],
-                ['3', '拿到反馈', '做完一轮后再决定下一步。'],
-              ].map(([step, title, note]) => (
-                <li key={step} className="space-y-2 rounded-[22px] border border-white/10 bg-white/[0.03] px-4 py-4">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-semibold text-black">
-                    {step}
-                  </span>
-                  <p className="text-sm font-semibold text-white">{title}</p>
-                  <p className="text-sm leading-6 text-white/54">{note}</p>
-                </li>
-              ))}
-            </ol>
-            <div className="space-y-3 lg:border-l lg:border-white/10 lg:pl-6">
-              <Button className="w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={() => pickMode(focusedModeId)}>
-                Review this mode
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-              <p className="text-sm leading-6 text-white/54">
-                先看模式说明，再进入练习。首屏只保留一个主动作，避免被四个入口同时拉扯。
-              </p>
-            </div>
+          <div className="border-t border-white/10 pt-5">
+            <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={() => pickMode(focusedModeId)}>
+              Review this mode
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </div>
       </LearningWorkspaceSurface>,
@@ -696,9 +650,8 @@ export default function PracticePage() {
       <LearningWorkspaceSurface
         eyebrow="Prepare the session"
         title={`${focusedMode.name} · ${focusedMode.nameZh}`}
-        description="进入后只保留当前训练需要的内容。模式切换仍在左侧，但不再把首屏重新塞满说明卡。"
       >
-        <div className="space-y-7">
+        <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
               {focusedBlueprint.label}
@@ -708,7 +661,6 @@ export default function PracticePage() {
               {focusedBlueprint.estimatedMinutes} min
             </Badge>
             <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
-              <Layers3 className="mr-1.5 h-3.5 w-3.5" />
               {focusedBlueprint.estimatedQuestions} prompts
             </Badge>
             {selectedMode === 'writing' ? (
@@ -718,25 +670,17 @@ export default function PracticePage() {
             ) : null}
           </div>
 
-          <div className="max-w-3xl space-y-3">
-            <p className="text-lg leading-8 text-white">{focusedBlueprint.focus}</p>
-            <p className="text-base leading-7 text-white/58">{focusedBlueprint.reason}</p>
-          </div>
-
           {renderFactStrip([
-            { label: '这轮会做什么', value: focusedMode.description, hint: '明确任务边界，减少开始前焦虑。' },
-            { label: '为什么现在做', value: focusedBlueprint.labelZh, hint: focusedBlueprint.reason, accent: 'emerald' },
+            { label: '这轮会做什么', value: focusedMode.description, hint: '' },
+            { label: '为什么现在做', value: focusedBlueprint.labelZh, hint: '', accent: 'emerald' },
             {
               label: '完成后得到什么',
               value: selectedMode === 'writing' ? '结构化评分' : '正确率 + 下一步建议',
-              hint: selectedMode === 'writing' ? '拿到可执行的改写与问题标签。' : '知道是否继续补同一块。',
+              hint: '',
             },
           ])}
 
-          <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-xl text-sm leading-6 text-white/54">
-              进入后只保留当前训练需要的内容。你可以随时改模式，但不该在开始前被四种工作区同时拉扯。
-            </div>
+          <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-end">
             <LearningActionCluster>
               <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={startFocusedMode}>
                 Start practice
@@ -761,7 +705,6 @@ export default function PracticePage() {
       <LearningWorkspaceSurface
         eyebrow="Writing workspace"
         title="IELTS Writing Coach"
-        description="编辑器是主舞台。先把草稿写完，再决定是否调用评分，不要一上来就在多个辅助工具之间切换。"
         actions={
           <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
             AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
@@ -781,7 +724,6 @@ export default function PracticePage() {
                   <SelectItem value="task2" className="focus:bg-white/10 focus:text-white">Task 2</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-sm leading-6 text-white/54">先定题型，再用同一工作区完成 prompt、写作和反馈。</p>
             </div>
 
             <div className="space-y-3">
@@ -806,9 +748,6 @@ export default function PracticePage() {
 
           {!writingFeedback ? (
             <div className="flex flex-col gap-4 border-t border-white/10 pt-5 lg:flex-row lg:items-center lg:justify-between">
-              <p className="max-w-xl text-sm leading-6 text-white/54">
-                先交一版，再根据四维评分修改。不要一开始就试图把答案写到完美。
-              </p>
               <Button
                 onClick={handleWritingSubmit}
                 className="rounded-full bg-emerald-500 px-5 text-black hover:bg-emerald-400"
@@ -896,7 +835,7 @@ export default function PracticePage() {
           icon={Target}
           eyebrow="Listening workspace"
           title="没有可用的听辨素材"
-          description="先学一组新词，系统才有足够素材生成一轮听辨训练。"
+          description="先准备一组词。"
           actions={
             <Button
               variant="outline"
@@ -914,7 +853,6 @@ export default function PracticePage() {
       <LearningWorkspaceSurface
         eyebrow="Listening workspace"
         title="Listen, then type"
-        description="播放单词，输入你听到的内容。先把发音和拼写对齐，再进入下一题。"
       >
         <div className="space-y-6">
           <div className="space-y-2 border-b border-white/10 pb-5">
@@ -994,7 +932,7 @@ export default function PracticePage() {
         icon={Trophy}
         eyebrow="Session summary"
         title="这轮短练习已经完成"
-        description="先看这轮结果，再决定下一步。不要在完成前频繁换模式；完成后再切换，学习信号才足够清晰。"
+        description="这轮结果已经出来了。"
         metrics={[
           { label: 'Correct', value: `${score}/${safeTotal}`, accent: 'emerald' },
           { label: 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
@@ -1025,7 +963,7 @@ export default function PracticePage() {
         icon={Target}
         eyebrow="Practice workspace"
         title="没有足够的练习素材"
-        description="请先学一组单词，再回来做这轮短练习。"
+        description="先学一组单词。"
         actions={
           <Button
             variant="outline"
@@ -1043,7 +981,6 @@ export default function PracticePage() {
     <LearningWorkspaceSurface
       eyebrow="Practice workspace"
       title={`${focusedMode.name} · ${focusedMode.nameZh}`}
-      description="当前工作区只服务这一题。选答案、检查、继续，直到这轮练完。"
       actions={
         <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
           Question {currentQuestionIndex + 1} / {quizQuestions.length}

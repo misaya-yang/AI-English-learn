@@ -477,7 +477,6 @@ export default function DashboardLayout() {
           <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">Current route</p>
             <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">{activeShell.title}</h2>
-            <p className="mt-2 text-sm leading-6 text-white/55">{activeShell.description}</p>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.16em] text-white/38">Mission</p>
@@ -506,7 +505,7 @@ export default function DashboardLayout() {
             <div className="space-y-6 pb-4">
               <div className="space-y-2">
                 <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Core learning</p>
-                {learningNav.map((item) => renderLearningNavItem(item))}
+                {learningNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
@@ -521,7 +520,6 @@ export default function DashboardLayout() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">{xp?.total?.toLocaleString() || 0} XP total</p>
-                    <p className="text-xs text-white/45">Keep the route narrow. Finish this round first.</p>
                   </div>
                 </div>
               </div>

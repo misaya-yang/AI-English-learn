@@ -180,9 +180,6 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
                   </span>
                 ))}
               </div>
-              <p className="mt-4 text-sm leading-6 text-white/54">
-                现在只做一件事：给这次回忆打分，再继续下一张。不要在这里切去别的页面。
-              </p>
             </section>
           </div>
         </div>
@@ -269,10 +266,10 @@ export default function ReviewPage() {
           icon={Check}
           eyebrow="Review queue"
           title="今天没有待处理复习"
-          description="你当前没有到期复习卡。保持现在的节奏，下一步更适合回到 Today 或做一轮短练习。"
+          description="当前没有到期复习卡。"
           metrics={[
             { label: 'Due reviews', value: 0, accent: 'emerald' },
-            { label: 'Fallback set', value: Math.min(FALLBACK_REVIEW_COUNT, dailyWords.length), hint: '需要时仍可从今日词生成一轮复习。' },
+            { label: 'Fallback set', value: Math.min(FALLBACK_REVIEW_COUNT, dailyWords.length) },
           ]}
           actions={
             <>
@@ -298,7 +295,7 @@ export default function ReviewPage() {
           icon={Check}
           eyebrow="Review complete"
           title="本轮复习已经完成"
-          description="这轮复习已经给出了足够信号。先看恢复率，再决定是继续做 Practice，还是回到 Today 开下一步。"
+          description="这一轮已经结束。"
           metrics={[
             { label: 'Reviewed', value: totalReviewed, accent: 'emerald' },
             { label: 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
@@ -325,13 +322,12 @@ export default function ReviewPage() {
       <LearningHeroPanel
         eyebrow="Review round"
         title="先回忆，再揭晓答案。把复习做成一个完整回合。"
-        description="Review 不是翻卡广场，而是一轮稳定节奏的回忆工作台。每次只处理一张卡，给出评分，然后继续前进。"
         progress={Math.round(reviewedProgress)}
         progressLabel="Round progress"
         metrics={[
-          { label: 'Remaining', value: remainingCount, hint: '先做完这一轮，不在中途切走。', accent: 'emerald' },
-          { label: 'Mission target', value: reviewTaskTarget, hint: '今日任务会在达到目标后结算。' },
-          { label: 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}`, hint: '保持稳定节奏比刷很快更重要。' },
+          { label: 'Remaining', value: remainingCount, accent: 'emerald' },
+          { label: 'Mission target', value: reviewTaskTarget },
+          { label: 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
         ]}
       />
 
@@ -340,7 +336,7 @@ export default function ReviewPage() {
           <LearningWorkspaceSurface
             eyebrow="SRS workspace"
             title={isRevealed ? '答案已揭晓，给这次回忆打分' : '先在脑中回忆，再决定是否揭晓'}
-            description={isRevealed ? '现在只需要一个动作：根据回忆难度评分。评分后系统会安排下一次出现时间。' : '在真正点开答案前，先在脑中做一次检索。这样复习才有价值。'}
+            description={isRevealed ? '直接评分，然后继续。' : undefined}
           >
             <div className="space-y-5">
               {currentItem ? <ReviewCard item={currentItem} isRevealed={isRevealed} onReveal={handleReveal} /> : null}
@@ -364,9 +360,7 @@ export default function ReviewPage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3 rounded-[26px] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm leading-6 text-white/54">
-                    在显示答案前，先试着回想意思、例句或使用场景。回忆越明确，SRS 信号越可靠。
-                  </p>
+                  <p className="text-sm leading-6 text-white/54">先回忆，再揭晓。</p>
                   <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={handleReveal}>
                     Reveal answer
                   </Button>
@@ -377,10 +371,7 @@ export default function ReviewPage() {
         </div>
 
         <div className="space-y-6">
-          <LearningRailSection
-            title="Session stats"
-            description="不要看一堆卡片，只看这轮回合是否稳定。"
-          >
+          <LearningRailSection title="Session stats">
             <LearningMetricStrip
               items={[
                 { label: 'Again', value: sessionStats.again, accent: 'warm' },
@@ -401,37 +392,34 @@ export default function ReviewPage() {
             </div>
           </LearningRailSection>
 
-          <LearningRailSection
-            title="Interval guide"
-            description="每次评分后的信号应该非常清晰。只保留 next interval，不堆多余反馈。"
-          >
+          <LearningRailSection title="Rating guide">
             <div className="space-y-3">
               <div className="rounded-[22px] border border-red-500/20 bg-red-500/[0.08] p-4">
                 <div className="flex items-center gap-2 text-red-300">
                   <X className="h-4 w-4" />
                   <p className="text-sm font-semibold">Again</p>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-white/58">说明当前回忆失败，应该马上再次出现。</p>
-              </div>
+                  <p className="mt-2 text-sm text-white/58">马上重见</p>
+                </div>
               <div className="rounded-[22px] border border-amber-500/20 bg-amber-500/[0.08] p-4">
                 <div className="flex items-center gap-2 text-amber-300">
                   <Zap className="h-4 w-4" />
                   <p className="text-sm font-semibold">Hard</p>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-white/58">有印象但不稳，保留短间隔再次确认。</p>
-              </div>
+                  <p className="mt-2 text-sm text-white/58">短间隔复现</p>
+                </div>
               <div className="rounded-[22px] border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
                 <div className="flex items-center gap-2 text-emerald-300">
                   <Check className="h-4 w-4" />
                   <p className="text-sm font-semibold">Good / Easy</p>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-white/58">当前记忆已经成型，可以把间隔拉长，把精力留给更弱的点。</p>
-              </div>
+                  <p className="mt-2 text-sm text-white/58">拉长间隔</p>
+                </div>
             </div>
           </LearningRailSection>
 
           {currentItem ? (
-            <LearningRailSection title="Current card" description="只展示当前卡的最小必要上下文。">
+            <LearningRailSection title="Current card">
               <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-center gap-2 text-white/72">
                   <Clock3 className="h-4 w-4 text-emerald-300" />
@@ -440,7 +428,7 @@ export default function ReviewPage() {
                 <p className="mt-3 text-sm leading-6 text-white/54">
                   {currentItem.nextReview
                     ? `系统上次安排的下次复习时间：${new Date(currentItem.nextReview).toLocaleString('zh-CN')}`
-                    : '这是一次新生成的回顾卡，用来把今天的内容快速重新激活。'}
+                    : '今日回顾卡'}
                 </p>
                 <div className="mt-4 rounded-[18px] border border-white/10 bg-black/30 px-3 py-2 text-sm text-white/65">
                   Ease factor: {currentItem.easeFactor.toFixed(1)}

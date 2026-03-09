@@ -123,8 +123,8 @@ export function LearningHeroPanel({
                     {progressValueLabel || `${progress}%`}
                   </p>
                 </div>
-                <p className="max-w-[11rem] text-right text-sm leading-6 text-white/50">
-                  {progress >= 100 ? 'This round is complete.' : 'Keep the current round narrow and finish it before switching.'}
+                <p className="hidden max-w-[8rem] text-right text-sm leading-6 text-white/46 lg:block">
+                  {progress >= 100 ? 'Round complete.' : 'Stay in flow.'}
                 </p>
               </div>
               <Progress
@@ -187,7 +187,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
           <div className={cn('text-2xl font-semibold tracking-[-0.04em]', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
-          {item.hint ? <p className="text-sm leading-6 text-white/54">{item.hint}</p> : null}
+          {item.hint ? <p className="hidden text-xs leading-5 text-white/46 xl:block">{item.hint}</p> : null}
         </div>
       ))}
     </div>

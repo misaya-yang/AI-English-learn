@@ -459,25 +459,21 @@ export default function TodayPage() {
       <LearningHeroPanel
         eyebrow={`Today mission · ${new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}`}
         title={missionCard?.headlineZh || '先做最该做的一步'}
-        description={missionCard?.supportZh || '今天先清掉复习压力，再用一轮针对性练习把薄弱点补上。'}
         progress={missionProgress}
         progressLabel="Mission progress"
         metrics={[
           {
             label: 'Estimated time',
             value: `${missionCard?.estimatedMinutes || learningProfile.dailyMinutes} min`,
-            hint: '把今天的学习边界压缩在一段清晰时间内。',
           },
           {
             label: 'Words left',
             value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
-            hint: '先做完这组，再决定下一步。',
             accent: 'emerald',
           },
           {
             label: 'Due reviews',
             value: dueWords.length,
-            hint: dueWords.length > 0 ? '如果旧账变多，优先切去 Review。' : '当前没有复习积压，可以继续推进新词。',
           },
         ]}
         actions={
@@ -506,7 +502,6 @@ export default function TodayPage() {
           <LearningWorkspaceSurface
             eyebrow="Vocabulary workspace"
             title={currentWord ? `${currentWord.word} · 当前主练单词` : 'Vocabulary workspace'}
-            description="新词学习仍然保留在同一页，但它现在从属于主任务，不再是整个产品唯一的入口。"
           >
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-4">
@@ -519,7 +514,6 @@ export default function TodayPage() {
                         <span className="mx-2 text-white/24">/</span>
                         <span className="text-white">{words.length}</span>
                       </p>
-                      <p className="mt-1 text-sm text-white/52">当前位次。保持节奏，不要频繁切模式。</p>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm text-white/48">
@@ -537,14 +531,11 @@ export default function TodayPage() {
                 </section>
 
                 <section className={cn(learningFrameClassName, 'p-4')}>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-2 text-white/70">
                       <Clock3 className="h-4 w-4 text-emerald-300" />
                       <p className="text-sm font-medium">还需 {Math.max(3, (words.length - learnedWords.size) * 2)} 分钟</p>
                     </div>
-                    <p className="text-sm leading-6 text-white/54">
-                      把今天这组单词做完，再去练习或复习。不要让当前回合被太多选择打断。
-                    </p>
                   </div>
                 </section>
 
@@ -655,7 +646,7 @@ export default function TodayPage() {
               icon={Check}
               eyebrow="Today complete"
               title="今天的新词任务已完成"
-              description={`你已经学完今天的 ${words.length} 个单词。现在最有价值的下一步，是去补一下弱项或者清空复习压力。`}
+              description={`今天的 ${words.length} 个单词已经完成。`}
               metrics={[
                 { label: 'Words completed', value: words.length, accent: 'emerald' },
                 { label: 'Hard words', value: hardWords.size, accent: 'warm' },
@@ -676,10 +667,7 @@ export default function TodayPage() {
         </div>
 
         <div className="space-y-6">
-          <LearningRailSection
-            title="Learning context"
-            description="词书、复习压力和当下节奏会在这里收口，不再和主舞台抢中心。"
-          >
+          <LearningRailSection title="Learning context">
             <div className="space-y-3">
               <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Active book</p>
@@ -690,9 +678,7 @@ export default function TodayPage() {
               <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Review pressure</p>
                 <p className="mt-2 text-lg font-semibold text-white">{dueWords.length} 个到期复习</p>
-                <p className="mt-2 text-sm leading-6 text-white/54">
-                  {activeBookSummary.isNearlyCompleted ? '当前词书接近完成，建议准备下一本。' : '先处理到期复习，再推进新词，记忆效率更高。'}
-                </p>
+                {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-white/48">当前词书接近完成</p> : null}
               </div>
 
               {adaptiveDifficulty ? (
@@ -701,16 +687,12 @@ export default function TodayPage() {
                     <ShieldCheck className="h-4 w-4" />
                     <p className="text-sm font-semibold">当前节奏：{adaptiveDifficulty.labelZh}</p>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-white/58">{adaptiveDifficulty.reason}</p>
                 </div>
               ) : null}
             </div>
           </LearningRailSection>
 
-          <LearningRailSection
-            title="Weakness map"
-            description="系统只显示最近最该补的 2-3 个点，不把所有信息同时推到主舞台。"
-          >
+          <LearningRailSection title="Weakness map">
             <div className="space-y-3">
               {weaknesses.length > 0 ? (
                 weaknesses.map((weakness) => (
@@ -747,7 +729,7 @@ export default function TodayPage() {
                     <Target className="h-4 w-4" />
                     <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-white/58">预计 {recommendedUnit.estimatedMinutes} 分钟，适合接在今天主任务之后。</p>
+                  <p className="mt-2 text-sm text-white/58">{recommendedUnit.estimatedMinutes} 分钟</p>
                   <Button variant="outline" size="sm" className="mt-3 rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
                     <Link to="/dashboard/exam">去补强</Link>
                   </Button>
@@ -757,7 +739,7 @@ export default function TodayPage() {
           </LearningRailSection>
 
           {activityPoints.length > 0 ? (
-            <LearningRailSection title="7-day spark" description="只看最近一周的活跃度，让节奏感可见。">
+            <LearningRailSection title="7-day spark">
               <div className="flex items-end gap-2">
                 {activityPoints.map((point) => {
                   const barHeight = Math.max(22, Math.min(88, point.words * 6 + point.xp * 0.35));
@@ -775,12 +757,7 @@ export default function TodayPage() {
                   );
                 })}
               </div>
-              {learningOverviewQuery.isLoading ? (
-                <div className="flex items-center gap-2 text-sm text-white/45">
-                  <TrendingUp className="h-4 w-4 text-emerald-300" />
-                  正在同步最近学习活动
-                </div>
-              ) : null}
+              {learningOverviewQuery.isLoading ? <TrendingUp className="h-4 w-4 text-emerald-300" /> : null}
             </LearningRailSection>
           ) : null}
         </div>
