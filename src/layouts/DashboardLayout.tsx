@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useMemo, type ComponentType } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { SearchPalette, useSearchPalette } from '@/components/SearchPalette';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
@@ -27,11 +28,15 @@ import {
   CalendarDays,
   ChevronRight,
   Flame,
+  Headphones,
+  GraduationCap,
   LayoutGrid,
+  Medal,
   Library,
   LogOut,
   Menu,
   MessageCircleMore,
+  Search,
   Settings,
   Shield,
   Sparkles,
@@ -110,6 +115,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const isChatRoute = location.pathname.startsWith('/dashboard/chat');
   const isLearningRoute = LEARNING_ROUTE_PREFIXES.some((path) => location.pathname.startsWith(path));
+  const { open: searchOpen, setOpen: setSearchOpen } = useSearchPalette();
 
   const primaryNav = useMemo<NavItem[]>(
     () => [
@@ -131,6 +137,24 @@ export default function DashboardLayout() {
         label: t('nav.practice'),
         description: '测验、听力、写作短练习',
         icon: WandSparkles,
+      },
+      {
+        path: '/dashboard/reading',
+        label: 'Reading',
+        description: 'IELTS 阅读理解精读训练',
+        icon: BookOpen,
+      },
+      {
+        path: '/dashboard/listening',
+        label: 'Listening',
+        description: 'IELTS 听力理解训练',
+        icon: Headphones,
+      },
+      {
+        path: '/dashboard/grammar',
+        label: 'Grammar',
+        description: '语法规则与填空练习',
+        icon: GraduationCap,
       },
       {
         path: '/dashboard/chat',
@@ -169,6 +193,12 @@ export default function DashboardLayout() {
         icon: Shield,
       },
       {
+        path: '/dashboard/leaderboard',
+        label: 'Leaderboard',
+        description: '周榜排名与社区挑战',
+        icon: Medal,
+      },
+      {
         path: '/dashboard/settings',
         label: 'Settings',
         description: '系统设置',
@@ -187,6 +217,16 @@ export default function DashboardLayout() {
         toolNav.find((item) => item.path === '/dashboard/vocabulary'),
       ].filter((item): item is NavItem => Boolean(item)),
     [primaryNav, toolNav],
+  );
+
+  const skillsNav = useMemo(
+    () =>
+      [
+        primaryNav.find((item) => item.path === '/dashboard/reading'),
+        primaryNav.find((item) => item.path === '/dashboard/listening'),
+        primaryNav.find((item) => item.path === '/dashboard/grammar'),
+      ].filter((item): item is NavItem => Boolean(item)),
+    [primaryNav],
   );
 
   const activeShell =
@@ -425,6 +465,11 @@ export default function DashboardLayout() {
       </div>
 
       <div className="space-y-2">
+        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Skills</p>
+        {skillsNav.map((item) => renderLearningNavItem(item, true))}
+      </div>
+
+      <div className="space-y-2">
         <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Tools</p>
         {learningTools.map((item) => renderLearningNavItem(item, true))}
       </div>
@@ -462,7 +507,8 @@ export default function DashboardLayout() {
 
   if (isLearningRoute) {
     return (
-      <div className="noise-bg flex h-screen overflow-hidden bg-[#020303] text-white">
+      <>
+        <div className="noise-bg flex h-screen overflow-hidden bg-[#020303] text-white">
         <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-white/[0.06] bg-black/80 backdrop-blur-xl px-4 py-4 lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-2xl px-1 py-2">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-300">
@@ -506,6 +552,11 @@ export default function DashboardLayout() {
               <div className="space-y-2">
                 <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Core learning</p>
                 {learningNav.map((item) => renderLearningNavItem(item, true))}
+              </div>
+
+              <div className="space-y-2">
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Skills</p>
+                {skillsNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
@@ -590,6 +641,15 @@ export default function DashboardLayout() {
                 >
                   <Link to={learningPrimaryAction.href}>{learningPrimaryAction.label}</Link>
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Search (⌘K)"
+                  className="rounded-full border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                  onClick={() => setSearchOpen(true)}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
                 {learningAccountMenu}
               </div>
             </div>
@@ -602,6 +662,8 @@ export default function DashboardLayout() {
           </div>
         </main>
       </div>
+      <SearchPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      </>
     );
   }
 
@@ -776,6 +838,7 @@ export default function DashboardLayout() {
           </div>
         </div>
       </main>
+      <SearchPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 }

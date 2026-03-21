@@ -19,8 +19,6 @@ import OnboardingPage from '@/pages/auth/OnboardingPage';
 
 // Dashboard Pages
 import DashboardLayout from '@/layouts/DashboardLayout';
-import SettingsPage from '@/pages/dashboard/SettingsPage';
-import ProfilePage from '@/pages/dashboard/ProfilePage';
 
 // Public Pages
 import WordOfTheDayPage from '@/pages/WordOfTheDayPage';
@@ -34,6 +32,12 @@ const VocabularyBankPage = lazyWithRetry(() => import('@/pages/dashboard/Vocabul
 const AnalyticsPage = lazyWithRetry(() => import('@/pages/dashboard/AnalyticsPage'), 'analytics');
 const ChatPage = lazyWithRetry(() => import('@/pages/dashboard/ChatPage'), 'chat');
 const MemoryCenterPage = lazyWithRetry(() => import('@/pages/dashboard/MemoryCenterPage'), 'memory');
+const SettingsPage = lazyWithRetry(() => import('@/pages/dashboard/SettingsPage'), 'settings');
+const ProfilePage = lazyWithRetry(() => import('@/pages/dashboard/ProfilePage'), 'profile');
+const ReadingPage = lazyWithRetry(() => import('@/pages/dashboard/ReadingPage'), 'reading');
+const ListeningPage = lazyWithRetry(() => import('@/pages/dashboard/ListeningPage'), 'listening');
+const GrammarPage = lazyWithRetry(() => import('@/pages/dashboard/GrammarPage'), 'grammar');
+const LeaderboardPage = lazyWithRetry(() => import('@/pages/dashboard/LeaderboardPage'), 'leaderboard');
 
 const RouteFallback = () => (
   <div className="flex h-[40vh] items-center justify-center text-sm text-muted-foreground">
@@ -73,8 +77,12 @@ function App() {
                     <Route path="analytics" element={<Suspense fallback={<RouteFallback />}><AnalyticsPage /></Suspense>} />
                     <Route path="chat" element={<Suspense fallback={<RouteFallback />}><ChatPage /></Suspense>} />
                     <Route path="memory" element={<Suspense fallback={<RouteFallback />}><MemoryCenterPage /></Suspense>} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="reading" element={<Suspense fallback={<RouteFallback />}><ReadingPage /></Suspense>} />
+                    <Route path="listening" element={<Suspense fallback={<RouteFallback />}><ListeningPage /></Suspense>} />
+                    <Route path="grammar" element={<Suspense fallback={<RouteFallback />}><GrammarPage /></Suspense>} />
+                    <Route path="leaderboard" element={<Suspense fallback={<RouteFallback />}><LeaderboardPage /></Suspense>} />
+                    <Route path="settings" element={<Suspense fallback={<RouteFallback />}><SettingsPage /></Suspense>} />
+                    <Route path="profile" element={<Suspense fallback={<RouteFallback />}><ProfilePage /></Suspense>} />
                   </Route>
                 </Route>
               </Routes>

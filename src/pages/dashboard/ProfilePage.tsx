@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useQuota } from '@/hooks/useQuota';
+import type { QuotaFeature } from '@/hooks/useQuota';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
@@ -21,9 +24,13 @@ import {
   Flame,
   Star,
   TrendingUp,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+
+const AVATAR_STORAGE_KEY = 'vocabdaily-avatar-url-';
 
 type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading';
@@ -39,19 +46,27 @@ const learningStyles: { id: LearningStyle; label: string; labelZh: string }[] = 
   { id: 'reading', label: 'Reading/Writing', labelZh: '读写型' },
 ];
 
-const levelThresholds: Record<string, number> = {
-  'Novice': 0,
-  'Apprentice': 500,
-  'Journeyman': 1500,
-  'Expert': 3500,
-  'Word Wizard': 7000,
-  'Language Master': 15000,
-};
+/** XP thresholds for each rank title — used to derive the displayed level name */
+const LEVEL_THRESHOLDS: [string, number][] = [
+  ['Language Master', 15000],
+  ['Word Wizard',      7000],
+  ['Expert',           3500],
+  ['Journeyman',       1500],
+  ['Apprentice',        500],
+  ['Novice',              0],
+];
 
 export default function ProfilePage() {
-  const { user, profile, updateUserProfile } = useAuth();
+  const { user, profile, updateUserProfile, updateDisplayName } = useAuth();
   const { xp, streak, stats } = useUserData();
+  const { plan, allStatuses } = useQuota();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    () => localStorage.getItem(`${AVATAR_STORAGE_KEY}${user?.id}`) || null,
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
     cefrLevel: (profile?.cefrLevel as CEFRLevel) || 'B1',
@@ -60,18 +75,57 @@ export default function ProfilePage() {
     learningStyle: (profile?.learningStyle as LearningStyle) || 'visual',
   });
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `avatars/${user.id}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+      // Cache locally so it persists across refreshes
+      localStorage.setItem(`${AVATAR_STORAGE_KEY}${user.id}`, publicUrl);
+      setAvatarUrl(publicUrl);
+      toast.success('头像已更新！');
+    } catch {
+      toast.error('头像上传失败，请重试');
+    } finally {
+      setIsUploading(false);
+      // Reset file input so same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
-    const success = await updateUserProfile({
-      cefrLevel: formData.cefrLevel,
-      dailyGoal: formData.dailyGoal,
-      preferredTopics: formData.preferredTopics,
-      learningStyle: formData.learningStyle,
-    });
-    if (success) {
-      setIsEditing(false);
-      toast.success('Profile updated successfully!');
-    } else {
-      toast.error('Failed to update profile');
+    setIsSaving(true);
+    try {
+      const profilePromise = updateUserProfile({
+        cefrLevel: formData.cefrLevel,
+        dailyGoal: formData.dailyGoal,
+        preferredTopics: formData.preferredTopics,
+        learningStyle: formData.learningStyle,
+      });
+      const namePromise =
+        formData.displayName !== user?.displayName
+          ? updateDisplayName(formData.displayName)
+          : Promise.resolve(true);
+
+      const [profileOk, nameOk] = await Promise.all([profilePromise, namePromise]);
+      if (profileOk && nameOk) {
+        setIsEditing(false);
+        toast.success('Profile updated successfully!');
+      } else {
+        toast.error('Failed to update profile');
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -92,7 +146,7 @@ export default function ProfilePage() {
   const xpNeededForNext = nextThreshold - currentThreshold;
   const progressPercent = Math.min(100, Math.max(0, (xpInCurrentLevel / xpNeededForNext) * 100));
 
-  const levelName = currentLevel < 5 ? 'Novice' : currentLevel < 10 ? 'Apprentice' : currentLevel < 20 ? 'Journeyman' : 'Expert';
+  const levelName = (LEVEL_THRESHOLDS.find(([, threshold]) => xp.total >= threshold) ?? ['Novice'])[0];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -105,9 +159,15 @@ export default function ProfilePage() {
         <Button
           variant={isEditing ? 'default' : 'outline'}
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+          disabled={isSaving}
           className={isEditing ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
         >
-          {isEditing ? (
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : isEditing ? (
             <>
               <Save className="h-4 w-4 mr-2" />
               Save Changes
@@ -127,18 +187,34 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="relative">
               <Avatar className="w-24 h-24">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" className="object-cover" />}
                 <AvatarFallback className="text-2xl bg-emerald-100 text-emerald-600">
-                  {user?.displayName?.[0] || user?.email?.[0] || 'U'}
+                  {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               {isEditing && (
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute bottom-0 right-0 rounded-full"
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    disabled={isUploading}
+                    className="absolute bottom-0 right-0 rounded-full"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Camera className="h-4 w-4" />
+                    )}
+                  </Button>
+                </>
               )}
             </div>
 
@@ -147,8 +223,9 @@ export default function ProfilePage() {
                 <div className="grid gap-2 max-w-sm">
                   <Label>Display Name</Label>
                   <Input
-                    value={user?.displayName || ''}
-                    disabled
+                    value={formData.displayName}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, displayName: e.target.value }))}
+                    placeholder="Your display name"
                   />
                 </div>
               ) : (
@@ -390,6 +467,72 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground">Mastered</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Daily AI Quota */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-amber-500" />
+              今日 AI 额度
+            </div>
+            <span className={cn(
+              'text-sm rounded-full px-3 py-1 font-semibold',
+              plan === 'pro'
+                ? 'bg-amber-500/15 text-amber-500'
+                : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/60',
+            )}>
+              {plan === 'pro' ? 'Pro' : 'Free'}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {allStatuses.map((status) => {
+              const featureLabels: Record<QuotaFeature, string> = {
+                aiWritingGrade:   'AI 写作批改',
+                aiReadingGen:     'AI 阅读生成',
+                aiChat:           'AI 教练对话',
+                aiExamFeedback:   '考试反馈',
+                aiListeningGen:   'AI 听力生成',
+              };
+              const pct = Math.round((status.used / status.limit) * 100);
+              return (
+                <div key={status.feature}>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm text-slate-700 dark:text-white/70">{featureLabels[status.feature]}</p>
+                    <p className={cn(
+                      'text-xs font-semibold',
+                      status.isExhausted ? 'text-red-500' : 'text-slate-500 dark:text-white/50',
+                    )}>
+                      {status.used}/{status.limit}
+                    </p>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/[0.08] overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all duration-500',
+                        status.isExhausted ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500',
+                      )}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {plan === 'free' && (
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3">
+              <p className="text-sm text-amber-600 dark:text-amber-400">升级 Pro 解锁无限 AI 功能</p>
+              <Link to="/pricing">
+                <Button size="sm" className="rounded-full bg-amber-500 text-black hover:bg-amber-400 h-7 text-xs px-3 font-semibold">
+                  查看方案
+                </Button>
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
 

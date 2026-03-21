@@ -1,6 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { wordsDatabase } from '@/data/words';
+import { retrievability } from '@/services/fsrs';
+import { ensureFSRS } from '@/services/fsrsMigration';
+import type { UserProgress } from '@/data/localStorage';
+import type { FSRSState } from '@/types/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -33,31 +38,39 @@ import {
 import { cn } from '@/lib/utils';
 import { getHeatmapData, getWeeklyActivity, type WeeklyActivityPoint } from '@/services/learningEvents';
 
-const generateTopicData = (dailyWords: Array<{ topic: string }>) => {
+const TOPIC_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'];
+
+const generateTopicData = (wordIds: string[]) => {
   const topicCounts: Record<string, number> = {};
-  dailyWords.forEach((word) => {
-    topicCounts[word.topic] = (topicCounts[word.topic] || 0) + 1;
+  wordIds.forEach((id) => {
+    const word = wordsDatabase.find((w) => w.id === id);
+    const topic = word?.topic || 'general';
+    topicCounts[topic] = (topicCounts[topic] || 0) + 1;
   });
-  
-  const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'];
-  return Object.entries(topicCounts).map(([name, value], index) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    value,
-    color: colors[index % colors.length],
-  }));
+  return Object.entries(topicCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([name, value], index) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value,
+      color: TOPIC_COLORS[index % TOPIC_COLORS.length],
+    }));
 };
 
 export default function AnalyticsPage() {
-  const { stats, xp, streak, dailyWords } = useUserData();
+  const { stats, xp, streak, dailyWords, progress } = useUserData();
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState('week');
   const [weeklyData, setWeeklyData] = useState<WeeklyActivityPoint[]>([]);
   const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
-  const [topicData, setTopicData] = useState<Array<{ name: string; value: number; color: string }>>([]);
 
-  useEffect(() => {
-    setTopicData(generateTopicData(dailyWords));
-  }, [dailyWords]);
+  // Derive topic data from all progress words; fall back to today's daily words if no progress yet
+  const topicData = useMemo(() => {
+    const ids = progress.length > 0
+      ? progress.map((p) => p.wordId)
+      : dailyWords.map((w) => w.id);
+    return generateTopicData(ids);
+  }, [progress, dailyWords]);
 
   useEffect(() => {
     const userId = user?.id || 'guest';
@@ -73,11 +86,16 @@ export default function AnalyticsPage() {
     };
 
     void loadAnalytics();
-  }, [stats.totalWords, timeRange, user?.id]);
+  // timeRange is UI-only state — getWeeklyActivity/getHeatmapData don't accept it as a param
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats.totalWords, user?.id]);
 
   // Calculate level based on XP
   const level = Math.floor(xp.total / 100) + 1;
   const levelName = level < 5 ? 'Novice' : level < 10 ? 'Apprentice' : level < 20 ? 'Journeyman' : 'Expert';
+  // XP progress within the current level (0–99)
+  const xpInCurrentLevel = xp.total % 100;
+  const xpToNextLevel = 100 - xpInCurrentLevel;
 
   const statCards = [
     {
@@ -118,18 +136,57 @@ export default function AnalyticsPage() {
     },
   ];
 
-  // Retention curve data
-  const masteryRatio = stats.totalWords > 0 ? stats.masteredWords / stats.totalWords : 0.35;
-  const baseline = Math.round(40 + masteryRatio * 45);
-  const retentionData = [
-    { day: 'Day 1', retention: 100 },
-    { day: 'Day 3', retention: Math.min(95, baseline + 18) },
-    { day: 'Day 7', retention: Math.min(90, baseline + 10) },
-    { day: 'Day 14', retention: Math.min(85, baseline + 4) },
-    { day: 'Day 30', retention: baseline },
-    { day: 'Day 60', retention: Math.max(30, baseline - 6) },
-    { day: 'Day 90', retention: Math.max(25, baseline - 10) },
-  ];
+  // ── FSRS-powered retention analytics ───────────────────────────────────────
+  const fsrsStats = useMemo(() => {
+    if (!progress.length) return null;
+    const now = Date.now();
+
+    // Compute current retrievability for every non-mastered word
+    const retrievabilities = progress
+      .filter((p) => p.status !== 'mastered')
+      .map((p) => {
+        const fsrs = ensureFSRS(p as UserProgress & { fsrs?: FSRSState });
+        if (fsrs.stability === 0) return 0;
+        const elapsedDays = fsrs.lastReviewAt
+          ? (now - new Date(fsrs.lastReviewAt).getTime()) / 86_400_000
+          : 0;
+        return retrievability(fsrs.stability, elapsedDays);
+      });
+
+    const avgR = retrievabilities.length
+      ? retrievabilities.reduce((s, v) => s + v, 0) / retrievabilities.length
+      : 0;
+
+    // Bucket into 5 groups for histogram (0-20%, 20-40%, …, 80-100%)
+    const buckets = [0, 0, 0, 0, 0];
+    for (const r of retrievabilities) {
+      const idx = Math.min(4, Math.floor(r * 5));
+      buckets[idx]++;
+    }
+    const histData = ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'].map((label, i) => ({
+      label,
+      count: buckets[i],
+      fill: i >= 3 ? '#10b981' : i === 2 ? '#f59e0b' : '#ef4444',
+    }));
+
+    // Forgetting curves: FSRS (target 90%) vs naive baseline (no SRS)
+    // Use only non-mastered words to stay consistent with the histogram above
+    const nonMasteredWithStability = progress
+      .filter((p) => p.status !== 'mastered' && (p as UserProgress & { fsrs?: FSRSState }).fsrs?.stability);
+    const avgStability = nonMasteredWithStability.length
+      ? nonMasteredWithStability.reduce(
+          (s, p) => s + ((p as UserProgress & { fsrs?: FSRSState }).fsrs?.stability ?? 1), 0,
+        ) / nonMasteredWithStability.length
+      : 7; // default 7-day stability
+
+    const curvePoints = [1, 3, 7, 14, 30, 60, 90].map((day) => ({
+      day: `D${day}`,
+      fsrs: Math.round(retrievability(avgStability, day) * 100),
+      baseline: Math.round(Math.max(5, 100 * Math.exp(-day / 7))), // naive Ebbinghaus
+    }));
+
+    return { avgR, histData, curvePoints, total: retrievabilities.length };
+  }, [progress]);
 
   const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
   const badges = [
@@ -195,17 +252,17 @@ export default function AnalyticsPage() {
               <span className="font-medium">Level {level} - {levelName}</span>
             </div>
             <span className="text-sm text-muted-foreground">
-              {xp.total} / {(level * 100)} XP
+              {xp.total} XP total
             </span>
           </div>
           <div className="w-full bg-muted rounded-full h-2">
-            <div 
+            <div
               className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full transition-all"
-              style={{ width: `${(xp.today / 100) * 100}%` }}
+              style={{ width: `${xpInCurrentLevel}%` }}
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {100 - xp.today} XP needed for next level
+            {xpInCurrentLevel} / 100 XP &mdash; {xpToNextLevel} XP needed for level {level + 1}
           </p>
         </CardContent>
       </Card>
@@ -387,33 +444,81 @@ export default function AnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="retention" className="space-y-6">
+          {/* Average retrievability gauge */}
+          {fsrsStats && (
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card className="col-span-1">
+                <CardContent className="p-5 flex flex-col items-center justify-center h-full gap-2">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">Avg. Retrievability</p>
+                  <p className="text-[3rem] font-bold text-emerald-500 leading-none">
+                    {Math.round(fsrsStats.avgR * 100)}%
+                  </p>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {fsrsStats.total} active words tracked by FSRS-5
+                  </p>
+                  <div className="w-full bg-muted rounded-full h-2 mt-1">
+                    <div
+                      className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-emerald-500 transition-all"
+                      style={{ width: `${Math.round(fsrsStats.avgR * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Target: ≥ 85%</p>
+                </CardContent>
+              </Card>
+
+              {/* Retrievability histogram */}
+              <Card className="col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Current Retrievability Distribution</CardTitle>
+                  <p className="text-xs text-muted-foreground">各单词当前记忆保留率分布</p>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <BarChart data={fsrsStats.histData} barSize={36}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                      <Tooltip formatter={(v: number) => [`${v} words`, 'Count']} />
+                      <Bar dataKey="count" name="Words">
+                        {fsrsStats.histData.map((entry, i) => (
+                          <Cell key={i} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* FSRS forgetting curve vs baseline */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Retention Curve</CardTitle>
-              <p className="text-sm text-muted-foreground">记忆保留曲线</p>
+              <CardTitle className="text-lg">FSRS-5 vs. Baseline Forgetting Curve</CardTitle>
+              <p className="text-sm text-muted-foreground">FSRS 算法 vs. 基础遗忘曲线对比</p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={retentionData}>
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={fsrsStats?.curvePoints}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
+                  <YAxis domain={[0, 100]} unit="%" />
+                  <Tooltip formatter={(v: number) => [`${v}%`]} />
                   <Line
-                    type="monotone"
-                    dataKey="retention"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    dot={{ fill: '#10b981' }}
+                    type="monotone" dataKey="fsrs" name="FSRS-5 (your avg stability)"
+                    stroke="#10b981" strokeWidth={2.5} dot={{ fill: '#10b981', r: 3 }}
+                  />
+                  <Line
+                    type="monotone" dataKey="baseline" name="No SRS (Ebbinghaus)"
+                    stroke="#ef4444" strokeWidth={1.5} strokeDasharray="4 3"
+                    dot={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
-              <div className="mt-4 p-4 bg-muted rounded-lg">
-                <p className="text-sm">
-                  <strong>Retention Rate:</strong> Using our SRS system helps you retain up to 90% of words after 30 days.
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  使用我们的 SRS 系统，30 天后保留率可达 90%。
+              <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex gap-2">
+                <span className="text-emerald-400 text-lg">✓</span>
+                <p className="text-sm text-emerald-200/80">
+                  FSRS-5 targets <strong>90% retention</strong> at each review interval, scheduling your next review just before you would forget.
                 </p>
               </div>
             </CardContent>

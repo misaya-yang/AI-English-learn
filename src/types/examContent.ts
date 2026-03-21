@@ -56,10 +56,16 @@ export interface ExamRubric {
 }
 
 export interface FeedbackIssue {
-  tag: 'task_response' | 'coherence' | 'lexical' | 'grammar' | 'logic' | 'collocation' | 'tense';
+  tag: 'task_response' | 'coherence' | 'lexical' | 'grammar' | 'logic' | 'collocation' | 'tense' | 'word_count';
   severity: 'low' | 'medium' | 'high';
+  /** The exact problematic sentence from the essay (used for highlighting) */
+  sentence?: string;
   message: string;
+  messageZh?: string;
   suggestion: string;
+  suggestionZh?: string;
+  /** Corrected version of the problematic sentence */
+  correction?: string;
 }
 
 export interface AiFeedback {
@@ -72,6 +78,13 @@ export interface AiFeedback {
     overallBand: number;
   };
   issues: FeedbackIssue[];
+  /** Positive observations from the grader */
+  strengths?: string[];
+  /** 2-3 sentence overall assessment */
+  summary?: string;
+  summaryZh?: string;
+  /** The worst sentence rewritten at a higher band level */
+  improvedSentence?: string;
   rewrites: string[];
   nextActions: string[];
   confidence: number;

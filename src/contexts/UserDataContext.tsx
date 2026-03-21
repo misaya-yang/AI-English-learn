@@ -43,6 +43,13 @@ import {
   saveLearningProfile,
 } from '@/services/learningMissions';
 import { completeMissionTaskEvent, recordLearningEvent } from '@/services/learningEvents';
+import {
+  reviewWord as reviewWordInSupabase,
+  markWordAsLearned as markWordAsLearnedInSupabase,
+  markWordAsMastered as markWordAsMasteredInSupabase,
+} from '@/lib/supabase';
+import { scheduleReview } from '@/services/fsrs';
+import { ensureFSRS } from '@/services/fsrsMigration';
 
 interface StudyStats {
   totalWords: number;
@@ -312,6 +319,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       eventName: 'today.word_marked',
       payload: { wordId, status: 'learned' },
     });
+    // Sync to Supabase (fire-and-forget)
+    void markWordAsLearnedInSupabase(userId, wordId);
     loadData();
   };
 
@@ -330,6 +339,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       eventName: 'today.word_marked',
       payload: { wordId, status: 'mastered' },
     });
+    // Sync to Supabase (fire-and-forget)
+    void markWordAsMasteredInSupabase(userId, wordId);
     loadData();
   };
 
@@ -337,23 +348,39 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     const wordProgress = progress.find((p) => p.wordId === wordId);
-    const currentEase = wordProgress?.easeFactor || 2.5;
     const reviewCount = wordProgress?.reviewCount || 0;
 
-    const { nextReview, newEase } = calculateNextReview(rating, currentEase, reviewCount);
+    // ── FSRS-5 scheduling ────────────────────────────────────────────────────
+    // Lazily migrate old SM-2 records; new cards start from initCard() defaults.
+    const currentFSRS = wordProgress
+      ? ensureFSRS(wordProgress as Parameters<typeof ensureFSRS>[0])
+      : { stability: 0, difficulty: 0, retrievability: 0, lapses: 0,
+          state: 'new' as const, dueAt: new Date().toISOString(), lastReviewAt: null };
 
-    let newStatus: 'new' | 'learning' | 'review' | 'mastered' = 'learning';
-    if (rating === 'again') newStatus = 'learning';
-    else if (rating === 'easy' && reviewCount >= 3) newStatus = 'mastered';
-    else newStatus = 'review';
+    const nextFSRS = scheduleReview(currentFSRS, rating);
+
+    // Map FSRS state back to the legacy "status" field so the rest of the app
+    // (ReviewPage, Analytics, etc.) continues to work unchanged.
+    let newStatus: 'new' | 'learning' | 'review' | 'mastered' = 'review';
+    if (nextFSRS.state === 'learning' || nextFSRS.state === 'relearning') {
+      newStatus = 'learning';
+    } else if (nextFSRS.lapses === 0 && nextFSRS.stability >= 21 && rating !== 'again') {
+      // Promote to mastered once stable for 21+ days with no lapses
+      newStatus = 'mastered';
+    } else {
+      newStatus = 'review';
+    }
 
     updateWordProgress(userId, wordId, {
       status: newStatus,
       reviewCount: reviewCount + 1,
-      lastReviewed: new Date().toISOString(),
-      nextReview,
-      easeFactor: newEase,
-    });
+      lastReviewed: nextFSRS.lastReviewAt!,
+      // nextReview uses date-only string (YYYY-MM-DD) for legacy compatibility
+      nextReview: nextFSRS.dueAt.split('T')[0],
+      easeFactor: wordProgress?.easeFactor ?? 2.5,
+      // Store the full FSRS state as an extra field (transparently extended)
+      fsrs: nextFSRS,
+    } as Parameters<typeof updateWordProgress>[2]);
 
     const xpAmount = rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10;
     addXP(userId, xpAmount);
@@ -361,8 +388,19 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     void recordLearningEvent({
       userId,
       eventName: 'review.word_rated',
-      payload: { wordId, rating, status: newStatus },
+      payload: {
+        wordId,
+        rating,
+        status: newStatus,
+        stability: nextFSRS.stability,
+        difficulty: nextFSRS.difficulty,
+        scheduledDays: Math.round(
+          (new Date(nextFSRS.dueAt).getTime() - Date.now()) / 86_400_000,
+        ),
+      },
     });
+    // Sync to Supabase (fire-and-forget)
+    void reviewWordInSupabase(userId, wordId, rating);
     loadData();
   };
 

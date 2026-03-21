@@ -127,10 +127,20 @@
 .glow-emerald {
   box-shadow:
     0 0 0 1px rgba(16, 185, 129, 0.08),
+    0 8px 40px -12px rgba(16, 185, 129, 0.15);
+}
+.dark .glow-emerald {
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.08),
     0 8px 40px -12px rgba(16, 185, 129, 0.25);
 }
 
 .glow-card {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 20px 60px -20px rgba(0, 0, 0, 0.1);
+}
+.dark .glow-card {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 20px 60px -20px rgba(0, 0, 0, 0.7);
@@ -138,22 +148,47 @@
 
 .glow-surface {
   box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.02),
+    0 30px 90px -58px rgba(0, 0, 0, 0.1);
+}
+.dark .glow-surface {
+  box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04),
     0 30px 90px -58px rgba(0, 0, 0, 0.88);
 }
 
+/* ─── Premium Grid Background ─── */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.mask-radial-fade {
+  mask-image: radial-gradient(circle at center, black 20%, transparent 80%);
+}
+
 /* ─── Glass surface ─── */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(20px) saturate(1.3);
   -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.dark .glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(40px) saturate(1.5);
   -webkit-backdrop-filter: blur(40px) saturate(1.5);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.dark .glass-strong {
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -251,7 +286,40 @@ html {
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
+  animation: pulse-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+/* Conic gradient border mask for hero elements */
+.border-conic {
+  position: relative;
+}
+.border-conic::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--border-angle), rgba(255,255,255,0.05) 0%, rgba(16,185,129,0.6) 20%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.05) 100%);
+  padding: 1px;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: spin-slow 8s linear infinite;
+}
+
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0turn;
 }
 
 .delay-100 {

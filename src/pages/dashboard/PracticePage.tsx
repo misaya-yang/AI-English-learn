@@ -32,6 +32,10 @@ import {
   Headphones,
   ChevronRight,
   Clock3,
+  AlertTriangle,
+  ThumbsUp,
+  Quote,
+  Wand2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -98,6 +102,8 @@ export default function PracticePage() {
   const [feedbackQuotaRemaining, setFeedbackQuotaRemaining] = useState<number | null>(null);
   const [isQuotaLoading, setIsQuotaLoading] = useState(false);
   const [isWritingSubmitting, setIsWritingSubmitting] = useState(false);
+  const [writingRound, setWritingRound] = useState(1);
+  const [previousFeedback, setPreviousFeedback] = useState<AiFeedback | null>(null);
   const [listeningInput, setListeningInput] = useState('');
   const [listeningResult, setListeningResult] = useState<{
     isCorrect: boolean;
@@ -128,6 +134,8 @@ export default function PracticePage() {
     setListeningResult(null);
     setWritingInput('');
     setWritingFeedback(null);
+    setWritingRound(1);
+    setPreviousFeedback(null);
   };
 
   const applyWritingDefaults = () => {
@@ -385,6 +393,13 @@ export default function PracticePage() {
 
   const handleRestart = () => {
     resetPracticeRuntime();
+  };
+
+  const handleRevise = () => {
+    // Save current feedback as the previous round's result, then return to editing
+    setPreviousFeedback(writingFeedback);
+    setWritingFeedback(null);
+    setWritingRound((r) => r + 1);
   };
 
   const playAudio = (text: string) => {
@@ -706,9 +721,16 @@ export default function PracticePage() {
         eyebrow="Writing workspace"
         title="IELTS Writing Coach"
         actions={
-          <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
-            AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {writingRound > 1 && (
+              <Badge className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-400">
+                Round {writingRound}
+              </Badge>
+            )}
+            <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+              AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
+            </Badge>
+          </div>
         }
       >
         <div className="space-y-6">
@@ -735,6 +757,37 @@ export default function PracticePage() {
               />
             </div>
           </div>
+
+          {/* Previous round summary banner shown while revising */}
+          {writingRound > 1 && previousFeedback && !writingFeedback && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.06] p-4 space-y-2"
+            >
+              <p className="text-xs font-semibold uppercase tracking-widest text-amber-400/80">
+                Round {writingRound - 1} score — revise to improve
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  ['Task', previousFeedback.scores.taskResponse],
+                  ['Coherence', previousFeedback.scores.coherenceCohesion],
+                  ['Lexical', previousFeedback.scores.lexicalResource],
+                  ['Grammar', previousFeedback.scores.grammaticalRangeAccuracy],
+                  ['Overall', previousFeedback.scores.overallBand],
+                ].map(([label, value]) => (
+                  <span key={label as string} className="text-xs text-white/60">
+                    {label}: <span className="text-white/90 font-medium">{(value as number).toFixed(1)}</span>
+                  </span>
+                ))}
+              </div>
+              {previousFeedback.issues.length > 0 && (
+                <p className="text-xs text-white/50 pt-1">
+                  Key issue: {previousFeedback.issues[0].message}
+                </p>
+              )}
+            </motion.div>
+          )}
 
           <div className="space-y-3 border-t border-white/10 pt-5">
             <Label className="text-white">Your response</Label>
@@ -774,19 +827,35 @@ export default function PracticePage() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-5 border-t border-white/10 pt-6"
             >
-              <div className="flex items-center gap-2 text-lg font-semibold text-white">
-                <Lightbulb className="h-4 w-4 text-yellow-400" />
-                Writing feedback
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <Lightbulb className="h-4 w-4 text-yellow-400" />
+                  {writingRound > 1 ? `Round ${writingRound} Feedback` : 'Writing feedback'}
+                </div>
+                {previousFeedback && (
+                  <span className="text-xs text-white/45">
+                    vs Round {writingRound - 1}: {previousFeedback.scores.overallBand.toFixed(1)} → {writingFeedback.scores.overallBand.toFixed(1)}
+                    {writingFeedback.scores.overallBand > previousFeedback.scores.overallBand
+                      ? ' ↑'
+                      : writingFeedback.scores.overallBand < previousFeedback.scores.overallBand
+                        ? ' ↓'
+                        : ' ='}
+                  </span>
+                )}
               </div>
 
               <div className="grid gap-3 md:grid-cols-5">
-                {[
-                  ['Task', writingFeedback.scores.taskResponse.toFixed(1)],
-                  ['Coherence', writingFeedback.scores.coherenceCohesion.toFixed(1)],
-                  ['Lexical', writingFeedback.scores.lexicalResource.toFixed(1)],
-                  ['Grammar', writingFeedback.scores.grammaticalRangeAccuracy.toFixed(1)],
-                  ['Overall', writingFeedback.scores.overallBand.toFixed(1)],
-                ].map(([label, value], index) => (
+                {(
+                  [
+                    ['Task', writingFeedback.scores.taskResponse, previousFeedback?.scores.taskResponse],
+                    ['Coherence', writingFeedback.scores.coherenceCohesion, previousFeedback?.scores.coherenceCohesion],
+                    ['Lexical', writingFeedback.scores.lexicalResource, previousFeedback?.scores.lexicalResource],
+                    ['Grammar', writingFeedback.scores.grammaticalRangeAccuracy, previousFeedback?.scores.grammaticalRangeAccuracy],
+                    ['Overall', writingFeedback.scores.overallBand, previousFeedback?.scores.overallBand],
+                  ] as [string, number, number | undefined][]
+                ).map(([label, value, prevValue], index) => {
+                  const delta = prevValue !== undefined ? value - prevValue : 0;
+                  return (
                   <div
                     key={label}
                     className={cn(
@@ -795,21 +864,140 @@ export default function PracticePage() {
                     )}
                   >
                     <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">{label}</p>
-                    <p className="mt-3 text-2xl font-semibold">{value}</p>
+                    <p className="mt-3 text-2xl font-semibold">{value.toFixed(1)}</p>
+                    {prevValue !== undefined && delta !== 0 && (
+                      <p className={cn('text-[11px] mt-1', delta > 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        {delta > 0 ? '+' : ''}{delta.toFixed(1)}
+                      </p>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
+              {/* ── Summary ───────────────────────────────────────────── */}
+              {writingFeedback.summary && (
+                <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 flex gap-3">
+                  <Quote className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+                  <div>
+                    <p className="text-sm leading-6 text-white/80">{writingFeedback.summary}</p>
+                    {writingFeedback.summaryZh && (
+                      <p className="mt-1 text-xs leading-5 text-white/42">{writingFeedback.summaryZh}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Strengths ──────────────────────────────────────────── */}
+              {writingFeedback.strengths && writingFeedback.strengths.length > 0 && (
+                <div className="rounded-3xl border border-emerald-500/15 bg-emerald-500/[0.06] p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <ThumbsUp className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-xs font-medium uppercase tracking-widest text-emerald-400/80">
+                      Strengths
+                    </span>
+                  </div>
+                  <ul className="space-y-1">
+                    {writingFeedback.strengths.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/72">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* ── Issues ─────────────────────────────────────────────── */}
               <div className="space-y-3">
-                {writingFeedback.issues.map((issue, index) => (
-                  <div key={`${issue.tag}-${index}`} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-                    <p className="text-sm font-medium text-white">{issue.message}</p>
-                    <p className="mt-2 text-sm leading-6 text-white/58">{issue.suggestion}</p>
-                  </div>
-                ))}
+                {writingFeedback.issues.map((issue, index) => {
+                  const severityColor =
+                    issue.severity === 'high'
+                      ? 'border-red-500/20 bg-red-500/[0.05]'
+                      : issue.severity === 'medium'
+                        ? 'border-amber-500/20 bg-amber-500/[0.04]'
+                        : 'border-white/10 bg-white/[0.03]';
+                  const tagColors: Record<string, string> = {
+                    grammar:       'bg-red-500/15 text-red-300',
+                    lexical:       'bg-violet-500/15 text-violet-300',
+                    coherence:     'bg-blue-500/15 text-blue-300',
+                    task_response: 'bg-amber-500/15 text-amber-300',
+                    collocation:   'bg-pink-500/15 text-pink-300',
+                    tense:         'bg-orange-500/15 text-orange-300',
+                    logic:         'bg-cyan-500/15 text-cyan-300',
+                    word_count:    'bg-yellow-500/15 text-yellow-300',
+                  };
+                  return (
+                    <div
+                      key={`${issue.tag}-${index}`}
+                      className={cn('rounded-3xl border p-4 space-y-2', severityColor)}
+                    >
+                      {/* header row */}
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className={cn(
+                          'h-3.5 w-3.5 shrink-0',
+                          issue.severity === 'high' ? 'text-red-400' : issue.severity === 'medium' ? 'text-amber-400' : 'text-white/40',
+                        )} />
+                        <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider', tagColors[issue.tag] ?? 'bg-white/10 text-white/60')}>
+                          {issue.tag.replace('_', ' ')}
+                        </span>
+                      </div>
+
+                      {/* problematic sentence (highlighted) */}
+                      {issue.sentence && (
+                        <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">
+                          <p className="text-[11px] uppercase tracking-wider text-white/35 mb-1">原句</p>
+                          <p className="text-sm italic text-white/65 leading-relaxed">"{issue.sentence}"</p>
+                        </div>
+                      )}
+
+                      {/* problem description */}
+                      <p className="text-sm font-medium text-white/90">{issue.message}</p>
+                      {issue.messageZh && (
+                        <p className="text-xs text-white/45">{issue.messageZh}</p>
+                      )}
+
+                      {/* suggestion */}
+                      <p className="text-sm leading-6 text-white/60">{issue.suggestion}</p>
+                      {issue.suggestionZh && (
+                        <p className="text-xs text-white/40">{issue.suggestionZh}</p>
+                      )}
+
+                      {/* corrected version */}
+                      {issue.correction && (
+                        <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.06] px-3 py-2">
+                          <p className="text-[11px] uppercase tracking-wider text-emerald-400/60 mb-1">建议改为</p>
+                          <p className="text-sm text-emerald-300/80 leading-relaxed italic">"{issue.correction}"</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="flex justify-end border-t border-white/10 pt-5">
+              {/* ── Improved sentence example ──────────────────────────── */}
+              {writingFeedback.improvedSentence && (
+                <div className="rounded-3xl border border-sky-500/15 bg-sky-500/[0.05] p-4 flex gap-3">
+                  <Wand2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-sky-400/60 mb-1">Band 7+ 示范句</p>
+                    <p className="text-sm italic leading-relaxed text-sky-200/80">"{writingFeedback.improvedSentence}"</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between border-t border-white/10 pt-5">
+                <Button
+                  onClick={handleRevise}
+                  disabled={feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0}
+                  className="rounded-full bg-emerald-500 px-5 text-black hover:bg-emerald-400 disabled:opacity-50"
+                >
+                  <PenTool className="mr-2 h-4 w-4" />
+                  Revise &amp; Resubmit
+                  {writingRound < 3 && (
+                    <span className="ml-1.5 text-black/60 text-xs">Round {writingRound + 1}</span>
+                  )}
+                </Button>
                 <Button
                   onClick={handleRestart}
                   variant="outline"

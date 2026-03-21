@@ -8,6 +8,7 @@ export const ISSUE_LABELS: Record<FeedbackIssue['tag'], string> = {
   logic: '论证逻辑',
   collocation: '搭配自然度',
   tense: '时态控制',
+  word_count: '字数要求',
 };
 
 export const ISSUE_VOCAB_QUERY: Record<FeedbackIssue['tag'], string> = {
@@ -18,6 +19,7 @@ export const ISSUE_VOCAB_QUERY: Record<FeedbackIssue['tag'], string> = {
   logic: 'reasoning claim evidence logic',
   collocation: 'collocation phrase chunks',
   tense: 'verb tense consistency',
+  word_count: 'word count requirements minimum maximum',
 };
 
 export const QUIET_TOPICS = ['hello', 'hi', '你好', '在吗', 'hey'];

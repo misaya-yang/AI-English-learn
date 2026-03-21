@@ -1,3 +1,5 @@
+import { academicWordsDatabase } from './academicWords';
+
 export interface WordData {
   id: string;
   word: string;
@@ -1785,9 +1787,12 @@ export const getPreviousWords = (count: number = 7): { date: string; word: WordD
   return result;
 };
 
+// Merge academic / IELTS / GRE words into the main database
+wordsDatabase.push(...academicWordsDatabase);
+
 export const searchWords = (query: string): WordData[] => {
   const lowerQuery = query.toLowerCase();
-  return wordsDatabase.filter(word => 
+  return wordsDatabase.filter(word =>
     word.word.toLowerCase().includes(lowerQuery) ||
     word.definition.toLowerCase().includes(lowerQuery) ||
     word.definitionZh.includes(query)

@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState, useEffect, useCallback, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
@@ -189,10 +189,10 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 }
 
 const ratingMeta = {
-  again: { label: '忘记', delay: '< 1 min', accent: 'border-red-500/25 bg-red-500/10 text-red-300' },
-  hard: { label: '较难', delay: '2 days', accent: 'border-amber-500/25 bg-amber-500/10 text-amber-300' },
-  good: { label: '良好', delay: '5 days', accent: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' },
-  easy: { label: '简单', delay: '10 days', accent: 'border-sky-500/25 bg-sky-500/10 text-sky-300' },
+  again: { label: '忘记', delay: '< 1 min', key: '1', accent: 'border-red-500/25 bg-red-500/10 text-red-300' },
+  hard:  { label: '较难', delay: '2 days',  key: '2', accent: 'border-amber-500/25 bg-amber-500/10 text-amber-300' },
+  good:  { label: '良好', delay: '5 days',  key: '3', accent: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' },
+  easy:  { label: '简单', delay: '10 days', key: '4', accent: 'border-sky-500/25 bg-sky-500/10 text-sky-300' },
 } as const;
 
 export default function ReviewPage() {
@@ -214,11 +214,11 @@ export default function ReviewPage() {
   const currentItem = reviewItems[currentIndex];
   const remainingCount = Math.max(reviewItems.length - totalReviewed, 0);
 
-  const handleReveal = () => {
+  const handleReveal = useCallback(() => {
     setIsRevealed(true);
-  };
+  }, []);
 
-  const handleRate = async (rating: 'again' | 'hard' | 'good' | 'easy') => {
+  const handleRate = useCallback(async (rating: 'again' | 'hard' | 'good' | 'easy') => {
     if (!currentItem) return;
     if (!sessionQueue) {
       setSessionQueue(reviewItems);
@@ -250,7 +250,28 @@ export default function ReviewPage() {
     }
 
     setCurrentIndex(reviewItems.length);
-  };
+  }, [currentIndex, currentItem, reviewItems, reviewWord, sessionQueue, totalReviewed, reviewTaskTarget, completeMissionTask]);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const onKeyDown = (e: globalThis.KeyboardEvent) => {
+      // Ignore when focus is inside an input/textarea
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (isComplete || reviewItems.length === 0 || !currentItem) return;
+
+      if (!isRevealed) {
+        if (e.code === 'Space') { e.preventDefault(); handleReveal(); }
+      } else {
+        if (e.key === '1') handleRate('again');
+        else if (e.key === '2') handleRate('hard');
+        else if (e.key === '3') handleRate('good');
+        else if (e.key === '4') handleRate('easy');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isRevealed, isComplete, currentItem, reviewItems.length, handleReveal, handleRate]);
 
   const handleRestart = () => {
     setSessionQueue(null);
@@ -353,7 +374,12 @@ export default function ReviewPage() {
                       )}
                       onClick={() => handleRate(rating)}
                     >
-                      <span className="text-base font-semibold">{meta.label}</span>
+                      <div className="flex w-full items-center justify-between gap-2">
+                        <span className="text-base font-semibold">{meta.label}</span>
+                        <kbd className="rounded border border-current/20 bg-current/10 px-1.5 py-0.5 font-mono text-[10px] font-bold opacity-70">
+                          {meta.key}
+                        </kbd>
+                      </div>
                       <span className="text-xs opacity-80">Next: {meta.delay}</span>
                     </Button>
                   ))}
@@ -363,6 +389,9 @@ export default function ReviewPage() {
                   <p className="text-sm leading-6 text-white/54">先回忆，再揭晓。</p>
                   <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={handleReveal}>
                     Reveal answer
+                    <kbd className="ml-2 rounded border border-black/20 bg-black/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold">
+                      Space
+                    </kbd>
                   </Button>
                 </div>
               )}

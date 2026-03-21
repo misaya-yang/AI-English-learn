@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -30,6 +31,13 @@ export default function SettingsPage() {
   const { user, profile, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const { settings, updateSettings } = useUserData();
+  const {
+    isSupported: notifSupported,
+    permission: notifPermission,
+    reminderHour,
+    requestPermission,
+    saveReminderHour,
+  } = useStudyReminder();
   const [localSettings, setLocalSettings] = useState({
     notifications: true,
     emailReminders: true,
@@ -168,62 +176,105 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                Notifications
+                学习提醒 · Study Reminders
               </CardTitle>
-              <CardDescription>Configure how you want to be notified</CardDescription>
+              <CardDescription>
+                每天在固定时间收到浏览器推送提醒，保持学习连续性
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Enable Notifications</Label>
-                  <p className="text-sm text-muted-foreground">启用通知</p>
-                </div>
-                <Switch
-                  checked={localSettings.notifications}
-                  onCheckedChange={(v) => setLocalSettings((s) => ({ ...s, notifications: v }))}
-                />
-              </div>
+            <CardContent className="space-y-5">
+              {!notifSupported ? (
+                <p className="text-sm text-muted-foreground">当前浏览器不支持桌面通知</p>
+              ) : (
+                <>
+                  {/* Permission row */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>浏览器通知权限</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {notifPermission === 'granted'
+                          ? '✅ 已授权'
+                          : notifPermission === 'denied'
+                            ? '❌ 已拒绝（请在浏览器设置中重新允许）'
+                            : '尚未授权，点击右侧按钮申请'}
+                      </p>
+                    </div>
+                    {notifPermission !== 'granted' && notifPermission !== 'denied' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const result = await requestPermission();
+                          if (result === 'granted') {
+                            toast.success('通知权限已授权！');
+                          } else {
+                            toast.error('通知权限被拒绝');
+                          }
+                        }}
+                      >
+                        申请权限
+                      </Button>
+                    )}
+                  </div>
 
-              <Separator />
+                  <Separator />
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Email Reminders</Label>
-                  <p className="text-sm text-muted-foreground">电子邮件提醒</p>
-                </div>
-                <Switch
-                  checked={localSettings.emailReminders}
-                  onCheckedChange={(v) => setLocalSettings((s) => ({ ...s, emailReminders: v }))}
-                />
-              </div>
+                  {/* Reminder toggle + time */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>每日学习提醒</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {reminderHour !== null
+                          ? `已开启 · 每天 ${reminderHour}:00`
+                          : '未开启'}
+                      </p>
+                    </div>
+                    <Switch
+                      disabled={notifPermission !== 'granted'}
+                      checked={reminderHour !== null}
+                      onCheckedChange={(v) => {
+                        if (v) {
+                          saveReminderHour(20); // default to 8 PM
+                          toast.success('提醒已开启，每天 20:00 提醒');
+                        } else {
+                          saveReminderHour(null);
+                          toast.info('已关闭每日提醒');
+                        }
+                      }}
+                    />
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Reminder Time</Label>
-                  <p className="text-sm text-muted-foreground">提醒时间</p>
-                </div>
-                <Select
-                  value={localSettings.reminderTime}
-                  onValueChange={(v) => setLocalSettings((s) => ({ ...s, reminderTime: v }))}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <Clock className="h-4 w-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="08:00">8:00 AM</SelectItem>
-                    <SelectItem value="12:00">12:00 PM</SelectItem>
-                    <SelectItem value="18:00">6:00 PM</SelectItem>
-                    <SelectItem value="20:00">8:00 PM</SelectItem>
-                    <SelectItem value="21:00">9:00 PM</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button onClick={handleSave} className="w-full">
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
+                  {reminderHour !== null && (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>提醒时间</Label>
+                        <p className="text-sm text-muted-foreground">每天在此时间推送一条提醒</p>
+                      </div>
+                      <Select
+                        value={String(reminderHour)}
+                        onValueChange={(v) => {
+                          saveReminderHour(Number(v));
+                          toast.success(`提醒时间已更新为 ${v}:00`);
+                        }}
+                      >
+                        <SelectTrigger className="w-[150px]">
+                          <Clock className="h-4 w-4 mr-2" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="7">7:00 AM</SelectItem>
+                          <SelectItem value="8">8:00 AM</SelectItem>
+                          <SelectItem value="12">12:00 PM</SelectItem>
+                          <SelectItem value="18">6:00 PM</SelectItem>
+                          <SelectItem value="20">8:00 PM</SelectItem>
+                          <SelectItem value="21">9:00 PM</SelectItem>
+                          <SelectItem value="22">10:00 PM</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

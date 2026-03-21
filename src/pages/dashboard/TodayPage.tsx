@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -42,6 +42,12 @@ import { getRecommendedUnit } from '@/data/examContent';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { speakEnglishText } from '@/services/tts';
 import { useLearningOverviewQuery } from '@/features/learning/hooks/useLearningOverviewQuery';
+import {
+  computeLearnerModel,
+  MODE_LABELS,
+  MODE_DESCRIPTIONS,
+} from '@/services/learnerModel';
+import type { UserProgress } from '@/data/localStorage';
 
 interface WordWorkbenchProps {
   word: WordData;
@@ -58,9 +64,10 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
   };
 
   return (
-    <div className="perspective-1000 mx-auto w-full max-w-[880px]">
+    <div className="perspective-1000 mx-auto w-full max-w-[880px] relative">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[450px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/5 dark:bg-emerald-500/10 blur-[120px] animate-pulse-glow z-0" />
       <motion.div
-        className="relative min-h-[520px] w-full"
+        className="relative min-h-[520px] w-full z-10"
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.58, type: 'spring', stiffness: 240, damping: 22 }}
@@ -105,14 +112,14 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
             </Button>
           </div>
 
-          <div className="space-y-6 py-8 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">Current word</p>
-            <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-white sm:text-[5rem]">
+          <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">Current word</p>
+            <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-slate-900 dark:text-white sm:text-[5rem]">
               {word.word}
             </h2>
             <div className="space-y-2">
-              <p className="text-base font-medium text-white/72">{word.partOfSpeech}</p>
-              <p className="font-mono text-lg text-white/48">{word.phonetic}</p>
+              <p className="text-base font-medium text-slate-600 dark:text-white/72">{word.partOfSpeech}</p>
+              <p className="font-mono text-lg text-slate-400 dark:text-white/48">{word.phonetic}</p>
             </div>
           </div>
 
@@ -238,6 +245,60 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
   );
 }
 
+// Circular SVG progress ring used in the Today HUD
+const CircularProgress = memo(function CircularProgress({
+  value,
+  size = 88,
+  strokeWidth = 7,
+  label,
+  sublabel,
+}: {
+  value: number;
+  size?: number;
+  strokeWidth?: number;
+  label: string;
+  sublabel?: string;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - Math.min(1, Math.max(0, value / 100)));
+  const center = size / 2;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle
+          cx={center} cy={center} r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={center} cy={center} r={radius}
+          fill="none"
+          stroke="#10b981"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1)' }}
+        />
+        {/* centre text rendered at 0° (compensate the -90° rotation) */}
+        <text
+          x={center} y={center}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          style={{ transform: 'rotate(90deg)', transformOrigin: `${center}px ${center}px`, fill: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}
+        >
+          {Math.round(value)}%
+        </text>
+      </svg>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/42">{label}</p>
+      {sublabel && <p className="text-xs text-white/55">{sublabel}</p>}
+    </div>
+  );
+});
+
 export default function TodayPage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
@@ -252,6 +313,8 @@ export default function TodayPage() {
     dailyMission,
     completeMissionTask,
     refreshDailyMission,
+    progress: wordProgress,
+    streak,
   } = useUserData();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
@@ -284,6 +347,17 @@ export default function TodayPage() {
   const weaknesses = learningOverviewQuery.data?.weaknesses || [];
   const adaptiveDifficulty = learningOverviewQuery.data?.adaptiveDifficulty;
   const activityPoints = learningOverviewQuery.data?.activity || [];
+
+  // ── FSRS-5 Learner Model ──────────────────────────────────────────────────
+  const learnerModel = useMemo(() => {
+    if (!wordProgress.length) return null;
+    return computeLearnerModel(
+      userId,
+      wordProgress as UserProgress[],
+      streak.current,
+      activeBookSummary.dailyGoal,
+    );
+  }, [wordProgress, streak.current, activeBookSummary.dailyGoal, userId]);
 
   const handleFlip = (wordId: string) => {
     setFlippedCards((prev) => {
@@ -507,25 +581,19 @@ export default function TodayPage() {
               <div className="space-y-4">
                 <section className={cn(learningFrameClassName, 'p-4')}>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">Current HUD</p>
-                  <div className="mt-4 space-y-4">
-                    <div>
+                  <div className="mt-4 flex items-center gap-5">
+                    <CircularProgress
+                      value={progress}
+                      label="词汇完成度"
+                      sublabel={`${learnedWords.size} / ${words.length}`}
+                    />
+                    <div className="space-y-1">
                       <p className="text-3xl font-semibold tracking-[-0.05em] text-emerald-300">
-                        {currentWordIndex + 1}
+                        {learnedWords.size}
                         <span className="mx-2 text-white/24">/</span>
                         <span className="text-white">{words.length}</span>
                       </p>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm text-white/48">
-                        <span>词汇完成度</span>
-                        <span>{Math.round(progress)}%</span>
-                      </div>
-                      <div className="h-2.5 rounded-full bg-white/10">
-                        <div
-                          className="h-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
+                      <p className="text-xs text-white/45">今日已学 / 今日计划</p>
                     </div>
                   </div>
                 </section>
@@ -669,26 +737,101 @@ export default function TodayPage() {
         <div className="space-y-6">
           <LearningRailSection title="Learning context">
             <div className="space-y-3">
-              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 hover-lift">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Active book</p>
-                <p className="mt-2 text-lg font-semibold text-white">{activeBook?.name || '未选择词书'}</p>
-                <p className="mt-2 text-sm leading-6 text-white/54">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
+              <div className="rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.01] p-4 glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:glass-strong">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-white/42">Active book</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{activeBook?.name || '未选择词书'}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-white/54">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
               </div>
 
-              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 hover-lift">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Review pressure</p>
-                <p className="mt-2 text-lg font-semibold text-white">{dueWords.length} 个到期复习</p>
-                {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-white/48">当前词书接近完成</p> : null}
+              <div className="rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.01] p-4 glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:glass-strong">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-white/42">Review pressure</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{dueWords.length} 个到期复习</p>
+                {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-slate-500 dark:text-white/48">当前词书接近完成</p> : null}
               </div>
 
-              {adaptiveDifficulty ? (
-                <div className="rounded-3xl border border-cyan-500/20 bg-cyan-500/[0.06] p-4">
-                  <div className="flex items-center gap-2 text-cyan-300">
-                    <ShieldCheck className="h-4 w-4" />
-                    <p className="text-sm font-semibold">当前节奏：{adaptiveDifficulty.labelZh}</p>
+              {learnerModel ? (() => {
+                const modeInfo = MODE_LABELS[learnerModel.mode];
+                return (
+                  <div className={cn(
+                    'rounded-2xl border p-4 space-y-3',
+                    learnerModel.mode === 'recovery'    && 'border-red-500/20 bg-red-500/[0.06]',
+                    learnerModel.mode === 'maintenance' && 'border-amber-500/20 bg-amber-500/[0.06]',
+                    learnerModel.mode === 'steady'      && 'border-emerald-500/20 bg-emerald-500/[0.06]',
+                    learnerModel.mode === 'stretch'     && 'border-blue-500/20 bg-blue-500/[0.06]',
+                    learnerModel.mode === 'sprint'      && 'border-violet-500/20 bg-violet-500/[0.06]',
+                  )}>
+                    {/* Mode header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className={cn('h-4 w-4', modeInfo.color)} />
+                        <span className={cn('text-sm font-semibold', modeInfo.color)}>
+                          {modeInfo.labelZh}
+                        </span>
+                      </div>
+                      <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-white/40">
+                        {modeInfo.label}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-xs leading-5 text-slate-500 dark:text-white/50">
+                      {MODE_DESCRIPTIONS[learnerModel.mode]}
+                    </p>
+
+                    {/* Daily targets */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36">新词</p>
+                        <p className="mt-0.5 text-base font-bold text-slate-800 dark:text-white">
+                          {learnerModel.recommendedDailyNew}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36">复习</p>
+                        <p className="mt-0.5 text-base font-bold text-slate-800 dark:text-white">
+                          {learnerModel.recommendedDailyReview}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Avg retrievability bar */}
+                    {learnerModel.avgRetrievability > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36">记忆保留率</p>
+                          <p className="text-xs font-semibold text-slate-700 dark:text-white/70">
+                            {Math.round(learnerModel.avgRetrievability * 100)}%
+                          </p>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-black/[0.06] dark:bg-white/[0.08] overflow-hidden">
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all duration-700',
+                              learnerModel.avgRetrievability >= 0.75 ? 'bg-emerald-500' :
+                              learnerModel.avgRetrievability >= 0.5  ? 'bg-amber-500' : 'bg-red-500',
+                            )}
+                            style={{ width: `${Math.round(learnerModel.avgRetrievability * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Weak topics */}
+                    {learnerModel.weakTopics.length > 0 && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36 mb-1.5">需加强</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {learnerModel.weakTopics.map((t) => (
+                            <span key={t} className="rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] text-red-400">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ) : null}
+                );
+              })() : null}
             </div>
           </LearningRailSection>
 
