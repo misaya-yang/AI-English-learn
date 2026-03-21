@@ -268,7 +268,7 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group relative overflow-hidden rounded-[22px] border border-transparent px-4 py-3 transition-colors duration-150',
+            'group relative overflow-hidden rounded-3xl border border-transparent px-4 py-3 transition-all duration-150',
             active ? 'border-white/10 bg-white/[0.06]' : 'hover:border-white/8 hover:bg-white/[0.03]',
           )}
         >
@@ -391,7 +391,7 @@ export default function DashboardLayout() {
 
   const learningMobileSheetBody = (
     <div className="flex h-full flex-col gap-6 bg-[#020303] text-white">
-      <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-emerald-500/15 text-emerald-200">
@@ -462,8 +462,8 @@ export default function DashboardLayout() {
 
   if (isLearningRoute) {
     return (
-      <div className="flex h-screen overflow-hidden bg-[#020303] text-white">
-        <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-white/10 bg-black px-4 py-4 lg:flex">
+      <div className="noise-bg flex h-screen overflow-hidden bg-[#020303] text-white">
+        <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-white/[0.06] bg-black/80 backdrop-blur-xl px-4 py-4 lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-2xl px-1 py-2">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-300">
               <BookOpen className="h-5 w-5" />
@@ -474,7 +474,7 @@ export default function DashboardLayout() {
             </div>
           </Link>
 
-          <div className="mt-5 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <div className="mt-5 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-glass">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">Current route</p>
             <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">{activeShell.title}</h2>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
@@ -513,7 +513,7 @@ export default function DashboardLayout() {
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-white/75">
                     <Flame className="h-4 w-4" />
@@ -526,7 +526,7 @@ export default function DashboardLayout() {
             </div>
           </ScrollArea>
 
-          <div className="mt-4 rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-3">
+          <div className="mt-4 rounded-3xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 shadow-glass">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-white">{user?.displayName || user?.email}</p>
@@ -538,7 +538,7 @@ export default function DashboardLayout() {
         </aside>
 
         <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#020303]">
-          <header className="border-b border-white/10 bg-black/72 backdrop-blur-2xl">
+          <header className="border-b border-white/[0.06] bg-black/60 backdrop-blur-2xl">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
@@ -607,7 +607,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="hidden h-screen min-h-0 w-[320px] flex-col border-r bg-sidebar/80 px-4 py-4 lg:flex">
+      <aside className="hidden h-screen min-h-0 w-[320px] flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-sm px-4 py-4 lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-2xl px-1 py-2">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm">
             <BookText className="h-5 w-5" />
@@ -630,7 +630,7 @@ export default function DashboardLayout() {
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="rounded-3xl border bg-card px-4 py-4 shadow-sm">
+            <div className="rounded-3xl border bg-card px-4 py-4 shadow-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Today</p>

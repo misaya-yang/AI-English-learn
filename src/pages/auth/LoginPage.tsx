@@ -4,9 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
 
@@ -28,25 +27,25 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error('请输入电子邮箱和密码');
       return;
     }
 
     setIsLoading(true);
-    
+
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       setIsLoading(false);
       toast.error('登录超时，请检查网络连接后重试');
     }, 15000); // 15 second timeout
-    
+
     try {
       console.log('Login form submitted for:', email);
       const { success, error } = await login(email, password);
       clearTimeout(timeoutId);
-      
+
       if (success) {
         toast.success('登录成功！');
         navigate(redirectTarget, { replace: true });
@@ -119,115 +118,120 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950 p-4">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center bg-[#020303] p-4 overflow-hidden">
+      {/* Background glow effects */}
+      <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[600px] w-[800px] rounded-full bg-emerald-500/[0.07] blur-[140px]" />
+      <div className="pointer-events-none absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
+      {/* Subtle grid */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px]" />
+
+      <div className="relative w-full max-w-[420px]">
         {/* Logo */}
-        <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-            <BookOpen className="h-6 w-6 text-white" />
+        <Link to="/" className="group flex items-center justify-center gap-3 mb-10">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-400 transition-all group-hover:bg-emerald-500/20 group-hover:shadow-glow-emerald">
+            <BookOpen className="h-5 w-5" />
           </div>
-          <div className="text-center">
-            <h1 className="font-bold text-xl">VocabDaily AI</h1>
-            <p className="text-xs text-muted-foreground">智能单词学习平台</p>
+          <div>
+            <h1 className="text-lg font-bold text-white tracking-tight">VocabDaily AI</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Learning Cockpit</p>
           </div>
         </Link>
 
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">登录</CardTitle>
-            <CardDescription className="text-center">
-              欢迎回来！请输入您的账号信息
-            </CardDescription>
-          </CardHeader>
+        {/* Card */}
+        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-8 shadow-glass backdrop-blur-xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold tracking-tight text-white">登录</h2>
+            <p className="mt-2 text-sm text-white/50">欢迎回来！请输入您的账号信息</p>
+          </div>
 
-          <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">电子邮箱</Label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-white/70">电子邮箱</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                required
+                className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/25 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium text-white/70">密码</Label>
+              <div className="relative">
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   required
+                  className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/25 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 pr-12"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">密码</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:text-white"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    登录中...
-                  </>
-                ) : (
-                  '登录'
-                )}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  或
-                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl text-white/40 hover:text-white hover:bg-white/[0.06]"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
               </div>
             </div>
 
             <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleDemoLogin}
+              type="submit"
+              className="w-full h-12 rounded-2xl bg-emerald-500 text-sm font-semibold text-black transition-all hover:bg-emerald-400 hover:shadow-glow-emerald"
               disabled={isLoading}
             >
-              使用演示账号
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  登录中...
+                </>
+              ) : (
+                '登录'
+              )}
             </Button>
+          </form>
 
-            <p className="text-sm text-center text-muted-foreground">
-              还没有账号？{' '}
-              <Link to={`/register${location.search}`} className="text-emerald-600 hover:text-emerald-700 font-medium">
-                立即注册
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <Separator className="bg-white/[0.08]" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-transparent px-3 text-white/30">或</span>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            className="w-full h-12 rounded-2xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+            onClick={handleDemoLogin}
+            disabled={isLoading}
+          >
+            <Sparkles className="mr-2 h-4 w-4 text-emerald-400" />
+            使用演示账号
+          </Button>
+
+          <p className="mt-6 text-sm text-center text-white/40">
+            还没有账号？{' '}
+            <Link to={`/register${location.search}`} className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+              立即注册
+            </Link>
+          </p>
+        </div>
 
         {/* Back to home */}
-        <div className="text-center mt-6">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← 返回首页
+        <div className="text-center mt-8">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors">
+            <ArrowLeft className="h-3.5 w-3.5" />
+            返回首页
           </Link>
         </div>
       </div>

@@ -185,18 +185,18 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
             <ScrollArea className="mt-6 flex-1 pr-2">
               <div className="space-y-5">
-                <section className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Definition</p>
                   <p className="mt-3 text-base leading-7 text-white">{word.definition}</p>
                   <p className="mt-2 text-sm leading-7 text-white/62">{word.definitionZh}</p>
                 </section>
 
                 {word.examples.length > 0 ? (
-                  <section className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                  <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Examples</p>
                     <div className="mt-3 space-y-3">
                       {word.examples.slice(0, 2).map((example, index) => (
-                        <div key={`${example.en}-${index}`} className="rounded-[20px] border border-white/10 bg-black/30 p-4">
+                        <div key={`${example.en}-${index}`} className="rounded-2xl border border-white/[0.06] bg-black/30 p-4">
                           <p className="text-sm leading-7 text-white">{example.en}</p>
                           <p className="mt-2 text-sm leading-7 text-white/58">{example.zh}</p>
                         </div>
@@ -207,7 +207,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
                 <div className="grid gap-5 lg:grid-cols-2">
                   {word.collocations.length > 0 ? (
-                    <section className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                    <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Collocations</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {word.collocations.slice(0, 8).map((collocation) => (
@@ -223,7 +223,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
                   ) : null}
 
                   {(word.memoryTip || word.etymology) ? (
-                    <section className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                    <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Memory cue</p>
                       <p className="mt-3 text-sm leading-7 text-white/62">{word.memoryTip || word.etymology}</p>
                     </section>
@@ -570,7 +570,7 @@ export default function TodayPage() {
                   ) : null}
                 </AnimatePresence>
 
-                <div className="flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-4 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between shadow-glass">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -669,20 +669,20 @@ export default function TodayPage() {
         <div className="space-y-6">
           <LearningRailSection title="Learning context">
             <div className="space-y-3">
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 hover-lift">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Active book</p>
                 <p className="mt-2 text-lg font-semibold text-white">{activeBook?.name || '未选择词书'}</p>
                 <p className="mt-2 text-sm leading-6 text-white/54">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
               </div>
 
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 hover-lift">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Review pressure</p>
                 <p className="mt-2 text-lg font-semibold text-white">{dueWords.length} 个到期复习</p>
                 {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-white/48">当前词书接近完成</p> : null}
               </div>
 
               {adaptiveDifficulty ? (
-                <div className="rounded-[22px] border border-cyan-500/20 bg-cyan-500/[0.06] p-4">
+                <div className="rounded-3xl border border-cyan-500/20 bg-cyan-500/[0.06] p-4">
                   <div className="flex items-center gap-2 text-cyan-300">
                     <ShieldCheck className="h-4 w-4" />
                     <p className="text-sm font-semibold">当前节奏：{adaptiveDifficulty.labelZh}</p>
@@ -718,13 +718,13 @@ export default function TodayPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-[22px] border border-dashed border-white/12 px-4 py-5 text-sm leading-6 text-white/50">
+                <div className="rounded-3xl border border-dashed border-white/[0.1] px-4 py-5 text-sm leading-6 text-white/50">
                   先完成一次练习或写作反馈，系统才会生成更可信的弱项图谱。
                 </div>
               )}
 
               {recommendedUnit ? (
-                <div className="rounded-[22px] border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
+                <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 shadow-glow-emerald">
                   <div className="flex items-center gap-2 text-emerald-300">
                     <Target className="h-4 w-4" />
                     <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>

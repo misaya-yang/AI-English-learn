@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, BookOpen, Brain, Check, CirclePlay, Sparkles, Target } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, Check, CirclePlay, Sparkles, Target, CalendarDays, MessageCircleMore, WandSparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
@@ -38,7 +38,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-black font-sans tracking-tight text-white selection:bg-emerald-500/30">
+    <div className="noise-bg min-h-screen bg-black font-sans tracking-tight text-white selection:bg-emerald-500/30">
       {/* 1. Sticky Navbar */}
       <header
         className={cn(
@@ -92,7 +92,7 @@ export default function Home() {
         {/* 2. Full-viewport Hero */}
         <section className="relative flex min-h-screen items-center justify-center overflow-hidden pb-40 pt-32 lg:pt-40">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900/40 via-black to-black" />
-          <div className="absolute left-1/2 top-0 -z-10 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[120px]" />
+          <div className="absolute left-1/2 top-0 -z-10 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-emerald-500/[0.08] blur-[160px] animate-pulse-glow" />
 
           <div className="mx-auto flex max-w-[90rem] flex-col items-center px-6 lg:px-8">
             <motion.div
@@ -176,7 +176,7 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
-              className="mt-20 grid gap-px bg-white/5 rounded-3xl overflow-hidden sm:grid-cols-3 border border-white/10 shadow-2xl"
+              className="mt-20 grid gap-px rounded-3xl overflow-hidden sm:grid-cols-3 border border-white/[0.08] shadow-glass"
             >
               {[
                 {
@@ -198,7 +198,7 @@ export default function Home() {
                 <motion.div
                   key={i}
                   variants={fadeUpVariants}
-                  className="group relative bg-black p-10 lg:p-14"
+                  className="group relative bg-black/80 p-10 lg:p-14"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                   <div className="relative z-10">
@@ -212,7 +212,102 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. Minimal Membership */}
+        {/* 4. Workflow – Bento Grid */}
+        <section id="workflow" className="relative border-t border-white/5 bg-black px-6 py-40 lg:px-8">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[600px] rounded-full bg-emerald-500/[0.06] blur-[140px]" />
+          <div className="mx-auto max-w-7xl relative z-10">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+              className="text-center"
+            >
+              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-500">
+                Workflow
+              </span>
+              <h2 className="mt-6 text-[3rem] font-bold leading-[1.1] tracking-tighter sm:text-[4.5rem] lg:text-[5.5rem]">
+                A daily cockpit, not just flashcards.
+              </h2>
+              <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-400">
+                {t('home.workflow.subtitle', { defaultValue: '每天登录后，清晰知道该做什么、做完后拿到什么。' })}
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+              className="mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {[
+                {
+                  icon: CalendarDays,
+                  title: t('home.workflow.steps.today.title', { defaultValue: 'Today Mission' }),
+                  description: t('home.workflow.steps.today.desc', { defaultValue: '每天一个清晰的任务面板。系统根据你的水平、到期复习和弱项自动排优先级。' }),
+                  accent: 'from-emerald-500/10 to-transparent',
+                  span: 'sm:col-span-2 lg:col-span-1',
+                },
+                {
+                  icon: Brain,
+                  title: t('home.workflow.steps.review.title', { defaultValue: 'Spaced Review' }),
+                  description: t('home.workflow.steps.review.desc', { defaultValue: '到期复习卡自动浮出。先回忆，再打分。间隔算法帮你用最少的重复量维持记忆。' }),
+                  accent: 'from-cyan-500/10 to-transparent',
+                  span: '',
+                },
+                {
+                  icon: WandSparkles,
+                  title: t('home.workflow.steps.practice.title', { defaultValue: 'Targeted Practice' }),
+                  description: t('home.workflow.steps.practice.desc', { defaultValue: '选择题、填空、听辨、写作——根据弱项自动推荐最该做的练习模式。' }),
+                  accent: 'from-violet-500/10 to-transparent',
+                  span: '',
+                },
+                {
+                  icon: MessageCircleMore,
+                  title: t('home.workflow.steps.coach.title', { defaultValue: 'AI Coach' }),
+                  description: t('home.workflow.steps.coach.desc', { defaultValue: '带上下文的引导对话。不是通用聊天——AI 记住你的词书、弱项和学习历史。' }),
+                  accent: 'from-amber-500/10 to-transparent',
+                  span: '',
+                },
+                {
+                  icon: Target,
+                  title: t('home.workflow.steps.exam.title', { defaultValue: 'Exam Prep' }),
+                  description: t('home.workflow.steps.exam.desc', { defaultValue: 'IELTS 冲分工作台。结构化写作评分、仿真题和个性化冲分路线。' }),
+                  accent: 'from-rose-500/10 to-transparent',
+                  span: '',
+                },
+                {
+                  icon: Sparkles,
+                  title: t('home.workflow.steps.analytics.title', { defaultValue: 'Real Analytics' }),
+                  description: t('home.workflow.steps.analytics.desc', { defaultValue: '不是随机生成的好看图表。真实的学习数据——你到底在进步还是在原地踏步。' }),
+                  accent: 'from-emerald-500/10 to-transparent',
+                  span: '',
+                },
+              ].map((step, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUpVariants}
+                  className={cn(
+                    'group relative overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 transition-all hover:border-white/[0.12] hover:bg-white/[0.04]',
+                    step.span,
+                  )}
+                >
+                  <div className={cn('pointer-events-none absolute inset-0 bg-gradient-to-b opacity-0 transition-opacity duration-500 group-hover:opacity-100', step.accent)} />
+                  <div className="relative z-10">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04] text-white/60 transition-colors duration-300 group-hover:border-emerald-500/20 group-hover:bg-emerald-500/10 group-hover:text-emerald-400">
+                      <step.icon className="h-5 w-5" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="mt-5 text-lg font-semibold tracking-tight text-white">{step.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-neutral-400">{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* 5. Minimal Membership */}
         <section id="membership" className="relative border-t border-white/5 bg-black px-6 py-40 lg:px-8">
           <div className="absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 bg-emerald-500/5 blur-[120px]" />
           <div className="mx-auto max-w-5xl relative z-10">
@@ -223,7 +318,7 @@ export default function Home() {
               variants={staggerContainer}
               className="grid gap-8 md:grid-cols-2"
             >
-              <motion.div variants={fadeUpVariants} className="flex flex-col rounded-3xl border border-white/5 bg-white/[0.01] p-10 backdrop-blur-3xl transition-colors hover:bg-white/[0.02]">
+              <motion.div variants={fadeUpVariants} className="flex flex-col rounded-3xl border border-white/[0.06] bg-white/[0.02] p-10 backdrop-blur-3xl transition-all hover:border-white/[0.1] hover:bg-white/[0.04] hover-lift">
                 <span className="text-sm font-semibold uppercase tracking-widest text-neutral-400">Free</span>
                 <div className="mt-4 flex items-baseline gap-2">
                   <span className="text-6xl font-bold tracking-tighter text-white">$0</span>
@@ -242,7 +337,7 @@ export default function Home() {
                 </Button>
               </motion.div>
 
-              <motion.div variants={fadeUpVariants} className="relative flex flex-col rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 to-transparent p-10 shadow-[0_0_80px_rgba(16,185,129,0.1)] backdrop-blur-3xl">
+              <motion.div variants={fadeUpVariants} className="relative flex flex-col rounded-3xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/[0.08] to-transparent p-10 shadow-glow-emerald-lg backdrop-blur-3xl hover-lift">
                 <div className="absolute -top-3 left-10 rounded-full border border-emerald-500/50 bg-black px-4 py-1 text-xs font-bold uppercase tracking-widest text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
                   Most Popular
                 </div>

@@ -50,6 +50,8 @@ module.exports = {
         },
       },
       borderRadius: {
+        "3xl": "1.5rem",
+        "2xl": "1.25rem",
         xl: "calc(var(--radius) + 4px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -59,6 +61,10 @@ module.exports = {
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
         card: "0 8px 30px rgb(2 6 23 / 0.04)",
+        "glass": "0 0 0 1px rgba(255,255,255,0.06), 0 20px 60px -20px rgba(0,0,0,0.7)",
+        "glass-hover": "0 0 0 1px rgba(255,255,255,0.1), 0 24px 64px -16px rgba(0,0,0,0.6)",
+        "glow-emerald": "0 0 0 1px rgba(16,185,129,0.08), 0 8px 40px -12px rgba(16,185,129,0.25)",
+        "glow-emerald-lg": "0 0 0 1px rgba(16,185,129,0.12), 0 16px 60px -8px rgba(16,185,129,0.35)",
       },
       fontFamily: {
         sans: ['"Manrope"', '"Noto Sans SC"', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'system-ui', 'sans-serif'],

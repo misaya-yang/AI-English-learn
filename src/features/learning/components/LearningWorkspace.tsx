@@ -67,7 +67,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-[30px] border border-white/10 bg-white/[0.03] shadow-[0_30px_90px_-58px_rgba(0,0,0,0.88)] backdrop-blur-sm';
+  'relative rounded-3xl border border-white/[0.08] bg-white/[0.03] shadow-glass backdrop-blur-sm transition-colors';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-white',
@@ -96,7 +96,7 @@ export function LearningHeroPanel({
       animate={{ opacity: 1, y: 0 }}
       className={cn(learningFrameClassName, 'overflow-hidden p-5 sm:p-6 lg:p-7', className)}
     >
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[26%] bg-[linear-gradient(180deg,rgba(16,185,129,0.14),rgba(0,0,0,0))] xl:block" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[30%] bg-[linear-gradient(180deg,rgba(16,185,129,0.10),rgba(0,0,0,0))] xl:block" />
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_300px] lg:items-start">
         <div className="space-y-5">
           {eyebrow ? (
@@ -113,7 +113,7 @@ export function LearningHeroPanel({
           {actions ? <LearningActionCluster>{actions}</LearningActionCluster> : null}
         </div>
 
-        <div className="space-y-4 rounded-[26px] border border-white/10 bg-black/30 p-4 sm:p-5">
+        <div className="space-y-4 rounded-3xl border border-white/[0.08] bg-black/40 p-4 sm:p-5 shadow-glass">
           {typeof progress === 'number' ? (
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-4">
@@ -163,7 +163,7 @@ export function LearningWorkspaceSurface({
 }: LearningWorkspaceSurfaceProps) {
   return (
     <section className={cn(learningFrameClassName, 'overflow-hidden', className)}>
-      <div className="border-b border-white/10 px-5 py-5 sm:px-6 lg:px-7">
+      <div className="border-b border-white/[0.06] px-5 py-5 sm:px-6 lg:px-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">{eyebrow}</p> : null}
@@ -180,7 +180,7 @@ export function LearningWorkspaceSurface({
 
 export function LearningMetricStrip({ items, className }: LearningMetricStripProps) {
   return (
-    <div className={cn('grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2 xl:grid-cols-3', className)}>
+    <div className={cn('grid gap-3 border-t border-white/[0.06] pt-4 sm:grid-cols-2 xl:grid-cols-3', className)}>
       {items.map((item) => (
         <div key={`${item.label}-${String(item.value)}`} className="space-y-1.5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">{item.label}</p>
@@ -240,7 +240,7 @@ export function LearningCompletionState({
       animate={{ opacity: 1, scale: 1 }}
       className={cn(learningFrameClassName, 'overflow-hidden px-6 py-12 sm:px-10', className)}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(16,185,129,0.14),rgba(0,0,0,0))]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(16,185,129,0.10),rgba(0,0,0,0))]" />
       <div className="relative text-center">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[28px] border border-emerald-500/25 bg-emerald-500/12 text-emerald-300">
           <Icon className="h-9 w-9" />

@@ -462,7 +462,7 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-[22px] border border-transparent px-4 py-3 text-left transition-colors',
+                'group relative w-full rounded-3xl border border-transparent px-4 py-3 text-left transition-all',
                 active ? 'bg-white/[0.06]' : 'hover:border-white/8 hover:bg-white/[0.03]',
               )}
             >
@@ -511,17 +511,17 @@ export default function PracticePage() {
           ]}
           className="border-t-0 pt-0"
         />
-        <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
           <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Focus</p>
           <p className="mt-2 text-lg font-semibold text-white">{focusedMode.nameZh}</p>
           <p className="mt-1 text-sm text-white/54">{focusedBlueprint.insight}</p>
         </div>
-        <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
           <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Stage</p>
           <p className="mt-2 text-lg font-semibold text-white">{sessionStage}</p>
         </div>
         {selectedMode === 'writing' ? (
-          <div className="rounded-[22px] border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
+          <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 shadow-glow-emerald">
             <div className="flex items-center gap-2 text-emerald-300">
               <Zap className="h-4 w-4" />
               <p className="text-sm font-semibold">Advanced feedback quota</p>
@@ -716,7 +716,7 @@ export default function PracticePage() {
             <div className="space-y-3">
               <Label className="text-white">Task Type</Label>
               <Select value={writingTaskType} onValueChange={(value: 'task1' | 'task2') => setWritingTaskType(value)}>
-                <SelectTrigger className={cn('rounded-[22px]', darkInputClass)}>
+                <SelectTrigger className={cn('rounded-3xl', darkInputClass)}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={darkSelectContentClass}>
@@ -790,7 +790,7 @@ export default function PracticePage() {
                   <div
                     key={label}
                     className={cn(
-                      'rounded-[22px] border border-white/10 bg-white/[0.03] p-4',
+                      'rounded-3xl border border-white/10 bg-white/[0.03] p-4',
                       index === 4 && 'border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-300',
                     )}
                   >
@@ -802,7 +802,7 @@ export default function PracticePage() {
 
               <div className="space-y-3">
                 {writingFeedback.issues.map((issue, index) => (
-                  <div key={`${issue.tag}-${index}`} className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+                  <div key={`${issue.tag}-${index}`} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
                     <p className="text-sm font-medium text-white">{issue.message}</p>
                     <p className="mt-2 text-sm leading-6 text-white/58">{issue.suggestion}</p>
                   </div>
@@ -904,7 +904,7 @@ export default function PracticePage() {
                 <div className="space-y-3">
                   <div
                     className={cn(
-                      'mx-auto max-w-md rounded-[22px] px-4 py-3 text-sm',
+                      'mx-auto max-w-md rounded-3xl px-4 py-3 text-sm',
                       listeningResult.isCorrect ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-300',
                     )}
                   >
@@ -1015,14 +1015,14 @@ export default function PracticePage() {
               <div
                 key={index}
                 className={cn(
-                  'flex items-center space-x-3 rounded-[22px] border px-4 py-4 transition-all',
+                  'flex items-center space-x-3 rounded-3xl border px-4 py-4 transition-all',
                   showResult && option === currentQuestion.correctAnswer
-                    ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
+                    ? 'border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-300'
                     : showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer
-                      ? 'border-red-500/20 bg-red-500/10 text-red-300'
+                      ? 'border-red-500/20 bg-red-500/[0.08] text-red-300'
                       : selectedAnswer === option
-                        ? 'border-white/12 bg-white/[0.05]'
-                        : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.05]',
+                        ? 'border-white/[0.12] bg-white/[0.05]'
+                        : 'border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05] hover:border-white/[0.1]',
                 )}
               >
                 <RadioGroupItem value={option} id={`option-${index}`} className="border-white/20 text-emerald-300" />

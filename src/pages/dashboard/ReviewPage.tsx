@@ -158,7 +158,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
               </section>
 
               {word.examples[0] ? (
-                <section className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Example</p>
                   <p className="mt-3 text-sm leading-7 text-white">{word.examples[0].en}</p>
                   <p className="mt-2 text-sm leading-7 text-white/58">{word.examples[0].zh}</p>
@@ -348,7 +348,7 @@ export default function ReviewPage() {
                       key={rating}
                       variant="outline"
                       className={cn(
-                        'h-auto flex-col items-start gap-1 rounded-[24px] border px-4 py-4 text-left hover:text-current',
+                        'h-auto flex-col items-start gap-1 rounded-3xl border px-4 py-4 text-left hover:text-current hover-lift',
                         meta.accent,
                       )}
                       onClick={() => handleRate(rating)}
@@ -359,7 +359,7 @@ export default function ReviewPage() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col gap-3 rounded-[26px] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between shadow-glass">
                   <p className="text-sm leading-6 text-white/54">先回忆，再揭晓。</p>
                   <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={handleReveal}>
                     Reveal answer
@@ -381,11 +381,11 @@ export default function ReviewPage() {
               className="border-t-0 pt-0"
             />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Completed</p>
                 <p className="mt-2 text-2xl font-semibold text-white">{totalReviewed} / {reviewItems.length}</p>
               </div>
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Current stage</p>
                 <p className="mt-2 text-2xl font-semibold text-emerald-300">{isRevealed ? 'Rate it' : 'Recall first'}</p>
               </div>
@@ -394,21 +394,21 @@ export default function ReviewPage() {
 
           <LearningRailSection title="Rating guide">
             <div className="space-y-3">
-              <div className="rounded-[22px] border border-red-500/20 bg-red-500/[0.08] p-4">
+              <div className="rounded-3xl border border-red-500/20 bg-red-500/[0.06] p-4">
                 <div className="flex items-center gap-2 text-red-300">
                   <X className="h-4 w-4" />
                   <p className="text-sm font-semibold">Again</p>
                 </div>
                   <p className="mt-2 text-sm text-white/58">马上重见</p>
                 </div>
-              <div className="rounded-[22px] border border-amber-500/20 bg-amber-500/[0.08] p-4">
+              <div className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
                 <div className="flex items-center gap-2 text-amber-300">
                   <Zap className="h-4 w-4" />
                   <p className="text-sm font-semibold">Hard</p>
                 </div>
                   <p className="mt-2 text-sm text-white/58">短间隔复现</p>
                 </div>
-              <div className="rounded-[22px] border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
+              <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
                 <div className="flex items-center gap-2 text-emerald-300">
                   <Check className="h-4 w-4" />
                   <p className="text-sm font-semibold">Good / Easy</p>
@@ -420,7 +420,7 @@ export default function ReviewPage() {
 
           {currentItem ? (
             <LearningRailSection title="Current card">
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
                 <div className="flex items-center gap-2 text-white/72">
                   <Clock3 className="h-4 w-4 text-emerald-300" />
                   <p className="text-sm font-medium">第 {currentItem.reviewCount + 1} 次复习</p>
@@ -430,7 +430,7 @@ export default function ReviewPage() {
                     ? `系统上次安排的下次复习时间：${new Date(currentItem.nextReview).toLocaleString('zh-CN')}`
                     : '今日回顾卡'}
                 </p>
-                <div className="mt-4 rounded-[18px] border border-white/10 bg-black/30 px-3 py-2 text-sm text-white/65">
+                <div className="mt-4 rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-2 text-sm text-white/60">
                   Ease factor: {currentItem.easeFactor.toFixed(1)}
                 </div>
               </div>
