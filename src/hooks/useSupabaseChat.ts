@@ -692,6 +692,7 @@ export function useSupabaseChat() {
       synthetic: hideUserMessage,
       hasHistory: historyMessages.length > 0,
       weakTagCount: weakTags?.length || 0,
+      weakTags: weakTags || [],
     });
 
     void recordLearningEvent({
@@ -706,6 +707,7 @@ export function useSupabaseChat() {
         synthetic: hideUserMessage,
         messageLength: displayContent.length,
         weakTagCount: weakTags?.length || 0,
+        weakTags: weakTags || [],
       },
     });
 

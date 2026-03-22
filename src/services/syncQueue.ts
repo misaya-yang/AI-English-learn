@@ -1,40 +1,42 @@
 /**
- * syncQueue.ts — Offline-first sync queue with exponential back-off
+ * syncQueue.ts — Offline-first sync queue with batched retries and LWW updates
  * ─────────────────────────────────────────────────────────────────────────────
- * Guarantees that every write reaches Supabase exactly once, even when
- * the user is offline. Uses IndexedDB (via localDb) as the persistent store.
- *
- * Usage:
- *   await syncQueue.enqueue({ table: 'user_word_progress', operation: 'upsert', payload: {...} })
- *
- * The queue auto-flushes when:
- *   • A new item is enqueued  (online)
- *   • The browser comes back online  (window.online event)
- *   • The app tab regains focus  (visibilitychange)
+ * Guarantees that every write reaches Supabase eventually, even when the user
+ * is offline. Uses IndexedDB (via localDb) as the persistent store.
  */
 
 import { supabase } from '@/lib/supabase';
+import { buildIdempotencyKey } from '@/lib/syncUtils';
 import {
   enqueueSyncOp,
-  getPendingSyncOps,
   getFailedSyncOps,
+  getPendingSyncOps,
   updateSyncOp,
   deleteSyncOp,
   type SyncQueueRecord,
 } from '@/lib/localDb';
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+const MAX_ATTEMPTS = 5;
+const BASE_DELAY_MS = 3_000;
+const MAX_DELAY_MS = 60_000;
+const BATCH_DELAY_CAP_MS = 6_000;
 
-const MAX_ATTEMPTS  = 5;
-const BASE_DELAY_MS = 1_000;
-const MAX_DELAY_MS  = 30_000;
+const UPSERT_CONFLICT_COLUMNS: Record<string, string> = {
+  user_word_progress: 'user_id,word_ref',
+  review_logs: 'id',
+  learning_events: 'id',
+};
 
-// ─── SyncQueue class ──────────────────────────────────────────────────────────
+interface SyncBatch {
+  table: string;
+  operation: 'upsert' | 'delete';
+  ops: SyncQueueRecord[];
+  conflictTarget?: string;
+}
 
 class SyncQueue {
   private isFlushing = false;
 
-  /** Add an operation to the queue and attempt immediate flush */
   async enqueue(op: {
     table: string;
     operation: 'upsert' | 'delete';
@@ -45,39 +47,46 @@ class SyncQueue {
     void this.flush();
   }
 
-  /** Drain the queue. Safe to call concurrently — only one flush runs at a time. */
   async flush(): Promise<void> {
     if (this.isFlushing || !this.isOnline()) return;
     this.isFlushing = true;
 
     try {
       const pending = await getPendingSyncOps();
+      const batches = this.buildBatches(pending);
 
-      for (const op of pending) {
-        if (!op.id) continue;
+      for (const batch of batches) {
+        const ids = batch.ops
+          .map((op) => op.id)
+          .filter((id): id is number => typeof id === 'number');
 
-        // Mark as inflight so we don't double-process
-        await updateSyncOp(op.id, { status: 'inflight' });
+        if (ids.length === 0) continue;
+
+        await Promise.all(ids.map((id) => updateSyncOp(id, { status: 'inflight' })));
 
         try {
-          await this.execute(op);
-          // Success — remove from queue
-          await deleteSyncOp(op.id);
-        } catch (err) {
-          const nextAttempts = op.attempts + 1;
-          const isFailed     = nextAttempts >= MAX_ATTEMPTS;
-          const backoffMs    = Math.min(MAX_DELAY_MS, BASE_DELAY_MS * 2 ** nextAttempts);
+          await this.executeBatch(batch);
+          await Promise.all(ids.map((id) => deleteSyncOp(id)));
+        } catch (error) {
+          const nextAttempts = Math.max(...batch.ops.map((op) => op.attempts + 1));
+          const isFailed = nextAttempts >= MAX_ATTEMPTS;
+          const errorMessage = toErrorMessage(error);
 
-          await updateSyncOp(op.id, {
-            status:            isFailed ? 'failed' : 'pending',
-            attempts:          nextAttempts,
-            last_attempt_at:   new Date().toISOString(),
-            last_error:        String(err),
-          });
+          await Promise.all(
+            ids.map((id) =>
+              updateSyncOp(id, {
+                status: isFailed ? 'failed' : 'pending',
+                attempts: nextAttempts,
+                last_attempt_at: new Date().toISOString(),
+                last_error: errorMessage,
+              }),
+            ),
+          );
 
           if (!isFailed) {
-            // Wait with back-off before trying the next item
-            await delay(Math.min(backoffMs, 5_000)); // cap at 5s per-item during flush
+            await delay(Math.min(computeBackoffMs(nextAttempts), BATCH_DELAY_CAP_MS));
+          } else if (isConflictError(error)) {
+            console.warn(`[syncQueue] leaving conflicting batch in failed state for ${batch.table}`);
           }
         }
       }
@@ -86,35 +95,82 @@ class SyncQueue {
     }
   }
 
-  /** Retry all permanently-failed ops (useful after user action / reconnect) */
   async retryFailed(): Promise<void> {
     const failed = await this.getFailedOps();
-    for (const op of failed) {
-      if (op.id) await updateSyncOp(op.id, { status: 'pending', attempts: 0 });
-    }
+    await Promise.all(
+      failed
+        .map((op) => op.id)
+        .filter((id): id is number => typeof id === 'number')
+        .map((id) => updateSyncOp(id, { status: 'pending', attempts: 0, last_error: undefined })),
+    );
     void this.flush();
   }
 
-  /** Return count of items waiting in the queue */
   async pendingCount(): Promise<number> {
     return (await getPendingSyncOps()).length;
   }
 
-  /** Return permanently-failed operations for user notification */
   private async getFailedOps(): Promise<SyncQueueRecord[]> {
     return getFailedSyncOps();
   }
 
-  // ─── Execution ────────────────────────────────────────────────────────────
+  private buildBatches(ops: SyncQueueRecord[]): SyncBatch[] {
+    const batches: SyncBatch[] = [];
+    const grouped = new Map<string, SyncBatch>();
 
-  private async execute(op: SyncQueueRecord): Promise<void> {
-    if (op.operation === 'upsert') {
-      const { error } = await supabase.from(op.table).upsert(op.payload as Record<string, unknown>);
-      if (error) throw error;
-    } else if (op.operation === 'delete') {
-      const { error } = await supabase.from(op.table).delete().match(op.payload as Record<string, unknown>);
-      if (error) throw error;
+    for (const op of ops) {
+      if (op.operation === 'delete') {
+        batches.push({ table: op.table, operation: 'delete', ops: [op] });
+        continue;
+      }
+
+      const conflictTarget = UPSERT_CONFLICT_COLUMNS[op.table];
+      if (!conflictTarget) {
+        batches.push({ table: op.table, operation: 'upsert', ops: [op] });
+        continue;
+      }
+
+      const key = `${op.table}:${conflictTarget}`;
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.ops.push(op);
+      } else {
+        const batch: SyncBatch = {
+          table: op.table,
+          operation: 'upsert',
+          ops: [op],
+          conflictTarget,
+        };
+        grouped.set(key, batch);
+        batches.push(batch);
+      }
     }
+
+    for (const batch of batches) {
+      if (batch.operation !== 'upsert' || batch.ops.length <= 1) continue;
+      const deduped = new Map<string, SyncQueueRecord>();
+      for (const op of batch.ops) {
+        deduped.set(op.idempotency_key, op);
+      }
+      batch.ops = [...deduped.values()];
+    }
+
+    return batches;
+  }
+
+  private async executeBatch(batch: SyncBatch): Promise<void> {
+    if (batch.operation === 'delete') {
+      const op = batch.ops[0];
+      const { error } = await supabase.from(batch.table).delete().match(op.payload as Record<string, unknown>);
+      if (error) throw error;
+      return;
+    }
+
+    const rows = batch.ops.map((op) => op.payload as Record<string, unknown>);
+    const { error } = await supabase.from(batch.table).upsert(rows, {
+      onConflict: batch.conflictTarget,
+    });
+    if (error) throw error;
   }
 
   private isOnline(): boolean {
@@ -122,11 +178,8 @@ class SyncQueue {
   }
 }
 
-// ─── Singleton export ─────────────────────────────────────────────────────────
-
 export const syncQueue = new SyncQueue();
 
-// Auto-flush when connection returns or tab becomes visible
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => {
     void syncQueue.flush();
@@ -138,22 +191,23 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function delay(ms: number): Promise<void> {
-  return new Promise((res) => setTimeout(res, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// ─── Convenience wrappers ─────────────────────────────────────────────────────
-
-/** Build an idempotency key from table + primary-key fields */
-export function buildIdempotencyKey(
-  table: string,
-  pkFields: Record<string, string | number>,
-): string {
-  const parts = Object.entries(pkFields)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `${k}=${v}`)
-    .join('&');
-  return `${table}:${parts}`;
+function computeBackoffMs(attempts: number): number {
+  const exponential = Math.min(MAX_DELAY_MS, BASE_DELAY_MS * 2 ** Math.max(0, attempts - 1));
+  return Math.round(exponential * (0.8 + Math.random() * 0.4));
 }
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return JSON.stringify(error);
+}
+
+function isConflictError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505';
+}
+
+export { buildIdempotencyKey };

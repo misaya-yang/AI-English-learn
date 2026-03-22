@@ -31,7 +31,6 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useSupabaseChat } from '@/hooks/useSupabaseChat';
-import { INIT_ALL_SQL } from '@/lib/supabase';
 import { useTranslation } from 'react-i18next';
 import type { ChatArtifact, ChatMode } from '@/types/chatAgent';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -81,6 +80,27 @@ const CHAT_MODE_OPTIONS: ChatModeOption[] = [
   { id: 'quiz', label: 'Quiz', labelZh: '测验', icon: FlaskConical },
   { id: 'canvas', label: 'Canvas', labelZh: '写作', icon: NotebookPen },
 ];
+
+const buildDbSetupGuide = (language: string): string =>
+  language.startsWith('zh')
+    ? [
+        '请不要再复制页面里的旧初始化 SQL。',
+        '请在项目根目录执行：',
+        '1. supabase link --project-ref zjkbktdmwencnouwfrij',
+        '2. supabase db push --linked',
+        '3. supabase functions deploy ai-chat',
+        '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
+        '如需核对 migration，请查看：supabase/migrations/',
+      ].join('\n')
+    : [
+        'Do not copy the legacy bootstrap SQL from the UI.',
+        'From the project root run:',
+        '1. supabase link --project-ref zjkbktdmwencnouwfrij',
+        '2. supabase db push --linked',
+        '3. supabase functions deploy ai-chat',
+        '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
+        'Review migrations in: supabase/migrations/',
+      ].join('\n');
 
 interface QuizSequenceState {
   targetCount: number;
@@ -1097,8 +1117,8 @@ export default function ChatPage() {
               <h4 className="font-medium text-sm">{language.startsWith('zh') ? '需要初始化数据库表' : 'Database tables need initialization'}</h4>
               <p className="text-xs text-muted-foreground mt-1">
                 {language.startsWith('zh') 
-                  ? '检测到以下表未创建，请在 Supabase SQL Editor 中运行完整 SQL：'
-                  : 'The following tables are not created. Please run the complete SQL in Supabase SQL Editor:'}
+                  ? '检测到数据库对象缺失。请使用项目 migration 完成初始化，不要再手动粘贴旧 SQL。'
+                  : 'Database objects are missing. Use the project migrations instead of pasting the old bootstrap SQL.'}
               </p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {Object.entries(dbStatus).map(([table, exists]) => (
@@ -1119,12 +1139,12 @@ export default function ChatPage() {
                   variant="outline" 
                   className="text-xs"
                   onClick={() => {
-                    navigator.clipboard.writeText(INIT_ALL_SQL);
-                    toast.success(language.startsWith('zh') ? '完整 SQL 已复制到剪贴板' : 'Full SQL copied to clipboard');
+                    navigator.clipboard.writeText(buildDbSetupGuide(language));
+                    toast.success(language.startsWith('zh') ? '初始化步骤已复制到剪贴板' : 'Setup steps copied to clipboard');
                   }}
                 >
                   <Copy className="h-3 w-3 mr-1" />
-                  {language.startsWith('zh') ? '复制完整 SQL' : 'Copy Full SQL'}
+                  {language.startsWith('zh') ? '复制初始化步骤' : 'Copy Setup Steps'}
                 </Button>
                 <Button 
                   size="sm" 
@@ -1139,7 +1159,7 @@ export default function ChatPage() {
               </div>
               {showDbSetup && (
                 <pre className="mt-2 bg-muted rounded p-2 text-xs overflow-x-auto max-h-64 overflow-y-auto">
-                  {INIT_ALL_SQL}
+                  {buildDbSetupGuide(language)}
                 </pre>
               )}
             </div>

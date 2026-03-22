@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { wordsDatabase } from '@/data/words';
 import { retrievability } from '@/services/fsrs';
 import { ensureFSRS } from '@/services/fsrsMigration';
+import { computeHighRiskWords } from '@/services/retentionInsights';
+import { computeReviewWindows } from '@/services/reviewWindows';
 import type { UserProgress } from '@/data/localStorage';
 import type { FSRSState } from '@/types/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,11 +36,20 @@ import {
   Flame,
   ChevronUp,
   Award,
+  AlertTriangle,
+  Clock3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getHeatmapData, getWeeklyActivity, type WeeklyActivityPoint } from '@/services/learningEvents';
+import {
+  getHeatmapData,
+  getLearningEvents,
+  getWeeklyActivity,
+  type LearningEventRecord,
+  type WeeklyActivityPoint,
+} from '@/services/learningEvents';
 
 const TOPIC_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'];
+const ANALYTICS_NOW = Date.now();
 
 const generateTopicData = (wordIds: string[]) => {
   const topicCounts: Record<string, number> = {};
@@ -58,11 +69,12 @@ const generateTopicData = (wordIds: string[]) => {
 };
 
 export default function AnalyticsPage() {
-  const { stats, xp, streak, dailyWords, progress } = useUserData();
+  const { stats, xp, streak, dailyWords, customWords, progress } = useUserData();
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState('week');
   const [weeklyData, setWeeklyData] = useState<WeeklyActivityPoint[]>([]);
   const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
+  const [eventHistory, setEventHistory] = useState<LearningEventRecord[]>([]);
 
   // Derive topic data from all progress words; fall back to today's daily words if no progress yet
   const topicData = useMemo(() => {
@@ -72,22 +84,28 @@ export default function AnalyticsPage() {
     return generateTopicData(ids);
   }, [progress, dailyWords]);
 
+  const riskWords = useMemo(
+    () => computeHighRiskWords(progress, [...customWords, ...dailyWords, ...wordsDatabase]),
+    [customWords, dailyWords, progress],
+  );
+  const reviewWindowInsight = useMemo(() => computeReviewWindows(eventHistory), [eventHistory]);
+
   useEffect(() => {
     const userId = user?.id || 'guest';
 
     const loadAnalytics = async () => {
-      const [weekly, heatmap] = await Promise.all([
+      const [weekly, heatmap, events] = await Promise.all([
         getWeeklyActivity(userId),
         getHeatmapData(userId),
+        getLearningEvents(userId, 30),
       ]);
 
       setWeeklyData(weekly);
       setHeatmapData(heatmap);
+      setEventHistory(events);
     };
 
     void loadAnalytics();
-  // timeRange is UI-only state — getWeeklyActivity/getHeatmapData don't accept it as a param
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats.totalWords, user?.id]);
 
   // Calculate level based on XP
@@ -139,7 +157,6 @@ export default function AnalyticsPage() {
   // ── FSRS-powered retention analytics ───────────────────────────────────────
   const fsrsStats = useMemo(() => {
     if (!progress.length) return null;
-    const now = Date.now();
 
     // Compute current retrievability for every non-mastered word
     const retrievabilities = progress
@@ -148,7 +165,7 @@ export default function AnalyticsPage() {
         const fsrs = ensureFSRS(p as UserProgress & { fsrs?: FSRSState });
         if (fsrs.stability === 0) return 0;
         const elapsedDays = fsrs.lastReviewAt
-          ? (now - new Date(fsrs.lastReviewAt).getTime()) / 86_400_000
+          ? (ANALYTICS_NOW - new Date(fsrs.lastReviewAt).getTime()) / 86_400_000
           : 0;
         return retrievability(fsrs.stability, elapsedDays);
       });
@@ -196,6 +213,19 @@ export default function AnalyticsPage() {
     { name: 'Word Wizard', nameZh: '单词巫师', icon: Zap, color: 'text-purple-500', earned: stats.masteredWords >= 50 },
     { name: 'Master Learner', nameZh: '学习大师', icon: Award, color: 'text-yellow-500', earned: xp.total >= 1000 },
   ];
+
+  const formatRiskDueLabel = (hoursUntilDue: number): string => {
+    if (hoursUntilDue <= 0) return 'Overdue now';
+    if (hoursUntilDue <= 12) return 'Due later today';
+    if (hoursUntilDue <= 48) return 'Due in 1-2 days';
+    return `Due in ${Math.ceil(hoursUntilDue / 24)} days`;
+  };
+
+  const reviewWindowSummary = reviewWindowInsight
+    ? reviewWindowInsight.primary.share >= 0.45
+      ? 'This block is already your most reliable study rhythm.'
+      : 'This block has the strongest recent signal for getting reviews done.'
+    : null;
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -523,6 +553,126 @@ export default function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
+
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock3 className="h-5 w-5 text-emerald-500" />
+                  Best Review Window
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">推荐复习时间窗口</p>
+              </CardHeader>
+              <CardContent>
+                {reviewWindowInsight ? (
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">
+                            Primary window
+                          </p>
+                          <p className="mt-2 text-xl font-semibold">
+                            {reviewWindowInsight.primary.label}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {reviewWindowInsight.primary.labelZh} · {reviewWindowInsight.primary.hours}
+                          </p>
+                        </div>
+                        <Badge className="rounded-full bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-300">
+                          {Math.round(reviewWindowInsight.primary.share * 100)}% of recent activity
+                        </Badge>
+                      </div>
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        {reviewWindowSummary}
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Days observed</p>
+                        <p className="mt-2 text-2xl font-semibold">{reviewWindowInsight.activeDays}</p>
+                        <p className="text-sm text-muted-foreground">最近 30 天里有学习行为的天数</p>
+                      </div>
+                      <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Backup window</p>
+                        <p className="mt-2 text-lg font-semibold">
+                          {reviewWindowInsight.secondary?.label || 'Keep current rhythm'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {reviewWindowInsight.secondary
+                            ? `${reviewWindowInsight.secondary.labelZh} · ${reviewWindowInsight.secondary.hours}`
+                            : '先把主时段稳定下来，再扩展第二时段。'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+                    再积累几次不同时段的学习记录，系统就能开始推荐更可信的复习时间窗口。
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  Highest Forgetting Risk
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">未来最容易忘记的词</p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {riskWords.length > 0 ? (
+                  riskWords.map((item, index) => (
+                    <div
+                      key={item.wordId}
+                      className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/60 px-4 py-3 md:flex-row md:items-center md:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                            #{index + 1}
+                          </span>
+                          <p className="text-base font-semibold">{item.word}</p>
+                          <Badge variant="outline" className="rounded-full capitalize">
+                            {item.topic}
+                          </Badge>
+                          {item.isStubborn ? (
+                            <Badge variant="secondary" className="rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                              Reinforce
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          R {item.retrievabilityPct}% · 难度 {item.difficulty} · 遗忘 {item.lapses} 次 · {formatRiskDueLabel(item.hoursUntilDue)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          className={cn(
+                            'rounded-full px-3 py-1',
+                            item.riskScore >= 75
+                              ? 'bg-red-500/10 text-red-700 dark:text-red-300'
+                              : item.riskScore >= 55
+                                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                                : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+                          )}
+                        >
+                          {item.riskScore}% risk
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+                    先完成几轮复习，系统才会开始给出更可信的遗忘风险排序。
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="badges" className="space-y-6">

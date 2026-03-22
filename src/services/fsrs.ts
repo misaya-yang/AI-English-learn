@@ -29,6 +29,8 @@ const DECAY = -0.5;
 const FACTOR = Math.pow(0.9, 1 / DECAY) - 1;
 /** Target retention — how well we want the user to remember at next review */
 const REQUESTED_RETENTION = 0.9;
+export const STUBBORN_LAPSE_THRESHOLD = 3;
+export const STUBBORN_DIFFICULTY_THRESHOLD = 8;
 
 // ─── Rating helpers ───────────────────────────────────────────────────────────
 
@@ -76,6 +78,10 @@ export function scheduledDays(stability: number): number {
       (stability / FACTOR) * (Math.pow(REQUESTED_RETENTION, 1 / DECAY) - 1),
     ),
   );
+}
+
+export function isStubbornWord(card: Pick<FSRSState, 'lapses' | 'difficulty'>): boolean {
+  return card.lapses >= STUBBORN_LAPSE_THRESHOLD || card.difficulty >= STUBBORN_DIFFICULTY_THRESHOLD;
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -153,6 +159,7 @@ export function scheduleReview(
 
   let { stability, difficulty, lapses, state } = card;
   const r = card.lastReviewAt ? retrievability(stability, elapsedDays) : 0;
+  const wasStubborn = isStubbornWord(card);
 
   if (state === 'new') {
     // ── First exposure ──────────────────────────────────────────────────────
@@ -173,12 +180,16 @@ export function scheduleReview(
   }
 
   // How many days until next review?
+  const isNowStubborn = isStubbornWord({ lapses, difficulty });
+  const reinforcementFactor = rating === 'hard' ? 0.35 : 0.6;
   const days =
     state === 'learning' || state === 'relearning'
       ? rating === 'again'
         ? 0   // show again in the same session
         : 1   // show tomorrow
-      : scheduledDays(stability);
+      : wasStubborn || isNowStubborn
+        ? Math.max(1, Math.round(scheduledDays(stability) * reinforcementFactor))
+        : scheduledDays(stability);
 
   const dueAt = new Date(now.getTime() + days * 86_400_000).toISOString();
 

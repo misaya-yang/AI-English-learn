@@ -2,6 +2,7 @@
 
 import { normalizeWordKey, parseWordBookText } from '@/services/bookImport';
 import { importApkg, inspectApkg, type AnkiProgressMapping } from '@/services/ankiApkgImport';
+import type { FSRSState, FontSize, ThemePreference, UserSettings } from '@/types/core';
 import {
   type AnkiDeckSummary,
   type AnkiImportOptions,
@@ -41,6 +42,12 @@ export interface UserProgress {
   lastReviewed: string | null;
   nextReview: string | null;
   easeFactor: number;
+  correctCount?: number;
+  incorrectCount?: number;
+  firstSeenAt?: string;
+  masteredAt?: string | null;
+  updatedAt?: string;
+  fsrs?: FSRSState;
 }
 
 export interface StudySession {
@@ -119,6 +126,18 @@ const KEYS = {
 
 const todayIso = (): string => new Date().toISOString().split('T')[0];
 const nowIso = (): string => new Date().toISOString();
+const DEFAULT_SETTINGS: UserSettings = {
+  theme: 'system',
+  notifications: true,
+  emailReminders: true,
+  reminderTime: '20:00',
+  soundEnabled: true,
+  ttsEnabled: true,
+  ttsVoice: 'en-US',
+  autoPlayAudio: false,
+  showPinyin: false,
+  fontSize: 'medium',
+};
 
 // Helper functions
 const getItem = <T>(key: string, defaultValue: T): T => {
@@ -132,6 +151,111 @@ const getItem = <T>(key: string, defaultValue: T): T => {
 
 const setItem = <T>(key: string, value: T): void => {
   localStorage.setItem(key, JSON.stringify(value));
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isThemePreference = (value: unknown): value is ThemePreference =>
+  value === 'light' || value === 'dark' || value === 'system';
+
+const isFontSize = (value: unknown): value is FontSize =>
+  value === 'small' || value === 'medium' || value === 'large';
+
+const sanitizeIsoString = (value: unknown): string | null => {
+  if (typeof value !== 'string' || value.trim().length === 0) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
+const sanitizeFsrsState = (value: unknown): FSRSState | undefined => {
+  if (!isRecord(value)) return undefined;
+  if (
+    typeof value.stability !== 'number' ||
+    typeof value.difficulty !== 'number' ||
+    typeof value.retrievability !== 'number' ||
+    typeof value.lapses !== 'number' ||
+    (value.state !== 'new' &&
+      value.state !== 'learning' &&
+      value.state !== 'review' &&
+      value.state !== 'relearning')
+  ) {
+    return undefined;
+  }
+
+  const dueAt = sanitizeIsoString(value.dueAt);
+  if (!dueAt) return undefined;
+
+  return {
+    stability: value.stability,
+    difficulty: value.difficulty,
+    retrievability: value.retrievability,
+    lapses: value.lapses,
+    state: value.state,
+    dueAt,
+    lastReviewAt: sanitizeIsoString(value.lastReviewAt),
+  };
+};
+
+const sanitizeUserProgress = (userId: string, value: unknown): UserProgress | null => {
+  if (!isRecord(value) || typeof value.wordId !== 'string') return null;
+
+  const status =
+    value.status === 'learning' || value.status === 'review' || value.status === 'mastered' || value.status === 'new'
+      ? value.status
+      : 'new';
+
+  return {
+    userId,
+    wordId: value.wordId,
+    status,
+    reviewCount: typeof value.reviewCount === 'number' ? value.reviewCount : 0,
+    lastReviewed: sanitizeIsoString(value.lastReviewed),
+    nextReview: typeof value.nextReview === 'string' ? value.nextReview : null,
+    easeFactor: typeof value.easeFactor === 'number' ? value.easeFactor : 2.5,
+    correctCount: typeof value.correctCount === 'number' ? value.correctCount : 0,
+    incorrectCount: typeof value.incorrectCount === 'number' ? value.incorrectCount : 0,
+    firstSeenAt: sanitizeIsoString(value.firstSeenAt) ?? sanitizeIsoString(value.lastReviewed) ?? nowIso(),
+    masteredAt: sanitizeIsoString(value.masteredAt),
+    updatedAt: sanitizeIsoString(value.updatedAt) ?? nowIso(),
+    fsrs: sanitizeFsrsState(value.fsrs),
+  };
+};
+
+const sanitizeStudySession = (userId: string, value: unknown): StudySession | null => {
+  if (!isRecord(value) || typeof value.id !== 'string' || typeof value.date !== 'string') return null;
+
+  return {
+    id: value.id,
+    userId,
+    date: value.date,
+    wordsStudied: typeof value.wordsStudied === 'number' ? value.wordsStudied : 0,
+    wordsLearned: typeof value.wordsLearned === 'number' ? value.wordsLearned : 0,
+    xpEarned: typeof value.xpEarned === 'number' ? value.xpEarned : 0,
+    duration: typeof value.duration === 'number' ? value.duration : 0,
+  };
+};
+
+const sanitizeUserSettings = (value: unknown): UserSettings => {
+  if (!isRecord(value)) return DEFAULT_SETTINGS;
+
+  return {
+    theme: isThemePreference(value.theme) ? value.theme : DEFAULT_SETTINGS.theme,
+    notifications: typeof value.notifications === 'boolean' ? value.notifications : DEFAULT_SETTINGS.notifications,
+    emailReminders:
+      typeof value.emailReminders === 'boolean' ? value.emailReminders : DEFAULT_SETTINGS.emailReminders,
+    reminderTime:
+      typeof value.reminderTime === 'string' && value.reminderTime.trim().length > 0
+        ? value.reminderTime
+        : DEFAULT_SETTINGS.reminderTime,
+    soundEnabled: typeof value.soundEnabled === 'boolean' ? value.soundEnabled : DEFAULT_SETTINGS.soundEnabled,
+    ttsEnabled: typeof value.ttsEnabled === 'boolean' ? value.ttsEnabled : DEFAULT_SETTINGS.ttsEnabled,
+    ttsVoice: typeof value.ttsVoice === 'string' ? value.ttsVoice : DEFAULT_SETTINGS.ttsVoice,
+    autoPlayAudio:
+      typeof value.autoPlayAudio === 'boolean' ? value.autoPlayAudio : DEFAULT_SETTINGS.autoPlayAudio,
+    showPinyin: typeof value.showPinyin === 'boolean' ? value.showPinyin : DEFAULT_SETTINGS.showPinyin,
+    fontSize: isFontSize(value.fontSize) ? value.fontSize : DEFAULT_SETTINGS.fontSize,
+  };
 };
 
 const uniqueStrings = (values: string[]): string[] => Array.from(new Set(values));
@@ -346,7 +470,8 @@ const migrateLegacyCustomWordsIfNeeded = (userId: string): void => {
 };
 
 // User management
-export const createUser = (email: string, _password: string, displayName: string): User | null => {
+export const createUser = (email: string, password: string, displayName: string): User | null => {
+  void password;
   const users = getItem<User[]>(KEYS.USERS, []);
 
   // Check if email already exists
@@ -371,7 +496,8 @@ export const createUser = (email: string, _password: string, displayName: string
   return newUser;
 };
 
-export const loginUser = (email: string, _password: string): User | null => {
+export const loginUser = (email: string, password: string): User | null => {
+  void password;
   const users = getItem<User[]>(KEYS.USERS, []);
   const user = users.find((u) => u.email === email);
 
@@ -904,8 +1030,11 @@ export const importWordBookFromAnkiApkg = async (
 
 // Progress tracking
 export const getProgress = (userId: string): UserProgress[] => {
-  const allProgress = getItem<Record<string, UserProgress[]>>(KEYS.PROGRESS, {});
-  return allProgress[userId] || [];
+  const allProgress = getItem<Record<string, unknown[]>>(KEYS.PROGRESS, {});
+  const progressRows = Array.isArray(allProgress[userId]) ? allProgress[userId] : [];
+  return progressRows
+    .map((row) => sanitizeUserProgress(userId, row))
+    .filter((row): row is UserProgress => row !== null);
 };
 
 export const updateWordProgress = (
@@ -935,6 +1064,11 @@ export const updateWordProgress = (
       lastReviewed: null,
       nextReview: null,
       easeFactor: 2.5,
+      correctCount: 0,
+      incorrectCount: 0,
+      firstSeenAt: nowIso(),
+      masteredAt: null,
+      updatedAt: nowIso(),
       ...updates,
     };
     allProgress[userId].push(newProgress);
@@ -952,9 +1086,14 @@ export const getWordProgress = (userId: string, wordId: string): UserProgress | 
 export const getDueWords = (userId: string): UserProgress[] => {
   const progress = getProgress(userId);
   const today = todayIso();
+  const now = Date.now();
 
   return progress.filter((p) => {
     if (p.status === 'mastered') return false;
+    if (p.fsrs?.state === 'new') return true;
+    if (p.fsrs?.dueAt) {
+      return new Date(p.fsrs.dueAt).getTime() <= now;
+    }
     if (!p.nextReview) return true;
     return p.nextReview <= today;
   });
@@ -1132,8 +1271,10 @@ export const recordStudySession = (
 };
 
 export const getStudySessions = (userId: string): StudySession[] => {
-  const sessions = getItem<StudySession[]>(KEYS.SESSIONS, []);
-  return sessions.filter((s) => s.userId === userId);
+  const sessions = getItem<unknown[]>(KEYS.SESSIONS, []);
+  return sessions
+    .map((row) => sanitizeStudySession(userId, row))
+    .filter((row): row is StudySession => row !== null);
 };
 
 export const getStudyStats = (userId: string) => {
@@ -1281,25 +1422,20 @@ export const getDailyWords = (userId: string, allWords: WordData[]): WordData[] 
 };
 
 // Settings
-export const getSettings = (userId: string) => {
-  const settings = getItem<Record<string, any>>(KEYS.SETTINGS, {});
-
-  const defaultSettings = {
-    theme: 'system',
-    notifications: true,
-    soundEnabled: true,
-    autoPlayAudio: false,
-    showPinyin: false,
-    fontSize: 'medium',
-  };
-
-  return { ...defaultSettings, ...(settings[userId] || {}) };
+export const getSettings = (userId: string): UserSettings => {
+  const settings = getItem<Record<string, unknown>>(KEYS.SETTINGS, {});
+  return sanitizeUserSettings(settings[userId]);
 };
 
-export const saveSettings = (userId: string, settings: any): void => {
-  const allSettings = getItem<Record<string, any>>(KEYS.SETTINGS, {});
-  allSettings[userId] = { ...(allSettings[userId] || {}), ...settings };
+export const saveSettings = (userId: string, settings: Partial<UserSettings>): UserSettings => {
+  const allSettings = getItem<Record<string, unknown>>(KEYS.SETTINGS, {});
+  const nextSettings = sanitizeUserSettings({
+    ...sanitizeUserSettings(allSettings[userId]),
+    ...settings,
+  });
+  allSettings[userId] = nextSettings;
   setItem(KEYS.SETTINGS, allSettings);
+  return nextSettings;
 };
 
 // Clear all data (for logout/reset)

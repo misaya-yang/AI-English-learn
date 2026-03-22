@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import type { FSRSState, Rating } from '@/types/core';
+import { buildWordProgressSyncPayload, normalizeWordUuid } from '@/lib/wordProgressSync';
 
 // Supabase configuration
 const DEFAULT_SUPABASE_URL = 'https://zjkbktdmwencnouwfrij.supabase.co';
@@ -59,7 +61,8 @@ export interface Word {
 export interface UserWordProgress {
   id: string;
   user_id: string;
-  word_id: string;
+  word_id?: string | null;
+  word_ref: string;
   status: 'new' | 'learning' | 'review' | 'mastered';
   review_count: number;
   correct_count: number;
@@ -70,7 +73,30 @@ export interface UserWordProgress {
   last_reviewed_at?: string;
   first_learned_at?: string;
   mastered_at?: string;
+  stability?: number | null;
+  difficulty?: number | null;
+  retrievability?: number | null;
+  lapses?: number | null;
+  srs_state?: FSRSState['state'] | null;
+  due_at?: string | null;
   word?: Word;
+}
+
+export interface ReviewLogRow {
+  id: string;
+  user_id: string;
+  word_ref: string;
+  word_id?: string | null;
+  rated_at: string;
+  rating: Rating;
+  duration_ms?: number | null;
+  pre_stability: number;
+  post_stability: number;
+  pre_difficulty: number;
+  post_difficulty: number;
+  scheduled_days: number;
+  session_id?: string | null;
+  created_at?: string;
 }
 
 export interface BookmarkedWord {
@@ -313,15 +339,18 @@ export async function updateWordProgress(
   wordId: string,
   update: Partial<UserWordProgress>
 ): Promise<boolean> {
+  const nextPayload = {
+    user_id: userId,
+    word_id: normalizeWordUuid(wordId),
+    word_ref: wordId,
+    ...update,
+    updated_at: new Date().toISOString(),
+  };
+
   const { error } = await supabase
     .from('user_word_progress')
-    .upsert({
-      user_id: userId,
-      word_id: wordId,
-      ...update,
-      updated_at: new Date().toISOString(),
-    }, {
-      onConflict: 'user_id,word_id',
+    .upsert(nextPayload, {
+      onConflict: 'user_id,word_ref',
     });
   
   if (error) {
@@ -333,71 +362,60 @@ export async function updateWordProgress(
 
 // Mark word as learned
 export async function markWordAsLearned(userId: string, wordId: string): Promise<boolean> {
-  return updateWordProgress(userId, wordId, {
-    status: 'learning',
-    first_learned_at: new Date().toISOString(),
-  });
+  return updateWordProgress(
+    userId,
+    wordId,
+    buildWordProgressSyncPayload({
+      userId,
+      wordId,
+      status: 'learning',
+      firstLearnedAt: new Date().toISOString(),
+    }),
+  );
 }
 
 // Mark word as mastered
 export async function markWordAsMastered(userId: string, wordId: string): Promise<boolean> {
-  return updateWordProgress(userId, wordId, {
-    status: 'mastered',
-    mastered_at: new Date().toISOString(),
-  });
+  return updateWordProgress(
+    userId,
+    wordId,
+    buildWordProgressSyncPayload({
+      userId,
+      wordId,
+      status: 'mastered',
+      masteredAt: new Date().toISOString(),
+    }),
+  );
 }
 
-// Review word with SRS rating
+// Legacy fallback: keep API shape but stop recalculating a separate SM-2 schedule.
 export async function reviewWord(
   userId: string,
   wordId: string,
-  rating: 'again' | 'hard' | 'good' | 'easy'
+  rating: Rating
 ): Promise<boolean> {
-  // Get current progress
-  const { data: current } = await supabase
-    .from('user_word_progress')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('word_id', wordId)
-    .single();
-  
-  const easeFactor = current?.ease_factor || 2.5;
-  const reviewCount = current?.review_count || 0;
-  
-  // Calculate new values based on SM-2 algorithm
-  let newEaseFactor = easeFactor;
-  let newInterval = 1;
-  
-  switch (rating) {
-    case 'again':
-      newEaseFactor = Math.max(1.3, easeFactor - 0.2);
-      newInterval = 1;
-      break;
-    case 'hard':
-      newEaseFactor = Math.max(1.3, easeFactor - 0.15);
-      newInterval = Math.max(1, (current?.interval || 0) * 1.2);
-      break;
-    case 'good':
-      newInterval = (current?.interval || 0) * easeFactor;
-      break;
-    case 'easy':
-      newEaseFactor = easeFactor + 0.15;
-      newInterval = (current?.interval || 0) * easeFactor * 1.3;
-      break;
-  }
-  
-  // Calculate next review date
-  const nextReviewAt = new Date();
-  nextReviewAt.setDate(nextReviewAt.getDate() + Math.round(newInterval));
-  
   return updateWordProgress(userId, wordId, {
     status: rating === 'again' ? 'learning' : 'review',
-    review_count: reviewCount + 1,
-    ease_factor: newEaseFactor,
-    interval: Math.round(newInterval),
-    next_review_at: nextReviewAt.toISOString(),
+    review_count: 1,
     last_reviewed_at: new Date().toISOString(),
   });
+}
+
+export async function insertReviewLog(log: ReviewLogRow): Promise<boolean> {
+  const { error } = await supabase.from('review_logs').upsert(
+    {
+      ...log,
+      word_id: log.word_id ?? normalizeWordUuid(log.word_ref),
+      created_at: log.created_at ?? log.rated_at,
+    },
+    { onConflict: 'id' },
+  );
+
+  if (error) {
+    console.error('Error inserting review log:', error);
+    return false;
+  }
+  return true;
 }
 
 // ============================================

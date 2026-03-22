@@ -14,7 +14,7 @@
 
 import type { UserProgress } from '@/data/localStorage';
 import type { FSRSState } from '@/types/core';
-import { retrievability } from '@/services/fsrs';
+import { isStubbornWord, retrievability } from '@/services/fsrs';
 import { ensureFSRS } from '@/services/fsrsMigration';
 import { wordsDatabase } from '@/data/words';
 
@@ -49,6 +49,10 @@ export interface LearnerModel {
   dueCount: number;
   /** Average stability across reviewed words (in days) */
   avgStability: number;
+  /** Cards that have lapsed often enough to need reinforcement */
+  stubbornWordCount: number;
+  /** Topics where stubborn words cluster */
+  stubbornTopics: string[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -87,6 +91,7 @@ export function computeLearnerModel(
     stability: number;
     retrievability: number;
     isDue: boolean;
+    isStubborn: boolean;
   }
 
   // Build O(1) lookup map to avoid O(n²) find() inside the map below
@@ -106,10 +111,12 @@ export function computeLearnerModel(
       stability:     fsrs.stability,
       retrievability: r,
       isDue:         due,
+      isStubborn:    isStubbornWord(fsrs),
     };
   });
 
   const dueCount = metrics.filter((m) => m.isDue).length;
+  const stubbornWordCount = metrics.filter((m) => m.isStubborn).length;
 
   // ── Average retrievability & stability ────────────────────────────────────
   const reviewed = metrics.filter((m) => m.stability > 0);
@@ -136,6 +143,11 @@ export function computeLearnerModel(
     .filter(([, v]) => v.count >= 2)
     .map(([topic, v]) => ({ topic, avg: v.sumR / v.count }))
     .sort((a, b) => a.avg - b.avg);
+  const stubbornTopics = [...new Set(
+    metrics
+      .filter((metric) => metric.isStubborn)
+      .map((metric) => metric.topic),
+  )].slice(0, 3);
 
   const weakTopics   = topicAvgs.slice(0, 3).filter((t) => t.avg < 0.65).map((t) => t.topic);
   const strongTopics = topicAvgs.slice(-3).filter((t) => t.avg >= 0.80).map((t) => t.topic);
@@ -143,7 +155,12 @@ export function computeLearnerModel(
   // ── Burnout risk ─────────────────────────────────────────────────────────
   // Heuristic: high due count + low avg retrievability → high risk
   const dueFraction = nonMastered.length > 0 ? dueCount / nonMastered.length : 0;
-  const burnoutRisk = Math.min(1, dueFraction * 0.5 + (avgRetrievability < 0.5 ? 0.4 : 0));
+  const burnoutRisk = Math.min(
+    1,
+    dueFraction * 0.5 +
+      (avgRetrievability < 0.5 ? 0.4 : 0) +
+      Math.min(0.24, stubbornWordCount * 0.04),
+  );
 
   // ── Learning mode ─────────────────────────────────────────────────────────
   let mode: LearningMode;
@@ -162,7 +179,7 @@ export function computeLearnerModel(
 
   // ── Daily targets ─────────────────────────────────────────────────────────
   const recommendedDailyNew    = Math.round(dailyGoal * MODE_MULTIPLIERS[mode]);
-  const recommendedDailyReview = Math.min(50, Math.max(dueCount, 5));
+  const recommendedDailyReview = Math.min(50, Math.max(dueCount, 5) + Math.min(6, stubbornWordCount));
 
   return {
     userId,
@@ -177,6 +194,8 @@ export function computeLearnerModel(
     burnoutRisk,
     dueCount,
     avgStability,
+    stubbornWordCount,
+    stubbornTopics,
   };
 }
 

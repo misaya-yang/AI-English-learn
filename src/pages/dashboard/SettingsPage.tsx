@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Theme } from '@/contexts/ThemeContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,6 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import {
   User,
   Bell,
@@ -25,10 +25,11 @@ import {
   LogOut,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { logoutUser, clearAllData } from '@/data/localStorage';
+import { clearAllData } from '@/data/localStorage';
+import type { FontSize, UserSettings } from '@/types/core';
 
 export default function SettingsPage() {
-  const { user, profile, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const { settings, updateSettings } = useUserData();
   const {
@@ -38,24 +39,19 @@ export default function SettingsPage() {
     requestPermission,
     saveReminderHour,
   } = useStudyReminder();
-  const [localSettings, setLocalSettings] = useState({
-    notifications: true,
-    emailReminders: true,
-    reminderTime: '20:00',
-    ttsEnabled: true,
-    ttsVoice: 'en-US',
-    autoPlayAudio: false,
-    showPinyin: false,
-    fontSize: 'medium',
-  });
+  const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
 
   // Load settings from context
   useEffect(() => {
     if (settings) {
-      setLocalSettings((prev) => ({
-        ...prev,
-        ...settings,
-      }));
+      const sync = window.setTimeout(() => {
+        setLocalSettings((prev) => ({
+          ...prev,
+          ...settings,
+        }));
+      }, 0);
+
+      return () => window.clearTimeout(sync);
     }
   }, [settings]);
 
@@ -108,7 +104,7 @@ export default function SettingsPage() {
                   <Label>Theme</Label>
                   <p className="text-sm text-muted-foreground">主题</p>
                 </div>
-                <Select value={theme} onValueChange={(v: any) => setTheme(v)}>
+                <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -130,7 +126,7 @@ export default function SettingsPage() {
                 <Select
                   value={localSettings.fontSize}
                   onValueChange={(v) => {
-                    setLocalSettings((s) => ({ ...s, fontSize: v }));
+                    setLocalSettings((s) => ({ ...s, fontSize: v as FontSize }));
                   }}
                 >
                   <SelectTrigger className="w-[180px]">

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { LearningMission, LearningProfile } from '@/types/examContent';
+import type { LearnerModel } from '@/services/learnerModel';
 import { getLearningEvents, getWeeklyActivity } from '@/services/learningEvents';
 import { buildLearningOverview } from '@/services/learningEngine';
 
@@ -12,6 +13,7 @@ interface UseLearningOverviewArgs {
   learnedTodayCount: number;
   recommendedUnitTitle?: string | null;
   activeBookName?: string | null;
+  learnerModel?: LearnerModel | null;
 }
 
 export const useLearningOverviewQuery = (args: UseLearningOverviewArgs) =>
@@ -28,6 +30,11 @@ export const useLearningOverviewQuery = (args: UseLearningOverviewArgs) =>
       args.mission?.updatedAt,
       args.recommendedUnitTitle,
       args.activeBookName,
+      args.learnerModel?.mode,
+      args.learnerModel?.recommendedDailyNew,
+      args.learnerModel?.recommendedDailyReview,
+      args.learnerModel?.burnoutRisk,
+      args.learnerModel?.weakTopics.join(','),
     ],
     enabled: Boolean(args.userId),
     queryFn: async () => {
@@ -44,6 +51,7 @@ export const useLearningOverviewQuery = (args: UseLearningOverviewArgs) =>
         learnedTodayCount: args.learnedTodayCount,
         recommendedUnitTitle: args.recommendedUnitTitle,
         activeBookName: args.activeBookName,
+        learnerModel: args.learnerModel,
         events,
         weeklyActivity,
       });

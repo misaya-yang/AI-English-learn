@@ -1,4 +1,5 @@
 import type { LearningMission, LearningProfile } from '@/types/examContent';
+import type { LearnerModel } from '@/services/learnerModel';
 import type { LearningEventRecord, WeeklyActivityPoint } from '@/services/learningEvents';
 import type {
   ActivitySparkPoint,
@@ -22,11 +23,22 @@ const weaknessCatalog: Record<string, { title: string; titleZh: string }> = {
   meaning_match: { title: 'Meaning match', titleZh: '词义匹配' },
 };
 
+const weakTagToWeakness: Record<string, keyof typeof weaknessCatalog> = {
+  review_pressure: 'retention',
+  spaced_review: 'retention',
+  retrieval_practice: 'vocabulary_recall',
+  core_vocabulary: 'lexical',
+  ielts_writing: 'coherence',
+};
+
 const missionProgress = (mission: LearningMission | null): number => {
   if (!mission || mission.tasks.length === 0) return 0;
   const completed = mission.tasks.filter((task) => task.done).length;
   return Math.round((completed / mission.tasks.length) * 100);
 };
+
+const isExamFocused = (profile: LearningProfile, recommendedUnitTitle?: string | null): boolean =>
+  profile.target.toLowerCase().includes('ielts') || Boolean(recommendedUnitTitle);
 
 const toWeakness = (tag: string, count: number): WeaknessSnapshot => {
   const catalog = weaknessCatalog[tag] || { title: tag, titleZh: tag };
@@ -88,6 +100,18 @@ export const deriveWeaknessesFromEvents = (events: LearningEventRecord[]): Weakn
         }
         break;
       }
+      case 'chat.message_sent': {
+        const weakTags = event.payload.weakTags;
+        if (Array.isArray(weakTags)) {
+          weakTags.forEach((tag) => {
+            if (typeof tag !== 'string') return;
+            const normalized = weakTagToWeakness[tag];
+            if (!normalized) return;
+            scores.set(normalized, (scores.get(normalized) || 0) + 1);
+          });
+        }
+        break;
+      }
       default:
         break;
     }
@@ -113,40 +137,118 @@ export const buildMissionCard = (args: {
   recommendedUnitTitle?: string | null;
   activeBookName?: string | null;
   weaknesses: WeaknessSnapshot[];
+  learnerModel?: LearnerModel | null;
 }): DailyMissionCard => {
   const completionPct = missionProgress(args.mission);
-  const hasReviewPressure = args.dueWordsCount >= 5;
+  const burnoutRisk = args.learnerModel?.burnoutRisk ?? 0;
+  const hasReviewPressure = args.dueWordsCount >= 5 || (args.learnerModel?.dueCount ?? 0) >= 8;
   const hasDailyWordsLeft = args.learnedTodayCount < args.dailyWordsCount;
-  const primaryAction = hasReviewPressure
+  const topWeakness = args.weaknesses[0] ?? null;
+  const examFocused = isExamFocused(args.profile, args.recommendedUnitTitle);
+  const recoveryMode = args.learnerModel?.mode === 'recovery' || burnoutRisk >= 0.75;
+  const sprintMode = args.learnerModel?.mode === 'sprint';
+  const stretchMode = args.learnerModel?.mode === 'stretch';
+  const reviewTarget = args.learnerModel?.recommendedDailyReview ?? args.dueWordsCount;
+  const vocabTarget = args.learnerModel?.recommendedDailyNew ?? args.dailyWordsCount;
+
+  const primaryAction = recoveryMode
+    ? buildAction({
+        id: 'primary-recovery-review',
+        surface: 'review',
+        title: 'Reduce pressure with a lighter review block',
+        titleZh: '先用一轮轻量复习把压力降下来',
+        description: `${reviewTarget} due cards are stacking up. Clear the queue first, then add new words if energy remains.`,
+        descriptionZh: `当前复习积压约 ${reviewTarget} 张，先把旧账压下去，再决定要不要加新词更稳。`,
+        cta: 'Open review',
+        ctaZh: '去做复习',
+        href: '/dashboard/review',
+        estimatedMinutes: Math.max(8, Math.min(18, reviewTarget)),
+        priority: 'high',
+        reason: 'recovery_mode',
+      })
+    : examFocused && (sprintMode || topWeakness?.emphasis === 'urgent')
+      ? buildAction({
+          id: 'primary-exam-boost',
+          surface: 'exam',
+          title: args.recommendedUnitTitle ? `Boost your score with ${args.recommendedUnitTitle}` : 'Use the writing coach for your next score boost',
+          titleZh: args.recommendedUnitTitle ? `先用《${args.recommendedUnitTitle}》做一次提分训练` : '先用写作教练完成一次提分训练',
+          description: topWeakness
+            ? `Your next band gain is most likely to come from fixing ${topWeakness.title.toLowerCase()}.`
+            : 'A structured IELTS-style writing drill is the fastest path to your next score gain.',
+          descriptionZh: topWeakness
+            ? `你下一步最可能提分的突破口，是先修正${topWeakness.titleZh}。`
+            : '当前最值得做的是一次结构化 IELTS 写作提分练习。',
+          cta: 'Open exam prep',
+          ctaZh: '前往考试冲分',
+          href: '/dashboard/exam',
+          estimatedMinutes: 18,
+          priority: 'high',
+          reason: 'exam_boost',
+        })
+      : hasReviewPressure
     ? buildAction({
         id: 'primary-review',
         surface: 'review',
         title: 'Clear your due reviews',
         titleZh: '优先清空到期复习',
-        description: `${args.dueWordsCount} cards are waiting and will keep compounding if skipped.`,
-        descriptionZh: `当前有 ${args.dueWordsCount} 个到期卡片，继续拖延会让负担继续上升。`,
+        description: `${reviewTarget} cards are waiting and will keep compounding if skipped.`,
+        descriptionZh: `当前有约 ${reviewTarget} 个到期卡片，继续拖延会让负担继续上升。`,
         cta: 'Start review',
         ctaZh: '开始复习',
         href: '/dashboard/review',
-        estimatedMinutes: Math.max(6, Math.min(18, args.dueWordsCount)),
+        estimatedMinutes: Math.max(6, Math.min(18, reviewTarget)),
         priority: 'high',
         reason: 'due_words',
       })
-    : hasDailyWordsLeft
+    : hasDailyWordsLeft && !stretchMode
       ? buildAction({
           id: 'primary-today',
           surface: 'today',
           title: 'Finish today\'s new words',
           titleZh: '完成今日新词任务',
-          description: `${args.dailyWordsCount - args.learnedTodayCount} words are still pending in ${args.activeBookName || 'your active book'}.`,
-          descriptionZh: `当前词书${args.activeBookName ? `《${args.activeBookName}》` : ''}里还有 ${args.dailyWordsCount - args.learnedTodayCount} 个新词待学。`,
+          description: `${Math.max(vocabTarget - args.learnedTodayCount, 0)} words are still pending in ${args.activeBookName || 'your active book'}.`,
+          descriptionZh: `当前词书${args.activeBookName ? `《${args.activeBookName}》` : ''}里还有 ${Math.max(vocabTarget - args.learnedTodayCount, 0)} 个建议新词待推进。`,
           cta: 'Continue today',
           ctaZh: '继续今日任务',
           href: '/dashboard/today',
-          estimatedMinutes: Math.max(8, Math.min(20, args.dailyWordsCount * 2)),
+          estimatedMinutes: Math.max(8, Math.min(20, vocabTarget * 2)),
           priority: 'high',
           reason: 'today_words',
         })
+      : topWeakness
+        ? buildAction({
+            id: 'primary-weakness-drill',
+            surface: topWeakness.tag === 'coherence' || topWeakness.tag === 'grammar' || topWeakness.tag === 'logic' || topWeakness.tag === 'collocation' || topWeakness.tag === 'tense'
+              ? examFocused
+                ? 'exam'
+                : 'chat'
+              : topWeakness.tag === 'listening_accuracy'
+                ? 'practice'
+                : 'practice',
+            title: `Turn ${topWeakness.title.toLowerCase()} into a focused drill`,
+            titleZh: `把${topWeakness.titleZh}直接转成一次针对练习`,
+            description: `Your recent mistakes are clustering around ${topWeakness.title.toLowerCase()}. Train it while the signal is still fresh.`,
+            descriptionZh: `你最近的错误正在集中到${topWeakness.titleZh}，现在立刻针对练最有效。`,
+            cta: examFocused && (topWeakness.tag === 'coherence' || topWeakness.tag === 'grammar' || topWeakness.tag === 'logic' || topWeakness.tag === 'collocation' || topWeakness.tag === 'tense')
+              ? 'Open exam prep'
+              : topWeakness.tag === 'listening_accuracy'
+                ? 'Open practice'
+                : 'Open drill',
+            ctaZh: examFocused && (topWeakness.tag === 'coherence' || topWeakness.tag === 'grammar' || topWeakness.tag === 'logic' || topWeakness.tag === 'collocation' || topWeakness.tag === 'tense')
+              ? '前往考试冲分'
+              : topWeakness.tag === 'listening_accuracy'
+                ? '打开练习'
+                : '开始针对练习',
+            href:
+              examFocused && (topWeakness.tag === 'coherence' || topWeakness.tag === 'grammar' || topWeakness.tag === 'logic' || topWeakness.tag === 'collocation' || topWeakness.tag === 'tense')
+                ? '/dashboard/exam'
+                : topWeakness.tag === 'listening_accuracy'
+                  ? '/dashboard/practice'
+                  : '/dashboard/chat',
+            estimatedMinutes: 12,
+            priority: 'high',
+            reason: 'weakness_drill',
+          })
       : buildAction({
           id: 'primary-practice',
           surface: 'practice',
@@ -227,25 +329,29 @@ export const buildAdaptiveDifficultyState = (args: {
   weaknesses: WeaknessSnapshot[];
   recentActivity: WeeklyActivityPoint[];
   dueWordsCount: number;
+  learnerModel?: LearnerModel | null;
 }): AdaptiveDifficultyState => {
   const activeDays = args.recentActivity.filter((point) => point.events > 0 || point.words > 0).length;
   const highWeakness = args.weaknesses[0]?.count || 0;
+  const burnoutRisk = args.learnerModel?.burnoutRisk ?? 0;
 
-  if (args.dueWordsCount >= 8 || highWeakness >= 5) {
+  if (args.learnerModel?.mode === 'recovery' || burnoutRisk >= 0.75 || args.dueWordsCount >= 8 || highWeakness >= 5) {
     return {
       level: 'recover',
       label: 'Recover',
       labelZh: '回稳期',
-      reason: 'Recent review pressure is high. Keep today short and controlled.',
+      reason: 'Recent review pressure is high. Keep today short, clear the queue, and avoid overload.',
     };
   }
 
-  if (activeDays >= 5 && highWeakness <= 2) {
+  if (args.learnerModel?.mode === 'stretch' || args.learnerModel?.mode === 'sprint' || (activeDays >= 5 && highWeakness <= 2)) {
     return {
       level: 'stretch',
       label: 'Stretch',
       labelZh: '拉伸期',
-      reason: 'Consistency is stable. You can handle a harder practice set or writing task.',
+      reason: args.learnerModel?.mode === 'sprint'
+        ? 'Momentum is strong. Push your weakest exam-facing skills while the streak is stable.'
+        : 'Consistency is stable. You can handle a harder practice set or writing task.',
     };
   }
 
@@ -274,6 +380,7 @@ export const buildLearningOverview = (args: {
   learnedTodayCount: number;
   recommendedUnitTitle?: string | null;
   activeBookName?: string | null;
+  learnerModel?: LearnerModel | null;
   events: LearningEventRecord[];
   weeklyActivity: WeeklyActivityPoint[];
 }): LearningOverview => {
@@ -288,12 +395,14 @@ export const buildLearningOverview = (args: {
       recommendedUnitTitle: args.recommendedUnitTitle,
       activeBookName: args.activeBookName,
       weaknesses,
+      learnerModel: args.learnerModel,
     }),
     weaknesses,
     adaptiveDifficulty: buildAdaptiveDifficultyState({
       weaknesses,
       recentActivity: args.weeklyActivity,
       dueWordsCount: args.dueWordsCount,
+      learnerModel: args.learnerModel,
     }),
     activity: buildActivitySpark(args.weeklyActivity),
   };

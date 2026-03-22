@@ -1,6 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { getStudySessions } from '@/data/localStorage';
+import {
+  addEvent as addEventToLocalDb,
+  getEventsForUser,
+  pruneEvents,
+} from '@/lib/localDb';
 import type { LearningEventName } from '@/types/examContent';
+import { buildIdempotencyKey, syncQueue } from '@/services/syncQueue';
 
 export interface LearningEventRecord {
   id: string;
@@ -21,29 +27,10 @@ export interface WeeklyActivityPoint {
   events: number;
 }
 
-const LOCAL_EVENTS_KEY = 'vocabdaily_learning_events_local';
-const MAX_LOCAL_EVENTS = 2000;
-
 const toIsoDate = (date: Date): string => date.toISOString().slice(0, 10);
 
 const labelForDay = (date: Date): string =>
   date.toLocaleDateString('en-US', { weekday: 'short' });
-
-const getLocalEvents = (): LearningEventRecord[] => {
-  try {
-    const raw = localStorage.getItem(LOCAL_EVENTS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as LearningEventRecord[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed;
-  } catch {
-    return [];
-  }
-};
-
-const setLocalEvents = (events: LearningEventRecord[]): void => {
-  localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(events.slice(0, MAX_LOCAL_EVENTS)));
-};
 
 const dedupeEvents = (events: LearningEventRecord[]): LearningEventRecord[] => {
   const seen = new Set<string>();
@@ -92,11 +79,20 @@ export const recordLearningEvent = async (args: {
     createdAt: new Date().toISOString(),
   };
 
-  const local = dedupeEvents([event, ...getLocalEvents()]);
-  setLocalEvents(local);
+  await addEventToLocalDb(
+    event.userId,
+    event.id,
+    event.eventName,
+    {
+      eventSource: event.eventSource,
+      sessionId: event.sessionId,
+      ...event.payload,
+    },
+  );
+  void pruneEvents();
 
   try {
-    await supabase.from('learning_events').insert({
+    const payload = {
       id: event.id,
       user_id: event.userId,
       event_name: event.eventName,
@@ -104,9 +100,37 @@ export const recordLearningEvent = async (args: {
       session_id: event.sessionId || null,
       payload: event.payload,
       created_at: event.createdAt,
-    });
+    };
+
+    const { error } = await supabase.from('learning_events').upsert(payload, { onConflict: 'id' });
+    if (error) throw error;
+
+    await addEventToLocalDb(
+      event.userId,
+      event.id,
+      event.eventName,
+      {
+        eventSource: event.eventSource,
+        sessionId: event.sessionId,
+        ...event.payload,
+      },
+      true,
+    );
   } catch {
-    // Keep local cache only.
+    await syncQueue.enqueue({
+      table: 'learning_events',
+      operation: 'upsert',
+      payload: {
+        id: event.id,
+        user_id: event.userId,
+        event_name: event.eventName,
+        event_source: event.eventSource,
+        session_id: event.sessionId || null,
+        payload: event.payload,
+        created_at: event.createdAt,
+      },
+      idempotency_key: buildIdempotencyKey('learning_events', { id: event.id }),
+    });
   }
 };
 
@@ -129,9 +153,20 @@ export const completeMissionTaskEvent = async (args: {
 
 export const getLearningEvents = async (userId: string, days = 30): Promise<LearningEventRecord[]> => {
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  const local = getLocalEvents().filter(
-    (event) => event.userId === userId && new Date(event.createdAt).getTime() >= cutoff,
-  );
+  const localRows = await getEventsForUser(userId, 2500);
+  const local = localRows
+    .map((row) => ({
+      id: row.event_id,
+      userId: row.user_id,
+      eventName: row.event_name,
+      eventSource: (typeof row.payload.eventSource === 'string' ? row.payload.eventSource : 'web') as LearningEventRecord['eventSource'],
+      sessionId: typeof row.payload.sessionId === 'string' ? row.payload.sessionId : undefined,
+      payload: Object.fromEntries(
+        Object.entries(row.payload).filter(([key]) => key !== 'eventSource' && key !== 'sessionId'),
+      ),
+      createdAt: row.created_at,
+    }))
+    .filter((event) => new Date(event.createdAt).getTime() >= cutoff);
 
   try {
     const fromIso = new Date(cutoff).toISOString();
@@ -170,7 +205,6 @@ export const getLearningEvents = async (userId: string, days = 30): Promise<Lear
     });
 
     const merged = dedupeEvents([...remote, ...local]);
-    setLocalEvents(dedupeEvents([...merged, ...getLocalEvents()]));
     return merged;
   } catch {
     return dedupeEvents(local);

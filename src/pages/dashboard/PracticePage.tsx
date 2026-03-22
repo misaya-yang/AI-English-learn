@@ -86,7 +86,7 @@ const darkSelectContentClass = 'border-white/10 bg-[#101010] text-white';
 export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, dueWords, streak, addStudySession, completeMissionTask } = useUserData();
+  const { dailyWords, dueWords, progress, streak, addStudySession, completeMissionTask } = useUserData();
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -114,13 +114,13 @@ export default function PracticePage() {
   const quizQuestions = useMemo(
     () =>
       selectedMode === 'quiz' || selectedMode === 'fill_blank'
-        ? buildPracticeQuestions(dailyWords, selectedMode, `${userId}:${selectedMode}`)
+        ? buildPracticeQuestions(dailyWords, selectedMode, `${userId}:${selectedMode}`, { progress })
         : [],
-    [dailyWords, selectedMode, userId],
+    [dailyWords, progress, selectedMode, userId],
   );
   const listeningWords = useMemo(
-    () => (selectedMode === 'listening' ? buildListeningQueue(dailyWords, `${userId}:listening`) : []),
-    [dailyWords, selectedMode, userId],
+    () => (selectedMode === 'listening' ? buildListeningQueue(dailyWords, `${userId}:listening`, { progress }) : []),
+    [dailyWords, progress, selectedMode, userId],
   );
 
   const resetPracticeRuntime = () => {
@@ -201,7 +201,7 @@ export default function PracticePage() {
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = selectedMode === 'listening' ? listeningWords.length : quizQuestions.length;
-  const progress = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
+  const sessionProgress = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
   const recommendedModeId = useMemo(() => {
     if (dueWords.length >= 5) return 'quiz';
     if (dailyWords.length >= 8) return 'fill_blank';
@@ -568,7 +568,7 @@ export default function PracticePage() {
 
   const heroProgress =
     selectedMode && hasStarted && !isComplete && selectedMode !== 'writing'
-      ? Math.min(100, Math.round(progress))
+      ? Math.min(100, Math.round(sessionProgress))
       : selectedMode === 'writing' && writingFeedback
         ? 100
         : null;
@@ -1046,9 +1046,9 @@ export default function PracticePage() {
           <div className="space-y-2 border-b border-white/10 pb-5">
             <div className="flex items-center justify-between text-sm text-white/48">
               <span>Question {currentQuestionIndex + 1} of {listeningWords.length}</span>
-              <span>{Math.round(progress)}%</span>
+              <span>{Math.round(sessionProgress)}%</span>
             </div>
-            <Progress value={progress} className="h-2 bg-white/10 [&_[data-slot=progress-indicator]]:bg-emerald-400" />
+            <Progress value={sessionProgress} className="h-2 bg-white/10 [&_[data-slot=progress-indicator]]:bg-emerald-400" />
           </div>
 
           <div className="mx-auto max-w-2xl space-y-6 py-6 text-center">
@@ -1179,9 +1179,9 @@ export default function PracticePage() {
         <div className="space-y-2 border-b border-white/10 pb-5">
           <div className="flex items-center justify-between text-sm text-white/48">
             <span>Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
-            <span>{Math.round(progress)}%</span>
+            <span>{Math.round(sessionProgress)}%</span>
           </div>
-          <Progress value={progress} className="h-2 bg-white/10 [&_[data-slot=progress-indicator]]:bg-emerald-400" />
+          <Progress value={sessionProgress} className="h-2 bg-white/10 [&_[data-slot=progress-indicator]]:bg-emerald-400" />
         </div>
 
         <div className="max-w-3xl space-y-5">

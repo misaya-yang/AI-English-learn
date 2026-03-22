@@ -8,7 +8,6 @@
  *   word_progress  — per-user per-word FSRS state (keyed by [user_id, word_id])
  *   review_logs    — immutable review event log (append-only)
  *   sync_queue     — pending writes awaiting Supabase sync
- *   words_cache    — offline copy of the words table
  *   settings       — user preferences key-value
  *   events         — learning events (analytics)
  */
@@ -58,10 +57,12 @@ export interface VocabDailyDB extends DBSchema {
     value: SyncQueueRecord;
     indexes: {
       'by_status': string;
+      'by_idempotency_key': string;
+      'by_status_table': [string, string];
     };
   };
   words_cache: {
-    key: string;          // word id
+    key: string;
     value: { id: string; [key: string]: unknown };
   };
   settings: {
@@ -72,20 +73,24 @@ export interface VocabDailyDB extends DBSchema {
     key: number;
     value: {
       id?: number;
+      event_id: string;
       user_id: string;
       event_name: string;
       payload: Record<string, unknown>;
       created_at: string;
       synced: boolean;
     };
-    indexes: { 'by_user': string };
+    indexes: {
+      'by_user': string;
+      'by_user_event': [string, string];
+    };
   };
 }
 
 // ─── Database singleton ───────────────────────────────────────────────────────
 
 const DB_NAME    = 'vocabdaily';
-const DB_VERSION = 1;
+const DB_VERSION = 3;
 
 let _dbPromise: Promise<IDBPDatabase<VocabDailyDB>> | null = null;
 
@@ -93,38 +98,88 @@ function getDb(): Promise<IDBPDatabase<VocabDailyDB>> {
   if (_dbPromise) return _dbPromise;
 
   _dbPromise = openDB<VocabDailyDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
+    upgrade(db, _oldVersion, _newVersion, transaction) {
       // ── word_progress ────────────────────────────────────────────────────
-      const prog = db.createObjectStore('word_progress', {
-        keyPath: ['user_id', 'word_id'],
-      });
-      prog.createIndex('by_user_dueAt',   ['user_id', 'srs.dueAt']);
-      prog.createIndex('by_user_status',  ['user_id', 'status']);
+      if (!db.objectStoreNames.contains('word_progress')) {
+        const prog = db.createObjectStore('word_progress', {
+          keyPath: ['user_id', 'word_id'],
+        });
+        prog.createIndex('by_user_dueAt', ['user_id', 'srs.dueAt']);
+        prog.createIndex('by_user_status', ['user_id', 'status']);
+      } else {
+        const prog = transaction.objectStore('word_progress');
+        if (!prog.indexNames.contains('by_user_dueAt')) {
+          prog.createIndex('by_user_dueAt', ['user_id', 'srs.dueAt']);
+        }
+        if (!prog.indexNames.contains('by_user_status')) {
+          prog.createIndex('by_user_status', ['user_id', 'status']);
+        }
+      }
 
       // ── review_logs ──────────────────────────────────────────────────────
-      const logs = db.createObjectStore('review_logs', {
-        keyPath: 'id',
-        autoIncrement: true,
-      });
-      logs.createIndex('by_user_word', ['user_id', 'word_id']);
-      logs.createIndex('by_user_date', ['user_id', 'rated_at']);
+      if (!db.objectStoreNames.contains('review_logs')) {
+        const logs = db.createObjectStore('review_logs', {
+          keyPath: 'id',
+          autoIncrement: true,
+        });
+        logs.createIndex('by_user_word', ['user_id', 'word_id']);
+        logs.createIndex('by_user_date', ['user_id', 'rated_at']);
+      } else {
+        const logs = transaction.objectStore('review_logs');
+        if (!logs.indexNames.contains('by_user_word')) {
+          logs.createIndex('by_user_word', ['user_id', 'word_id']);
+        }
+        if (!logs.indexNames.contains('by_user_date')) {
+          logs.createIndex('by_user_date', ['user_id', 'rated_at']);
+        }
+      }
 
       // ── sync_queue ───────────────────────────────────────────────────────
-      const queue = db.createObjectStore('sync_queue', {
-        keyPath: 'id',
-        autoIncrement: true,
-      });
-      queue.createIndex('by_status', 'status');
+      if (!db.objectStoreNames.contains('sync_queue')) {
+        const queue = db.createObjectStore('sync_queue', {
+          keyPath: 'id',
+          autoIncrement: true,
+        });
+        queue.createIndex('by_status', 'status');
+        queue.createIndex('by_idempotency_key', 'idempotency_key');
+        queue.createIndex('by_status_table', ['status', 'table']);
+      } else {
+        const queue = transaction.objectStore('sync_queue');
+        if (!queue.indexNames.contains('by_status')) {
+          queue.createIndex('by_status', 'status');
+        }
+        if (!queue.indexNames.contains('by_idempotency_key')) {
+          queue.createIndex('by_idempotency_key', 'idempotency_key');
+        }
+        if (!queue.indexNames.contains('by_status_table')) {
+          queue.createIndex('by_status_table', ['status', 'table']);
+        }
+      }
 
-      // ── words_cache / settings / events ──────────────────────────────────
-      db.createObjectStore('words_cache', { keyPath: 'id' });
-      db.createObjectStore('settings',    { keyPath: 'key' });
+      // ── settings / events ────────────────────────────────────────────────
+      if (db.objectStoreNames.contains('words_cache')) {
+        db.deleteObjectStore('words_cache');
+      }
+      if (!db.objectStoreNames.contains('settings')) {
+        db.createObjectStore('settings', { keyPath: 'key' });
+      }
 
-      const ev = db.createObjectStore('events', {
-        keyPath: 'id',
-        autoIncrement: true,
-      });
-      ev.createIndex('by_user', 'user_id');
+      if (!db.objectStoreNames.contains('events')) {
+        const ev = db.createObjectStore('events', {
+          keyPath: 'id',
+          autoIncrement: true,
+        });
+        ev.createIndex('by_user', 'user_id');
+        ev.createIndex('by_user_event', ['user_id', 'event_id']);
+      } else {
+        const ev = transaction.objectStore('events');
+        if (!ev.indexNames.contains('by_user')) {
+          ev.createIndex('by_user', 'user_id');
+        }
+        if (!ev.indexNames.contains('by_user_event')) {
+          ev.createIndex('by_user_event', ['user_id', 'event_id']);
+        }
+      }
     },
 
     blocked() {
@@ -232,10 +287,19 @@ export async function enqueueSyncOp(
 ): Promise<void> {
   try {
     const db = await getDb();
-    // Dedup: check if identical idempotency key is already pending (no inflight/failed check needed)
-    const pending = await db.getAllFromIndex('sync_queue', 'by_status', 'pending');
-    const dup = pending.find((r) => r.idempotency_key === op.idempotency_key);
-    if (dup) return;
+    const existing = await db.getFromIndex('sync_queue', 'by_idempotency_key', op.idempotency_key);
+
+    if (existing?.id) {
+      await db.put('sync_queue', {
+        ...existing,
+        ...op,
+        status: 'pending',
+        attempts: 0,
+        last_attempt_at: undefined,
+        last_error: undefined,
+      } as SyncQueueRecord);
+      return;
+    }
 
     await db.add('sync_queue', {
       ...op,
@@ -251,7 +315,8 @@ export async function enqueueSyncOp(
 export async function getPendingSyncOps(): Promise<SyncQueueRecord[]> {
   try {
     const db = await getDb();
-    return db.getAllFromIndex('sync_queue', 'by_status', 'pending');
+    const rows = await db.getAllFromIndex('sync_queue', 'by_status', 'pending');
+    return rows.sort((a, b) => a.created_at.localeCompare(b.created_at));
   } catch {
     return [];
   }
@@ -275,14 +340,35 @@ export async function updateSyncOp(
     const rec = await db.get('sync_queue', id);
     if (!rec) return;
     await db.put('sync_queue', { ...rec, ...patch });
-  } catch {}
+  } catch (err) {
+    console.warn('[localDb] updateSyncOp failed:', err);
+  }
 }
 
 export async function deleteSyncOp(id: number): Promise<void> {
   try {
     const db = await getDb();
     await db.delete('sync_queue', id);
-  } catch {}
+  } catch (err) {
+    console.warn('[localDb] deleteSyncOp failed:', err);
+  }
+}
+
+export async function pruneReviewLogs(retentionDays = 180): Promise<number> {
+  try {
+    const db = await getDb();
+    const tx = db.transaction('review_logs', 'readwrite');
+    const store = tx.objectStore('review_logs');
+    const cutoff = Date.now() - retentionDays * 86_400_000;
+    const logs = await store.getAll();
+    const stale = logs.filter((log) => new Date(log.rated_at).getTime() < cutoff);
+
+    await Promise.all(stale.map((log) => store.delete(log.id)));
+    await tx.done;
+    return stale.length;
+  } catch {
+    return 0;
+  }
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
@@ -301,26 +387,45 @@ export async function setSetting(key: string, value: unknown): Promise<void> {
   try {
     const db = await getDb();
     await db.put('settings', { key, value, updated_at: new Date().toISOString() });
-  } catch {}
+  } catch (err) {
+    console.warn('[localDb] setSetting failed:', err);
+  }
 }
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
 export async function addEvent(
   userId: string,
+  eventId: string,
   eventName: string,
   payload: Record<string, unknown>,
+  synced = false,
 ): Promise<void> {
   try {
     const db = await getDb();
+    const existing = await db.getFromIndex('events', 'by_user_event', [userId, eventId]);
+    if (existing?.id) {
+      await db.put('events', {
+        ...existing,
+        event_name: eventName,
+        payload,
+        created_at: existing.created_at,
+        synced: existing.synced || synced,
+      });
+      return;
+    }
+
     await db.add('events', {
-      user_id:    userId,
+      event_id: eventId,
+      user_id: userId,
       event_name: eventName,
       payload,
       created_at: new Date().toISOString(),
-      synced:     false,
+      synced,
     });
-  } catch {}
+  } catch (err) {
+    console.warn('[localDb] addEvent failed:', err);
+  }
 }
 
 export async function getUnsyncedEvents(userId: string, limit = 100) {
@@ -330,6 +435,46 @@ export async function getUnsyncedEvents(userId: string, limit = 100) {
     return all.filter((e) => !e.synced).slice(0, limit);
   } catch {
     return [];
+  }
+}
+
+export async function getEventsForUser(
+  userId: string,
+  limit = 2000,
+): Promise<Array<{
+  id?: number;
+  event_id: string;
+  user_id: string;
+  event_name: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+  synced: boolean;
+}>> {
+  try {
+    const db = await getDb();
+    const rows = await db.getAllFromIndex('events', 'by_user', userId);
+    return rows
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+export async function pruneEvents(limit = 2000): Promise<number> {
+  try {
+    const db = await getDb();
+    const tx = db.transaction('events', 'readwrite');
+    const store = tx.objectStore('events');
+    const rows = await store.getAll();
+    const staleRows = rows
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(limit);
+    await Promise.all(staleRows.map((row) => store.delete(row.id as number)));
+    await tx.done;
+    return staleRows.length;
+  } catch {
+    return 0;
   }
 }
 

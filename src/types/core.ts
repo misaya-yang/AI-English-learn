@@ -16,6 +16,8 @@ export type SRSState = 'new' | 'learning' | 'review' | 'relearning';
 export type SyncStatus = 'local' | 'synced' | 'conflict';
 export type PlanTier = 'free' | 'pro' | 'team';
 export type Rating = 'again' | 'hard' | 'good' | 'easy';
+export type ThemePreference = 'dark' | 'light' | 'system';
+export type FontSize = 'small' | 'medium' | 'large';
 
 // ─── FSRS-5 card state ────────────────────────────────────────────────────────
 
@@ -98,6 +100,8 @@ export interface WordProgress {
 /** One entry per review action, used for detailed analytics and FSRS training. */
 export interface ReviewLog {
   id?: string;
+  /** Stable event id used for remote sync de-duplication */
+  event_id?: string;
   user_id: string;
   word_id: string;
   rated_at: string;
@@ -142,6 +146,19 @@ export interface LearningPlan {
   focus_skills: Skill[];
   reminder_time: string | null;
   reminder_enabled: boolean;
+}
+
+export interface UserSettings {
+  theme: ThemePreference;
+  notifications: boolean;
+  emailReminders: boolean;
+  reminderTime: string;
+  soundEnabled: boolean;
+  ttsEnabled: boolean;
+  ttsVoice: string;
+  autoPlayAudio: boolean;
+  showPinyin: boolean;
+  fontSize: FontSize;
 }
 
 // ─── Study session ────────────────────────────────────────────────────────────

@@ -9,20 +9,15 @@ import { RequireAuth } from '@/components/auth/RequireAuth';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { queryClient } from '@/lib/queryClient';
 
-// Pages
-import Home from '@/pages/Home';
-import LoginPage from '@/pages/auth/LoginPage';
-import RegisterPage from '@/pages/auth/RegisterPage';
-import MagicLinkPage from '@/pages/auth/MagicLinkPage';
-import AuthCallbackPage from '@/pages/auth/AuthCallbackPage';
-import OnboardingPage from '@/pages/auth/OnboardingPage';
-
-// Dashboard Pages
-import DashboardLayout from '@/layouts/DashboardLayout';
-
-// Public Pages
-import WordOfTheDayPage from '@/pages/WordOfTheDayPage';
-import PricingPage from '@/pages/PricingPage';
+const HomePage = lazyWithRetry(() => import('@/pages/Home'), 'home');
+const LoginPage = lazyWithRetry(() => import('@/pages/auth/LoginPage'), 'login');
+const RegisterPage = lazyWithRetry(() => import('@/pages/auth/RegisterPage'), 'register');
+const MagicLinkPage = lazyWithRetry(() => import('@/pages/auth/MagicLinkPage'), 'magic-link');
+const AuthCallbackPage = lazyWithRetry(() => import('@/pages/auth/AuthCallbackPage'), 'auth-callback');
+const OnboardingPage = lazyWithRetry(() => import('@/pages/auth/OnboardingPage'), 'onboarding');
+const DashboardLayout = lazyWithRetry(() => import('@/layouts/DashboardLayout'), 'dashboard-layout');
+const WordOfTheDayPage = lazyWithRetry(() => import('@/pages/WordOfTheDayPage'), 'word-of-the-day');
+const PricingPage = lazyWithRetry(() => import('@/pages/PricingPage'), 'pricing');
 
 const TodayPage = lazyWithRetry(() => import('@/pages/dashboard/TodayPage'), 'today');
 const ReviewPage = lazyWithRetry(() => import('@/pages/dashboard/ReviewPage'), 'review');
@@ -45,6 +40,10 @@ const RouteFallback = () => (
   </div>
 );
 
+const withRouteFallback = (element: React.ReactNode) => (
+  <Suspense fallback={<RouteFallback />}>{element}</Suspense>
+);
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -54,35 +53,35 @@ function App() {
             <Router>
               <Routes>
                 {/* Public Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/word-of-the-day" element={<WordOfTheDayPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/" element={withRouteFallback(<HomePage />)} />
+                <Route path="/word-of-the-day" element={withRouteFallback(<WordOfTheDayPage />)} />
+                <Route path="/pricing" element={withRouteFallback(<PricingPage />)} />
 
                 {/* Auth Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/magic-link" element={<MagicLinkPage />} />
-                <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/login" element={withRouteFallback(<LoginPage />)} />
+                <Route path="/register" element={withRouteFallback(<RegisterPage />)} />
+                <Route path="/magic-link" element={withRouteFallback(<MagicLinkPage />)} />
+                <Route path="/auth/callback" element={withRouteFallback(<AuthCallbackPage />)} />
+                <Route path="/onboarding" element={withRouteFallback(<OnboardingPage />)} />
 
                 {/* Dashboard Routes */}
                 <Route element={<RequireAuth />}>
-                  <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route path="/dashboard" element={withRouteFallback(<DashboardLayout />)}>
                     <Route index element={<Navigate to="/dashboard/today" replace />} />
-                    <Route path="today" element={<Suspense fallback={<RouteFallback />}><TodayPage /></Suspense>} />
-                    <Route path="review" element={<Suspense fallback={<RouteFallback />}><ReviewPage /></Suspense>} />
-                    <Route path="practice" element={<Suspense fallback={<RouteFallback />}><PracticePage /></Suspense>} />
-                    <Route path="exam" element={<Suspense fallback={<RouteFallback />}><ExamPrepPage /></Suspense>} />
-                    <Route path="vocabulary" element={<Suspense fallback={<RouteFallback />}><VocabularyBankPage /></Suspense>} />
-                    <Route path="analytics" element={<Suspense fallback={<RouteFallback />}><AnalyticsPage /></Suspense>} />
-                    <Route path="chat" element={<Suspense fallback={<RouteFallback />}><ChatPage /></Suspense>} />
-                    <Route path="memory" element={<Suspense fallback={<RouteFallback />}><MemoryCenterPage /></Suspense>} />
-                    <Route path="reading" element={<Suspense fallback={<RouteFallback />}><ReadingPage /></Suspense>} />
-                    <Route path="listening" element={<Suspense fallback={<RouteFallback />}><ListeningPage /></Suspense>} />
-                    <Route path="grammar" element={<Suspense fallback={<RouteFallback />}><GrammarPage /></Suspense>} />
-                    <Route path="leaderboard" element={<Suspense fallback={<RouteFallback />}><LeaderboardPage /></Suspense>} />
-                    <Route path="settings" element={<Suspense fallback={<RouteFallback />}><SettingsPage /></Suspense>} />
-                    <Route path="profile" element={<Suspense fallback={<RouteFallback />}><ProfilePage /></Suspense>} />
+                    <Route path="today" element={withRouteFallback(<TodayPage />)} />
+                    <Route path="review" element={withRouteFallback(<ReviewPage />)} />
+                    <Route path="practice" element={withRouteFallback(<PracticePage />)} />
+                    <Route path="exam" element={withRouteFallback(<ExamPrepPage />)} />
+                    <Route path="vocabulary" element={withRouteFallback(<VocabularyBankPage />)} />
+                    <Route path="analytics" element={withRouteFallback(<AnalyticsPage />)} />
+                    <Route path="chat" element={withRouteFallback(<ChatPage />)} />
+                    <Route path="memory" element={withRouteFallback(<MemoryCenterPage />)} />
+                    <Route path="reading" element={withRouteFallback(<ReadingPage />)} />
+                    <Route path="listening" element={withRouteFallback(<ListeningPage />)} />
+                    <Route path="grammar" element={withRouteFallback(<GrammarPage />)} />
+                    <Route path="leaderboard" element={withRouteFallback(<LeaderboardPage />)} />
+                    <Route path="settings" element={withRouteFallback(<SettingsPage />)} />
+                    <Route path="profile" element={withRouteFallback(<ProfilePage />)} />
                   </Route>
                 </Route>
               </Routes>

@@ -29,7 +29,7 @@ export default function AuthCallbackPage() {
 
           if (profileError && profileError.code === 'PGRST116') {
             // No profile found, create one
-            const { error: createError } = await supabase.from('profiles').insert({
+            const profilePayload = {
               id: session.user.id,
               email: session.user.email!,
               display_name: session.user.user_metadata?.display_name || session.user.email?.split('@')[0],
@@ -41,7 +41,8 @@ export default function AuthCallbackPage() {
               preferred_topics: ['Daily Life', 'Business'],
               learning_style: 'visual',
               timezone: 'Asia/Taipei',
-            } as any);
+            };
+            const { error: createError } = await supabase.from('profiles').insert(profilePayload);
 
             if (createError) {
               console.error('Error creating profile:', createError);
@@ -56,9 +57,9 @@ export default function AuthCallbackPage() {
           // No session found, redirect to login
           setIsSuccess(false);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Auth callback error:', error);
-        toast.error(error.message || 'Authentication failed');
+        toast.error(error instanceof Error ? error.message : 'Authentication failed');
         setIsSuccess(false);
       } finally {
         setIsProcessing(false);

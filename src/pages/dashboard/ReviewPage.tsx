@@ -26,14 +26,16 @@ import { toast } from 'sonner';
 import { wordsDatabase, type WordData } from '@/data/words';
 import type { UserProgress } from '@/data/localStorage';
 import { speakEnglishText } from '@/services/tts';
+import { isStubbornWord } from '@/services/fsrs';
+import { ensureFSRS } from '@/services/fsrsMigration';
+import type { FSRSState } from '@/types/core';
 import { cn } from '@/lib/utils';
 
 interface ReviewItem {
   wordId: string;
   word: WordData;
   reviewCount: number;
-  easeFactor: number;
-  nextReview: string | null;
+  fsrs: FSRSState;
 }
 
 interface ReviewCardProps {
@@ -60,8 +62,7 @@ function buildReviewItems(dueWords: UserProgress[], dailyWords: WordData[]): Rev
         wordId: dueWord.wordId,
         word,
         reviewCount: dueWord.reviewCount,
-        easeFactor: dueWord.easeFactor,
-        nextReview: dueWord.nextReview,
+        fsrs: ensureFSRS(dueWord as UserProgress & { fsrs?: FSRSState }),
       } as ReviewItem;
     })
     .filter((item): item is ReviewItem => item !== null);
@@ -74,8 +75,15 @@ function buildReviewItems(dueWords: UserProgress[], dailyWords: WordData[]): Rev
     wordId: word.id,
     word,
     reviewCount: 0,
-    easeFactor: 2.5,
-    nextReview: null,
+    fsrs: {
+      stability: 0,
+      difficulty: 0,
+      retrievability: 0,
+      lapses: 0,
+      state: 'new',
+      dueAt: new Date().toISOString(),
+      lastReviewAt: null,
+    },
   }));
 }
 
@@ -213,6 +221,7 @@ export default function ReviewPage() {
 
   const currentItem = reviewItems[currentIndex];
   const remainingCount = Math.max(reviewItems.length - totalReviewed, 0);
+  const isCurrentCardStubborn = currentItem ? isStubbornWord(currentItem.fsrs) : false;
 
   const handleReveal = useCallback(() => {
     setIsRevealed(true);
@@ -349,6 +358,7 @@ export default function ReviewPage() {
           { label: 'Remaining', value: remainingCount, accent: 'emerald' },
           { label: 'Mission target', value: reviewTaskTarget },
           { label: 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
+          ...(isCurrentCardStubborn ? [{ label: 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
         ]}
       />
 
@@ -444,6 +454,17 @@ export default function ReviewPage() {
                 </div>
                   <p className="mt-2 text-sm text-white/58">拉长间隔</p>
                 </div>
+              {isCurrentCardStubborn ? (
+                <div className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
+                  <div className="flex items-center gap-2 text-amber-300">
+                    <Zap className="h-4 w-4" />
+                    <p className="text-sm font-semibold">Reinforcement path</p>
+                  </div>
+                  <p className="mt-2 text-sm text-white/58">
+                    这张卡已经遗忘 {currentItem?.fsrs.lapses || 0} 次，系统会把它放进更短的强化复习回路。
+                  </p>
+                </div>
+              ) : null}
             </div>
           </LearningRailSection>
 
@@ -454,13 +475,18 @@ export default function ReviewPage() {
                   <Clock3 className="h-4 w-4 text-emerald-300" />
                   <p className="text-sm font-medium">第 {currentItem.reviewCount + 1} 次复习</p>
                 </div>
+                {isCurrentCardStubborn ? (
+                  <Badge className="mt-3 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-300 hover:bg-amber-500/10">
+                    顽固词强化中
+                  </Badge>
+                ) : null}
                 <p className="mt-3 text-sm leading-6 text-white/54">
-                  {currentItem.nextReview
-                    ? `系统上次安排的下次复习时间：${new Date(currentItem.nextReview).toLocaleString('zh-CN')}`
-                    : '今日回顾卡'}
+                  {currentItem.fsrs.lastReviewAt
+                    ? `上次复习：${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('zh-CN')}`
+                    : '今日首次接触这张卡'}
                 </p>
                 <div className="mt-4 rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-2 text-sm text-white/60">
-                  Ease factor: {currentItem.easeFactor.toFixed(1)}
+                  FSRS stability: {currentItem.fsrs.stability.toFixed(1)} 天 · 难度 {currentItem.fsrs.difficulty.toFixed(1)}
                 </div>
               </div>
             </LearningRailSection>

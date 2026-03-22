@@ -321,6 +321,7 @@ export default function TodayPage() {
   const [learnedWords, setLearnedWords] = useState<Set<string>>(new Set());
   const [hardWords, setHardWords] = useState<Set<string>>(new Set());
   const [bookmarkedWords, setBookmarkedWords] = useState<Set<string>>(new Set());
+  const currentStreak = streak.current;
 
   const words = dailyWords.length > 0 ? dailyWords : [];
   const currentWord = words[currentWordIndex];
@@ -332,6 +333,17 @@ export default function TodayPage() {
     refreshDailyMission();
   }, [refreshDailyMission, refreshDailyWords]);
 
+  // ── FSRS-5 Learner Model ──────────────────────────────────────────────────
+  const learnerModel = useMemo(() => {
+    if (!wordProgress.length) return null;
+    return computeLearnerModel(
+      userId,
+      wordProgress as UserProgress[],
+      currentStreak,
+      activeBookSummary.dailyGoal,
+    );
+  }, [activeBookSummary.dailyGoal, currentStreak, userId, wordProgress]);
+
   const learningOverviewQuery = useLearningOverviewQuery({
     userId,
     mission: dailyMission,
@@ -341,23 +353,13 @@ export default function TodayPage() {
     learnedTodayCount: learnedWords.size,
     recommendedUnitTitle: recommendedUnit?.title || null,
     activeBookName: activeBook?.name || null,
+    learnerModel,
   });
 
   const missionCard = learningOverviewQuery.data?.missionCard;
   const weaknesses = learningOverviewQuery.data?.weaknesses || [];
   const adaptiveDifficulty = learningOverviewQuery.data?.adaptiveDifficulty;
   const activityPoints = learningOverviewQuery.data?.activity || [];
-
-  // ── FSRS-5 Learner Model ──────────────────────────────────────────────────
-  const learnerModel = useMemo(() => {
-    if (!wordProgress.length) return null;
-    return computeLearnerModel(
-      userId,
-      wordProgress as UserProgress[],
-      streak.current,
-      activeBookSummary.dailyGoal,
-    );
-  }, [wordProgress, streak.current, activeBookSummary.dailyGoal, userId]);
 
   const handleFlip = (wordId: string) => {
     setFlippedCards((prev) => {
@@ -829,9 +831,43 @@ export default function TodayPage() {
                         </div>
                       </div>
                     )}
+
+                    {learnerModel.stubbornWordCount > 0 && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36 mb-1.5">强化路径</p>
+                        <div className="flex items-center justify-between rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                              顽固词 {learnerModel.stubbornWordCount} 个
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500 dark:text-white/50">
+                              {learnerModel.stubbornTopics.length > 0
+                                ? `集中在 ${learnerModel.stubbornTopics.join(' / ')}`
+                                : '这些词会被安排进更短的强化复习回路。'}
+                            </p>
+                          </div>
+                          <Badge variant="secondary" className="rounded-full">
+                            Reinforce
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })() : null}
+
+              {adaptiveDifficulty ? (
+                <div className="rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.01] p-4 glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:glass-strong">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-white/42">Pacing today</p>
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{adaptiveDifficulty.labelZh}</p>
+                    <Badge variant="secondary" className="rounded-full">
+                      {adaptiveDifficulty.label}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-white/54">{adaptiveDifficulty.reason}</p>
+                </div>
+              ) : null}
             </div>
           </LearningRailSection>
 

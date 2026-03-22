@@ -6,7 +6,6 @@ import {
   getDueWords,
   getMasteredWords,
   updateWordProgress,
-  calculateNextReview,
   getXP,
   addXP,
   getStreak,
@@ -43,13 +42,17 @@ import {
   saveLearningProfile,
 } from '@/services/learningMissions';
 import { completeMissionTaskEvent, recordLearningEvent } from '@/services/learningEvents';
+import { buildWordProgressSyncPayload } from '@/lib/wordProgressSync';
 import {
-  reviewWord as reviewWordInSupabase,
-  markWordAsLearned as markWordAsLearnedInSupabase,
-  markWordAsMastered as markWordAsMasteredInSupabase,
-} from '@/lib/supabase';
-import { scheduleReview } from '@/services/fsrs';
+  addReviewLog,
+  pruneReviewLogs,
+  setWordProgress as setWordProgressInDb,
+} from '@/lib/localDb';
+import { initCard, scheduleReview } from '@/services/fsrs';
 import { ensureFSRS } from '@/services/fsrsMigration';
+import { computeLearnerModel } from '@/services/learnerModel';
+import { buildIdempotencyKey, syncQueue } from '@/services/syncQueue';
+import type { FSRSState, UserSettings } from '@/types/core';
 
 interface StudyStats {
   totalWords: number;
@@ -113,8 +116,8 @@ interface UserDataContextType {
   completeMissionTask: (taskId: string) => void;
 
   // Settings
-  settings: any;
-  updateSettings: (settings: any) => void;
+  settings: UserSettings;
+  updateSettings: (settings: Partial<UserSettings>) => void;
 
   // Actions
   addStudySession: (wordsStudied: number, wordsLearned: number, xpEarned: number, duration: number) => void;
@@ -179,7 +182,77 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const [learningPlan, setLearningPlan] = useState<LearningPlan | null>(null);
   const [learningProfile, setLearningProfileState] = useState<LearningProfile>(() => getLearningProfile(userId));
   const [dailyMission, setDailyMission] = useState<LearningMission | null>(null);
-  const [settings, setSettings] = useState<any>({});
+  const [settings, setSettings] = useState<UserSettings>(() => getSettings(userId));
+  const currentStreak = streak.current;
+
+  const persistProgressSnapshot = useCallback(
+    async (wordId: string, snapshot: UserProgress & { fsrs?: FSRSState }) => {
+      const fsrs = ensureFSRS(snapshot);
+      await setWordProgressInDb({
+        user_id: userId,
+        word_id: wordId,
+        status: snapshot.status,
+        srs: fsrs,
+        correct_count: snapshot.correctCount ?? 0,
+        incorrect_count: snapshot.incorrectCount ?? 0,
+        first_seen_at: snapshot.firstSeenAt ?? snapshot.lastReviewed ?? new Date().toISOString(),
+        mastered_at: snapshot.masteredAt ?? null,
+        updated_at: snapshot.updatedAt ?? new Date().toISOString(),
+      });
+    },
+    [userId],
+  );
+
+  const enqueueProgressSync = useCallback(
+    (wordId: string, snapshot: UserProgress & { fsrs?: FSRSState }) => {
+      const payload = buildWordProgressSyncPayload({
+        userId,
+        wordId,
+        status: snapshot.status,
+        reviewCount: snapshot.reviewCount,
+        correctCount: snapshot.correctCount ?? 0,
+        incorrectCount: snapshot.incorrectCount ?? 0,
+        easeFactor: snapshot.easeFactor,
+        nextReviewAt: snapshot.nextReview,
+        lastReviewedAt: snapshot.lastReviewed,
+        firstLearnedAt: snapshot.firstSeenAt ?? snapshot.lastReviewed,
+        masteredAt: snapshot.masteredAt ?? null,
+        fsrs: ensureFSRS(snapshot),
+      });
+
+      return syncQueue.enqueue({
+        table: 'user_word_progress',
+        operation: 'upsert',
+        payload,
+        idempotency_key: buildIdempotencyKey('user_word_progress', {
+          user_id: userId,
+          word_ref: wordId,
+        }),
+      });
+    },
+    [userId],
+  );
+
+  const backfillIndexedProgress = useCallback(
+    (userProgress: UserProgress[]) => {
+      if (userProgress.length === 0) return;
+      void Promise.all(
+        userProgress.map((item) =>
+          persistProgressSnapshot(item.wordId, item as UserProgress & { fsrs?: FSRSState }),
+        ),
+      );
+      void pruneReviewLogs();
+    },
+    [persistProgressSnapshot],
+  );
+
+  const buildDailyLearnerModel = useCallback(
+    (userProgress: UserProgress[], streakDays: number, dailyGoal: number) => {
+      if (userProgress.length === 0) return null;
+      return computeLearnerModel(userId, userProgress, streakDays, dailyGoal);
+    },
+    [userId],
+  );
 
   const loadData = useCallback(() => {
     if (!user) return;
@@ -201,6 +274,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const userProgress = getProgress(userId);
     setProgress(userProgress);
+    backfillIndexedProgress(userProgress);
 
     const due = getDueWords(userId);
     setDueWords(due);
@@ -223,20 +297,27 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const profile = getLearningProfile(userId);
     setLearningProfileState(profile);
 
+    const learnerModel = buildDailyLearnerModel(userProgress, userStreak.current, summary.dailyGoal);
+
     void getOrCreateDailyMission({
       userId,
-      goalWords: profile.dailyMinutes > 30 ? 20 : 10,
+      goalWords: summary.dailyGoal,
       dueCount: due.length,
+      learnerModel,
     }).then((mission) => {
       setDailyMission(mission);
     });
 
     const userSettings = getSettings(userId);
     setSettings(userSettings);
-  }, [user, userId]);
+  }, [backfillIndexedProgress, buildDailyLearnerModel, user, userId]);
 
   useEffect(() => {
-    loadData();
+    const run = window.setTimeout(() => {
+      loadData();
+    }, 0);
+
+    return () => window.clearTimeout(run);
   }, [loadData]);
 
   const refreshDailyWords = useCallback(() => {
@@ -307,9 +388,27 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const markWordAsLearned = (wordId: string) => {
     if (!user) return;
 
-    updateWordProgress(userId, wordId, {
+    const now = new Date().toISOString();
+    const existing = progress.find((item) => item.wordId === wordId);
+    const existingFsrs = existing
+      ? ensureFSRS(existing as UserProgress & { fsrs?: FSRSState })
+      : initCard();
+    const nextFsrs: FSRSState = {
+      ...existingFsrs,
+      state: existingFsrs.state === 'new' ? 'learning' : existingFsrs.state,
+      dueAt: now,
+    };
+
+    const nextProgress = updateWordProgress(userId, wordId, {
       status: 'learning',
-      lastReviewed: new Date().toISOString(),
+      lastReviewed: now,
+      nextReview: nextFsrs.dueAt.split('T')[0],
+      correctCount: existing?.correctCount ?? 0,
+      incorrectCount: existing?.incorrectCount ?? 0,
+      firstSeenAt: existing?.firstSeenAt ?? now,
+      masteredAt: null,
+      updatedAt: now,
+      fsrs: nextFsrs,
     });
 
     addXP(userId, 5);
@@ -319,17 +418,39 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       eventName: 'today.word_marked',
       payload: { wordId, status: 'learned' },
     });
-    // Sync to Supabase (fire-and-forget)
-    void markWordAsLearnedInSupabase(userId, wordId);
+    void persistProgressSnapshot(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
+    void enqueueProgressSync(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
     loadData();
   };
 
   const markWordAsMastered = (wordId: string) => {
     if (!user) return;
 
-    updateWordProgress(userId, wordId, {
+    const now = new Date().toISOString();
+    const existing = progress.find((item) => item.wordId === wordId);
+    const existingFsrs = existing
+      ? ensureFSRS(existing as UserProgress & { fsrs?: FSRSState })
+      : initCard();
+    const masteredDueAt = new Date(Date.now() + 30 * 86_400_000).toISOString();
+    const nextFsrs: FSRSState = {
+      ...existingFsrs,
+      stability: Math.max(existingFsrs.stability, 21),
+      retrievability: 1,
+      state: 'review',
+      dueAt: masteredDueAt,
+      lastReviewAt: now,
+    };
+
+    const nextProgress = updateWordProgress(userId, wordId, {
       status: 'mastered',
-      lastReviewed: new Date().toISOString(),
+      lastReviewed: now,
+      nextReview: nextFsrs.dueAt.split('T')[0],
+      correctCount: existing?.correctCount ?? 0,
+      incorrectCount: existing?.incorrectCount ?? 0,
+      firstSeenAt: existing?.firstSeenAt ?? now,
+      masteredAt: now,
+      updatedAt: now,
+      fsrs: nextFsrs,
     });
 
     addXP(userId, 10);
@@ -339,8 +460,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       eventName: 'today.word_marked',
       payload: { wordId, status: 'mastered' },
     });
-    // Sync to Supabase (fire-and-forget)
-    void markWordAsMasteredInSupabase(userId, wordId);
+    void persistProgressSnapshot(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
+    void enqueueProgressSync(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
     loadData();
   };
 
@@ -349,13 +470,15 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const wordProgress = progress.find((p) => p.wordId === wordId);
     const reviewCount = wordProgress?.reviewCount || 0;
+    const correctCount = wordProgress?.correctCount ?? 0;
+    const incorrectCount = wordProgress?.incorrectCount ?? 0;
+    const now = new Date().toISOString();
 
     // ── FSRS-5 scheduling ────────────────────────────────────────────────────
     // Lazily migrate old SM-2 records; new cards start from initCard() defaults.
     const currentFSRS = wordProgress
       ? ensureFSRS(wordProgress as Parameters<typeof ensureFSRS>[0])
-      : { stability: 0, difficulty: 0, retrievability: 0, lapses: 0,
-          state: 'new' as const, dueAt: new Date().toISOString(), lastReviewAt: null };
+      : initCard();
 
     const nextFSRS = scheduleReview(currentFSRS, rating);
 
@@ -371,13 +494,27 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       newStatus = 'review';
     }
 
-    updateWordProgress(userId, wordId, {
+    const nextCorrectCount = rating === 'again' ? correctCount : correctCount + 1;
+    const nextIncorrectCount = rating === 'again' ? incorrectCount + 1 : incorrectCount;
+    const scheduledDays = Math.max(
+      0,
+      Math.round(
+        (new Date(nextFSRS.dueAt).getTime() - new Date(nextFSRS.lastReviewAt || now).getTime()) /
+          86_400_000,
+      ),
+    );
+    const nextProgress = updateWordProgress(userId, wordId, {
       status: newStatus,
       reviewCount: reviewCount + 1,
       lastReviewed: nextFSRS.lastReviewAt!,
       // nextReview uses date-only string (YYYY-MM-DD) for legacy compatibility
       nextReview: nextFSRS.dueAt.split('T')[0],
       easeFactor: wordProgress?.easeFactor ?? 2.5,
+      correctCount: nextCorrectCount,
+      incorrectCount: nextIncorrectCount,
+      firstSeenAt: wordProgress?.firstSeenAt ?? wordProgress?.lastReviewed ?? now,
+      masteredAt: newStatus === 'mastered' ? now : wordProgress?.masteredAt ?? null,
+      updatedAt: now,
       // Store the full FSRS state as an extra field (transparently extended)
       fsrs: nextFSRS,
     } as Parameters<typeof updateWordProgress>[2]);
@@ -394,13 +531,46 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         status: newStatus,
         stability: nextFSRS.stability,
         difficulty: nextFSRS.difficulty,
-        scheduledDays: Math.round(
-          (new Date(nextFSRS.dueAt).getTime() - Date.now()) / 86_400_000,
-        ),
+        scheduledDays,
       },
     });
-    // Sync to Supabase (fire-and-forget)
-    void reviewWordInSupabase(userId, wordId, rating);
+    const reviewEventId = crypto.randomUUID();
+    void addReviewLog({
+      event_id: reviewEventId,
+      user_id: userId,
+      word_id: wordId,
+      rated_at: nextFSRS.lastReviewAt || now,
+      rating,
+      pre_stability: currentFSRS.stability,
+      post_stability: nextFSRS.stability,
+      pre_difficulty: currentFSRS.difficulty,
+      post_difficulty: nextFSRS.difficulty,
+      scheduled_days: scheduledDays,
+    });
+    void pruneReviewLogs();
+    void syncQueue.enqueue({
+      table: 'review_logs',
+      operation: 'upsert',
+      payload: {
+        id: reviewEventId,
+        user_id: userId,
+        word_ref: wordId,
+        word_id: null,
+        rated_at: nextFSRS.lastReviewAt || now,
+        rating,
+        duration_ms: null,
+        pre_stability: currentFSRS.stability,
+        post_stability: nextFSRS.stability,
+        pre_difficulty: currentFSRS.difficulty,
+        post_difficulty: nextFSRS.difficulty,
+        scheduled_days: scheduledDays,
+        session_id: null,
+        created_at: nextFSRS.lastReviewAt || now,
+      },
+      idempotency_key: buildIdempotencyKey('review_logs', { id: reviewEventId }),
+    });
+    void persistProgressSnapshot(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
+    void enqueueProgressSync(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
     loadData();
   };
 
@@ -424,11 +594,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     setLearningPlan(saved);
   };
 
-  const updateSettings = (newSettings: any) => {
+  const updateSettings = (newSettings: Partial<UserSettings>) => {
     if (!user) return;
 
-    saveSettings(userId, newSettings);
-    setSettings({ ...settings, ...newSettings });
+    const saved = saveSettings(userId, newSettings);
+    setSettings(saved);
   };
 
   const addStudySession = (
@@ -459,24 +629,28 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       if (!user) return;
       void saveLearningProfile(userId, updates).then((profile) => {
         setLearningProfileState(profile);
+        const learnerModel = buildDailyLearnerModel(progress, currentStreak, activeBookSummary.dailyGoal);
         void getOrCreateDailyMission({
           userId,
-          goalWords: profile.dailyMinutes > 30 ? 20 : 10,
+          goalWords: activeBookSummary.dailyGoal,
           dueCount: dueWords.length,
+          learnerModel,
         }).then((mission) => setDailyMission(mission));
       });
     },
-    [dueWords.length, user, userId],
+    [activeBookSummary.dailyGoal, buildDailyLearnerModel, currentStreak, dueWords.length, progress, user, userId],
   );
 
   const refreshDailyMission = useCallback(() => {
     if (!user) return;
+    const learnerModel = buildDailyLearnerModel(progress, currentStreak, activeBookSummary.dailyGoal);
     void getOrCreateDailyMission({
       userId,
-      goalWords: learningProfile.dailyMinutes > 30 ? 20 : 10,
+      goalWords: activeBookSummary.dailyGoal,
       dueCount: dueWords.length,
+      learnerModel,
     }).then((mission) => setDailyMission(mission));
-  }, [dueWords.length, learningProfile.dailyMinutes, user, userId]);
+  }, [activeBookSummary.dailyGoal, buildDailyLearnerModel, currentStreak, dueWords.length, progress, user, userId]);
 
   const completeMissionTask = useCallback(
     (taskId: string) => {
@@ -544,6 +718,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUserData() {
   const context = useContext(UserDataContext);
   if (context === undefined) {
