@@ -91,7 +91,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string | null }> => {
     try {
-      console.log('AuthContext: Starting login for', email);
       const { user, error } = await loginUser(email, password);
       
       if (error) {
@@ -100,7 +99,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (user) {
-        console.log('AuthContext: Login successful for user', user.id);
         setUser(user);
         // Profile will be fetched asynchronously, don't block login
         setProfile(null);

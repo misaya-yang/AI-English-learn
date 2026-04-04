@@ -53,6 +53,19 @@ import { ensureFSRS } from '@/services/fsrsMigration';
 import { computeLearnerModel } from '@/services/learnerModel';
 import { buildIdempotencyKey, syncQueue } from '@/services/syncQueue';
 import type { FSRSState, UserSettings } from '@/types/core';
+import {
+  checkAchievements,
+  incrementWordCount,
+  incrementReviewCount,
+  getDailyMultiplier,
+  getGamificationStats,
+  getStreakFreezes,
+  purchaseStreakFreeze as purchaseStreakFreezeService,
+  STREAK_FREEZE_COST,
+  type Achievement,
+  type AchievementDef,
+  ACHIEVEMENT_DEFS,
+} from '@/services/gamification';
 
 interface StudyStats {
   totalWords: number;
@@ -121,6 +134,13 @@ interface UserDataContextType {
 
   // Actions
   addStudySession: (wordsStudied: number, wordsLearned: number, xpEarned: number, duration: number) => void;
+
+  // Gamification
+  streakFreezes: number;
+  achievements: Achievement[];
+  allAchievementDefs: AchievementDef[];
+  dailyMultiplier: number;
+  purchaseStreakFreeze: () => { success: boolean; cost: number };
 }
 
 const EMPTY_IMPORT_RESULT: ImportResult = {
@@ -183,7 +203,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const [learningProfile, setLearningProfileState] = useState<LearningProfile>(() => getLearningProfile(userId));
   const [dailyMission, setDailyMission] = useState<LearningMission | null>(null);
   const [settings, setSettings] = useState<UserSettings>(() => getSettings(userId));
+  const [streakFreezesCount, setStreakFreezesCount] = useState(() => getStreakFreezes(userId));
+  const [achievements, setAchievements] = useState<Achievement[]>(() => getGamificationStats(userId).achievements);
   const currentStreak = streak.current;
+  const dailyMultiplier = getDailyMultiplier(currentStreak);
 
   const persistProgressSnapshot = useCallback(
     async (wordId: string, snapshot: UserProgress & { fsrs?: FSRSState }) => {
@@ -245,6 +268,39 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     },
     [persistProgressSnapshot],
   );
+
+  const checkAndNotifyAchievements = useCallback(() => {
+    const gamStats = getGamificationStats(userId);
+    const userXP = getXP(userId);
+    const userStreak = getStreak(userId);
+    const mastered = getMasteredWords(userId);
+
+    const newlyUnlocked = checkAchievements(userId, {
+      totalWordsLearned: gamStats.totalWordsLearned,
+      totalReviews: gamStats.totalReviews,
+      currentStreak: userStreak.current,
+      longestStreak: userStreak.longest,
+      masteredWords: mastered.length,
+      totalXP: userXP.total,
+      level: userXP.level,
+    });
+
+    if (newlyUnlocked.length > 0) {
+      setAchievements(getGamificationStats(userId).achievements);
+    }
+
+    return newlyUnlocked;
+  }, [userId]);
+
+  const handlePurchaseStreakFreeze = useCallback(() => {
+    const userXP = getXP(userId);
+    const result = purchaseStreakFreezeService(userId, userXP.total);
+    if (result.success) {
+      addXP(userId, -STREAK_FREEZE_COST);
+      setStreakFreezesCount(result.remaining);
+    }
+    return { success: result.success, cost: result.cost };
+  }, [userId]);
 
   const buildDailyLearnerModel = useCallback(
     (userProgress: UserProgress[], streakDays: number, dailyGoal: number) => {
@@ -411,8 +467,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       fsrs: nextFsrs,
     });
 
-    addXP(userId, 5);
+    addXP(userId, Math.round(5 * dailyMultiplier));
     updateStreak(userId);
+    incrementWordCount(userId);
     void recordLearningEvent({
       userId,
       eventName: 'today.word_marked',
@@ -420,6 +477,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     });
     void persistProgressSnapshot(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
     void enqueueProgressSync(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
+    checkAndNotifyAchievements();
     loadData();
   };
 
@@ -520,8 +578,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     } as Parameters<typeof updateWordProgress>[2]);
 
     const xpAmount = rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10;
-    addXP(userId, xpAmount);
+    addXP(userId, Math.round(xpAmount * dailyMultiplier));
     updateStreak(userId);
+    incrementReviewCount(userId);
     void recordLearningEvent({
       userId,
       eventName: 'review.word_rated',
@@ -571,6 +630,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     });
     void persistProgressSnapshot(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
     void enqueueProgressSync(wordId, nextProgress as UserProgress & { fsrs?: FSRSState });
+    checkAndNotifyAchievements();
     loadData();
   };
 
@@ -711,6 +771,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         settings,
         updateSettings,
         addStudySession,
+        streakFreezes: streakFreezesCount,
+        achievements,
+        allAchievementDefs: ACHIEVEMENT_DEFS,
+        dailyMultiplier,
+        purchaseStreakFreeze: handlePurchaseStreakFreeze,
       }}
     >
       {children}

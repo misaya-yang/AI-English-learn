@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buildAuthRedirect, resolveAuthRedirect } from '@/lib/authRedirect';
+import { PlacementTest } from '@/components/PlacementTest';
 import type { CEFRLevel, Topic, LearningStyle } from '@/types';
 import { toast } from 'sonner';
 
@@ -55,6 +56,7 @@ export default function OnboardingPage() {
   const location = useLocation();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPlacementTest, setShowPlacementTest] = useState(false);
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
   
   const [preferences, setPreferences] = useState({
@@ -120,6 +122,19 @@ export default function OnboardingPage() {
   const renderStep = () => {
     switch (step) {
       case 1:
+        if (showPlacementTest) {
+          return (
+            <PlacementTest
+              onComplete={(level) => {
+                setPreferences((prev) => ({ ...prev, cefrLevel: level }));
+                setShowPlacementTest(false);
+                setStep(2);
+              }}
+              onSkip={() => setShowPlacementTest(false)}
+            />
+          );
+        }
+
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -128,6 +143,26 @@ export default function OnboardingPage() {
               </div>
               <h2 className="text-xl font-semibold mb-2">What's your English level?</h2>
               <p className="text-muted-foreground">选择您的英语程度</p>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full h-auto py-4 border-dashed border-2"
+              onClick={() => setShowPlacementTest(true)}
+            >
+              <div className="text-center">
+                <p className="font-medium">参加分级测试</p>
+                <p className="text-xs text-muted-foreground mt-1">10 道题自动判断您的等级</p>
+              </div>
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">或手动选择</span>
+              </div>
             </div>
 
             <div className="grid gap-3">

@@ -63,8 +63,8 @@ export function HeroSummary({
       animate={{ opacity: 1, y: 0 }}
       className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card/90 p-4 sm:p-5 lg:p-6"
     >
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28%] bg-[linear-gradient(180deg,rgba(16,185,129,0.12),rgba(34,211,238,0.02))] xl:block" />
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_360px]">
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28%] bg-[linear-gradient(180deg,hsl(var(--primary)/0.12),hsl(var(--accent)/0.02))] xl:block" />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_360px]">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className={cn('rounded-full border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-emerald-600 text-white' : '')}>

@@ -239,8 +239,6 @@ export async function loginUser(
   password: string
 ): Promise<{ user: AuthUser | null; error: string | null }> {
   try {
-    console.log('Attempting login for:', email);
-    
     // Use direct REST API call instead of supabase-js
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
@@ -252,7 +250,6 @@ export async function loginUser(
     });
     
     const data = await response.json();
-    console.log('Login API response:', data);
     
     if (!response.ok) {
       console.error('Login API error:', data);
@@ -282,8 +279,6 @@ export async function loginUser(
         refresh_token: data.refresh_token,
       });
     }
-    
-    console.log('Login successful for user:', data.user.id);
     
     const user: AuthUser = {
       id: data.user.id,

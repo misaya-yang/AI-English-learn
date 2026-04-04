@@ -29,6 +29,7 @@ import type { UserProgress } from '@/data/localStorage';
 import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportResult, ImportRowError } from '@/data/wordBooks';
 import { toast } from 'sonner';
 import { speakEnglishText } from '@/services/tts';
+import { exportToCSV, exportToAnkiTSV, downloadFile } from '@/services/wordBookExport';
 
 interface VocabularyItem {
   word: WordData;
@@ -131,8 +132,32 @@ export default function VocabularyBankPage() {
     return Array.from(new Set(vocabulary.map((item) => item.word.topic))).sort();
   }, [vocabulary]);
 
-  const handleExport = () => {
-    toast.info('导出功能即将支持（CSV/Anki）');
+  const [exportOpen, setExportOpen] = useState(false);
+
+  const handleExport = (format: 'csv' | 'csv-progress' | 'anki') => {
+    const words = filteredVocabulary.map((v) => v.word);
+    if (words.length === 0) {
+      toast.warning('没有可导出的单词');
+      return;
+    }
+
+    const bookName = activeBook?.name || 'vocabulary';
+    const timestamp = new Date().toISOString().slice(0, 10);
+
+    if (format === 'csv' || format === 'csv-progress') {
+      const progressMap = new Map(progress.map((p) => [p.wordId, p]));
+      const content = exportToCSV(words, progressMap, {
+        includeProgress: format === 'csv-progress',
+      });
+      downloadFile(content, `${bookName}-${timestamp}.csv`, 'text/csv;charset=utf-8');
+      toast.success(`已导出 ${words.length} 个单词为 CSV`);
+    } else {
+      const content = exportToAnkiTSV(words);
+      downloadFile(content, `${bookName}-${timestamp}.txt`, 'text/plain;charset=utf-8');
+      toast.success(`已导出 ${words.length} 个单词（Anki 可导入格式）`);
+    }
+
+    setExportOpen(false);
   };
 
   const playAudio = (word: string) => {
@@ -246,10 +271,33 @@ export default function VocabularyBankPage() {
               }
             }}
           />
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export (CSV/Anki Soon)
-          </Button>
+          <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                导出
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>导出词汇</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                将导出当前筛选的 {filteredVocabulary.length} 个单词
+              </p>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" onClick={() => handleExport('csv')}>
+                  CSV（仅单词）
+                </Button>
+                <Button variant="outline" onClick={() => handleExport('csv-progress')}>
+                  CSV（含学习进度）
+                </Button>
+                <Button variant="outline" onClick={() => handleExport('anki')}>
+                  Anki 导入格式（TXT）
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

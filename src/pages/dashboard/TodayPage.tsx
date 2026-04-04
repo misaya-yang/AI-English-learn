@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { motionPresets } from '@/lib/motion';
+import { FlashCard } from '@/components/FlashCard';
 import {
   LearningActionCluster,
   LearningCompletionState,
@@ -63,184 +65,184 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     void speakEnglishText(text);
   };
 
-  return (
-    <div className="perspective-1000 mx-auto w-full max-w-[880px] relative">
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[450px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/5 dark:bg-emerald-500/10 blur-[120px] animate-pulse-glow z-0" />
-      <motion.div
-        className="relative min-h-[520px] w-full z-10"
-        initial={false}
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.58, type: 'spring', stiffness: 240, damping: 22 }}
-        style={{ transformStyle: 'preserve-3d' }}
-      >
-        <section
-          className={cn(
-            learningFrameClassName,
-            'flex min-h-[520px] cursor-pointer flex-col justify-between p-6 backface-hidden sm:p-8',
-            isFlipped && 'invisible',
-          )}
-          onClick={onFlip}
+  const frontContent = (
+    <section
+      className={cn(
+        learningFrameClassName,
+        'flex h-full min-h-[520px] cursor-pointer flex-col justify-between p-6 sm:p-8',
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          <Badge className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-white/70 hover:bg-white/[0.04]">
+            {word.level}
+          </Badge>
+          {isLearned ? (
+            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
+              <Check className="mr-1 h-3 w-3" />
+              已学会
+            </Badge>
+          ) : null}
+          {isHard ? (
+            <Badge className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-300 hover:bg-amber-500/10">
+              <Brain className="mr-1 h-3 w-3" />
+              需复习
+            </Badge>
+          ) : null}
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+          onClick={(event) => {
+            event.stopPropagation();
+            playAudio(word.word);
+          }}
         >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
-              <Badge className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-white/70 hover:bg-white/[0.04]">
-                {word.level}
-              </Badge>
-              {isLearned ? (
-                <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
-                  <Check className="mr-1 h-3 w-3" />
-                  已学会
-                </Badge>
-              ) : null}
-              {isHard ? (
-                <Badge className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-300 hover:bg-amber-500/10">
-                  <Brain className="mr-1 h-3 w-3" />
-                  需复习
-                </Badge>
-              ) : null}
-            </div>
+          <Volume2 className="h-5 w-5" />
+        </Button>
+      </div>
+
+      <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">Current word</p>
+        <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-slate-900 dark:text-white sm:text-[5rem]">
+          {word.word}
+        </h2>
+        <div className="space-y-2">
+          <p className="text-base font-medium text-slate-600 dark:text-white/72">{word.partOfSpeech}</p>
+          <p className="font-mono text-lg text-slate-400 dark:text-white/48">{word.phonetic}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-center gap-2 text-sm text-white/48">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          点击翻面，查看释义、例句和搭配
+        </div>
+        <LearningActionCluster className="justify-center">
+          <Button
+            variant="outline"
+            className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+            onClick={(event) => {
+              event.stopPropagation();
+              onMarkStatus('hard');
+            }}
+            disabled={isHard}
+          >
+            <Brain className="mr-2 h-4 w-4" />
+            {isHard ? '已标记较难' : '标记较难'}
+          </Button>
+          <Button
+            className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400"
+            onClick={(event) => {
+              event.stopPropagation();
+              onMarkStatus('learned');
+            }}
+            disabled={isLearned}
+          >
+            <Check className="mr-2 h-4 w-4" />
+            {isLearned ? '已学会' : '标记学会'}
+          </Button>
+        </LearningActionCluster>
+      </div>
+    </section>
+  );
+
+  const backContent = (
+    <section
+      className={cn(
+        learningFrameClassName,
+        'h-full min-h-[520px] p-6 sm:p-8',
+      )}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Word detail</p>
+            <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-white">{word.word}</h3>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               className="rounded-full border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-              onClick={(event) => {
-                event.stopPropagation();
-                playAudio(word.word);
-              }}
+              onClick={() => playAudio(word.word)}
             >
               <Volume2 className="h-5 w-5" />
             </Button>
+            <Button
+              variant="outline"
+              className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+              onClick={onFlip}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              返回正面
+            </Button>
           </div>
+        </div>
 
-          <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">Current word</p>
-            <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-slate-900 dark:text-white sm:text-[5rem]">
-              {word.word}
-            </h2>
-            <div className="space-y-2">
-              <p className="text-base font-medium text-slate-600 dark:text-white/72">{word.partOfSpeech}</p>
-              <p className="font-mono text-lg text-slate-400 dark:text-white/48">{word.phonetic}</p>
-            </div>
-          </div>
-
+        <ScrollArea className="mt-6 flex-1 pr-2">
           <div className="space-y-4">
-            <div className="flex items-center justify-center gap-2 text-sm text-white/48">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              点击翻面，查看释义、例句和搭配
-            </div>
-            <LearningActionCluster className="justify-center">
-              <Button
-                variant="outline"
-                className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onMarkStatus('hard');
-                }}
-                disabled={isHard}
-              >
-                <Brain className="mr-2 h-4 w-4" />
-                {isHard ? '已标记较难' : '标记较难'}
-              </Button>
-              <Button
-                className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onMarkStatus('learned');
-                }}
-                disabled={isLearned}
-              >
-                <Check className="mr-2 h-4 w-4" />
-                {isLearned ? '已学会' : '标记学会'}
-              </Button>
-            </LearningActionCluster>
-          </div>
-        </section>
+            <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Definition</p>
+              <p className="mt-3 text-base leading-7 text-white">{word.definition}</p>
+              <p className="mt-2 text-sm leading-7 text-white/62">{word.definitionZh}</p>
+            </section>
 
-        <section
-          className={cn(
-            learningFrameClassName,
-            'absolute inset-0 min-h-[520px] p-6 backface-hidden sm:p-8',
-            !isFlipped && 'invisible',
-          )}
-          style={{ transform: 'rotateY(180deg)' }}
-        >
-          <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Word detail</p>
-                <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-white">{word.word}</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-                  onClick={() => playAudio(word.word)}
-                >
-                  <Volume2 className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-                  onClick={onFlip}
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  返回正面
-                </Button>
-              </div>
-            </div>
-
-            <ScrollArea className="mt-6 flex-1 pr-2">
-              <div className="space-y-5">
-                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Definition</p>
-                  <p className="mt-3 text-base leading-7 text-white">{word.definition}</p>
-                  <p className="mt-2 text-sm leading-7 text-white/62">{word.definitionZh}</p>
-                </section>
-
-                {word.examples.length > 0 ? (
-                  <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Examples</p>
-                    <div className="mt-3 space-y-3">
-                      {word.examples.slice(0, 2).map((example, index) => (
-                        <div key={`${example.en}-${index}`} className="rounded-2xl border border-white/[0.06] bg-black/30 p-4">
-                          <p className="text-sm leading-7 text-white">{example.en}</p>
-                          <p className="mt-2 text-sm leading-7 text-white/58">{example.zh}</p>
-                        </div>
-                      ))}
+            {word.examples.length > 0 ? (
+              <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Examples</p>
+                <div className="mt-3 space-y-3">
+                  {word.examples.slice(0, 2).map((example, index) => (
+                    <div key={`${example.en}-${index}`} className="rounded-2xl border border-white/[0.06] bg-black/30 p-4">
+                      <p className="text-sm leading-7 text-white">{example.en}</p>
+                      <p className="mt-2 text-sm leading-7 text-white/58">{example.zh}</p>
                     </div>
-                  </section>
-                ) : null}
-
-                <div className="grid gap-5 lg:grid-cols-2">
-                  {word.collocations.length > 0 ? (
-                    <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Collocations</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {word.collocations.slice(0, 8).map((collocation) => (
-                          <span
-                            key={collocation}
-                            className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300"
-                          >
-                            {collocation}
-                          </span>
-                        ))}
-                      </div>
-                    </section>
-                  ) : null}
-
-                  {(word.memoryTip || word.etymology) ? (
-                    <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Memory cue</p>
-                      <p className="mt-3 text-sm leading-7 text-white/62">{word.memoryTip || word.etymology}</p>
-                    </section>
-                  ) : null}
+                  ))}
                 </div>
-              </div>
-            </ScrollArea>
+              </section>
+            ) : null}
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              {word.collocations.length > 0 ? (
+                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Collocations</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {word.collocations.slice(0, 8).map((collocation) => (
+                      <span
+                        key={collocation}
+                        className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300"
+                      >
+                        {collocation}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {(word.memoryTip || word.etymology) ? (
+                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Memory cue</p>
+                  <p className="mt-3 text-sm leading-7 text-white/62">{word.memoryTip || word.etymology}</p>
+                </section>
+              ) : null}
+            </div>
           </div>
-        </section>
-      </motion.div>
+        </ScrollArea>
+      </div>
+    </section>
+  );
+
+  return (
+    <div className="mx-auto w-full max-w-[880px] relative">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[450px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/5 dark:bg-emerald-500/10 blur-[120px] animate-pulse-glow z-0" />
+      <FlashCard
+        front={frontContent}
+        back={backContent}
+        isFlipped={isFlipped}
+        onFlip={onFlip}
+        className="z-10 relative"
+      />
     </div>
   );
 }

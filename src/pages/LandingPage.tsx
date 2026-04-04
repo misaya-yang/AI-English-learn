@@ -106,7 +106,7 @@ const plans = [
   {
     name: 'Pro',
     price: '$9.99',
-    tone: 'border-emerald-500/40 bg-emerald-500/8 shadow-[0_20px_60px_-45px_rgba(16,185,129,0.95)]',
+    tone: 'border-emerald-500/40 bg-emerald-500/8 shadow-[0_20px_60px_-45px_hsl(var(--primary)/0.95)]',
     points: [
       'Deep AI feedback and adaptive practice',
       'Full IELTS score-boost cockpit and writing coach',
@@ -254,7 +254,7 @@ export default function LandingPage() {
               className="space-y-4"
             >
               <Card className="overflow-hidden rounded-[28px] border-emerald-500/20 bg-gradient-to-br from-card via-card to-emerald-500/5">
-                <CardContent className="space-y-5 p-6 lg:p-7">
+                <CardContent className="space-y-4 p-6 lg:p-8">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-emerald-600">Today mission</p>
@@ -385,7 +385,7 @@ export default function LandingPage() {
             <div className="mt-10 grid gap-4 md:grid-cols-2">
               {plans.map((plan) => (
                 <Card key={plan.name} className={cn('rounded-[32px] border', plan.tone)}>
-                  <CardContent className="p-6 lg:p-7">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">{plan.name}</p>

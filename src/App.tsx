@@ -6,6 +6,8 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { Toaster } from '@/components/ui/sonner';
 import { RequireAuth } from '@/components/auth/RequireAuth';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { DashboardSkeleton, PageSkeleton } from '@/components/DashboardSkeleton';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { queryClient } from '@/lib/queryClient';
 
@@ -34,14 +36,10 @@ const ListeningPage = lazyWithRetry(() => import('@/pages/dashboard/ListeningPag
 const GrammarPage = lazyWithRetry(() => import('@/pages/dashboard/GrammarPage'), 'grammar');
 const LeaderboardPage = lazyWithRetry(() => import('@/pages/dashboard/LeaderboardPage'), 'leaderboard');
 
-const RouteFallback = () => (
-  <div className="flex h-[40vh] items-center justify-center text-sm text-muted-foreground">
-    Loading...
-  </div>
-);
-
-const withRouteFallback = (element: React.ReactNode) => (
-  <Suspense fallback={<RouteFallback />}>{element}</Suspense>
+const withRouteFallback = (element: React.ReactNode, skeleton?: React.ReactNode) => (
+  <ErrorBoundary>
+    <Suspense fallback={skeleton ?? <DashboardSkeleton />}>{element}</Suspense>
+  </ErrorBoundary>
 );
 
 function App() {
@@ -53,16 +51,16 @@ function App() {
             <Router>
               <Routes>
                 {/* Public Routes */}
-                <Route path="/" element={withRouteFallback(<HomePage />)} />
-                <Route path="/word-of-the-day" element={withRouteFallback(<WordOfTheDayPage />)} />
-                <Route path="/pricing" element={withRouteFallback(<PricingPage />)} />
+                <Route path="/" element={withRouteFallback(<HomePage />, <PageSkeleton />)} />
+                <Route path="/word-of-the-day" element={withRouteFallback(<WordOfTheDayPage />, <PageSkeleton />)} />
+                <Route path="/pricing" element={withRouteFallback(<PricingPage />, <PageSkeleton />)} />
 
                 {/* Auth Routes */}
-                <Route path="/login" element={withRouteFallback(<LoginPage />)} />
-                <Route path="/register" element={withRouteFallback(<RegisterPage />)} />
-                <Route path="/magic-link" element={withRouteFallback(<MagicLinkPage />)} />
-                <Route path="/auth/callback" element={withRouteFallback(<AuthCallbackPage />)} />
-                <Route path="/onboarding" element={withRouteFallback(<OnboardingPage />)} />
+                <Route path="/login" element={withRouteFallback(<LoginPage />, <PageSkeleton />)} />
+                <Route path="/register" element={withRouteFallback(<RegisterPage />, <PageSkeleton />)} />
+                <Route path="/magic-link" element={withRouteFallback(<MagicLinkPage />, <PageSkeleton />)} />
+                <Route path="/auth/callback" element={withRouteFallback(<AuthCallbackPage />, <PageSkeleton />)} />
+                <Route path="/onboarding" element={withRouteFallback(<OnboardingPage />, <PageSkeleton />)} />
 
                 {/* Dashboard Routes */}
                 <Route element={<RequireAuth />}>

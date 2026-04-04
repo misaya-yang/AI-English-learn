@@ -58,7 +58,7 @@ const LEVEL_THRESHOLDS: [string, number][] = [
 
 export default function ProfilePage() {
   const { user, profile, updateUserProfile, updateDisplayName } = useAuth();
-  const { xp, streak, stats } = useUserData();
+  const { xp, streak, stats, streakFreezes, achievements, allAchievementDefs, dailyMultiplier, purchaseStreakFreeze } = useUserData();
   const { plan, allStatuses } = useQuota();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -469,6 +469,78 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Streak Protection & Achievements */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Flame className="h-5 w-5 text-orange-500" />
+              打卡保护
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm text-muted-foreground">可用冻结次数</p>
+                <p className="text-3xl font-bold">{streakFreezes}</p>
+              </div>
+              {dailyMultiplier > 1 && (
+                <Badge variant="secondary" className="text-emerald-600 bg-emerald-500/10">
+                  {dailyMultiplier}x XP
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              打卡冻结可在你忘记学习的一天自动保护连续天数。
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const result = purchaseStreakFreeze();
+                if (result.success) {
+                  toast.success(`已购买打卡冻结（消耗 ${result.cost} XP）`);
+                } else {
+                  toast.error(`XP 不足（需要 ${result.cost} XP）`);
+                }
+              }}
+            >
+              <Zap className="h-4 w-4 mr-1" />
+              购买冻结（50 XP）
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              成就徽章（{achievements.length}/{allAchievementDefs.length}）
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+              {allAchievementDefs.map((def) => {
+                const unlocked = achievements.find((a) => a.id === def.id);
+                return (
+                  <div
+                    key={def.id}
+                    className={cn(
+                      'flex flex-col items-center gap-1 p-2 rounded-lg text-center transition-opacity',
+                      unlocked ? 'opacity-100' : 'opacity-30 grayscale',
+                    )}
+                    title={unlocked ? `${def.nameZh} - ${def.descriptionZh}` : def.descriptionZh}
+                  >
+                    <span className="text-2xl">{def.icon}</span>
+                    <span className="text-[10px] leading-tight text-muted-foreground">{def.nameZh}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Daily AI Quota */}
       <Card>

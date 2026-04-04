@@ -57,7 +57,7 @@ export default function Home() {
           )}
         >
           <Link to="/" className="group flex items-center gap-2.5 pl-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 ring-1 ring-emerald-500/20 transition-all group-hover:bg-emerald-500/20 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 ring-1 ring-emerald-500/20 transition-all group-hover:bg-emerald-500/20 group-hover:shadow-[0_0_15px_hsl(var(--primary)/0.3)]">
               <BookOpen className="size-4" />
             </div>
             <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">VocabDaily</span>
@@ -103,7 +103,7 @@ export default function Home() {
         <section className="relative flex min-h-screen items-center justify-center overflow-hidden pb-40 pt-32 lg:pt-40">
           <Spotlight
             className="-top-40 left-0 md:left-60 md:-top-20"
-            fill="rgba(16, 185, 129, 0.4)"
+            fill="hsl(161 84% 40% / 0.4)"
           />
           <motion.div style={{ scale: bgScale, opacity: bgOpacity, y: heroY }} className="absolute inset-0 -z-10 pointer-events-none">
             <img src="/hero_bg_light.png" alt="" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 opacity-80 dark:opacity-0 mask-radial-fade" />
@@ -180,7 +180,7 @@ export default function Home() {
 
         {/* 3. Outcomes First - Vercel Style Grid */}
         <section id="outcomes" className="relative border-t border-black/5 dark:border-white/5 px-6 py-40 lg:px-8">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--grid-line-color))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--grid-line-color))_1px,transparent_1px)] bg-[size:24px_24px]" />
           <div className="mx-auto max-w-7xl relative z-10">
             <motion.div
               initial="hidden"
@@ -228,11 +228,11 @@ export default function Home() {
                 >
                   <div className="absolute top-8 right-8 text-xs font-mono text-black/10 dark:text-white/[0.1] font-bold tracking-widest group-hover:text-black/20 dark:group-hover:text-white/[0.2] transition-colors">{`0${i + 1}`}</div>
                   <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/[0.1] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.05),transparent_50%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.05),transparent_50%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
                   
                   <div className="relative z-10">
-                    <div className="mb-10 flex size-12 items-center justify-center rounded-xl bg-white dark:bg-black/50 border border-black/5 dark:border-white/[0.05] shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.05)] transition-all duration-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 group-hover:border-emerald-200 dark:group-hover:border-emerald-500/20 dark:group-hover:shadow-[inset_0_1px_rgba(16,185,129,0.3)] group-hover:scale-110 origin-left">
-                      <card.icon className="size-5 text-slate-500 dark:text-neutral-500 transition-colors duration-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" strokeWidth={2} />
+                    <div className="mb-10 flex size-12 items-center justify-center rounded-xl bg-white dark:bg-black/50 border border-black/5 dark:border-white/[0.05] shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.05)] transition-all duration-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 group-hover:border-emerald-200 dark:group-hover:border-emerald-500/20 dark:group-hover:shadow-[inset_0_1px_hsl(var(--primary)/0.3)] group-hover:scale-110 origin-left">
+                      <card.icon className="size-5 text-slate-500 dark:text-neutral-500 transition-colors duration-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]" strokeWidth={2} />
                     </div>
                     
                     <div className="space-y-3">
@@ -328,7 +328,7 @@ export default function Home() {
                       <CardItem translateZ="-10" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/[0.15] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                       
                       <CardItem translateZ="50" className="relative z-10 w-full">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-black/10 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-slate-500 dark:text-white/50 transition-all duration-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 dark:group-hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-black/10 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-slate-500 dark:text-white/50 transition-all duration-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 dark:group-hover:shadow-[0_0_15px_hsl(var(--primary)/0.2)]">
                           <step.icon className="h-5 w-5" strokeWidth={1.5} />
                         </div>
                       </CardItem>
@@ -378,8 +378,8 @@ export default function Home() {
 
               <motion.div variants={fadeUpVariants} className="relative flex flex-col rounded-2xl border-conic bg-white dark:bg-black p-10 shadow-glow-emerald-lg hover-lift group overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/[0.05] dark:from-emerald-500/[0.08] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.1),transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.15),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
-                <div className="absolute -top-3 left-10 z-20 rounded-full border border-emerald-500/30 dark:border-emerald-500/50 bg-white dark:bg-black px-4 py-1 text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 shadow-sm dark:shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.15),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+                <div className="absolute -top-3 left-10 z-20 rounded-full border border-emerald-500/30 dark:border-emerald-500/50 bg-white dark:bg-black px-4 py-1 text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 shadow-sm dark:shadow-[0_0_20px_hsl(var(--primary)/0.5)]">
                   Most Popular
                 </div>
                 <div className="relative z-10 flex flex-col flex-1">
@@ -418,7 +418,7 @@ export default function Home() {
             <h2 className="max-w-3xl text-[3rem] font-bold leading-tight tracking-tighter text-slate-900 dark:text-white sm:text-[4.5rem]">
               Ready to master English with clarity?
             </h2>
-            <Button asChild className="mt-10 h-14 rounded-full border border-emerald-600/50 dark:border-emerald-400/50 bg-emerald-600 dark:bg-emerald-500 px-10 text-lg font-bold text-white shadow-[0_0_30px_rgba(16,185,129,0.2)] dark:shadow-[0_0_40px_rgba(16,185,129,0.4),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-all hover:scale-105 hover:bg-emerald-500 dark:hover:bg-emerald-400 dark:hover:shadow-[0_0_60px_rgba(16,185,129,0.6)]">
+            <Button asChild className="mt-10 h-14 rounded-full border border-emerald-600/50 dark:border-emerald-400/50 bg-emerald-600 dark:bg-emerald-500 px-10 text-lg font-bold text-white shadow-[0_0_30px_hsl(var(--primary)/0.2)] dark:shadow-[0_0_40px_hsl(var(--primary)/0.4),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-all hover:scale-105 hover:bg-emerald-500 dark:hover:bg-emerald-400 dark:hover:shadow-[0_0_60px_hsl(var(--primary)/0.6)]">
               <Link to={primaryCtaPath}>
                 {t('home.footer.cta.guest', { defaultValue: 'Start Free' })} <ArrowRight className="ml-2 size-5" />
               </Link>

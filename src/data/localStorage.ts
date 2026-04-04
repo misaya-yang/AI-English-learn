@@ -2,6 +2,7 @@
 
 import { normalizeWordKey, parseWordBookText } from '@/services/bookImport';
 import { importApkg, inspectApkg, type AnkiProgressMapping } from '@/services/ankiApkgImport';
+import { useStreakFreeze as tryUseStreakFreeze } from '@/services/gamification';
 import type { FSRSState, FontSize, ThemePreference, UserSettings } from '@/types/core';
 import {
   type AnkiDeckSummary,
@@ -1206,7 +1207,11 @@ export const getStreak = (
     streakData[userId].lastStudyDate !== today &&
     streakData[userId].lastStudyDate !== yesterdayStr
   ) {
-    streakData[userId].current = 0;
+    // Try to use a streak freeze before breaking the streak
+    const saved = tryUseStreakFreeze(userId);
+    if (!saved) {
+      streakData[userId].current = 0;
+    }
     setItem(KEYS.STREAK, streakData);
   }
 

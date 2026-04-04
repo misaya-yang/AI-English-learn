@@ -98,7 +98,7 @@ export function ChatMessageBubble({
                 className="pointer-events-none absolute inset-0"
                 style={{
                   background:
-                    'linear-gradient(100deg, transparent 8%, rgba(16, 185, 129, 0.12) 46%, transparent 82%)',
+                    'linear-gradient(100deg, transparent 8%, hsl(161 84% 40% / 0.12) 46%, transparent 82%)',
                   backgroundSize: '200% 100%',
                 }}
                 animate={{ backgroundPosition: ['-120% 0%', '120% 0%'] }}

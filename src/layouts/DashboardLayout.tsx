@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useMemo, type ComponentType } from 'react';
+import { useMemo, useState, type ComponentType } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchPalette, useSearchPalette } from '@/components/SearchPalette';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -20,6 +20,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { BottomNavBar } from '@/components/BottomNavBar';
+import { StreakCounter } from '@/components/StreakCounter';
+import { XPProgressBar } from '@/components/XPProgressBar';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
@@ -116,6 +120,8 @@ export default function DashboardLayout() {
   const isChatRoute = location.pathname.startsWith('/dashboard/chat');
   const isLearningRoute = LEARNING_ROUTE_PREFIXES.some((path) => location.pathname.startsWith(path));
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchPalette();
+  const isMobile = useIsMobile();
+  const [moreSheetOpen, setMoreSheetOpen] = useState(false);
 
   const primaryNav = useMemo<NavItem[]>(
     () => [
@@ -272,7 +278,7 @@ export default function DashboardLayout() {
           className={cn(
             'group flex items-center gap-3 rounded-2xl border px-3 py-3 transition-all duration-150',
             active
-              ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_10px_35px_-25px_rgba(16,185,129,0.8)]'
+              ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_10px_35px_-25px_hsl(var(--primary)/0.8)]'
               : 'border-transparent hover:border-border hover:bg-muted/60',
           )}
         >
@@ -384,7 +390,7 @@ export default function DashboardLayout() {
   );
 
   const standardMobileSheetBody = (
-    <div className="flex h-full flex-col gap-5 px-1">
+    <div className="flex h-full flex-col gap-4 px-1">
       <div className="rounded-2xl border bg-card p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
@@ -564,15 +570,16 @@ export default function DashboardLayout() {
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-white/75">
-                    <Flame className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">{xp?.total?.toLocaleString() || 0} XP total</p>
-                  </div>
+              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <StreakCounter
+                    current={streak?.current || 0}
+                    longest={streak?.longest || 0}
+                    className="text-white"
+                  />
+                  <span className="text-xs font-bold text-white/50">Lv {xp?.level || 1}</span>
                 </div>
+                <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
               </div>
             </div>
           </ScrollArea>
@@ -656,12 +663,22 @@ export default function DashboardLayout() {
           </header>
 
           <div className="min-h-0 flex-1 overflow-auto">
-            <div className="mx-auto w-full max-w-[1580px] px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+            <div className={cn('mx-auto w-full max-w-[1580px] px-4 py-5 sm:px-6 lg:px-8 lg:py-8', isMobile && 'pb-20')}>
               <Outlet />
             </div>
           </div>
         </main>
       </div>
+      {isMobile && (
+        <>
+          <BottomNavBar isLearningMode onMoreClick={() => setMoreSheetOpen(true)} />
+          <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
+            <SheetContent side="bottom" className="border-t border-white/10 bg-[#020303] p-4">
+              {learningMobileSheetBody}
+            </SheetContent>
+          </Sheet>
+        </>
+      )}
       <SearchPalette open={searchOpen} onOpenChange={setSearchOpen} />
       </>
     );
@@ -722,15 +739,12 @@ export default function DashboardLayout() {
               </Button>
             </div>
 
-            <div className="flex items-center gap-2 rounded-2xl border bg-card px-4 py-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
-                <Flame className="h-4 w-4" />
+            <div className="rounded-2xl border bg-card px-4 py-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
+                <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{streak?.current || 0} day streak</p>
-                <p className="text-xs text-muted-foreground">{xp?.total?.toLocaleString() || 0} total XP</p>
-              </div>
-              <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
+              <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
             </div>
 
             <div className="space-y-2">
@@ -832,12 +846,23 @@ export default function DashboardLayout() {
             className={cn(
               'mx-auto w-full',
               isChatRoute ? 'h-full max-w-none' : 'max-w-[1360px] px-5 py-6 lg:px-10 lg:py-8',
+              isMobile && !isChatRoute && 'pb-20',
             )}
           >
             <Outlet />
           </div>
         </div>
       </main>
+      {isMobile && (
+        <>
+          <BottomNavBar isLearningMode={false} onMoreClick={() => setMoreSheetOpen(true)} />
+          <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
+            <SheetContent side="bottom" className="border-t bg-background p-4">
+              {standardMobileSheetBody}
+            </SheetContent>
+          </Sheet>
+        </>
+      )}
       <SearchPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );

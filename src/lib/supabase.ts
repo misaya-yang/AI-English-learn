@@ -18,10 +18,6 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 });
 
-// Debug: Log Supabase client status
-console.log('Supabase client initialized:', !!supabase);
-console.log('Supabase URL:', SUPABASE_URL);
-
 // ============================================
 // TYPES
 // ============================================

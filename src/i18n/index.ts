@@ -46,6 +46,12 @@ const en = {
     localStorage: 'Local Storage Mode',
     thinking: 'Thinking...',
   },
+  errorBoundary: {
+    title: 'Something went wrong',
+    description: 'An unexpected error occurred on this page. You can try refreshing or go back to the home page.',
+    retry: 'Try Again',
+    goHome: 'Go Home',
+  },
   nav: {
     today: "Today's Words",
     review: 'Review',
@@ -456,6 +462,12 @@ const zh = {
     cloudStorage: 'Supabase 云存储',
     localStorage: '本地存储模式',
     thinking: '思考中...',
+  },
+  errorBoundary: {
+    title: '页面出错了',
+    description: '该页面发生了意外错误，你可以尝试刷新页面或返回首页。',
+    retry: '重试',
+    goHome: '返回首页',
   },
   nav: {
     today: '今日单词',

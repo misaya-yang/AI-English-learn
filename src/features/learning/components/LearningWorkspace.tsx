@@ -94,10 +94,10 @@ export function LearningHeroPanel({
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn(learningFrameClassName, 'overflow-hidden p-5 sm:p-6 lg:p-7', className)}
+      className={cn(learningFrameClassName, 'overflow-hidden p-4 sm:p-6 lg:p-8', className)}
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/[0.02] dark:to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[30%] bg-[linear-gradient(180deg,rgba(16,185,129,0.05),rgba(0,0,0,0))] xl:block" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[30%] bg-[linear-gradient(180deg,hsl(var(--primary)/0.05),transparent)] xl:block" />
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_300px] lg:items-start z-10">
         <div className="space-y-5">
           {eyebrow ? (
@@ -114,7 +114,7 @@ export function LearningHeroPanel({
           {actions ? <LearningActionCluster>{actions}</LearningActionCluster> : null}
         </div>
 
-        <div className="space-y-4 rounded-3xl border border-black/5 dark:border-white/[0.08] bg-white/50 dark:bg-black/40 p-4 sm:p-5 shadow-sm dark:shadow-glass relative z-10">
+        <div className="space-y-4 rounded-3xl border border-black/5 dark:border-white/[0.08] bg-white/50 dark:bg-black/40 p-4 sm:p-6 shadow-sm dark:shadow-glass relative z-10">
           {typeof progress === 'number' ? (
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-4">
@@ -144,7 +144,7 @@ export function LearningHeroPanel({
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn(learningFrameClassName, 'space-y-4 p-4 sm:p-5', className)}>
+    <section className={cn(learningFrameClassName, 'space-y-4 p-4 sm:p-6', className)}>
       <div className="space-y-1.5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-white/42">{title}</p>
         {description ? <p className="text-sm leading-6 text-slate-600 dark:text-white/58">{description}</p> : null}
@@ -241,7 +241,7 @@ export function LearningCompletionState({
       animate={{ opacity: 1, scale: 1 }}
       className={cn(learningFrameClassName, 'overflow-hidden px-6 py-12 sm:px-10', className)}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(16,185,129,0.05),rgba(0,0,0,0))]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,hsl(var(--primary)/0.05),transparent)]" />
       <div className="relative text-center z-10">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[28px] border border-emerald-500/25 bg-emerald-500/12 text-emerald-600 dark:text-emerald-300">
           <Icon className="h-9 w-9" />

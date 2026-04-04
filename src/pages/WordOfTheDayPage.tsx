@@ -73,7 +73,7 @@ export default function WordOfTheDayPage() {
       try {
         await navigator.share(shareData);
       } catch (err) {
-        console.log('Error sharing:', err);
+        // Share cancelled or failed — no action needed
       }
     } else {
       navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);

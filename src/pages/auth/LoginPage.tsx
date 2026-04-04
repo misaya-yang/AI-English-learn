@@ -42,7 +42,6 @@ export default function LoginPage() {
     }, 15000); // 15 second timeout
 
     try {
-      console.log('Login form submitted for:', email);
       const { success, error } = await login(email, password);
       clearTimeout(timeoutId);
 
@@ -123,7 +122,7 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[600px] w-[800px] rounded-full bg-emerald-500/[0.07] blur-[140px]" />
       <div className="pointer-events-none absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
       {/* Subtle grid */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--grid-line-color))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--grid-line-color))_1px,transparent_1px)] bg-[size:32px_32px]" />
 
       <div className="relative w-full max-w-[420px]">
         {/* Logo */}

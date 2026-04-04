@@ -137,7 +137,7 @@ export function MiniTrendChart({ history }: { history: AiFeedback[] }) {
           <Tooltip
             contentStyle={{
               borderRadius: 10,
-              borderColor: 'rgba(16,185,129,0.35)',
+              borderColor: 'hsl(161 84% 40% / 0.35)',
               background: 'var(--background)',
             }}
           />
