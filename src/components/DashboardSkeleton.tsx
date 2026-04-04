@@ -1,4 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { BookOpen } from 'lucide-react';
 
 /**
  * Skeleton placeholder shown while dashboard pages are lazy-loading.
@@ -33,16 +34,28 @@ export function DashboardSkeleton() {
 }
 
 /**
- * Minimal skeleton for public pages (landing, pricing, etc.)
+ * Branded skeleton for public pages (landing, pricing, auth, etc.)
+ * Shows VocabDaily logo + emerald progress animation.
  */
 export function PageSkeleton() {
   return (
-    <div className="flex h-[40vh] items-center justify-center">
-      <div className="space-y-4 w-full max-w-md px-4">
-        <Skeleton className="h-10 w-3/4 mx-auto" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-        <Skeleton className="h-10 w-32 mx-auto mt-6" />
+    <div className="flex min-h-[60vh] flex-col items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-6 animate-in fade-in duration-500">
+        {/* Logo */}
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 animate-pulse">
+          <BookOpen className="h-7 w-7" />
+        </div>
+
+        {/* Brand */}
+        <div className="text-center">
+          <p className="text-lg font-bold tracking-tight text-foreground">VocabDaily</p>
+          <p className="mt-1 text-sm text-muted-foreground">Loading your experience...</p>
+        </div>
+
+        {/* Emerald progress bar */}
+        <div className="h-1 w-48 overflow-hidden rounded-full bg-muted">
+          <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 animate-shimmer" />
+        </div>
       </div>
     </div>
   );

@@ -55,7 +55,12 @@ export default function LoginPage() {
     } catch (error: unknown) {
       clearTimeout(timeoutId);
       console.error('Login exception:', error);
-      toast.error(error instanceof Error ? error.message : '登录失败，请稍后重试');
+      const msg = error instanceof Error ? error.message : '';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
+        toast.error('网络连接失败，请检查网络后重试');
+      } else {
+        toast.error('登录失败，请稍后重试');
+      }
     } finally {
       clearTimeout(timeoutId);
       setIsLoading(false);
@@ -109,8 +114,13 @@ export default function LoginPage() {
         toast.success('已创建临时演示账号');
         navigate(redirectTarget, { replace: true });
       }
-    } catch {
-      toast.error('登录失败');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        toast.error('网络连接失败，请检查网络后重试');
+      } else {
+        toast.error('演示账号暂时不可用，请尝试注册新账号');
+      }
     } finally {
       setIsLoading(false);
     }

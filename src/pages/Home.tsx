@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, BookOpen, Brain, Check, CirclePlay, Sparkles, Target, CalendarDays, MessageCircleMore, WandSparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, Check, CirclePlay, Menu, Sparkles, Target, CalendarDays, MessageCircleMore, WandSparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
@@ -16,6 +16,7 @@ export default function Home() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const continuePath = isAuthenticated ? '/dashboard/today' : buildAuthRedirect('/dashboard/today');
   const primaryCtaPath = isAuthenticated ? continuePath : '/register';
@@ -76,11 +77,11 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
-            <div className="flex items-center gap-1">
+            <div className="hidden sm:flex items-center gap-1">
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
-            
+
             <Link
               to="/word-of-the-day"
               className="hidden text-xs font-semibold text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors sm:block"
@@ -90,17 +91,62 @@ export default function Home() {
             <Button
               asChild
               size="sm"
-              className="h-9 rounded-full bg-black text-white dark:bg-white px-5 text-xs font-bold dark:text-black transition-all hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)] ml-2"
+              className="hidden sm:inline-flex h-9 rounded-full bg-black text-white dark:bg-white px-5 text-xs font-bold dark:text-black transition-all hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)] ml-2"
             >
               <Link to={continuePath}>{t('home.nav.continueLearning', { defaultValue: 'Continue' })}</Link>
             </Button>
+            {/* Mobile menu toggle */}
+            <button
+              type="button"
+              className="md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-black/10 dark:border-white/10 text-slate-700 dark:text-white transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
           </div>
         </header>
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="pointer-events-auto mt-2 w-full max-w-4xl rounded-2xl border border-black/10 dark:border-white/10 bg-white/95 dark:bg-black/90 backdrop-blur-2xl p-4 shadow-lg"
+          >
+            <div className="flex flex-col gap-2">
+              {['Outcomes', 'Workflow', 'Membership'].map((item) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-white/80 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                  {t(`home.nav.${item.toLowerCase()}`, { defaultValue: item })}
+                </a>
+              ))}
+              <div className="my-1 h-px bg-black/5 dark:bg-white/10" />
+              <Link
+                to="/word-of-the-day"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-white/80 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                {t('home.nav.wordOfTheDay', { defaultValue: 'Word of the Day' })}
+              </Link>
+              <Link
+                to={continuePath}
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-emerald-500"
+              >
+                {t('home.nav.continueLearning', { defaultValue: 'Continue' })}
+              </Link>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       <main>
         {/* 2. Full-viewport Hero */}
-        <section className="relative flex min-h-screen items-center justify-center overflow-hidden pb-40 pt-32 lg:pt-40">
+        <section className="relative flex min-h-screen items-center justify-center overflow-hidden pb-16 pt-28 sm:pb-32 lg:pb-40 lg:pt-40">
           <Spotlight
             className="-top-40 left-0 md:left-60 md:-top-20"
             fill="hsl(161 84% 40% / 0.4)"
@@ -132,7 +178,7 @@ export default function Home() {
 
               <motion.h1
                 variants={fadeUpVariants}
-                className="mx-auto max-w-4xl text-[3rem] font-semibold leading-[1.15] tracking-tight text-slate-900 dark:text-white sm:text-5xl md:text-[5.5rem] lg:text-[6rem]"
+                className="mx-auto max-w-4xl text-[2rem] font-semibold leading-[1.15] tracking-tight text-slate-900 dark:text-white sm:text-[3rem] md:text-[5.5rem] lg:text-[6rem]"
               >
                 <span className="bg-gradient-to-b from-slate-900 to-slate-500 dark:from-white dark:to-white/50 bg-clip-text text-transparent pb-1">Stop juggling AI tools.</span>
                 <br className="hidden md:block" />
@@ -179,7 +225,7 @@ export default function Home() {
 
 
         {/* 3. Outcomes First - Vercel Style Grid */}
-        <section id="outcomes" className="relative border-t border-black/5 dark:border-white/5 px-6 py-40 lg:px-8">
+        <section id="outcomes" className="relative border-t border-black/5 dark:border-white/5 px-6 py-16 md:py-24 lg:py-32 lg:px-8">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--grid-line-color))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--grid-line-color))_1px,transparent_1px)] bg-[size:24px_24px]" />
           <div className="mx-auto max-w-7xl relative z-10">
             <motion.div
@@ -247,7 +293,7 @@ export default function Home() {
         </section>
 
         {/* 4. Workflow – Bento Grid */}
-        <section id="workflow" className="relative border-t border-black/5 dark:border-white/5 px-6 py-40 lg:px-8">
+        <section id="workflow" className="relative border-t border-black/5 dark:border-white/5 px-6 py-16 md:py-24 lg:py-32 lg:px-8">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[600px] rounded-full bg-emerald-500/[0.06] blur-[140px]" />
           <div className="mx-auto max-w-7xl relative z-10">
             <motion.div
@@ -347,7 +393,7 @@ export default function Home() {
         </section>
 
         {/* 5. Minimal Membership */}
-        <section id="membership" className="relative border-t border-black/5 dark:border-white/5 px-6 py-40 lg:px-8">
+        <section id="membership" className="relative border-t border-black/5 dark:border-white/5 px-6 py-16 md:py-24 lg:py-32 lg:px-8">
           <div className="absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 bg-emerald-500/5 blur-[120px]" />
           <div className="mx-auto max-w-5xl relative z-10">
             <motion.div
@@ -407,7 +453,7 @@ export default function Home() {
         </section>
 
         {/* 6. Deep Dark Footer CTA */}
-        <section className="border-t border-black/5 dark:border-white/5 py-40 text-center">
+        <section className="border-t border-black/5 dark:border-white/5 py-16 md:py-24 lg:py-32 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}

@@ -206,17 +206,12 @@ export default function PricingPage() {
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <div>
-                <p className="text-sm text-muted-foreground">Current Entitlement</p>
-                <p className="text-lg font-semibold">Plan: {currentPlan.toUpperCase()}</p>
-                <p className="text-xs text-muted-foreground">
-                  Status: {subscriptionStatus} · Provider: {billingProvider}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  AI feedback left today: {remaining.aiAdvancedFeedbackPerDay} • Sim items left:{' '}
-                  {remaining.simItemsPerDay} • Micro lessons left: {remaining.microLessonsPerDay}
-                </p>
+                <p className="text-sm text-muted-foreground">Current Plan</p>
+                <p className="text-lg font-semibold">{currentPlan === 'pro' ? 'Pro' : 'Free'}</p>
               </div>
-              <Badge variant="outline">Web checkout enabled</Badge>
+              <Badge variant={currentPlan === 'pro' ? 'default' : 'outline'}>
+                {currentPlan === 'pro' ? 'Active' : 'Upgrade available'}
+              </Badge>
             </div>
           </CardContent>
         </Card>

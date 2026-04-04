@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   History,
+  BookmarkPlus,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { wordsDatabase, type WordData, getWordOfTheDay, getPreviousWords } from '@/data/words';
@@ -149,7 +150,7 @@ export default function WordOfTheDayPage() {
               <TabsTrigger value="more">More</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="h-[300px] mt-4">
+            <ScrollArea className="h-[240px] sm:h-[300px] mt-4">
               <TabsContent value="definition" className="mt-0">
                 <div className="space-y-4">
                   <div>
@@ -285,18 +286,24 @@ export default function WordOfTheDayPage() {
         {renderWordCard(wordOfTheDay)}
 
         {/* CTA */}
-        <div className="mt-8 text-center">
-          <p className="text-muted-foreground mb-4">
-            Want to learn more words like this?
-            <br />
-            想学习更多像这样的单词吗？
+        <div className="mt-8 flex flex-col items-center gap-4">
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link to="/register">
+              <Button size="lg" variant="outline" className="rounded-xl">
+                <BookmarkPlus className="h-5 w-5 mr-2" />
+                Add to My Word Bank
+              </Button>
+            </Link>
+            <Link to="/register">
+              <Button size="lg" className="rounded-xl bg-emerald-600 hover:bg-emerald-700">
+                <Sparkles className="h-5 w-5 mr-2" />
+                Start Free Journey
+              </Button>
+            </Link>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Sign up to save words, track progress, and practice with AI
           </p>
-          <Link to="/register">
-            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
-              <Sparkles className="h-5 w-5 mr-2" />
-              Start Your Free Journey
-            </Button>
-          </Link>
         </div>
 
         {/* Previous Words Section */}
