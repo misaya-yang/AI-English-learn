@@ -22,6 +22,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { recordLearningEvent } from '@/services/learningEvents';
+import { incrementReviewCount } from '@/services/gamification';
 import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -575,6 +578,7 @@ type Phase = 'browse' | 'practice' | 'review';
 
 export default function GrammarPage() {
   const { addStudySession } = useUserData();
+  const { user } = useAuth();
   const [phase, setPhase] = useState<Phase>('browse');
   const [activeRule, setActiveRule] = useState<GrammarRule | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -612,6 +616,24 @@ export default function GrammarPage() {
     const xp = pct >= 0.8 ? 20 : pct >= 0.5 ? 10 : 5;
     addStudySession(0, 0, xp, 0);
     toast.success(`+${xp} XP`, { description: `${correct}/${activeRule.practice.length} correct` });
+
+    // Record learning event and gamification
+    if (user?.id) {
+      void recordLearningEvent({
+        userId: user.id,
+        eventName: 'grammar.practice_completed',
+        payload: {
+          ruleId: activeRule.id,
+          category: activeRule.category,
+          level: activeRule.level,
+          correct,
+          total: activeRule.practice.length,
+          accuracy: pct,
+          xp,
+        },
+      });
+      incrementReviewCount(user.id, activeRule.practice.length);
+    }
   };
 
   const handleBack = () => {

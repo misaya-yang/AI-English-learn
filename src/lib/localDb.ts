@@ -35,6 +35,17 @@ export interface SyncQueueRecord extends Omit<SyncQueueEntry, 'id'> {
   last_attempt_at?: string;
 }
 
+export interface GamificationRecord {
+  user_id: string;
+  streak_freezes: number;
+  last_freeze_used_at: string | null;
+  achievements: Array<{ id: string; unlockedAt: string }>;
+  daily_multiplier: number;
+  total_words_learned: number;
+  total_reviews: number;
+  updated_at: string;
+}
+
 export interface VocabDailyDB extends DBSchema {
   word_progress: {
     key: [string, string]; // [user_id, word_id]
@@ -85,12 +96,16 @@ export interface VocabDailyDB extends DBSchema {
       'by_user_event': [string, string];
     };
   };
+  gamification: {
+    key: string; // user_id
+    value: GamificationRecord;
+  };
 }
 
 // ─── Database singleton ───────────────────────────────────────────────────────
 
 const DB_NAME    = 'vocabdaily';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 let _dbPromise: Promise<IDBPDatabase<VocabDailyDB>> | null = null;
 
@@ -156,10 +171,12 @@ function getDb(): Promise<IDBPDatabase<VocabDailyDB>> {
         }
       }
 
-      // ── settings / events ────────────────────────────────────────────────
-      if (db.objectStoreNames.contains('words_cache')) {
-        db.deleteObjectStore('words_cache');
+      // ── words_cache ───────────────────────────────────────────────────
+      if (!db.objectStoreNames.contains('words_cache')) {
+        db.createObjectStore('words_cache', { keyPath: 'id' });
       }
+
+      // ── settings / events ────────────────────────────────────────────────
       if (!db.objectStoreNames.contains('settings')) {
         db.createObjectStore('settings', { keyPath: 'key' });
       }
@@ -179,6 +196,11 @@ function getDb(): Promise<IDBPDatabase<VocabDailyDB>> {
         if (!ev.indexNames.contains('by_user_event')) {
           ev.createIndex('by_user_event', ['user_id', 'event_id']);
         }
+      }
+
+      // ── gamification ──────────────────────────────────────────────────
+      if (!db.objectStoreNames.contains('gamification')) {
+        db.createObjectStore('gamification', { keyPath: 'user_id' });
       }
     },
 
@@ -475,6 +497,30 @@ export async function pruneEvents(limit = 2000): Promise<number> {
     return staleRows.length;
   } catch {
     return 0;
+  }
+}
+
+// ─── Gamification ────────────────────────────────────────────────────────────
+
+export async function getGamificationRecord(
+  userId: string,
+): Promise<GamificationRecord | undefined> {
+  try {
+    const db = await getDb();
+    return db.get('gamification', userId);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function setGamificationRecord(
+  record: GamificationRecord,
+): Promise<void> {
+  try {
+    const db = await getDb();
+    await db.put('gamification', { ...record, updated_at: new Date().toISOString() });
+  } catch (err) {
+    console.warn('[localDb] setGamificationRecord failed:', err);
   }
 }
 

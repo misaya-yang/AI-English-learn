@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import type { LearningMission, LearningMissionTask, LearningProfile, LearningTrack } from '@/types/examContent';
 import type { LearnerModel } from '@/services/learnerModel';
 
@@ -84,8 +85,8 @@ export const saveLearningProfile = async (
       language_preference: next.languagePreference,
       updated_at: next.updatedAt,
     });
-  } catch {
-    // Keep local profile fallback.
+  } catch (err) {
+    logger.error('[learningMissions] saveLearningProfile sync failed:', err);
   }
 
   return next;
@@ -266,8 +267,8 @@ export const getOrCreateDailyMission = async (args: {
 
     try {
       await persistMission(refreshed, profile, args.learnerModel);
-    } catch {
-      // Keep local mission fallback.
+    } catch (err) {
+      logger.error('[learningMissions] persistMission (refresh) failed:', err);
     }
 
     return refreshed;
@@ -288,8 +289,8 @@ export const getOrCreateDailyMission = async (args: {
 
   try {
     await persistMission(mission, profile, args.learnerModel);
-  } catch {
-    // Keep local mission fallback.
+  } catch (err) {
+    logger.error('[learningMissions] persistMission (create) failed:', err);
   }
 
   return mission;
@@ -335,8 +336,8 @@ export const completeMissionTask = async (args: {
       })
       .eq('id', updated.id)
       .eq('user_id', args.userId);
-  } catch {
-    // Keep local state.
+  } catch (err) {
+    logger.error('[learningMissions] completeMissionTask sync failed:', err);
   }
 
   return updated;

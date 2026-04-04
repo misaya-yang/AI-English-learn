@@ -21,6 +21,9 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { recordLearningEvent } from '@/services/learningEvents';
+import { incrementReviewCount } from '@/services/gamification';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -259,6 +262,7 @@ Despite these limitations, urban farming advocates maintain that its value exten
 
 export default function ReadingPage() {
   const { addStudySession } = useUserData();
+  const { user } = useAuth();
 
   const [phase, setPhase] = useState<'select' | 'reading' | 'review'>('select');
   const [current, setCurrent] = useState<ReadingPassage | null>(null);
@@ -344,7 +348,24 @@ export default function ReadingPage() {
     if (pct === 1)       toast.success('Perfect score! +25 XP 🎉');
     else if (pct >= 0.8) toast.success(`Great work — ${correct}/${total} correct! +${xp} XP`);
     else                 toast.info(`${correct}/${total} correct — review the answers below`);
-  }, [current, answers, startTime, addStudySession]);
+
+    if (user?.id) {
+      void recordLearningEvent({
+        userId: user.id,
+        eventName: 'reading.passage_completed',
+        payload: {
+          passageId: current.id,
+          level: current.level,
+          correct,
+          total,
+          accuracy: pct,
+          xp,
+          durationMinutes: elapsed,
+        },
+      });
+      incrementReviewCount(user.id, total);
+    }
+  }, [current, answers, startTime, addStudySession, user]);
 
   // ── Score colour ──────────────────────────────────────────────────────────
 

@@ -182,6 +182,9 @@ export type LearningEventName =
   | 'practice.writing_submitted'
   | 'review.word_rated'
   | 'today.word_marked'
+  | 'grammar.practice_completed'
+  | 'reading.passage_completed'
+  | 'listening.passage_completed'
   | 'billing.checkout_started'
   | 'billing.subscription_updated'
   | 'mission.task_completed';

@@ -27,6 +27,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { recordLearningEvent } from '@/services/learningEvents';
+import { incrementReviewCount } from '@/services/gamification';
 import { toast } from 'sonner';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -500,6 +503,7 @@ type Phase = 'select' | 'listening' | 'questions' | 'review';
 
 export default function ListeningPage() {
   const { addStudySession } = useUserData();
+  const { user } = useAuth();
   const [phase, setPhase] = useState<Phase>('select');
   const [selected, setSelected] = useState<ListeningPassage | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -541,10 +545,27 @@ export default function ListeningPage() {
     setSubmitted(true);
     setPhase('review');
 
-    const pct = correct / selected.questions.length;
+    const total = selected.questions.length;
+    const pct = correct / total;
     const xp = pct >= 0.8 ? 30 : pct >= 0.6 ? 18 : 8;
     addStudySession(0, 0, xp, 0);
-    toast.success(`+${xp} XP`, { description: `${correct}/${selected.questions.length} correct` });
+    toast.success(`+${xp} XP`, { description: `${correct}/${total} correct` });
+
+    if (user?.id) {
+      void recordLearningEvent({
+        userId: user.id,
+        eventName: 'listening.passage_completed',
+        payload: {
+          passageId: selected.id,
+          level: selected.level,
+          correct,
+          total,
+          accuracy: pct,
+          xp,
+        },
+      });
+      incrementReviewCount(user.id, total);
+    }
   };
 
   const handleReset = () => {

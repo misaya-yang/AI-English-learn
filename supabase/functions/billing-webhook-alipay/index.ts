@@ -17,13 +17,48 @@ const getQuota = (plan: 'free' | 'pro') =>
 const verifyAlipaySignature = async (payload: Record<string, unknown>): Promise<boolean> => {
   const publicKey = Deno.env.get('ALIPAY_PUBLIC_KEY');
 
-  // Skeleton mode: when keys are not configured, accept sandbox callbacks.
   if (!publicKey) {
-    return true;
+    console.warn('[billing-webhook-alipay] ALIPAY_PUBLIC_KEY not set — rejecting webhook');
+    return false;
   }
 
-  // TODO: replace with full RSA2 verification for production use.
-  return typeof payload.sign === 'string' && payload.sign.length > 0;
+  const sign = payload.sign;
+  const signType = payload.sign_type ?? 'RSA2';
+  if (typeof sign !== 'string' || sign.length === 0) return false;
+  if (signType !== 'RSA2') return false;
+
+  // Build the string-to-verify: sort keys alphabetically, join with &, exclude sign/sign_type
+  const sortedKeys = Object.keys(payload)
+    .filter((k) => k !== 'sign' && k !== 'sign_type' && payload[k] !== undefined && payload[k] !== '')
+    .sort();
+  const stringToVerify = sortedKeys.map((k) => `${k}=${payload[k]}`).join('&');
+
+  try {
+    const pemContents = publicKey.includes('BEGIN PUBLIC KEY')
+      ? publicKey
+      : `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`;
+
+    const binaryKey = Uint8Array.from(
+      atob(pemContents.replace(/-----[A-Z ]+-----/g, '').replace(/\s/g, '')),
+      (c) => c.charCodeAt(0),
+    );
+
+    const cryptoKey = await crypto.subtle.importKey(
+      'spki',
+      binaryKey,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    );
+
+    const signatureBytes = Uint8Array.from(atob(sign), (c) => c.charCodeAt(0));
+    const dataBytes = new TextEncoder().encode(stringToVerify);
+
+    return crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signatureBytes, dataBytes);
+  } catch (err) {
+    console.error('[billing-webhook-alipay] signature verification failed:', err);
+    return false;
+  }
 };
 
 Deno.serve(async (req) => {
