@@ -11,7 +11,9 @@
     <title>VocabDaily AI</title>
   </head>
   <body>
+    <a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" onfocus="this.style.cssText='position:fixed;top:1rem;left:1rem;z-index:100;padding:0.5rem 1rem;background:#10b981;color:#fff;border-radius:0.5rem;outline:none'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden'">Skip to content</a>
     <div id="root"></div>
+    <div id="aria-live-region" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {

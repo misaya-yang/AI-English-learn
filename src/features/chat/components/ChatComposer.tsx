@@ -259,6 +259,8 @@ export function ChatComposer({
             )}
             onClick={onToggleTools}
             title={language.startsWith('zh') ? '工具与模式' : 'Tools & mode'}
+            aria-label="Toggle tools and mode panel"
+            aria-expanded={toolsExpanded}
           >
             <Wand2 className="h-4 w-4" />
           </Button>
@@ -289,6 +291,7 @@ export function ChatComposer({
                     : 'hover:bg-muted text-muted-foreground',
                 )}
                 title={voiceListening ? 'Stop listening' : 'Voice input'}
+                aria-label={voiceListening ? 'Stop voice input' : 'Start voice input'}
               >
                 {voiceListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </Button>
@@ -299,6 +302,7 @@ export function ChatComposer({
                 variant="outline"
                 size="icon"
                 className="h-10 w-10 rounded-xl hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+                aria-label="Stop generating"
               >
                 <StopCircle className="h-5 w-5" />
               </Button>
@@ -307,6 +311,7 @@ export function ChatComposer({
                 onClick={onSend}
                 disabled={!input.trim()}
                 className="h-10 w-10 rounded-xl bg-emerald-600 p-0 hover:bg-emerald-700 disabled:opacity-50"
+                aria-label="Send message"
               >
                 <Send className="h-5 w-5" />
               </Button>

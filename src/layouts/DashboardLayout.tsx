@@ -595,7 +595,7 @@ export default function DashboardLayout() {
           </div>
         </aside>
 
-        <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#020303]">
+        <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#020303]">
           <header className="border-b border-white/[0.06] bg-black/60 backdrop-blur-2xl">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
               <div className="flex min-w-0 items-center gap-3">
