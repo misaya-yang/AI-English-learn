@@ -45,34 +45,74 @@ import { ChatComposer } from '@/features/chat/components/ChatComposer';
 import { ChatHistorySidebar } from '@/features/chat/components/ChatHistorySidebar';
 import { ChatMemoryBanner } from '@/features/chat/components/ChatMemoryBanner';
 import { ChatMessageBubble } from '@/features/chat/components/ChatMessageBubble';
-import { ChatWelcome } from '@/features/chat/components/ChatWelcome';
+import { ChatWelcome, buildRecommendations } from '@/features/chat/components/ChatWelcome';
 import { QuizArtifactCard } from '@/features/chat/components/QuizArtifactCard';
 import type { ChatModeOption, QuickPromptOption } from '@/features/chat/types';
 import { buildChatGoalContext, deriveChatWeakTags } from '@/features/chat/utils/learnerContext';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
-// Quick prompt suggestions - English prompts for learning (not translated)
-const getQuickPrompts = (t: (key: string) => string): QuickPromptOption[] => [
-  {
-    icon: BookOpen,
-    text: 'Explain the difference between "affect" and "effect"',
-    textZh: t('chat.quickPrompts.affectEffect'),
-  },
-  {
-    icon: Lightbulb,
-    text: 'Give me 5 collocations with "make"',
-    textZh: t('chat.quickPrompts.collocations'),
-  },
-  {
-    icon: MessageSquare,
-    text: 'Create a short dialogue at a restaurant',
-    textZh: t('chat.quickPrompts.dialogue'),
-  },
-  {
-    icon: Sparkles,
-    text: 'Help me practice using "serendipity"',
-    textZh: t('chat.quickPrompts.practice'),
-  },
-];
+// Dynamic quick prompts based on learning stage
+interface QuickPromptContext {
+  level?: string;
+  dueCount?: number;
+  hasExamGoal?: boolean;
+  incompleteTasks?: string[];
+}
+
+const getQuickPrompts = (t: (key: string, options?: Record<string, unknown>) => string, ctx?: QuickPromptContext): QuickPromptOption[] => {
+  const prompts: QuickPromptOption[] = [];
+
+  // Review pressure — suggest review-related prompts
+  if (ctx?.dueCount && ctx.dueCount >= 3) {
+    prompts.push({
+      icon: RotateCcw,
+      text: `I have ${ctx.dueCount} words due for review. Help me practice them in context.`,
+      textZh: t('chat.quickPrompts.reviewPractice', { defaultValue: `帮我在语境中复习 ${ctx.dueCount} 个到期词汇` }),
+    });
+  }
+
+  // Exam goal — add IELTS-specific prompts
+  if (ctx?.hasExamGoal) {
+    prompts.push({
+      icon: GraduationCap,
+      text: 'Give me an IELTS Writing Task 2 topic and evaluate my response structure.',
+      textZh: t('chat.quickPrompts.ieltsWriting', { defaultValue: '给我一个雅思写作 Task 2 话题并评估我的结构' }),
+    });
+  }
+
+  // Beginner level — simpler prompts
+  if (ctx?.level === 'A1' || ctx?.level === 'A2') {
+    prompts.push(
+      { icon: MessageSquare, text: 'Create a simple dialogue for ordering coffee', textZh: t('chat.quickPrompts.simpleDiag', { defaultValue: '创建一个简单的点咖啡对话' }) },
+      { icon: BookOpen, text: 'Teach me 5 common greetings and when to use them', textZh: t('chat.quickPrompts.greetings', { defaultValue: '教我 5 个常用问候语及使用场景' }) },
+    );
+  }
+
+  // Incomplete writing task
+  if (ctx?.incompleteTasks?.includes('writing')) {
+    prompts.push({
+      icon: NotebookPen,
+      text: 'Give me a short writing prompt and provide feedback on my response.',
+      textZh: t('chat.quickPrompts.writingTask', { defaultValue: '给我一个写作题目并对我的回答提供反馈' }),
+    });
+  }
+
+  // Default prompts — always available as fallback
+  const defaults: QuickPromptOption[] = [
+    { icon: BookOpen, text: 'Explain the difference between "affect" and "effect"', textZh: t('chat.quickPrompts.affectEffect') },
+    { icon: Lightbulb, text: 'Give me 5 collocations with "make"', textZh: t('chat.quickPrompts.collocations') },
+    { icon: MessageSquare, text: 'Create a short dialogue at a restaurant', textZh: t('chat.quickPrompts.dialogue') },
+    { icon: Sparkles, text: 'Help me practice using "serendipity"', textZh: t('chat.quickPrompts.practice') },
+  ];
+
+  // Fill up to 4 prompts
+  for (const d of defaults) {
+    if (prompts.length >= 4) break;
+    if (!prompts.some((p) => p.text === d.text)) prompts.push(d);
+  }
+
+  return prompts.slice(0, 4);
+};
 
 const CHAT_MODE_OPTIONS: ChatModeOption[] = [
   { id: 'chat', label: 'Chat', labelZh: '对话', icon: MessageSquare },
@@ -234,7 +274,12 @@ export default function ChatPage() {
     deleteAllSessions,
   } = useSupabaseChat();
   
-  const quickPrompts = getQuickPrompts(t);
+  const quickPrompts = useMemo(() => getQuickPrompts(t, {
+    level: learningProfile.level,
+    dueCount: dueWords.length,
+    hasExamGoal: learningProfile.target?.toLowerCase().includes('ielts') || learningProfile.tracks.includes('exam_boost'),
+    incompleteTasks: dailyMission?.tasks.filter((task) => !task.done).map((task) => task.type),
+  }), [t, learningProfile, dueWords.length, dailyMission]);
   const attemptedQuizMap = Object.fromEntries(
     Object.entries(quizAttemptsById)
       .filter(([, attempt]) => !currentSessionId || attempt.sessionId === currentSessionId)
@@ -242,6 +287,10 @@ export default function ChatPage() {
   );
 
   const [input, setInput] = useState('');
+  const handleVoiceTranscript = useCallback((text: string) => {
+    setInput((prev) => prev ? `${prev} ${text}` : text);
+  }, []);
+  const { isListening: voiceListening, isSupported: voiceSupported, toggle: toggleVoice } = useSpeechRecognition(handleVoiceTranscript);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [toolsExpanded, setToolsExpanded] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>('study');
@@ -324,6 +373,13 @@ export default function ChatPage() {
       }),
     [activeBook?.name, dailyMission, dueWords.length, learningProfile],
   );
+
+  const recommendations = useMemo(() => buildRecommendations({
+    dueCount: dueWords.length,
+    incompleteTasks: dailyMission?.tasks.filter((task) => !task.done).map((task) => task.type) || [],
+    level: learningProfile.level,
+    language,
+  }), [dueWords.length, dailyMission, learningProfile.level, language]);
 
   const loadingStages = useMemo(
     () =>
@@ -1306,6 +1362,7 @@ export default function ChatPage() {
                 description={t('chat.welcomeDesc')}
                 prompts={quickPrompts}
                 onPromptClick={handleQuickPrompt}
+                recommendations={recommendations}
               />
             ) : (
               <div className="py-4 space-y-2">
@@ -1574,6 +1631,9 @@ export default function ChatPage() {
           lastSources={lastSources}
           lastToolRuns={lastToolRuns}
           chatPerf={chatPerf}
+          voiceSupported={voiceSupported}
+          voiceListening={voiceListening}
+          onToggleVoice={toggleVoice}
         />
       </div>
     </div>

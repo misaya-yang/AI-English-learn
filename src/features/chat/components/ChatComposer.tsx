@@ -4,6 +4,8 @@ import {
   ChevronUp,
   FlaskConical,
   Globe,
+  Mic,
+  MicOff,
   Send,
   Sparkles,
   StopCircle,
@@ -56,6 +58,9 @@ interface ChatComposerProps {
   lastSources: unknown[];
   lastToolRuns: ToolRun[];
   chatPerf: ChatPerfSnapshot;
+  voiceSupported?: boolean;
+  voiceListening?: boolean;
+  onToggleVoice?: () => void;
 }
 
 export function ChatComposer({
@@ -98,6 +103,9 @@ export function ChatComposer({
   lastSources,
   lastToolRuns,
   chatPerf,
+  voiceSupported,
+  voiceListening,
+  onToggleVoice,
 }: ChatComposerProps) {
   const currentModeOption = chatModeOptions.find((option) => option.id === currentMode);
 
@@ -268,7 +276,23 @@ export function ChatComposer({
             className="min-h-[44px] max-h-[200px] flex-1 resize-none bg-transparent px-1 py-2.5 text-base outline-none"
           />
 
-          <div className="flex items-center gap-2 pb-1">
+          <div className="flex items-center gap-1.5 pb-1">
+            {voiceSupported && onToggleVoice && !isLoading && (
+              <Button
+                onClick={onToggleVoice}
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'h-10 w-10 rounded-xl transition-colors',
+                  voiceListening
+                    ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
+                    : 'hover:bg-muted text-muted-foreground',
+                )}
+                title={voiceListening ? 'Stop listening' : 'Voice input'}
+              >
+                {voiceListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
+            )}
             {isLoading ? (
               <Button
                 onClick={onStop}
