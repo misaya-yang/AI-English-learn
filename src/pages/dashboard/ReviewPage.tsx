@@ -20,6 +20,7 @@ import {
   X,
   Zap,
   Clock3,
+  Lightbulb,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -470,25 +471,70 @@ export default function ReviewPage() {
 
           {currentItem ? (
             <LearningRailSection title="Current card">
-              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
+              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-4">
                 <div className="flex items-center gap-2 text-white/72">
                   <Clock3 className="h-4 w-4 text-emerald-300" />
                   <p className="text-sm font-medium">第 {currentItem.reviewCount + 1} 次复习</p>
                 </div>
                 {isCurrentCardStubborn ? (
-                  <Badge className="mt-3 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-300 hover:bg-amber-500/10">
+                  <Badge className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-300 hover:bg-amber-500/10">
                     顽固词强化中
                   </Badge>
                 ) : null}
-                <p className="mt-3 text-sm leading-6 text-white/54">
+
+                {/* Memory strength bar */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-[10px] uppercase tracking-wider text-white/36">Memory strength</p>
+                    <p className="text-xs font-semibold text-white/70">
+                      {Math.round(currentItem.fsrs.retrievability * 100)}%
+                    </p>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-white/[0.08] overflow-hidden">
+                    <motion.div
+                      className={cn(
+                        'h-full rounded-full transition-colors',
+                        currentItem.fsrs.retrievability >= 0.75 ? 'bg-gradient-to-r from-emerald-500 to-emerald-300' :
+                        currentItem.fsrs.retrievability >= 0.5  ? 'bg-gradient-to-r from-amber-500 to-amber-300' :
+                        currentItem.fsrs.retrievability >= 0.25 ? 'bg-gradient-to-r from-orange-500 to-orange-300' :
+                                                                   'bg-gradient-to-r from-red-500 to-red-300',
+                      )}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.round(currentItem.fsrs.retrievability * 100)}%` }}
+                      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                    />
+                  </div>
+                </div>
+
+                <p className="text-sm leading-6 text-white/54">
                   {currentItem.fsrs.lastReviewAt
                     ? `上次复习：${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('zh-CN')}`
                     : '今日首次接触这张卡'}
                 </p>
-                <div className="mt-4 rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-2 text-sm text-white/60">
+                <div className="rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-2 text-sm text-white/60">
                   FSRS stability: {currentItem.fsrs.stability.toFixed(1)} 天 · 难度 {currentItem.fsrs.difficulty.toFixed(1)}
                 </div>
               </div>
+            </LearningRailSection>
+          ) : null}
+
+          {/* AI Mnemonic hint */}
+          {currentItem && isRevealed && (currentItem.word.memoryTip || currentItem.word.etymology) ? (
+            <LearningRailSection title="Memory cue">
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4"
+              >
+                <div className="flex items-center gap-2 text-emerald-300 mb-2">
+                  <Lightbulb className="h-4 w-4" />
+                  <p className="text-sm font-semibold">AI 助记提示</p>
+                </div>
+                <p className="text-sm leading-6 text-white/65">
+                  {currentItem.word.memoryTip || currentItem.word.etymology}
+                </p>
+              </motion.div>
             </LearningRailSection>
           ) : null}
         </div>
