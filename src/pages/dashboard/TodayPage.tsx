@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useMemo } from 'react';
+import { useEffect, useState, memo, useMemo, useCallback } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -301,6 +301,75 @@ const CircularProgress = memo(function CircularProgress({
   );
 });
 
+// Confetti celebration component
+const CONFETTI_COLORS = ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6'];
+
+function ConfettiCelebration({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+      {Array.from({ length: 30 }).map((_, i) => (
+        <div
+          key={i}
+          className="confetti-particle"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 40}%`,
+            backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+            animationDelay: `${Math.random() * 0.8}s`,
+            animationDuration: `${1.2 + Math.random() * 0.8}s`,
+            width: `${6 + Math.random() * 6}px`,
+            height: `${6 + Math.random() * 6}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Streak fire display
+const StreakFire = memo(function StreakFire({ days }: { days: number }) {
+  if (days <= 0) return null;
+  return (
+    <motion.div
+      className="flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
+      <motion.span
+        animate={{ y: [0, -2, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        className="text-base"
+      >
+        🔥
+      </motion.span>
+      <span className="text-xs font-bold text-amber-400">{days} day streak</span>
+    </motion.div>
+  );
+});
+
+// Animated XP counter
+const XPCounter = memo(function XPCounter({ value }: { value: number }) {
+  return (
+    <motion.div
+      className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
+    >
+      <motion.span
+        key={value}
+        initial={{ y: 8, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="text-xs font-bold text-emerald-400"
+      >
+        +{value} XP
+      </motion.span>
+    </motion.div>
+  );
+});
+
 export default function TodayPage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
@@ -324,6 +393,7 @@ export default function TodayPage() {
   const [hardWords, setHardWords] = useState<Set<string>>(new Set());
   const [bookmarkedWords, setBookmarkedWords] = useState<Set<string>>(new Set());
   const currentStreak = streak.current;
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const words = dailyWords.length > 0 ? dailyWords : [];
   const currentWord = words[currentWordIndex];
@@ -398,6 +468,8 @@ export default function TodayPage() {
 
       if (learnedWords.size + 1 >= words.length) {
         completeMissionTask('task_vocab_today');
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
       }
 
       toast.success(`已学会 "${currentWord.word}"! +5 XP`, {
@@ -532,8 +604,11 @@ export default function TodayPage() {
     );
   }
 
+  const todayXP = learnedWords.size * 5;
+
   return (
     <LearningShellFrame>
+      <ConfettiCelebration active={showConfetti} />
       <LearningHeroPanel
         eyebrow={`Today mission · ${new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}`}
         title={missionCard?.headlineZh || '先做最该做的一步'}
@@ -574,6 +649,12 @@ export default function TodayPage() {
           </>
         }
       />
+
+      {/* Streak & XP indicators */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <StreakFire days={currentStreak} />
+        {todayXP > 0 && <XPCounter value={todayXP} />}
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
