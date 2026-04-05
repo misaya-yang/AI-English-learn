@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback, type ReactNode } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -110,6 +110,14 @@ export default function PracticePage() {
     expected: string;
     submitted: string;
   } | null>(null);
+  // Gamification state
+  const [timedMode, setTimedMode] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [combo, setCombo] = useState(0);
+  const [maxCombo, setMaxCombo] = useState(0);
+  const [answerAnim, setAnswerAnim] = useState<'correct' | 'incorrect' | null>(null);
+  const [errorNotebook, setErrorNotebook] = useState<Array<{ word: string; question: string; correctAnswer: string }>>([]);
+
   const listeningInputRef = useRef<HTMLInputElement | null>(null);
   const quizQuestions = useMemo(
     () =>
@@ -136,6 +144,11 @@ export default function PracticePage() {
     setWritingFeedback(null);
     setWritingRound(1);
     setPreviousFeedback(null);
+    setCombo(0);
+    setMaxCombo(0);
+    setAnswerAnim(null);
+    setTimeLeft(60);
+    setErrorNotebook([]);
   };
 
   const applyWritingDefaults = () => {
@@ -202,6 +215,20 @@ export default function PracticePage() {
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = selectedMode === 'listening' ? listeningWords.length : quizQuestions.length;
   const sessionProgress = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
+
+  // Timer for timed challenge mode
+  useEffect(() => {
+    if (!timedMode || !hasStarted || isComplete) return;
+    if (timeLeft <= 0) {
+      setIsComplete(true);
+      addStudySession(totalQuestions, score, score * 10, 1);
+      completeMissionTask('task_quiz_today');
+      return;
+    }
+    const interval = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(interval);
+  }, [timedMode, hasStarted, isComplete, timeLeft, totalQuestions, score, addStudySession, completeMissionTask]);
+
   const recommendedModeId = useMemo(() => {
     if (dueWords.length >= 5) return 'quiz';
     if (dailyWords.length >= 8) return 'fill_blank';
@@ -287,12 +314,29 @@ export default function PracticePage() {
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
     setShowResult(true);
 
+    // Combo tracking
     if (isCorrect) {
+      const newCombo = combo + 1;
+      setCombo(newCombo);
+      setMaxCombo((prev) => Math.max(prev, newCombo));
+      setAnswerAnim('correct');
       setScore((prev) => prev + 1);
-      toast.success('Correct! +10 XP');
+      const comboBonus = newCombo >= 5 ? ' 🔥 Combo x5!' : newCombo >= 3 ? ' ⚡ Combo x3!' : '';
+      toast.success(`Correct! +10 XP${comboBonus}`);
     } else {
+      setCombo(0);
+      setAnswerAnim('incorrect');
       toast.error('Incorrect. Try again!');
+      // Save to error notebook
+      setErrorNotebook((prev) => [...prev, {
+        word: currentQuestion.word.word,
+        question: currentQuestion.question,
+        correctAnswer: currentQuestion.correctAnswer,
+      }]);
     }
+
+    // Clear animation after delay
+    setTimeout(() => setAnswerAnim(null), 600);
 
     void recordLearningEvent({
       userId,
@@ -302,6 +346,7 @@ export default function PracticePage() {
         isCorrect,
         questionId: currentQuestion.id,
         word: currentQuestion.word.word,
+        combo: isCorrect ? combo + 1 : 0,
       },
     });
   };
@@ -583,8 +628,14 @@ export default function PracticePage() {
         progressLabel="Session progress"
         metrics={[
           { label: 'Recommended', value: focusedMode.nameZh, accent: 'emerald' },
-          { label: 'Estimated', value: `${focusedBlueprint.estimatedMinutes} min` },
-          { label: 'Prompts', value: focusedBlueprint.estimatedQuestions },
+          ...(hasStarted && timedMode ? [{ label: '⏱️ Time', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
+          ...(hasStarted && combo > 0 ? [{ label: '🔥 Combo', value: `${combo}x`, accent: 'emerald' as const }] : []),
+          ...(!hasStarted ? [
+            { label: 'Estimated', value: `${focusedBlueprint.estimatedMinutes} min` },
+            { label: 'Prompts', value: focusedBlueprint.estimatedQuestions },
+          ] : [
+            { label: 'Score', value: `${score}/${totalQuestions}` },
+          ]),
         ]}
         actions={
           <>
@@ -594,10 +645,25 @@ export default function PracticePage() {
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             ) : !hasStarted ? (
-              <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={startFocusedMode}>
-                Start practice
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+              <>
+                <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={startFocusedMode}>
+                  Start practice
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+                {(selectedMode === 'quiz' || selectedMode === 'fill_blank') && (
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      'rounded-full border-white/10 text-white transition-colors',
+                      timedMode ? 'border-amber-500/40 bg-amber-500/10 text-amber-300' : 'bg-white/[0.03] hover:bg-white/[0.08] hover:text-white',
+                    )}
+                    onClick={() => setTimedMode((prev) => !prev)}
+                  >
+                    <Clock3 className="mr-2 h-4 w-4" />
+                    {timedMode ? '⏱️ 60s 限时' : '限时模式'}
+                  </Button>
+                )}
+              </>
             ) : null}
             {selectedMode ? (
               <Button
@@ -1116,32 +1182,56 @@ export default function PracticePage() {
     const accuracy = Math.round((score / safeTotal) * 100);
 
     return renderPageShell(
-      <LearningCompletionState
-        icon={Trophy}
-        eyebrow="Session summary"
-        title="这轮短练习已经完成"
-        description="这轮结果已经出来了。"
-        metrics={[
-          { label: 'Correct', value: `${score}/${safeTotal}`, accent: 'emerald' },
-          { label: 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
-          { label: 'Mode', value: focusedMode.nameZh },
-        ]}
-        actions={
-          <>
-            <Button
-              onClick={handleRestart}
-              variant="outline"
-              className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-            >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Try again
-            </Button>
-            <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={exitToPicker}>
-              Other modes
-            </Button>
-          </>
-        }
-      />,
+      <>
+        <LearningCompletionState
+          icon={Trophy}
+          eyebrow="Session summary"
+          title={timedMode && timeLeft <= 0 ? '时间到!' : '这轮短练习已经完成'}
+          description={maxCombo >= 3 ? `最高连击 ${maxCombo}x! 🔥` : '这轮结果已经出来了。'}
+          metrics={[
+            { label: 'Correct', value: `${score}/${safeTotal}`, accent: 'emerald' },
+            { label: 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
+            { label: 'Max Combo', value: `${maxCombo}x`, accent: maxCombo >= 5 ? 'emerald' : undefined },
+            { label: 'Mode', value: `${focusedMode.nameZh}${timedMode ? ' ⏱️' : ''}` },
+          ]}
+          actions={
+            <>
+              <Button
+                onClick={handleRestart}
+                variant="outline"
+                className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Try again
+              </Button>
+              <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={exitToPicker}>
+                Other modes
+              </Button>
+            </>
+          }
+        />
+        {/* Error notebook */}
+        {errorNotebook.length > 0 && (
+          <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/[0.04] p-6">
+            <h3 className="text-base font-semibold text-red-300 mb-4">
+              📝 错题本 · {errorNotebook.length} 个需要加强
+            </h3>
+            <div className="space-y-3">
+              {errorNotebook.map((item, i) => (
+                <div key={i} className="flex items-start gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-xs font-bold text-red-400">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{item.word}</p>
+                    <p className="text-xs text-white/50 mt-1">正确答案: {item.correctAnswer}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </>,
     );
   }
 
@@ -1200,8 +1290,15 @@ export default function PracticePage() {
             className="space-y-2"
           >
             {currentQuestion?.options.map((option, index) => (
-              <div
+              <motion.div
                 key={index}
+                animate={
+                  showResult && option === currentQuestion.correctAnswer
+                    ? { scale: [1, 1.02, 1], transition: { duration: 0.3 } }
+                    : showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer
+                      ? { x: [0, -4, 4, -4, 4, 0], transition: { duration: 0.4 } }
+                      : {}
+                }
                 className={cn(
                   'flex items-center space-x-3 rounded-3xl border px-4 py-4 transition-all',
                   showResult && option === currentQuestion.correctAnswer
@@ -1219,7 +1316,7 @@ export default function PracticePage() {
                 </Label>
                 {showResult && option === currentQuestion.correctAnswer ? <Check className="h-5 w-5 text-emerald-300" /> : null}
                 {showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer ? <X className="h-5 w-5 text-red-300" /> : null}
-              </div>
+              </motion.div>
             ))}
           </RadioGroup>
         </div>
