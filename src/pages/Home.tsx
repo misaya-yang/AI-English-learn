@@ -35,6 +35,19 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu on Escape key or scroll
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileMenuOpen(false); };
+    const handleScroll = () => setMobileMenuOpen(false);
+    window.addEventListener('keydown', handleEsc);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [mobileMenuOpen]);
+
   const fadeUpVariants = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.16, 1, 0.3, 1] as const } },
@@ -210,10 +223,10 @@ export default function Home() {
                   size="lg"
                   className="h-14 rounded-full border border-white/5 bg-white/[0.02] px-8 text-lg font-medium text-neutral-300 hover:bg-white/[0.08] hover:border-white/10 transition-colors backdrop-blur-md"
                 >
-                  <a href="#workflow">
+                  <Link to="/word-of-the-day">
                     <CirclePlay className="mr-2 size-5 text-neutral-400" />
-                    {t('home.hero.cta.secondary', { defaultValue: 'Watch Demo' })}
-                  </a>
+                    {t('home.hero.cta.secondary', { defaultValue: 'Try It Free' })}
+                  </Link>
                 </Button>
                 <div className="mt-4 sm:mt-0 sm:ml-4 text-xs font-medium text-neutral-500 uppercase tracking-widest hidden lg:block">
                   No credit card required.
@@ -238,7 +251,7 @@ export default function Home() {
               <span className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-500">
                 Outcomes First
               </span>
-              <h2 className="mt-6 text-[3rem] font-bold leading-[1.1] tracking-tighter sm:text-[4.5rem] lg:text-[5.5rem]">
+              <h2 className="mt-6 text-[2rem] font-bold leading-[1.1] tracking-tighter sm:text-[3rem] md:text-[4.5rem] lg:text-[5.5rem]">
                 One cockpit. Real results.
               </h2>
             </motion.div>
@@ -306,7 +319,7 @@ export default function Home() {
               <span className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-500">
                 Workflow
               </span>
-              <h2 className="mt-6 text-[3rem] font-bold leading-[1.1] tracking-tighter sm:text-[4.5rem] lg:text-[5.5rem]">
+              <h2 className="mt-6 text-[2rem] font-bold leading-[1.1] tracking-tighter sm:text-[3rem] md:text-[4.5rem] lg:text-[5.5rem]">
                 A daily cockpit, not just flashcards.
               </h2>
               <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-400">
@@ -461,7 +474,7 @@ export default function Home() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center px-6"
           >
-            <h2 className="max-w-3xl text-[3rem] font-bold leading-tight tracking-tighter text-slate-900 dark:text-white sm:text-[4.5rem]">
+            <h2 className="max-w-3xl text-[2rem] font-bold leading-tight tracking-tighter text-slate-900 dark:text-white sm:text-[3rem] md:text-[4.5rem]">
               Ready to master English with clarity?
             </h2>
             <Button asChild className="mt-10 h-14 rounded-full border border-emerald-600/50 dark:border-emerald-400/50 bg-emerald-600 dark:bg-emerald-500 px-10 text-lg font-bold text-white shadow-[0_0_30px_hsl(var(--primary)/0.2)] dark:shadow-[0_0_40px_hsl(var(--primary)/0.4),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-all hover:scale-105 hover:bg-emerald-500 dark:hover:bg-emerald-400 dark:hover:shadow-[0_0_60px_hsl(var(--primary)/0.6)]">

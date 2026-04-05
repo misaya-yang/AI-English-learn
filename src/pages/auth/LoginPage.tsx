@@ -55,72 +55,44 @@ export default function LoginPage() {
     } catch (error: unknown) {
       clearTimeout(timeoutId);
       console.error('Login exception:', error);
-      const msg = error instanceof Error ? error.message : '';
-      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
-        toast.error('网络连接失败，请检查网络后重试');
-      } else {
-        toast.error('登录失败，请稍后重试');
-      }
+      toast.error(error instanceof TypeError
+        ? '网络连接失败，请检查网络后重试'
+        : '登录失败，请稍后重试');
     } finally {
       clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
 
-  // Demo login for quick testing
+  // Demo login — try login, if no account create one and retry (max 2 API calls)
   const handleDemoLogin = async () => {
     setIsLoading(true);
-    try {
-      const demoEmail = (import.meta.env.VITE_DEMO_EMAIL as string | undefined) || 'demo@example.com';
-      const demoPassword = (import.meta.env.VITE_DEMO_PASSWORD as string | undefined) || 'Demo@123456';
+    const demoEmail = (import.meta.env.VITE_DEMO_EMAIL as string | undefined) || 'demo@example.com';
+    const demoPassword = (import.meta.env.VITE_DEMO_PASSWORD as string | undefined) || 'Demo@123456';
 
-      const { success, error } = await login(demoEmail, demoPassword);
-      if (success) {
+    try {
+      // Step 1: try login
+      const first = await login(demoEmail, demoPassword);
+      if (first.success) {
         toast.success('欢迎使用演示账号！');
         navigate(redirectTarget, { replace: true });
-      } else {
-        const normalized = (error || '').toLowerCase();
-        const shouldTryCreate =
-          normalized.includes('invalid login') ||
-          normalized.includes('invalid credentials') ||
-          normalized.includes('not found') ||
-          normalized.includes('电子邮箱或密码错误');
+        return;
+      }
 
-        if (!shouldTryCreate) {
-          toast.error(error || '演示账号登录失败');
-          return;
-        }
-
-        const created = await register(demoEmail, demoPassword, 'Demo User');
-        if (!created.success && !(created.error || '').toLowerCase().includes('already')) {
-          toast.error(created.error || '演示账号创建失败');
-          return;
-        }
-
-        const retry = await login(demoEmail, demoPassword);
-        if (retry.success) {
-          toast.success('欢迎使用演示账号！');
-          navigate(redirectTarget, { replace: true });
-          return;
-        }
-
-        const fallbackEmail = `demo.${Date.now()}@vocabdaily.app`;
-        const fallbackPassword = 'Demo@123456';
-        const fallbackRegister = await register(fallbackEmail, fallbackPassword, 'Demo User');
-        if (!fallbackRegister.success) {
-          toast.error(fallbackRegister.error || '演示账号登录失败');
-          return;
-        }
-        toast.success('已创建临时演示账号');
+      // Step 2: create account then login
+      await register(demoEmail, demoPassword, 'Demo User');
+      const retry = await login(demoEmail, demoPassword);
+      if (retry.success) {
+        toast.success('欢迎使用演示账号！');
         navigate(redirectTarget, { replace: true });
+        return;
       }
+
+      toast.error('演示账号暂时不可用，请尝试注册新账号');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-        toast.error('网络连接失败，请检查网络后重试');
-      } else {
-        toast.error('演示账号暂时不可用，请尝试注册新账号');
-      }
+      toast.error(err instanceof TypeError
+        ? '网络连接失败，请检查网络后重试'
+        : '演示账号暂时不可用，请尝试注册新账号');
     } finally {
       setIsLoading(false);
     }

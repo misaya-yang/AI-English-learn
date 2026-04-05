@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Theme } from '@/contexts/ThemeContext';
@@ -39,7 +40,17 @@ export default function SettingsPage() {
     requestPermission,
     saveReminderHour,
   } = useStudyReminder();
+  const { i18n } = useTranslation();
   const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
+
+  // Apply font size to document
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('text-sm', 'text-base', 'text-lg');
+    if (localSettings.fontSize === 'small') root.classList.add('text-sm');
+    else if (localSettings.fontSize === 'large') root.classList.add('text-lg');
+    else root.classList.add('text-base');
+  }, [localSettings.fontSize]);
 
   // Load settings from context
   useEffect(() => {
@@ -147,14 +158,21 @@ export default function SettingsPage() {
                   <Label>Language</Label>
                   <p className="text-sm text-muted-foreground">介面语言</p>
                 </div>
-                <Select defaultValue="en">
+                <Select
+                  value={i18n.language?.startsWith('zh') ? 'zh' : 'en'}
+                  onValueChange={(lang) => {
+                    i18n.changeLanguage(lang);
+                    localStorage.setItem('vocabdaily_language', lang);
+                    toast.success(lang === 'zh' ? '已切换为中文' : 'Switched to English');
+                  }}
+                >
                   <SelectTrigger className="w-[180px]">
                     <Globe className="h-4 w-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="zh-TW">繁体中文</SelectItem>
+                    <SelectItem value="zh">中文</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -258,13 +276,11 @@ export default function SettingsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="7">7:00 AM</SelectItem>
-                          <SelectItem value="8">8:00 AM</SelectItem>
-                          <SelectItem value="12">12:00 PM</SelectItem>
-                          <SelectItem value="18">6:00 PM</SelectItem>
-                          <SelectItem value="20">8:00 PM</SelectItem>
-                          <SelectItem value="21">9:00 PM</SelectItem>
-                          <SelectItem value="22">10:00 PM</SelectItem>
+                          {Array.from({ length: 17 }, (_, i) => i + 6).map((h) => (
+                            <SelectItem key={h} value={String(h)}>
+                              {h < 12 ? `${h}:00 AM` : h === 12 ? '12:00 PM' : `${h - 12}:00 PM`}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>

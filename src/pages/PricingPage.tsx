@@ -180,12 +180,20 @@ export default function PricingPage() {
               <span className="font-bold">VocabDaily AI</span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link to="/login" className="text-sm hover:text-emerald-600">
-                Sign In
-              </Link>
-              <Link to="/register">
-                <Button className="bg-emerald-600 hover:bg-emerald-700">Get Started</Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link to="/dashboard/today">
+                  <Button className="bg-emerald-600 hover:bg-emerald-700">Go to Dashboard</Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/login" className="text-sm hover:text-emerald-600">
+                    Sign In
+                  </Link>
+                  <Link to="/register">
+                    <Button className="bg-emerald-600 hover:bg-emerald-700">Get Started</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
