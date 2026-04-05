@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, BookOpen, Brain, Check, CirclePlay, Menu, Sparkles, Target, CalendarDays, MessageCircleMore, WandSparkles, X } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { ArrowRight, BookOpen, Brain, Check, CirclePlay, Menu, Sparkles, Target, CalendarDays, MessageCircleMore, WandSparkles, X, Route, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
@@ -11,6 +11,102 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Spotlight } from '@/components/ui/spotlight';
 import { CardContainer, CardBody, CardItem } from '@/components/ui/3d-card';
+
+const chatMessages = [
+  { role: 'user' as const, text: 'How do I use "nevertheless" naturally?' },
+  { role: 'ai' as const, text: '"Nevertheless" signals contrast despite expectations. Try: "The exam was tough; nevertheless, she passed with flying colors." It\'s more formal than "but" — perfect for IELTS writing.' },
+  { role: 'user' as const, text: 'Can you give me a practice sentence?' },
+  { role: 'ai' as const, text: 'Fill in: "The weather was terrible. ___, we decided to go hiking." Great — you\'re building academic register!' },
+];
+
+function AIChatDemo() {
+  const [visibleCount, setVisibleCount] = useState(0);
+
+  useEffect(() => {
+    if (visibleCount >= chatMessages.length) return;
+    const delay = visibleCount === 0 ? 800 : 1600;
+    const timer = setTimeout(() => setVisibleCount((c) => c + 1), delay);
+    return () => clearTimeout(timer);
+  }, [visibleCount]);
+
+  // Loop the animation
+  useEffect(() => {
+    if (visibleCount < chatMessages.length) return;
+    const timer = setTimeout(() => setVisibleCount(0), 4000);
+    return () => clearTimeout(timer);
+  }, [visibleCount]);
+
+  return (
+    <div className="relative w-full max-w-md mx-auto">
+      <div className="rounded-2xl border border-black/5 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] backdrop-blur-xl shadow-card dark:shadow-glass p-4 sm:p-5 space-y-3">
+        <div className="flex items-center gap-2 pb-2 border-b border-black/5 dark:border-white/[0.06]">
+          <div className="flex size-6 items-center justify-center rounded-lg bg-emerald-500/10">
+            <Bot className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <span className="text-xs font-semibold text-slate-500 dark:text-neutral-400">AI Coach</span>
+          <span className="ml-auto flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </div>
+        <div className="space-y-2.5 min-h-[180px] sm:min-h-[200px]">
+          <AnimatePresence mode="wait">
+            {chatMessages.slice(0, visibleCount).map((msg, i) => (
+              <motion.div
+                key={`${visibleCount}-${i}`}
+                initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.35, ease: [0, 0, 0, 1] }}
+                className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {msg.role === 'ai' && (
+                  <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+                    <Bot className="size-3 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                )}
+                <div
+                  className={`rounded-xl px-3 py-2 text-xs leading-relaxed max-w-[85%] ${
+                    msg.role === 'user'
+                      ? 'bg-emerald-600 dark:bg-emerald-500 text-white'
+                      : 'bg-black/[0.03] dark:bg-white/[0.05] text-slate-700 dark:text-neutral-300'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+                {msg.role === 'user' && (
+                  <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-white/10">
+                    <User className="size-3 text-slate-600 dark:text-neutral-400" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {visibleCount < chatMessages.length && visibleCount > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex gap-2 items-center"
+            >
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+                <Bot className="size-3 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="flex gap-1 px-3 py-2">
+                {[0, 1, 2].map((dot) => (
+                  <motion.span
+                    key={dot}
+                    className="size-1.5 rounded-full bg-emerald-500/50"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: dot * 0.2 }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const { t } = useTranslation();
@@ -232,6 +328,14 @@ export default function Home() {
                   No credit card required.
                 </div>
               </motion.div>
+
+              {/* AI Chat Demo Animation */}
+              <motion.div
+                variants={fadeUpVariants}
+                className="mt-16 w-full max-w-lg"
+              >
+                <AIChatDemo />
+              </motion.div>
             </motion.div>
           </div>
         </section>
@@ -261,7 +365,7 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
-              className="mt-20 grid gap-4 sm:grid-cols-3"
+              className="mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
             >
               {[
                 {
@@ -278,7 +382,12 @@ export default function Home() {
                   icon: Sparkles,
                   title: t('home.outcomes.cards.feedback.title', { defaultValue: 'Fast, structured feedback' }),
                   detail: t('home.outcomes.cards.feedback.titleZh', { defaultValue: '结构化的反馈' }),
-                }
+                },
+                {
+                  icon: Route,
+                  title: t('home.outcomes.cards.path.title', { defaultValue: 'Personalized learning path' }),
+                  detail: t('home.outcomes.cards.path.titleZh', { defaultValue: 'AI 定制你的专属路线' }),
+                },
               ].map((card, i) => (
                 <motion.div
                   key={i}
