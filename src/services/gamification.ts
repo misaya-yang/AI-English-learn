@@ -254,7 +254,7 @@ async function setData(userId: string, data: GamificationData): Promise<void> {
   void syncQueue.enqueue({
     table: 'user_gamification',
     operation: 'upsert',
-    payload: record,
+    payload: { ...record },
     idempotency_key: buildIdempotencyKey('user_gamification', { user_id: userId }),
   }).catch((err) => {
     logger.error('[gamification] sync enqueue failed:', err);

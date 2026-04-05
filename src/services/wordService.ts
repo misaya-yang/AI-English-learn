@@ -100,21 +100,22 @@ interface SupabaseWord {
 }
 
 function mapToWordData(row: SupabaseWord | Record<string, unknown>): WordData {
+  const r = row as Record<string, unknown>;
   return {
-    id: String(row.id ?? ''),
-    word: String(row.word ?? ''),
-    phonetic: String(row.phonetic ?? ''),
-    partOfSpeech: String(row.part_of_speech ?? row.partOfSpeech ?? ''),
-    definition: String(row.definition ?? ''),
-    definitionZh: String(row.definition_zh ?? row.definitionZh ?? ''),
-    examples: (row.examples as Array<{ en: string; zh: string }>) ?? [],
-    synonyms: (row.synonyms as string[]) ?? [],
-    antonyms: (row.antonyms as string[]) ?? [],
-    collocations: (row.collocations as string[]) ?? [],
-    level: (row.level as WordData['level']) ?? 'B1',
-    topic: String(row.topic ?? 'daily'),
-    etymology: row.etymology as string | undefined,
-    memoryTip: (row.memory_tip ?? row.memoryTip) as string | undefined,
+    id: String(r.id ?? ''),
+    word: String(r.word ?? ''),
+    phonetic: String(r.phonetic ?? ''),
+    partOfSpeech: String(r.part_of_speech ?? r.partOfSpeech ?? ''),
+    definition: String(r.definition ?? ''),
+    definitionZh: String(r.definition_zh ?? r.definitionZh ?? ''),
+    examples: (r.examples as Array<{ en: string; zh: string }>) ?? [],
+    synonyms: (r.synonyms as string[]) ?? [],
+    antonyms: (r.antonyms as string[]) ?? [],
+    collocations: (r.collocations as string[]) ?? [],
+    level: (r.level as WordData['level']) ?? 'B1',
+    topic: String(r.topic ?? 'daily'),
+    etymology: r.etymology as string | undefined,
+    memoryTip: (r.memory_tip ?? r.memoryTip) as string | undefined,
   };
 }
 

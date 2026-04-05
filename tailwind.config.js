@@ -22,6 +22,10 @@ module.exports = {
           DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
         },
+        danger: {
+          DEFAULT: "hsl(var(--danger))",
+          foreground: "hsl(var(--danger-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -81,6 +85,14 @@ module.exports = {
         "glow-emerald-lg": "0 0 0 1px hsl(var(--primary) / 0.12), 0 16px 60px -8px hsl(var(--primary) / 0.35)",
         "glow-emerald-inner": "inset 0 0 40px 0 hsl(var(--primary) / 0.08), inset 0 1px 1px 0 hsl(var(--primary) / 0.3)",
       },
+      fontSize: {
+        "token-12": ["var(--text-12)", { lineHeight: "1.5" }],
+        "token-14": ["var(--text-14)", { lineHeight: "1.55" }],
+        "token-16": ["var(--text-16)", { lineHeight: "1.55" }],
+        "token-20": ["var(--text-20)", { lineHeight: "1.4" }],
+        "token-24": ["var(--text-24)", { lineHeight: "1.35" }],
+        "token-32": ["var(--text-32)", { lineHeight: "1.25" }],
+      },
       fontFamily: {
         sans: ['"Manrope"', '"Noto Sans SC"', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"SFMono-Regular"', 'ui-monospace', 'monospace'],
@@ -108,11 +120,42 @@ module.exports = {
           "0%,70%,100%": { opacity: "1" },
           "20%,50%": { opacity: "0" },
         },
+        "scale-press": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(0.97)" },
+        },
+        "shake": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-2px)" },
+          "20%, 40%, 60%, 80%": { transform: "translateX(2px)" },
+        },
+        "slide-up": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-down": {
+          from: { opacity: "0", transform: "translateY(-8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--primary) / 0)" },
+          "50%": { boxShadow: "0 0 0 6px hsl(var(--primary) / 0.15)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
+        "scale-press": "scale-press 180ms cubic-bezier(0.2, 0, 0, 1)",
+        "shake": "shake 400ms ease-in-out",
+        "slide-up": "slide-up 280ms cubic-bezier(0, 0, 0, 1)",
+        "slide-down": "slide-down 280ms cubic-bezier(0, 0, 0, 1)",
+        "fade-in": "fade-in 200ms ease-out",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
       transitionDuration: {
         120: "120ms",

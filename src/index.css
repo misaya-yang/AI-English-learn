@@ -56,6 +56,8 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 38 40% 12%;
+    --danger: 0 84.2% 60.2%;
+    --danger-foreground: 0 0% 98%;
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
@@ -114,6 +116,8 @@
     --success-foreground: 222 24% 8%;
     --warning: 38 92% 55%;
     --warning-foreground: 38 40% 12%;
+    --danger: 0 72% 42%;
+    --danger-foreground: 210 25% 94%;
     --info: 217 91% 65%;
     --info-foreground: 222 24% 8%;
 
@@ -229,6 +233,42 @@
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.08),
     0 24px 64px -16px rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Micro-interaction utilities ─── */
+.hover-scale {
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+.hover-scale:active {
+  transform: scale(0.98);
+}
+
+.press-scale {
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+.press-scale:active {
+  transform: scale(0.97);
+}
+
+.focus-ring {
+  transition: box-shadow var(--duration-base) var(--ease-standard);
+}
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.25);
+}
+
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.08) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* ─── Custom styles for VocabDaily AI ─── */
@@ -414,7 +454,7 @@ input:focus-visible {
 }
 
 .markdown-content blockquote {
-  @apply border-l-4 border-emerald-500 pl-4 py-1 my-2 bg-muted/30 rounded-r;
+  @apply border-l-4 border-primary pl-4 py-1 my-2 bg-muted/30 rounded-r;
 }
 
 .markdown-content table {
@@ -430,7 +470,7 @@ input:focus-visible {
 }
 
 .markdown-content a {
-  @apply text-emerald-600 hover:text-emerald-700 underline;
+  @apply text-primary hover:text-primary/80 underline;
 }
 
 .markdown-content hr {
