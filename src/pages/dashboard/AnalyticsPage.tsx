@@ -27,6 +27,11 @@ import {
   Cell,
   AreaChart,
   Area,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from 'recharts';
 import {
   BookOpen,
@@ -205,6 +210,68 @@ export default function AnalyticsPage() {
     return { avgR, histData, curvePoints, total: retrievabilities.length };
   }, [progress]);
 
+  // Vocabulary status distribution
+  const vocabDistribution = useMemo(() => {
+    const counts = { new: 0, learning: 0, review: 0, mastered: 0 };
+    progress.forEach((p) => {
+      const status = p.status as keyof typeof counts;
+      if (status in counts) counts[status]++;
+    });
+    return [
+      { name: 'New', nameZh: '新学', count: counts.new, fill: '#6b7280' },
+      { name: 'Learning', nameZh: '学习中', count: counts.learning, fill: '#3b82f6' },
+      { name: 'Review', nameZh: '复习中', count: counts.review, fill: '#f59e0b' },
+      { name: 'Mastered', nameZh: '已掌握', count: counts.mastered, fill: '#10b981' },
+    ];
+  }, [progress]);
+
+  // Skill radar data (multi-dimensional profile)
+  const radarData = useMemo(() => {
+    const totalWords = Math.max(stats.totalWords, 1);
+    const masteryRate = Math.round((stats.masteredWords / totalWords) * 100);
+    const retentionScore = fsrsStats ? Math.round(fsrsStats.avgR * 100) : 50;
+    const streakScore = Math.min(100, streak.current * 5);
+    const practiceScore = Math.min(100, stats.weeklyWords * 4);
+    const consistencyScore = Math.min(100, (weeklyData.filter((d) => d.words > 0).length / Math.max(weeklyData.length, 1)) * 100);
+    return [
+      { subject: 'Vocabulary', value: Math.min(100, Math.round(totalWords / 5)), fullMark: 100 },
+      { subject: 'Mastery', value: masteryRate, fullMark: 100 },
+      { subject: 'Retention', value: retentionScore, fullMark: 100 },
+      { subject: 'Consistency', value: Math.round(consistencyScore), fullMark: 100 },
+      { subject: 'Practice', value: practiceScore, fullMark: 100 },
+      { subject: 'Streak', value: streakScore, fullMark: 100 },
+    ];
+  }, [stats, streak, weeklyData, fsrsStats]);
+
+  // AI Weekly Report
+  const weeklyReport = useMemo(() => {
+    const totalWordsThisWeek = weeklyData.reduce((s, d) => s + d.words, 0);
+    const totalXpThisWeek = weeklyData.reduce((s, d) => s + d.xp, 0);
+    const activeDays = weeklyData.filter((d) => d.words > 0).length;
+    const avgRetention = fsrsStats ? Math.round(fsrsStats.avgR * 100) : 0;
+
+    const highlights: string[] = [];
+    if (totalWordsThisWeek >= 30) highlights.push(`学习了 ${totalWordsThisWeek} 个单词，超过平均水平！`);
+    else if (totalWordsThisWeek > 0) highlights.push(`本周学习了 ${totalWordsThisWeek} 个单词。`);
+
+    if (activeDays >= 5) highlights.push(`${activeDays}/7 天保持学习，一致性很好。`);
+    else if (activeDays > 0) highlights.push(`本周活跃 ${activeDays} 天，尝试每天至少学习一点。`);
+
+    if (avgRetention >= 80) highlights.push(`记忆保留率 ${avgRetention}%，复习节奏掌握得不错。`);
+    else if (avgRetention >= 50) highlights.push(`记忆保留率 ${avgRetention}%，建议增加复习频率。`);
+    else if (avgRetention > 0) highlights.push(`记忆保留率偏低 (${avgRetention}%)，优先处理到期复习。`);
+
+    if (streak.current >= 7) highlights.push(`连续学习 ${streak.current} 天🔥，保持住！`);
+
+    const suggestion = avgRetention < 60
+      ? '本周建议：优先做到期复习，间隔重复是记忆的核心。'
+      : activeDays < 4
+        ? '本周建议：提高学习频率，每天哪怕 5 分钟也比集中突击更有效。'
+        : '本周建议：保持当前节奏，可以尝试提升练习难度。';
+
+    return { totalWordsThisWeek, totalXpThisWeek, activeDays, highlights, suggestion };
+  }, [weeklyData, fsrsStats, streak]);
+
   const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
   const badges = [
     { name: '7-Day Streak', nameZh: '7天连续', icon: Flame, color: 'text-orange-500', earned: streak.current >= 7 },
@@ -303,6 +370,7 @@ export default function AnalyticsPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="words">Words</TabsTrigger>
           <TabsTrigger value="retention">Retention</TabsTrigger>
+          <TabsTrigger value="insights">AI Insights</TabsTrigger>
           <TabsTrigger value="badges">Badges</TabsTrigger>
         </TabsList>
 
@@ -670,6 +738,96 @@ export default function AnalyticsPage() {
                     先完成几轮复习，系统才会开始给出更可信的遗忘风险排序。
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="insights" className="space-y-6">
+          {/* AI Weekly Report */}
+          <Card className="bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-emerald-500" />
+                AI 周报
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="rounded-xl bg-background/50 p-3">
+                  <p className="text-2xl font-bold text-emerald-500">{weeklyReport.totalWordsThisWeek}</p>
+                  <p className="text-xs text-muted-foreground">本周单词</p>
+                </div>
+                <div className="rounded-xl bg-background/50 p-3">
+                  <p className="text-2xl font-bold text-blue-500">{weeklyReport.activeDays}/7</p>
+                  <p className="text-xs text-muted-foreground">活跃天数</p>
+                </div>
+                <div className="rounded-xl bg-background/50 p-3">
+                  <p className="text-2xl font-bold text-purple-500">{weeklyReport.totalXpThisWeek}</p>
+                  <p className="text-xs text-muted-foreground">本周 XP</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {weeklyReport.highlights.map((h, i) => (
+                  <p key={i} className="text-sm text-muted-foreground">• {h}</p>
+                ))}
+              </div>
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{weeklyReport.suggestion}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Vocabulary Status Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>词汇掌握分布</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={vocabDistribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis type="number" stroke="rgba(255,255,255,0.3)" fontSize={12} />
+                    <YAxis type="category" dataKey="nameZh" stroke="rgba(255,255,255,0.3)" fontSize={12} width={60} />
+                    <Tooltip
+                      contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                      labelStyle={{ color: '#fff' }}
+                    />
+                    <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                      {vocabDistribution.map((entry, i) => (
+                        <Cell key={i} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Skill Radar Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>能力雷达图</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <RadarChart data={radarData} outerRadius="75%">
+                    <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                    <PolarAngleAxis dataKey="subject" stroke="rgba(255,255,255,0.4)" fontSize={11} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="rgba(255,255,255,0.15)" fontSize={10} />
+                    <Radar
+                      name="Score"
+                      dataKey="value"
+                      stroke="#10b981"
+                      fill="#10b981"
+                      fillOpacity={0.25}
+                      strokeWidth={2}
+                    />
+                    <Tooltip
+                      contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
