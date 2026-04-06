@@ -35,6 +35,7 @@ import {
   Headphones,
   GraduationCap,
   LayoutGrid,
+  AudioLines,
   Medal,
   Library,
   LogOut,
@@ -94,6 +95,10 @@ const shellTitleMap: Record<string, { title: string; description: string }> = {
   '/dashboard/memory': {
     title: 'Memory',
     description: '管理长期记忆，决定 AI 该记住什么。',
+  },
+  '/dashboard/pronunciation': {
+    title: 'Pronunciation',
+    description: '发音评估与口语训练，精准到音素级别。',
   },
   '/dashboard/settings': {
     title: 'Settings',
@@ -161,6 +166,12 @@ export default function DashboardLayout() {
         label: 'Grammar',
         description: '语法规则与填空练习',
         icon: GraduationCap,
+      },
+      {
+        path: '/dashboard/pronunciation',
+        label: t('nav.pronunciation'),
+        description: '发音评估与口语练习',
+        icon: AudioLines,
       },
       {
         path: '/dashboard/chat',
@@ -231,6 +242,7 @@ export default function DashboardLayout() {
         primaryNav.find((item) => item.path === '/dashboard/reading'),
         primaryNav.find((item) => item.path === '/dashboard/listening'),
         primaryNav.find((item) => item.path === '/dashboard/grammar'),
+        primaryNav.find((item) => item.path === '/dashboard/pronunciation'),
       ].filter((item): item is NavItem => Boolean(item)),
     [primaryNav],
   );

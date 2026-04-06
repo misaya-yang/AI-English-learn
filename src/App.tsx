@@ -35,6 +35,7 @@ const ReadingPage = lazyWithRetry(() => import('@/pages/dashboard/ReadingPage'),
 const ListeningPage = lazyWithRetry(() => import('@/pages/dashboard/ListeningPage'), 'listening');
 const GrammarPage = lazyWithRetry(() => import('@/pages/dashboard/GrammarPage'), 'grammar');
 const LeaderboardPage = lazyWithRetry(() => import('@/pages/dashboard/LeaderboardPage'), 'leaderboard');
+const PronunciationPage = lazyWithRetry(() => import('@/pages/dashboard/PronunciationPage'), 'pronunciation');
 
 const withRouteFallback = (element: React.ReactNode, skeleton?: React.ReactNode) => (
   <ErrorBoundary>
@@ -78,6 +79,7 @@ function App() {
                     <Route path="listening" element={withRouteFallback(<ListeningPage />)} />
                     <Route path="grammar" element={withRouteFallback(<GrammarPage />)} />
                     <Route path="leaderboard" element={withRouteFallback(<LeaderboardPage />)} />
+                    <Route path="pronunciation" element={withRouteFallback(<PronunciationPage />)} />
                     <Route path="settings" element={withRouteFallback(<SettingsPage />)} />
                     <Route path="profile" element={withRouteFallback(<ProfilePage />)} />
                   </Route>
