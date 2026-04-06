@@ -1,0 +1,31 @@
+## [S11-pronunciation-assessment] - 2026-04-06T14:42:00Z
+- 完成: PronunciationLab 页面，支持单词/句子模式发音练习，Web Speech API + AI 评分
+- 关键决策: 自定义 SpeechRecognitionLike 接口避免 TS DOM 类型不完整问题；本地评分作为 AI 降级方案
+- 注意事项: SpeechRecognition 在 jsdom 测试环境不可用，需要 mock；webkitSpeechRecognition 需要类型断言
+- 文件变更: pronunciationScorer.ts, usePronunciationSession.ts, PronunciationPage.tsx, ScoreRadial/PhonemeIssueList/RecordButton 组件, App.tsx 路由, DashboardLayout 导航, i18n
+- 测试: 15 个单元测试（normalizeText, computeAccuracy, computeFluency, scoreLocally, isSpeechRecognitionSupported）
+---
+
+## [S12-roleplay-scenarios] - 2026-04-06T14:48:00Z
+- 完成: 30 个结构化 Roleplay 场景 + ScenarioSelector + RoleplayMode 组件
+- 关键决策: 场景数据静态化存储在 roleplayScenarios.ts；RoleplayMode 作为 ChatPage 的可插入面板设计
+- 注意事项: RoleplayMode 需要由 ChatPage 集成（传入 onStartScenario 设置 system prompt）；场景完成检测需在 chat runtime 中实现
+- 文件变更: roleplayScenarios.ts (30 场景数据), ScenarioSelector.tsx, RoleplayMode.tsx
+- 测试: 11 个单元测试（场景数量/唯一ID/目标数/关键短语数/分类分布/查询函数）
+---
+
+## [S13-mobile-experience] - 2026-04-06T14:51:00Z
+- 完成: 移动端体验强化 — overflow 修复 + ChatComposer safe-area + BottomNavBar 测试
+- 关键决策: V1 已有完善的移动端基础设施（BottomNavBar、useIsMobile、FlashCard drag），只需增量改进
+- 注意事项: BottomNavBar 已有 4 nav + More = 5 入口；FlashCard 已有 drag='x' 滑动支持；iPhone safe-area 已在 BottomNavBar 处理
+- 文件变更: DashboardLayout.tsx (overflow-x-hidden), ChatComposer.tsx (safe-area), BottomNavBar.test.tsx
+- 测试: 3 个单元测试
+---
+
+## [S14-social-gamification] - 2026-04-06T14:52:00Z
+- 完成: 5 级联赛系统（bronze→diamond）+ 好友系统类型 + Mock 数据生成器
+- 关键决策: 联赛逻辑纯前端 Mock，等 Supabase Realtime 就绪后替换；晋级/降级规则在 types.ts 中实现
+- 注意事项: LeaderboardPage 已存在 V1 stub，需要后续将 league tabs 集成进去；Supabase Realtime 排名更新需要后端支持
+- 文件变更: social/types.ts, social/mockLeagueData.ts, social/types.test.ts
+- 测试: 11 个单元测试（tier 导航/晋级/降级逻辑）
+---

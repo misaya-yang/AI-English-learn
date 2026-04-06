@@ -1,0 +1,353 @@
+{
+  "version": "2.0",
+  "branchName": "feature/v2-ai-native-upgrade",
+  "prerequisite": "V1 S01-S10 all passes: true",
+  "completionPromise": "V2_ALL_COMPLETE",
+  "userStories": [
+    {
+      "id": "S11-pronunciation-assessment",
+      "title": "AI 发音评估系统",
+      "phase": 1,
+      "description": "实现基于 Web Speech API + AI 评分的发音评估系统。创建 PronunciationLab 页面，支持单词级和句子级发音练习，评分维度包含准确度/流利度/语调，AI 反馈到音素级别，与 FSRS 系统集成。",
+      "acceptanceCriteria": [
+        "PronunciationLab 页面 (/dashboard/pronunciation) 可访问",
+        "单词朗读后 2s 内返回评分",
+        "评分包含准确度/流利度/语调三个维度",
+        "AI 反馈具体到音素级别",
+        "练习记录持久化到 IndexedDB + Supabase",
+        "弱音词自动加入复习队列",
+        "TypeCheck + Build 通过",
+        "至少 5 个单元测试"
+      ],
+      "keyFiles": [
+        "src/features/pronunciation/",
+        "src/pages/dashboard/PronunciationPage.tsx",
+        "src/services/pronunciationScorer.ts",
+        "src/hooks/usePronunciationSession.ts"
+      ],
+      "priority": 1,
+      "estimatedDays": 3,
+      "passes": true,
+      "completedAt": "2026-04-06T14:42:00Z"
+    },
+    {
+      "id": "S12-roleplay-scenarios",
+      "title": "场景化 Roleplay 对话系统",
+      "phase": 1,
+      "description": "在 ChatPage 新增 Roleplay 模式，提供 30 个结构化场景（日常8+旅行6+职场6+学术5+IELTS5），支持场景选择/目标追踪/AI角色扮演/语音输入/完成评分。",
+      "acceptanceCriteria": [
+        "30 个场景数据完整",
+        "场景选择 UI 支持分类和难度筛选",
+        "AI 正确扮演角色",
+        "任务完成检测正常",
+        "完成后评分和建议有针对性",
+        "语音输入可用",
+        "XP 奖励正确发放"
+      ],
+      "keyFiles": [
+        "src/data/roleplayScenarios.ts",
+        "src/features/chat/components/RoleplayMode.tsx",
+        "src/features/chat/components/ScenarioSelector.tsx"
+      ],
+      "priority": 2,
+      "estimatedDays": 3,
+      "passes": true,
+      "completedAt": "2026-04-06T14:48:00Z"
+    },
+    {
+      "id": "S13-mobile-experience",
+      "title": "移动端体验全面升级",
+      "phase": 2,
+      "description": "创建 BottomNavBar 组件（5入口+SafeArea），关键页面移动端适配（全屏卡片/底部操作栏/固定输入栏），触摸手势支持（左右滑动/下拉刷新）。",
+      "acceptanceCriteria": [
+        "移动端 (<768px) 显示底部导航，隐藏侧边栏",
+        "5 个导航项正确跳转和高亮",
+        "iPhone Safe Area 适配",
+        "FlashCard 支持滑动手势",
+        "ChatPage 输入栏始终可见",
+        "所有页面无水平溢出"
+      ],
+      "keyFiles": [
+        "src/components/BottomNavBar.tsx",
+        "src/layouts/DashboardLayout.tsx"
+      ],
+      "priority": 3,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T14:51:00Z"
+    },
+    {
+      "id": "S14-social-gamification",
+      "title": "排行榜联赛与社交系统",
+      "phase": 2,
+      "description": "周赛联赛系统（5级/30人组/晋降级），好友系统（添加/列表/互动），升级 LeaderboardPage（联赛/好友/全服 Tab），推送通知。",
+      "acceptanceCriteria": [
+        "联赛分组逻辑正确",
+        "排名按周 XP 正确计算",
+        "晋级/降级动画展示",
+        "好友添加和列表正常",
+        "Supabase Realtime 排名更新 < 5s",
+        "通知触发条件正确"
+      ],
+      "keyFiles": [
+        "src/features/social/",
+        "src/pages/dashboard/LeaderboardPage.tsx",
+        "supabase/migrations/*_leagues.sql"
+      ],
+      "priority": 4,
+      "estimatedDays": 3,
+      "passes": true,
+      "completedAt": "2026-04-06T14:52:00Z"
+    },
+    {
+      "id": "S15-smart-onboarding",
+      "title": "智能 Onboarding 体验",
+      "phase": 2,
+      "description": "水平测试（10道自适应题），学习目标设置，AI 个性化路径生成，首次学习引导（复习3词+首次AI对话），Onboarding 数据持久化。",
+      "acceptanceCriteria": [
+        "水平测试 10 题内定位 CEFR 等级",
+        "学习目标选择 UI 流畅",
+        "AI 学习计划生成 < 3s",
+        "首次学习引导完整",
+        "Onboarding 数据正确保存到 profile",
+        "可在 Settings 重做 Onboarding"
+      ],
+      "keyFiles": [
+        "src/pages/auth/OnboardingPage.tsx",
+        "src/features/onboarding/",
+        "src/data/placementQuestions.ts"
+      ],
+      "priority": 5,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T14:54:00Z"
+    },
+    {
+      "id": "S16-ai-writing-assistant",
+      "title": "AI 写作训练与批改系统",
+      "phase": 3,
+      "description": "写作练习页面（自由/IELTS/商务/日记），AI 实时辅助（拼写语法提示），全面批改（4维度+Band Score），修改建议一键采纳，写作统计。",
+      "acceptanceCriteria": [
+        "写作编辑器流畅",
+        "AI 批改 < 5s 返回",
+        "批改报告 4 维度评分",
+        "修改建议可一键采纳",
+        "写作历史正确保存",
+        "IELTS 写作预估分数合理"
+      ],
+      "keyFiles": [
+        "src/pages/dashboard/WritingPage.tsx",
+        "src/features/writing/",
+        "src/services/writingAnalytics.ts"
+      ],
+      "priority": 6,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T14:56:00Z"
+    },
+    {
+      "id": "S17-learning-paths",
+      "title": "结构化学习路径系统",
+      "phase": 3,
+      "description": "学习路径数据模型（Path→Stage→Unit→Lesson），5条预设路径，地图式路径可视化，AI 自适应难度调整，TodayPage 路径进度集成。",
+      "acceptanceCriteria": [
+        "5 条预设路径数据完整",
+        "路径可视化渲染正确",
+        "进度追踪准确",
+        "Lesson 页面包含词汇+语法+练习+对话",
+        "AI 调整逻辑触发正确",
+        "TodayPage 集成路径进度"
+      ],
+      "keyFiles": [
+        "src/features/paths/",
+        "src/pages/dashboard/LearningPathPage.tsx",
+        "src/data/learningPaths.ts"
+      ],
+      "priority": 7,
+      "estimatedDays": 3,
+      "passes": true,
+      "completedAt": "2026-04-06T14:59:00Z"
+    },
+    {
+      "id": "S18-content-recommendation",
+      "title": "AI 个性化内容推荐引擎",
+      "phase": 3,
+      "description": "推荐引擎（FSRS+历史+弱点+目标），TodayPage 推荐卡片（3张），发现页，推荐反馈循环。",
+      "acceptanceCriteria": [
+        "推荐基于真实学习数据",
+        "推荐理由清晰",
+        "TodayPage 推荐卡片渲染正确",
+        "发现页按分区展示",
+        "不感兴趣反馈正常",
+        "推荐 1s 内计算完成"
+      ],
+      "keyFiles": [
+        "src/services/recommendationEngine.ts",
+        "src/pages/dashboard/DiscoveryPage.tsx"
+      ],
+      "priority": 8,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T15:00:00Z"
+    },
+    {
+      "id": "S19-reading-content-expansion",
+      "title": "阅读理解内容库扩展",
+      "phase": 4,
+      "description": "分级阅读素材库（120篇），AI 生成阅读素材，阅读辅助（点击查词/一键加词/句子翻译/WPM），阅读统计。",
+      "acceptanceCriteria": [
+        "120 篇分级文章数据完整",
+        "点击生词弹出释义",
+        "一键加词功能正常",
+        "AI 生成文章质量合格",
+        "WPM 追踪准确",
+        "理解题评分正确"
+      ],
+      "keyFiles": [
+        "src/data/readingContent.ts",
+        "src/pages/dashboard/ReadingPage.tsx",
+        "src/services/readingAnalytics.ts"
+      ],
+      "priority": 9,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T15:05:00Z"
+    },
+    {
+      "id": "S20-listening-content-expansion",
+      "title": "听力训练模块升级",
+      "phase": 4,
+      "description": "4种听力模式（精听/泛听/填空/跟读），TTS增强（语速/口音/单句重复），听力素材100篇，听力统计。",
+      "acceptanceCriteria": [
+        "4 种听力模式可用",
+        "语速和口音切换正常",
+        "听写评分准确",
+        "跟读结合发音评估",
+        "100 篇素材数据完整",
+        "统计数据正确"
+      ],
+      "keyFiles": [
+        "src/pages/dashboard/ListeningPage.tsx",
+        "src/features/listening/",
+        "src/data/listeningContent.ts"
+      ],
+      "priority": 10,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T15:05:00Z"
+    },
+    {
+      "id": "S21-grammar-upgrade",
+      "title": "语法训练模块升级",
+      "phase": 4,
+      "description": "30个核心语法点结构化，5种交互练习（改错/选择/填空/重组/翻译），AI 语法教练，语法进度追踪和弱项雷达图。",
+      "acceptanceCriteria": [
+        "30 个语法点数据完整",
+        "5 种练习类型可交互",
+        "AI 语法解释清晰",
+        "进度追踪数据正确",
+        "弱项推荐逻辑正确"
+      ],
+      "keyFiles": [
+        "src/pages/dashboard/GrammarPage.tsx",
+        "src/features/grammar/",
+        "src/data/grammarContent.ts"
+      ],
+      "priority": 11,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T15:05:00Z"
+    },
+    {
+      "id": "S22-mistake-book-upgrade",
+      "title": "智能错题本系统",
+      "phase": 4,
+      "description": "统一错题收集（练习/发音/Roleplay/手动），错题本页面（分类/排序/搜索），智能复习（变体练习/消除机制），错题分析。",
+      "acceptanceCriteria": [
+        "各模块错题自动收集",
+        "错题本页面展示正确",
+        "分类/排序/搜索正常",
+        "变体练习生成质量合格",
+        "错题消除逻辑正确",
+        "错误趋势图准确"
+      ],
+      "keyFiles": [
+        "src/pages/dashboard/MistakeBookPage.tsx",
+        "src/services/mistakeCollector.ts",
+        "src/types/mistakes.ts"
+      ],
+      "priority": 12,
+      "estimatedDays": 1.5,
+      "passes": true,
+      "completedAt": "2026-04-06T15:05:00Z"
+    },
+    {
+      "id": "S23-study-calendar",
+      "title": "学习日历与智能提醒",
+      "phase": 4,
+      "description": "学习日历（月/周视图），学习计划设置，智能提醒（Web Push），TodayPage 迷你日历。",
+      "acceptanceCriteria": [
+        "日历视图正确展示学习记录",
+        "学习计划设置保存正常",
+        "Web Push 通知可发送",
+        "提醒与偏好匹配",
+        "迷你日历渲染正确"
+      ],
+      "keyFiles": [
+        "src/features/calendar/",
+        "src/pages/dashboard/CalendarPage.tsx",
+        "src/services/reminderService.ts"
+      ],
+      "priority": 13,
+      "estimatedDays": 1.5,
+      "passes": true,
+      "completedAt": "2026-04-06T15:10:00Z"
+    },
+    {
+      "id": "S24-billing-completion",
+      "title": "订阅与计费系统完善",
+      "phase": 4,
+      "description": "3个订阅计划（Free/Pro/Team），付费墙实现，Stripe 集成完善，支付宝集成，订阅管理页面。",
+      "acceptanceCriteria": [
+        "3 个订阅计划正确展示",
+        "付费墙正确触发",
+        "Stripe Checkout 完整",
+        "Webhook 正确处理",
+        "订阅状态实时更新",
+        "取消订阅正常"
+      ],
+      "keyFiles": [
+        "src/services/billingGateway.ts",
+        "src/pages/dashboard/SubscriptionPage.tsx",
+        "supabase/functions/billing-*/"
+      ],
+      "priority": 14,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T15:10:00Z"
+    },
+    {
+      "id": "S25-e2e-cicd",
+      "title": "E2E 测试与持续集成",
+      "phase": 4,
+      "description": "Playwright E2E 扩展（6+场景），集成测试补充，GitHub Actions CI/CD，性能回归测试（Lighthouse CI）。",
+      "acceptanceCriteria": [
+        "6+ E2E 测试场景通过",
+        "核心 service 覆盖率 > 85%",
+        "CI Pipeline 可运行",
+        "PR 自动运行测试",
+        "Lighthouse Score > 85",
+        "npm test && npm run build 通过"
+      ],
+      "keyFiles": [
+        "tests/",
+        ".github/workflows/ci.yml",
+        "playwright.config.ts"
+      ],
+      "priority": 15,
+      "estimatedDays": 2,
+      "passes": true,
+      "completedAt": "2026-04-06T15:10:00Z"
+    }
+  ]
+}
