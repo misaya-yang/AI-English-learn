@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Eye, EyeOff, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, Loader2, ArrowLeft, Sparkles, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
+import { resetPassword } from '@/lib/supabase-auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
 
@@ -98,6 +102,28 @@ export default function LoginPage() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast.error('请输入电子邮箱');
+      return;
+    }
+    setIsResetting(true);
+    try {
+      const { success, error } = await resetPassword(resetEmail);
+      if (success) {
+        toast.success('重置密码邮件已发送，请检查您的邮箱');
+        setShowForgotPassword(false);
+      } else {
+        toast.error(error || '发送失败，请稍后重试');
+      }
+    } catch {
+      toast.error('网络错误，请稍后重试');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-[#020303] p-4 overflow-hidden">
       {/* Background glow effects */}
@@ -141,7 +167,16 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-white/70">密码</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium text-white/70">密码</Label>
+                <button
+                  type="button"
+                  onClick={() => { setResetEmail(email); setShowForgotPassword(true); }}
+                  className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  忘记密码？
+                </button>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
@@ -216,6 +251,59 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+
+      {/* Forgot Password Overlay */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-[400px] rounded-3xl border border-white/[0.08] bg-[#0a0a0a] p-8 shadow-2xl">
+            <h3 className="text-xl font-semibold text-white text-center">重置密码</h3>
+            <p className="mt-2 text-sm text-white/50 text-center">
+              输入您的邮箱，我们将发送重置密码链接
+            </p>
+            <form onSubmit={handleResetPassword} className="mt-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="text-sm font-medium text-white/70">电子邮箱</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  disabled={isResetting}
+                  required
+                  autoFocus
+                  className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/25 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full h-12 rounded-2xl bg-emerald-500 text-sm font-semibold text-black hover:bg-emerald-400"
+                disabled={isResetting}
+              >
+                {isResetting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    发送中...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    发送重置链接
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full h-10 rounded-2xl text-white/50 hover:text-white hover:bg-white/[0.06]"
+                onClick={() => setShowForgotPassword(false)}
+              >
+                返回登录
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

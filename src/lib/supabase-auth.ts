@@ -294,6 +294,20 @@ export async function loginUser(
   }
 }
 
+// Reset password — sends a password reset email via Supabase
+export async function resetPassword(email: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const redirectTo = `${window.location.origin}/login`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to send reset email' };
+  }
+}
+
 // Logout user
 export async function logoutUser(): Promise<void> {
   await supabase.auth.signOut();
