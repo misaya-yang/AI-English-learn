@@ -110,7 +110,7 @@ export function ChatComposer({
   const currentModeOption = chatModeOptions.find((option) => option.id === currentMode);
 
   return (
-    <div className="border-t border-border bg-background p-4">
+    <div className="border-t border-border bg-background p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className={cn(contentWidthClass, 'relative mx-auto')}>
         <AnimatePresence initial={false}>
           {toolsExpanded && (

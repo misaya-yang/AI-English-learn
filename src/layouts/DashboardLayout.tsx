@@ -674,7 +674,7 @@ export default function DashboardLayout() {
             </div>
           </header>
 
-          <div className="min-h-0 flex-1 overflow-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
             <div className={cn('mx-auto w-full max-w-[1580px] px-4 py-5 sm:px-6 lg:px-8 lg:py-8', isMobile && 'pb-20')}>
               <Outlet />
             </div>
@@ -853,7 +853,7 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        <div className={cn('flex-1 min-h-0', isChatRoute ? 'overflow-hidden' : 'overflow-auto')}>
+        <div className={cn('flex-1 min-h-0', isChatRoute ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden')}>
           <div
             className={cn(
               'mx-auto w-full',
