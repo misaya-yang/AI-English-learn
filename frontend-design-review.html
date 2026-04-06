@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "frontend-design", "runs": [{"id": "eval-login-with_skill", "prompt": "\u5e2e\u6211\u7528 React + TypeScript + Tailwind CSS \u505a\u4e00\u4e2a SaaS \u4ea7\u54c1\u7684\u767b\u5f55\u9875\u9762\u3002\u8981\u6c42\uff1a\u5de6\u8fb9\u662f\u54c1\u724c\u533a\u57df\uff08\u53ef\u4ee5\u653e\u4e00\u6bb5\u7528\u6237\u8bc4\u4ef7\uff09\uff0c\u53f3\u8fb9\u662f\u767b\u5f55\u8868\u5355\uff08\u90ae\u7bb1+\u5bc6\u7801\uff0c\u8bb0\u4f4f\u6211\uff0c\u5fd8\u8bb0\u5bc6\u7801\u94fe\u63a5\uff0cGoogle OAuth \u6309\u94ae\uff0c\u6ce8\u518c\u5f15\u5bfc\uff09\u3002\u6574\u4f53\u8981\u6709\u54c1\u8d28\u611f\uff0c\u907f\u514d AI \u6a21\u677f\u611f\uff0c\u5b57\u4f53\u6392\u7248\u3001\u95f4\u8ddd\u3001\u52a8\u6548\u90fd\u8981\u7cbe\u81f4\u3002\u8f93\u51fa\u4e00\u4e2a\u5b8c\u6574\u7684 LoginPage.tsx \u6587\u4ef6\u3002", "eval_id": 0, "outputs": [{"name": "LoginPage.tsx", "type": "text", "content": "'use client';\n\nimport React, { useState } from 'react';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { Eye, EyeOff, Mail, Lock, ArrowRight, Check } from 'lucide-react';\n\n// ============================================================================\n// SPRING PRESETS\n// ============================================================================\nconst springs = {\n  default: { type: 'spring' as const, stiffness: 280, damping: 22 },\n  snappy: { type: 'spring' as const, stiffness: 400, damping: 30 },\n  gentle: { type: 'spring' as const, stiffness: 180, damping: 24 },\n} as const;\n\n// ============================================================================\n// ANIMATION VARIANTS\n// ============================================================================\nconst fadeInUp = {\n  hidden: { opacity: 0, y: 12, filter: 'blur(4px)' },\n  show: { opacity: 1, y: 0, filter: 'blur(0px)' },\n};\n\nconst staggerContainer = {\n  hidden: {},\n  show: {\n    transition: {\n      staggerChildren: 0.08,\n      delayChildren: 0.15,\n    },\n  },\n};\n\nconst testimonialVariants = {\n  hidden: { opacity: 0, x: -12, filter: 'blur(3px)' },\n  show: {\n    opacity: 1,\n    x: 0,\n    filter: 'blur(0px)',\n    transition: { ...springs.default, delay: 0.3 },\n  },\n};\n\nconst formGroupVariants = {\n  hidden: { opacity: 0, y: 10, filter: 'blur(3px)' },\n  show: (i: number) => ({\n    opacity: 1,\n    y: 0,\n    filter: 'blur(0px)',\n    transition: {\n      ...springs.default,\n      delay: 0.2 + i * 0.06,\n    },\n  }),\n};\n\n// ============================================================================\n// COMPONENTS\n// ============================================================================\n\nexport function LoginPage() {\n  const [email, setEmail] = useState('');\n  const [password, setPassword] = useState('');\n  const [showPassword, setShowPassword] = useState(false);\n  const [rememberMe, setRememberMe] = useState(false);\n  const [isLoading, setIsLoading] = useState(false);\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    setIsLoading(true);\n    // Simulate auth request\n    setTimeout(() => setIsLoading(false), 1200);\n  };\n\n  return (\n    <div className=\"min-h-screen grid lg:grid-cols-2 bg-background\">\n      {/* ====== LEFT: BRAND AREA ====== */}\n      <motion.div\n        initial={{ opacity: 0 }}\n        animate={{ opacity: 1 }}\n        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}\n        className=\"hidden lg:flex flex-col justify-between\n                   bg-[hsl(var(--accent)/0.04)] border-r border-[hsl(var(--border))]\n                   p-12\"\n      >\n        {/* Logo / Brand */}\n        <motion.div\n          variants={fadeInUp}\n          initial=\"hidden\"\n          animate=\"show\"\n          transition={{ ...springs.default, delay: 0.1 }}\n        >\n          <div className=\"inline-flex items-center gap-2.5\">\n            <div className=\"h-8 w-8 rounded-xl bg-[hsl(var(--accent))] flex items-center justify-center\">\n              <span className=\"text-white font-semibold text-sm\">A</span>\n            </div>\n            <span className=\"text-lg font-semibold text-foreground\">Acme</span>\n          </div>\n        </motion.div>\n\n        {/* Testimonial */}\n        <motion.blockquote\n          variants={testimonialVariants}\n          initial=\"hidden\"\n          animate=\"show\"\n          className=\"space-y-5\"\n        >\n          <svg\n            className=\"h-5 w-5 text-[hsl(var(--accent))]\"\n            fill=\"currentColor\"\n            viewBox=\"0 0 20 20\"\n          >\n            <path d=\"M3 21c3 -1 7 -1 11 0 4 0 6 -11 -2 -11s -8 3 -9 7c -1 4 3 7 8 7\" />\n          </svg>\n          <p className=\"text-lg font-medium leading-relaxed text-foreground max-w-sm\">\n            \"This tool transformed how our entire team collaborates. We've cut project setup time by 60% and our shipping velocity has never been better.\"\n          </p>\n          <footer className=\"space-y-1 pt-2\">\n            <p className=\"text-sm font-semibold text-foreground\">\n              Maya Patel\n            </p>\n            <p className=\"text-sm text-[hsl(var(--muted-foreground))]\">\n              Senior Product Manager, TechFlow Inc.\n            </p>\n          </footer>\n        </motion.blockquote>\n\n        {/* Footer */}\n        <motion.p\n          initial={{ opacity: 0 }}\n          animate={{ opacity: 1 }}\n          transition={{ duration: 0.5, delay: 0.5 }}\n          className=\"text-xs text-[hsl(var(--muted-foreground))]\"\n        >\n          \u00a9 2025 Acme. Building software that matters.\n        </motion.p>\n      </motion.div>\n\n      {/* ====== RIGHT: LOGIN FORM ====== */}\n      <motion.div\n        initial={{ opacity: 0 }}\n        animate={{ opacity: 1 }}\n        transition={{ duration: 0.5, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}\n        className=\"flex items-center justify-center px-6 py-12 lg:px-12\"\n      >\n        <div className=\"w-full max-w-sm\">\n          {/* Header */}\n          <motion.div\n            variants={fadeInUp}\n            initial=\"hidden\"\n            animate=\"show\"\n            transition={springs.default}\n            className=\"mb-8 space-y-2\"\n          >\n            <h1 className=\"text-3xl font-semibold tracking-tight text-foreground\">\n              Welcome back\n            </h1>\n            <p className=\"text-[15px] text-[hsl(var(--muted-foreground))] leading-6 max-w-xs\">\n              Sign in to your account to access your workspace.\n            </p>\n          </motion.div>\n\n          {/* Form */}\n          <motion.form\n            variants={staggerContainer}\n            initial=\"hidden\"\n            animate=\"show\"\n            onSubmit={handleSubmit}\n            className=\"space-y-4 mb-6\"\n          >\n            {/* Email Field */}\n            <motion.div\n              variants={formGroupVariants}\n              custom={0}\n              className=\"space-y-1.5\"\n            >\n              <label className=\"text-sm font-medium text-foreground block\">\n                Email address\n              </label>\n              <div className=\"relative\">\n                <Mail className=\"absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))] pointer-events-none\" />\n                <input\n                  type=\"email\"\n                  placeholder=\"you@company.com\"\n                  value={email}\n                  onChange={(e) => setEmail(e.target.value)}\n                  required\n                  className=\"w-full pl-10 pr-4 py-2.5 rounded-xl border border-[hsl(var(--border))]\n                           bg-background text-[15px] text-foreground\n                           placeholder:text-[hsl(var(--muted-foreground))/0.5]\n                           outline-none transition-all duration-200\n                           focus:border-[hsl(var(--accent))]\n                           focus:ring-2 focus:ring-[hsl(var(--accent)/0.15)]\"\n                />\n              </div>\n            </motion.div>\n\n            {/* Password Field */}\n            <motion.div\n              variants={formGroupVariants}\n              custom={1}\n              className=\"space-y-1.5\"\n            >\n              <div className=\"flex items-center justify-between\">\n                <label className=\"text-sm font-medium text-foreground\">\n                  Password\n                </label>\n                <motion.a\n                  href=\"#\"\n                  whileHover={{ opacity: 0.8 }}\n                  transition={springs.snappy}\n                  className=\"text-xs font-medium text-[hsl(var(--accent))]\n                             hover:text-[hsl(var(--accent))] transition-opacity\"\n                >\n                  Forgot password?\n                </motion.a>\n              </div>\n              <div className=\"relative\">\n                <Lock className=\"absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))] pointer-events-none\" />\n                <input\n                  type={showPassword ? 'text' : 'password'}\n                  placeholder=\"\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\"\n                  value={password}\n                  onChange={(e) => setPassword(e.target.value)}\n                  required\n                  className=\"w-full pl-10 pr-11 py-2.5 rounded-xl border border-[hsl(var(--border))]\n                           bg-background text-[15px] text-foreground\n                           placeholder:text-[hsl(var(--muted-foreground))/0.5]\n                           outline-none transition-all duration-200\n                           focus:border-[hsl(var(--accent))]\n                           focus:ring-2 focus:ring-[hsl(var(--accent)/0.15)]\"\n                />\n                <motion.button\n                  type=\"button\"\n                  onClick={() => setShowPassword(!showPassword)}\n                  whileHover={{ scale: 1.05 }}\n                  whileTap={{ scale: 0.95 }}\n                  transition={springs.snappy}\n                  className=\"absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4\n                           text-[hsl(var(--muted-foreground))] hover:text-foreground\n                           transition-colors cursor-pointer\"\n                >\n                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}\n                </motion.button>\n              </div>\n            </motion.div>\n\n            {/* Remember Me */}\n            <motion.div\n              variants={formGroupVariants}\n              custom={2}\n              className=\"flex items-center gap-2.5\"\n            >\n              <motion.button\n                type=\"button\"\n                onClick={() => setRememberMe(!rememberMe)}\n                whileHover={{ scale: 1.05 }}\n                whileTap={{ scale: 0.95 }}\n                transition={springs.snappy}\n                className=\"relative h-5 w-5 rounded-lg border border-[hsl(var(--border))]\n                         bg-background flex items-center justify-center\n                         hover:border-[hsl(var(--accent))] transition-colors\n                         focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent)/0.2)]\"\n              >\n                <AnimatePresence mode=\"wait\">\n                  {rememberMe && (\n                    <motion.div\n                      initial={{ scale: 0, opacity: 0 }}\n                      animate={{ scale: 1, opacity: 1 }}\n                      exit={{ scale: 0, opacity: 0 }}\n                      transition={springs.snappy}\n                      className=\"absolute inset-0 rounded-lg bg-[hsl(var(--accent))]\n                               flex items-center justify-center\"\n                    >\n                      <Check className=\"h-3 w-3 text-[hsl(var(--accent-fg))]\" />\n                    </motion.div>\n                  )}\n                </AnimatePresence>\n              </motion.button>\n              <label className=\"text-sm font-medium text-foreground cursor-pointer\">\n                Remember me\n              </label>\n            </motion.div>\n\n            {/* Sign In Button */}\n            <motion.div variants={formGroupVariants} custom={3}>\n              <motion.button\n                type=\"submit\"\n                disabled={isLoading}\n                whileHover={!isLoading ? { y: -1 } : {}}\n                whileTap={!isLoading ? { scale: 0.98 } : {}}\n                transition={springs.snappy}\n                className=\"w-full h-10 rounded-xl bg-[hsl(var(--accent))] text-[hsl(var(--accent-fg))]\n                         text-sm font-semibold transition-all duration-200\n                         hover:opacity-90 active:scale-[0.98]\n                         disabled:opacity-70 disabled:cursor-not-allowed\n                         flex items-center justify-center gap-2\n                         shadow-[0_2px_8px_hsl(var(--accent)/0.3)]\"\n              >\n                <AnimatePresence mode=\"wait\">\n                  {isLoading ? (\n                    <motion.div\n                      key=\"loading\"\n                      initial={{ opacity: 0 }}\n                      animate={{ opacity: 1 }}\n                      exit={{ opacity: 0 }}\n                      className=\"h-4 w-4 rounded-full border-2 border-[hsl(var(--accent-fg))]\n                               border-t-transparent animate-spin\"\n                    />\n                  ) : (\n                    <motion.div\n                      key=\"text\"\n                      initial={{ opacity: 0 }}\n                      animate={{ opacity: 1 }}\n                      exit={{ opacity: 0 }}\n                      className=\"flex items-center gap-2\"\n                    >\n                      <span>Sign in</span>\n                      <ArrowRight className=\"h-4 w-4\" />\n                    </motion.div>\n                  )}\n                </AnimatePresence>\n              </motion.button>\n            </motion.div>\n          </motion.form>\n\n          {/* Divider */}\n          <motion.div\n            variants={fadeInUp}\n            initial=\"hidden\"\n            animate=\"show\"\n            transition={{ ...springs.default, delay: 0.5 }}\n            className=\"relative mb-6\"\n          >\n            <div className=\"absolute inset-0 flex items-center\">\n              <div className=\"w-full border-t border-[hsl(var(--border))]\" />\n            </div>\n            <div className=\"relative flex justify-center text-xs\">\n              <span className=\"bg-background px-3 text-[hsl(var(--muted-foreground))]\">\n                or continue with\n              </span>\n            </div>\n          </motion.div>\n\n          {/* Google OAuth Button */}\n          <motion.div\n            variants={fadeInUp}\n            initial=\"hidden\"\n            animate=\"show\"\n            transition={{ ...springs.default, delay: 0.55 }}\n          >\n            <motion.button\n              type=\"button\"\n              whileHover={{ y: -1, borderColor: 'hsl(var(--border-strong))' }}\n              whileTap={{ scale: 0.98 }}\n              transition={springs.snappy}\n              className=\"w-full h-10 rounded-xl border border-[hsl(var(--border))]\n                       bg-background text-foreground text-sm font-medium\n                       transition-all duration-200 flex items-center justify-center gap-2.5\n                       hover:bg-[hsl(var(--surface-raised))]\"\n            >\n              <svg\n                className=\"h-4 w-4\"\n                viewBox=\"0 0 24 24\"\n                fill=\"currentColor\"\n              >\n                <path d=\"M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z\" fill=\"#4285F4\" />\n                <path d=\"M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z\" fill=\"#34A853\" />\n                <path d=\"M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z\" fill=\"#FBBC05\" />\n                <path d=\"M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z\" fill=\"#EA4335\" />\n              </svg>\n              <span>Continue with Google</span>\n            </motion.button>\n          </motion.div>\n\n          {/* Sign Up Link */}\n          <motion.p\n            variants={fadeInUp}\n            initial=\"hidden\"\n            animate=\"show\"\n            transition={{ ...springs.default, delay: 0.6 }}\n            className=\"mt-8 text-center text-sm text-[hsl(var(--muted-foreground))]\"\n          >\n            Don't have an account?{' '}\n            <motion.a\n              href=\"#\"\n              whileHover={{ opacity: 0.8 }}\n              transition={springs.snappy}\n              className=\"font-semibold text-foreground hover:text-[hsl(var(--accent))]\n                       transition-colors\"\n            >\n              Create account\n            </motion.a>\n          </motion.p>\n\n          {/* Footer Info */}\n          <motion.div\n            variants={fadeInUp}\n            initial=\"hidden\"\n            animate=\"show\"\n            transition={{ ...springs.default, delay: 0.65 }}\n            className=\"mt-8 pt-6 border-t border-[hsl(var(--border))] space-y-2 text-center\"\n          >\n            <p className=\"text-xs text-[hsl(var(--muted-foreground))]\">\n              By signing in, you agree to our{' '}\n              <a href=\"#\" className=\"hover:underline font-medium text-foreground\">\n                Terms of Service\n              </a>\n              {' '}and{' '}\n              <a href=\"#\" className=\"hover:underline font-medium text-foreground\">\n                Privacy Policy\n              </a>\n            </p>\n          </motion.div>\n        </div>\n      </motion.div>\n    </div>\n  );\n}\n\nexport default LoginPage;\n"}], "grading": {"run_id": "eval-login-with_skill", "file": "/sessions/hopeful-funny-wright/frontend-design-workspace/iteration-1/eval-login/with_skill/outputs/LoginPage.tsx", "pass_rate": 1.0, "passed": 6, "total": 6, "expectations": [{"text": "Uses semantic CSS variable tokens (hsl(var(--...)) instead of raw Tailwind color names \u2014 signals a real color system rather than ad-hoc color choices", "passed": true, "evidence": "PASS: uses_css_variable_tokens"}, {"text": "Imports and uses Framer Motion for entrance animations \u2014 means interactive elements feel physical, not static", "passed": true, "evidence": "PASS: uses_framer_motion"}, {"text": "Does not use from-blue/from-indigo hero gradients \u2014 avoids the most common AI-feel pattern", "passed": true, "evidence": "PASS: no_blue_gradient_cliche"}, {"text": "Uses tracking-tight on the main heading \u2014 signals understanding of typographic refinement", "passed": true, "evidence": "PASS: tracking_tight_on_heading"}, {"text": "Uses semantic text color tokens (text-foreground, muted-foreground) rather than hardcoded gray-* values \u2014 theme-aware, not raw Tailwind", "passed": true, "evidence": "PASS: uses_semantic_text_colors"}, {"text": "Inputs have a custom focus ring tied to the brand accent color, not the browser default", "passed": true, "evidence": "PASS: refined_input_focus_ring"}]}}, {"id": "eval-login-without_skill", "prompt": "\u5e2e\u6211\u7528 React + TypeScript + Tailwind CSS \u505a\u4e00\u4e2a SaaS \u4ea7\u54c1\u7684\u767b\u5f55\u9875\u9762\u3002\u8981\u6c42\uff1a\u5de6\u8fb9\u662f\u54c1\u724c\u533a\u57df\uff08\u53ef\u4ee5\u653e\u4e00\u6bb5\u7528\u6237\u8bc4\u4ef7\uff09\uff0c\u53f3\u8fb9\u662f\u767b\u5f55\u8868\u5355\uff08\u90ae\u7bb1+\u5bc6\u7801\uff0c\u8bb0\u4f4f\u6211\uff0c\u5fd8\u8bb0\u5bc6\u7801\u94fe\u63a5\uff0cGoogle OAuth \u6309\u94ae\uff0c\u6ce8\u518c\u5f15\u5bfc\uff09\u3002\u6574\u4f53\u8981\u6709\u54c1\u8d28\u611f\uff0c\u907f\u514d AI \u6a21\u677f\u611f\uff0c\u5b57\u4f53\u6392\u7248\u3001\u95f4\u8ddd\u3001\u52a8\u6548\u90fd\u8981\u7cbe\u81f4\u3002\u8f93\u51fa\u4e00\u4e2a\u5b8c\u6574\u7684 LoginPage.tsx \u6587\u4ef6\u3002", "eval_id": 0, "outputs": [{"name": "LoginPage.tsx", "type": "text", "content": "'use client';\n\nimport React, { useState, useEffect } from 'react';\nimport { Eye, EyeOff, ChevronRight, Zap } from 'lucide-react';\n\nexport default function LoginPage() {\n  const [email, setEmail] = useState('');\n  const [password, setPassword] = useState('');\n  const [showPassword, setShowPassword] = useState(false);\n  const [rememberMe, setRememberMe] = useState(false);\n  const [isLoading, setIsLoading] = useState(false);\n  const [mounted, setMounted] = useState(false);\n\n  useEffect(() => {\n    setMounted(true);\n  }, []);\n\n  const handleSubmit = async (e: React.FormEvent) => {\n    e.preventDefault();\n    setIsLoading(true);\n    await new Promise(resolve => setTimeout(resolve, 800));\n    setIsLoading(false);\n  };\n\n  const handleGoogleOAuth = () => {\n    // OAuth implementation\n    console.log('Google OAuth clicked');\n  };\n\n  const testimonials = [\n    {\n      name: 'Sarah Chen',\n      role: 'Product Lead at TechFlow',\n      content: '\u8fd9\u4e2a\u5e73\u53f0\u5b8c\u5168\u6539\u53d8\u4e86\u6211\u4eec\u7684\u5de5\u4f5c\u6d41\u7a0b\u3002\u6548\u7387\u63d0\u5347\u4e86 40%\uff0c\u56e2\u961f\u534f\u4f5c\u4e5f\u53d8\u5f97\u65e0\u6bd4\u987a\u7545\u3002',\n      initials: 'SC'\n    },\n    {\n      name: 'Marcus Rodriguez',\n      role: 'Founder of DataSync',\n      content: '\u4ece\u4e0a\u7ebf\u7684\u90a3\u4e00\u523b\u8d77\uff0c\u5c31\u80fd\u611f\u53d7\u5230\u4ea7\u54c1\u7684\u7528\u5fc3\u3002\u7ec6\u8282\u5904\u7406\u5f97\u975e\u5e38\u5230\u4f4d\uff0c\u7edd\u5bf9\u662f\u884c\u4e1a\u6807\u6746\u3002',\n      initials: 'MR'\n    },\n    {\n      name: 'Emma Williams',\n      role: 'CTO at InnovateLabs',\n      content: '\u5ba2\u6237\u670d\u52a1\u56e2\u961f\u54cd\u5e94\u901f\u5ea6\u6781\u5feb\uff0c\u95ee\u9898\u89e3\u51b3\u5f97\u4e5f\u5f88\u5f7b\u5e95\u3002\u8fd9\u624d\u662f\u771f\u6b63\u7684\u4f01\u4e1a\u7ea7\u4ea7\u54c1\u3002',\n      initials: 'EW'\n    }\n  ];\n\n  const randomTestimonial = testimonials[Math.floor(Math.random() * testimonials.length)];\n\n  if (!mounted) return null;\n\n  return (\n    <div className=\"min-h-screen bg-white flex\">\n      {/* Left Section - Brand & Testimonial */}\n      <div className=\"hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex-col justify-between p-12 relative overflow-hidden\">\n        {/* Background elements */}\n        <div className=\"absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-48 -mt-48 animate-pulse\" style={{ animationDuration: '6s' }}></div>\n        <div className=\"absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl -ml-40 -mb-40\" style={{ animationDuration: '8s' }}></div>\n\n        {/* Header */}\n        <div className=\"relative z-10\">\n          <div className=\"flex items-center gap-3 mb-2\">\n            <div className=\"w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg\">\n              <Zap className=\"w-6 h-6 text-white\" strokeWidth={2.5} />\n            </div>\n            <span className=\"text-2xl font-bold text-white tracking-tight\">Velocity</span>\n          </div>\n          <p className=\"text-slate-400 text-sm font-medium\">Modern workspace for ambitious teams</p>\n        </div>\n\n        {/* Testimonial */}\n        <div className=\"relative z-10\">\n          <div className=\"bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-2xl\">\n            <div className=\"mb-6\">\n              <p className=\"text-white text-lg leading-relaxed font-light\">{randomTestimonial.content}</p>\n            </div>\n\n            <div className=\"flex items-center gap-4\">\n              <div className=\"w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg\">\n                <span className=\"text-white font-semibold text-sm\">{randomTestimonial.initials}</span>\n              </div>\n              <div>\n                <p className=\"text-white font-semibold text-sm\">{randomTestimonial.name}</p>\n                <p className=\"text-slate-400 text-xs font-medium\">{randomTestimonial.role}</p>\n              </div>\n            </div>\n\n            <div className=\"absolute top-4 right-4 text-blue-400/40\">\n              <svg className=\"w-8 h-8\" fill=\"currentColor\" viewBox=\"0 0 24 24\">\n                <path d=\"M3 21c3 0 7-1 7-8V5c0-1.25-4.716-5-7-5-6 0-6.002 4-6 7v11c0 1 0 7 5 7z\"></path>\n              </svg>\n            </div>\n          </div>\n\n          <p className=\"text-slate-500 text-xs mt-6 font-medium\">Trusted by 5,000+ companies worldwide</p>\n        </div>\n      </div>\n\n      {/* Right Section - Login Form */}\n      <div className=\"w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-8 lg:px-12\">\n        {/* Mobile Brand */}\n        <div className=\"lg:hidden mb-8 flex items-center gap-3\">\n          <div className=\"w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-lg flex items-center justify-center\">\n            <Zap className=\"w-6 h-6 text-white\" strokeWidth={2.5} />\n          </div>\n          <span className=\"text-2xl font-bold text-slate-900\">Velocity</span>\n        </div>\n\n        <div className=\"max-w-md w-full\">\n          {/* Header */}\n          <div className=\"mb-8\">\n            <h1 className=\"text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-3\">\n              Welcome back\n            </h1>\n            <p className=\"text-slate-600 text-base font-regular\">\n              Sign in to your account to continue where you left off\n            </p>\n          </div>\n\n          {/* Form */}\n          <form onSubmit={handleSubmit} className=\"space-y-5\">\n            {/* Email Field */}\n            <div className=\"group\">\n              <label htmlFor=\"email\" className=\"block text-sm font-semibold text-slate-700 mb-2\">\n                Email address\n              </label>\n              <input\n                id=\"email\"\n                type=\"email\"\n                value={email}\n                onChange={(e) => setEmail(e.target.value)}\n                placeholder=\"name@company.com\"\n                className=\"w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200 font-regular\"\n                required\n              />\n            </div>\n\n            {/* Password Field */}\n            <div className=\"group\">\n              <div className=\"flex items-center justify-between mb-2\">\n                <label htmlFor=\"password\" className=\"block text-sm font-semibold text-slate-700\">\n                  Password\n                </label>\n                <a href=\"#\" className=\"text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors\">\n                  Forgot?\n                </a>\n              </div>\n              <div className=\"relative\">\n                <input\n                  id=\"password\"\n                  type={showPassword ? 'text' : 'password'}\n                  value={password}\n                  onChange={(e) => setPassword(e.target.value)}\n                  placeholder=\"\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\"\n                  className=\"w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200 font-regular\"\n                  required\n                />\n                <button\n                  type=\"button\"\n                  onClick={() => setShowPassword(!showPassword)}\n                  className=\"absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors\"\n                >\n                  {showPassword ? (\n                    <EyeOff className=\"w-5 h-5\" />\n                  ) : (\n                    <Eye className=\"w-5 h-5\" />\n                  )}\n                </button>\n              </div>\n            </div>\n\n            {/* Remember Me */}\n            <div className=\"flex items-center\">\n              <input\n                id=\"remember\"\n                type=\"checkbox\"\n                checked={rememberMe}\n                onChange={(e) => setRememberMe(e.target.checked)}\n                className=\"w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer accent-blue-600\"\n              />\n              <label htmlFor=\"remember\" className=\"ml-3 text-sm font-medium text-slate-700 cursor-pointer\">\n                Keep me signed in\n              </label>\n            </div>\n\n            {/* Sign In Button */}\n            <button\n              type=\"submit\"\n              disabled={isLoading}\n              className=\"w-full mt-6 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-75 transition-all duration-200 flex items-center justify-center gap-2 group\"\n            >\n              <span>{isLoading ? 'Signing in...' : 'Sign in'}</span>\n              {!isLoading && <ChevronRight className=\"w-4 h-4 group-hover:translate-x-0.5 transition-transform\" />}\n            </button>\n          </form>\n\n          {/* Divider */}\n          <div className=\"relative my-7\">\n            <div className=\"absolute inset-0 flex items-center\">\n              <div className=\"w-full border-t border-slate-200\"></div>\n            </div>\n            <div className=\"relative flex justify-center text-sm\">\n              <span className=\"px-3 bg-white text-slate-500 font-medium\">or continue with</span>\n            </div>\n          </div>\n\n          {/* Google OAuth */}\n          <button\n            type=\"button\"\n            onClick={handleGoogleOAuth}\n            className=\"w-full px-4 py-3 border border-slate-200 bg-white rounded-xl text-slate-700 font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 flex items-center justify-center gap-3 group\"\n          >\n            <svg className=\"w-5 h-5\" viewBox=\"0 0 24 24\">\n              <path fill=\"#4285F4\" d=\"M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z\"/>\n              <path fill=\"#34A853\" d=\"M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z\"/>\n              <path fill=\"#FBBC05\" d=\"M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z\"/>\n              <path fill=\"#EA4335\" d=\"M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z\"/>\n            </svg>\n            <span>Google</span>\n          </button>\n\n          {/* Sign Up Link */}\n          <p className=\"text-center text-slate-600 text-sm font-regular mt-8\">\n            Don't have an account?{' '}\n            <a href=\"#\" className=\"font-semibold text-blue-600 hover:text-blue-700 transition-colors\">\n              Sign up free\n            </a>\n          </p>\n        </div>\n\n        {/* Footer */}\n        <div className=\"absolute bottom-6 left-6 lg:left-8 right-6 lg:right-8 flex items-center justify-center gap-6 text-xs text-slate-500 font-medium\">\n          <a href=\"#\" className=\"hover:text-slate-700 transition-colors\">Privacy</a>\n          <div className=\"w-1 h-1 bg-slate-300 rounded-full\"></div>\n          <a href=\"#\" className=\"hover:text-slate-700 transition-colors\">Terms</a>\n          <div className=\"w-1 h-1 bg-slate-300 rounded-full\"></div>\n          <a href=\"#\" className=\"hover:text-slate-700 transition-colors\">Contact</a>\n        </div>\n      </div>\n    </div>\n  );\n}\n"}], "grading": {"run_id": "eval-login-without_skill", "file": "/sessions/hopeful-funny-wright/frontend-design-workspace/iteration-1/eval-login/without_skill/outputs/LoginPage.tsx", "pass_rate": 0.3333333333333333, "passed": 2, "total": 6, "expectations": [{"text": "Uses semantic CSS variable tokens (hsl(var(--...)) instead of raw Tailwind color names \u2014 signals a real color system rather than ad-hoc color choices", "passed": false, "evidence": "FAIL: uses_css_variable_tokens"}, {"text": "Imports and uses Framer Motion for entrance animations \u2014 means interactive elements feel physical, not static", "passed": false, "evidence": "FAIL: uses_framer_motion"}, {"text": "Does not use from-blue/from-indigo hero gradients \u2014 avoids the most common AI-feel pattern", "passed": false, "evidence": "FAIL: no_blue_gradient_cliche"}, {"text": "Uses tracking-tight on the main heading \u2014 signals understanding of typographic refinement", "passed": true, "evidence": "PASS: tracking_tight_on_heading"}, {"text": "Uses semantic text color tokens (text-foreground, muted-foreground) rather than hardcoded gray-* values \u2014 theme-aware, not raw Tailwind", "passed": false, "evidence": "FAIL: uses_semantic_text_colors"}, {"text": "Inputs have a custom focus ring tied to the brand accent color, not the browser default", "passed": true, "evidence": "PASS: refined_input_focus_ring"}]}}, {"id": "eval-dashboard-with_skill", "prompt": "\u7528 React + TypeScript + Tailwind CSS \u505a\u4e00\u4e2a Dashboard \u7684 KPI \u5361\u7247\u533a\u57df\uff0c\u5305\u542b4\u4e2a\u6307\u6807\uff1a\u6708\u6536\u5165\uff08$48,291\uff0c+12.4%\uff09\u3001\u6d3b\u8dc3\u7528\u6237\uff082,847\uff0c+8.1%\uff09\u3001\u8f6c\u5316\u7387\uff083.24%\uff0c-0.3%\uff09\u3001\u5e73\u5747\u4f1a\u8bdd\u65f6\u957f\uff084m 12s\uff0c+18%\uff09\u3002\u8981\u6709\u6570\u5b57\u6eda\u52a8\u5165\u573a\u52a8\u6548\uff0c\u5361\u7247\u6709 hover \u6548\u679c\uff0c\u8d8b\u52bf\u6570\u5b57\u7eff\u8272/\u7ea2\u8272\u8bed\u4e49\u8272\u3002\u540c\u65f6\u5728\u5361\u7247\u4e0b\u65b9\u52a0\u4e00\u4e2a\u6298\u7ebf\u56fe\u533a\u57df\u5360\u4f4d\uff08\u7528 recharts \u6216 placeholder\uff09\u3002\u8f93\u51fa\u5b8c\u6574\u7684 DashboardKPI.tsx \u6587\u4ef6\u3002", "eval_id": 1, "outputs": [{"name": "DashboardKPI.tsx", "type": "text", "content": "'use client';\n\nimport { useEffect, useRef } from 'react';\nimport { motion, animate } from 'framer-motion';\n\n/**\n * AnimatedNumber \u2014 renders a number with smooth counter animation\n * Uses Framer Motion's animate() for value interpolation\n */\nfunction AnimatedNumber({\n  value,\n  format = (n: number) => n.toLocaleString(),\n  prefix = '',\n  suffix = '',\n}: {\n  value: number;\n  format?: (n: number) => string;\n  prefix?: string;\n  suffix?: string;\n}) {\n  const ref = useRef<HTMLSpanElement>(null);\n\n  useEffect(() => {\n    const controls = animate(0, value, {\n      duration: 1.2,\n      ease: [0.16, 1, 0.3, 1], // custom ease-out-quint\n      onUpdate: (v) => {\n        if (ref.current) {\n          ref.current.textContent = `${prefix}${format(Math.round(v))}${suffix}`;\n        }\n      },\n    });\n    return controls.stop;\n  }, [value, format, prefix, suffix]);\n\n  return <span ref={ref}>{prefix}0{suffix}</span>;\n}\n\n/**\n * KPI Card \u2014 individual stat card with animated number and delta indicator\n */\ninterface KPICardProps {\n  label: string;\n  value: number;\n  delta: number;\n  format?: (n: number) => string;\n  prefix?: string;\n  suffix?: string;\n  index: number;\n}\n\nfunction KPICard({\n  label,\n  value,\n  delta,\n  format,\n  prefix = '',\n  suffix = '',\n  index,\n}: KPICardProps) {\n  // Container variant for staggered entrance\n  const cardVariant = {\n    hidden: { opacity: 0, y: 12, filter: 'blur(3px)' },\n    show: {\n      opacity: 1,\n      y: 0,\n      filter: 'blur(0px)',\n      transition: {\n        type: 'spring',\n        stiffness: 280,\n        damping: 22,\n      },\n    },\n  };\n\n  const isPositive = delta >= 0;\n  const deltaColor = isPositive\n    ? 'text-emerald-600'\n    : 'text-red-500';\n\n  const deltaIcon = isPositive ? '\u2191' : '\u2193';\n\n  return (\n    <motion.div\n      variants={cardVariant}\n      transition={{ delay: index * 0.07 }}\n      whileHover={{\n        y: -3,\n        boxShadow: '0 12px 32px rgb(0 0 0 / 0.07)',\n      }}\n      whileTap={{ y: -1, scale: 0.99 }}\n      className=\"rounded-2xl border border-[hsl(var(--border))]\n                 bg-[hsl(var(--surface))] p-5\n                 hover:border-[hsl(var(--border-strong))]\n                 transition-colors duration-200 cursor-pointer\"\n    >\n      {/* Micro-label */}\n      <p className=\"text-[11px] font-medium tracking-widest uppercase\n                    text-muted-foreground\">\n        {label}\n      </p>\n\n      {/* Large number with tabular-nums */}\n      <p className=\"mt-2 text-3xl font-semibold tracking-tight tabular-nums\n                    text-foreground\">\n        <AnimatedNumber\n          value={value}\n          format={format}\n          prefix={prefix}\n          suffix={suffix}\n        />\n      </p>\n\n      {/* Delta indicator with semantic color */}\n      <p className={`mt-1.5 flex items-center gap-1 text-sm font-medium ${deltaColor}`}>\n        <span className=\"text-[12px]\">{deltaIcon}</span>\n        {Math.abs(delta).toFixed(delta % 1 !== 0 ? 1 : 0)}%\n      </p>\n    </motion.div>\n  );\n}\n\n/**\n * DashboardKPI \u2014 complete dashboard KPI section with animated cards and chart placeholder\n */\nexport function DashboardKPI() {\n  // Container for staggered animations\n  const containerVariant = {\n    hidden: {},\n    show: {\n      transition: {\n        staggerChildren: 0.07,\n        delayChildren: 0.1,\n      },\n    },\n  };\n\n  // KPI data\n  const kpis = [\n    {\n      label: 'Monthly Revenue',\n      value: 48291,\n      delta: 12.4,\n      format: (n: number) => n.toLocaleString(),\n      prefix: '$',\n    },\n    {\n      label: 'Active Users',\n      value: 2847,\n      delta: 8.1,\n      format: (n: number) => n.toLocaleString(),\n    },\n    {\n      label: 'Conversion Rate',\n      value: 324,\n      delta: -0.3,\n      format: (n: number) => (n / 100).toFixed(2),\n      suffix: '%',\n    },\n    {\n      label: 'Avg. Session Duration',\n      value: 252, // 4m 12s in seconds, will be formatted\n      delta: 18,\n      format: (n: number) => {\n        const minutes = Math.floor(n / 60);\n        const seconds = n % 60;\n        return `${minutes}m ${seconds}s`;\n      },\n    },\n  ];\n\n  return (\n    <div className=\"min-h-screen bg-background\">\n      {/* Page header */}\n      <div className=\"border-b border-[hsl(var(--border))]\n                      bg-background/50 backdrop-blur-md\">\n        <div className=\"mx-auto max-w-screen-xl px-6 py-8\">\n          <h1 className=\"text-3xl font-semibold tracking-tight text-foreground\">\n            Dashboard\n          </h1>\n          <p className=\"mt-2 text-[15px] text-muted-foreground leading-7\">\n            Monitor your key performance indicators in real-time.\n          </p>\n        </div>\n      </div>\n\n      {/* Main content */}\n      <div className=\"mx-auto max-w-screen-xl px-6 py-10\">\n        {/* KPI Cards Grid */}\n        <motion.div\n          variants={containerVariant}\n          initial=\"hidden\"\n          animate=\"show\"\n          className=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4\"\n        >\n          {kpis.map((kpi, index) => (\n            <KPICard\n              key={kpi.label}\n              index={index}\n              {...kpi}\n            />\n          ))}\n        </motion.div>\n\n        {/* Chart Section Placeholder */}\n        <motion.div\n          initial={{ opacity: 0, y: 12, filter: 'blur(3px)' }}\n          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}\n          transition={{\n            type: 'spring',\n            stiffness: 280,\n            damping: 22,\n            delay: 0.4,\n          }}\n          className=\"mt-10\"\n        >\n          <div className=\"rounded-2xl border border-[hsl(var(--border))]\n                          bg-[hsl(var(--surface))] p-6\">\n            {/* Chart header */}\n            <div className=\"mb-6\">\n              <h2 className=\"text-lg font-semibold text-foreground\">\n                Revenue Trend\n              </h2>\n              <p className=\"mt-1 text-sm text-muted-foreground\">\n                Last 30 days performance\n              </p>\n            </div>\n\n            {/* Chart placeholder \u2014 replace with recharts LineChart */}\n            <div className=\"h-80 rounded-xl bg-[hsl(var(--surface-raised))]\n                            flex items-center justify-center\n                            border border-dashed border-[hsl(var(--border-strong))]\">\n              <div className=\"text-center\">\n                <div className=\"inline-flex items-center justify-center h-12 w-12\n                               rounded-xl bg-[hsl(var(--accent)/0.1)]\n                               text-[hsl(var(--accent))] mb-3\">\n                  <svg className=\"h-6 w-6\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                    <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2}\n                          d=\"M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z\" />\n                  </svg>\n                </div>\n                <p className=\"text-sm font-medium text-muted-foreground\">\n                  Line chart placeholder\n                </p>\n                <p className=\"text-xs text-muted-foreground/60 mt-1\">\n                  Replace with recharts LineChart component\n                </p>\n              </div>\n            </div>\n\n            {/* Chart footer info */}\n            <div className=\"mt-6 flex gap-6 pt-4 border-t border-[hsl(var(--border))]\">\n              <div>\n                <p className=\"text-[11px] font-medium tracking-widest uppercase\n                            text-muted-foreground\">\n                  Peak Day\n                </p>\n                <p className=\"mt-1 text-sm font-semibold text-foreground\">\n                  March 15\n                </p>\n              </div>\n              <div>\n                <p className=\"text-[11px] font-medium tracking-widest uppercase\n                            text-muted-foreground\">\n                  Avg. Daily\n                </p>\n                <p className=\"mt-1 text-sm font-semibold text-foreground\">\n                  $1,609\n                </p>\n              </div>\n              <div>\n                <p className=\"text-[11px] font-medium tracking-widest uppercase\n                            text-muted-foreground\">\n                  Growth\n                </p>\n                <p className=\"mt-1 text-sm font-semibold text-emerald-600\">\n                  +12.4%\n                </p>\n              </div>\n            </div>\n          </div>\n        </motion.div>\n      </div>\n    </div>\n  );\n}\n\n/**\n * Example export for standalone testing\n */\nexport default function DashboardKPIPage() {\n  return <DashboardKPI />;\n}\n"}], "grading": {"run_id": "eval-dashboard-with_skill", "file": "/sessions/hopeful-funny-wright/frontend-design-workspace/iteration-1/eval-dashboard/with_skill/outputs/DashboardKPI.tsx", "pass_rate": 1.0, "passed": 6, "total": 6, "expectations": [{"text": "Uses CSS variable color tokens \u2014 consistent color system across all cards", "passed": true, "evidence": "PASS: uses_css_variable_tokens"}, {"text": "Uses Framer Motion for card entrance/number animation \u2014 not raw CSS transitions", "passed": true, "evidence": "PASS: uses_framer_motion_animation"}, {"text": "Applies tabular-nums to number display \u2014 prevents layout shift as numbers change", "passed": true, "evidence": "PASS: uses_tabular_nums"}, {"text": "Uses staggered entrance animation for cards \u2014 cards appear sequentially, not all at once", "passed": true, "evidence": "PASS: has_stagger_animation"}, {"text": "Uses emerald/green for positive delta and red for negative delta \u2014 not just a generic color", "passed": true, "evidence": "PASS: semantic_delta_colors"}, {"text": "Uses small uppercase tracking-widest label above the number \u2014 proper KPI card typography hierarchy", "passed": true, "evidence": "PASS: kpi_micro_label_pattern"}]}}, {"id": "eval-dashboard-without_skill", "prompt": "\u7528 React + TypeScript + Tailwind CSS \u505a\u4e00\u4e2a Dashboard \u7684 KPI \u5361\u7247\u533a\u57df\uff0c\u5305\u542b4\u4e2a\u6307\u6807\uff1a\u6708\u6536\u5165\uff08$48,291\uff0c+12.4%\uff09\u3001\u6d3b\u8dc3\u7528\u6237\uff082,847\uff0c+8.1%\uff09\u3001\u8f6c\u5316\u7387\uff083.24%\uff0c-0.3%\uff09\u3001\u5e73\u5747\u4f1a\u8bdd\u65f6\u957f\uff084m 12s\uff0c+18%\uff09\u3002\u8981\u6709\u6570\u5b57\u6eda\u52a8\u5165\u573a\u52a8\u6548\uff0c\u5361\u7247\u6709 hover \u6548\u679c\uff0c\u8d8b\u52bf\u6570\u5b57\u7eff\u8272/\u7ea2\u8272\u8bed\u4e49\u8272\u3002\u540c\u65f6\u5728\u5361\u7247\u4e0b\u65b9\u52a0\u4e00\u4e2a\u6298\u7ebf\u56fe\u533a\u57df\u5360\u4f4d\uff08\u7528 recharts \u6216 placeholder\uff09\u3002\u8f93\u51fa\u5b8c\u6574\u7684 DashboardKPI.tsx \u6587\u4ef6\u3002", "eval_id": 1, "outputs": [{"name": "DashboardKPI.tsx", "type": "text", "content": "'use client';\n\nimport React, { useState, useEffect } from 'react';\nimport { TrendingUp, TrendingDown } from 'lucide-react';\n\ninterface KPICardProps {\n  title: string;\n  value: number | string;\n  change: number;\n  unit?: string;\n  isPercentage?: boolean;\n}\n\nconst AnimatedNumber: React.FC<{ value: number; duration?: number }> = ({\n  value,\n  duration = 1500,\n}) => {\n  const [displayValue, setDisplayValue] = useState(0);\n\n  useEffect(() => {\n    let startTime: number;\n    let animationFrame: number;\n\n    const animate = (currentTime: number) => {\n      if (!startTime) startTime = currentTime;\n      const elapsed = currentTime - startTime;\n      const progress = Math.min(elapsed / duration, 1);\n\n      setDisplayValue(Math.floor(progress * value));\n\n      if (progress < 1) {\n        animationFrame = requestAnimationFrame(animate);\n      }\n    };\n\n    animationFrame = requestAnimationFrame(animate);\n\n    return () => cancelAnimationFrame(animationFrame);\n  }, [value, duration]);\n\n  return <span>{displayValue.toLocaleString()}</span>;\n};\n\nconst KPICard: React.FC<KPICardProps> = ({\n  title,\n  value,\n  change,\n  unit = '',\n  isPercentage = false,\n}) => {\n  const isPositive = change >= 0;\n  const trendColor = isPositive ? 'text-green-600' : 'text-red-600';\n  const bgColor = isPositive ? 'bg-green-50' : 'bg-red-50';\n\n  const isNumericValue = typeof value === 'number';\n  const displayValue =\n    typeof value === 'string' ? value : value.toLocaleString();\n\n  return (\n    <div className=\"group h-full\">\n      <div\n        className=\"\n          relative h-full px-6 py-8\n          bg-white rounded-lg border border-gray-200\n          shadow-sm hover:shadow-lg\n          transition-all duration-300 ease-out\n          hover:border-blue-200\n          hover:-translate-y-1\n          overflow-hidden\n        \"\n      >\n        {/* Background gradient on hover */}\n        <div\n          className=\"\n            absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent\n            opacity-0 group-hover:opacity-100\n            transition-opacity duration-300\n            pointer-events-none\n          \"\n        />\n\n        {/* Content */}\n        <div className=\"relative z-10\">\n          {/* Header */}\n          <div className=\"mb-6\">\n            <h3 className=\"text-sm font-medium text-gray-600\">{title}</h3>\n          </div>\n\n          {/* Main value */}\n          <div className=\"mb-4\">\n            <div className=\"text-4xl font-bold text-gray-900 tabular-nums\">\n              {isNumericValue ? (\n                <>\n                  <AnimatedNumber value={value as number} />\n                  {unit && <span className=\"text-xl ml-1\">{unit}</span>}\n                </>\n              ) : (\n                displayValue\n              )}\n            </div>\n          </div>\n\n          {/* Change indicator */}\n          <div\n            className={`\n              inline-flex items-center gap-2 px-3 py-1.5\n              rounded-md ${bgColor}\n            `}\n          >\n            {isPositive ? (\n              <TrendingUp className={`w-4 h-4 ${trendColor}`} />\n            ) : (\n              <TrendingDown className={`w-4 h-4 ${trendColor}`} />\n            )}\n            <span className={`text-sm font-semibold ${trendColor}`}>\n              {isPositive ? '+' : ''}\n              {change.toFixed(1)}\n              {isPercentage ? '%' : '%'}\n            </span>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n};\n\nconst ChartPlaceholder: React.FC = () => {\n  return (\n    <div className=\"w-full h-80 bg-white rounded-lg border border-gray-200 shadow-sm p-6\">\n      <div className=\"h-full flex flex-col justify-between\">\n        {/* Chart title */}\n        <div className=\"mb-4\">\n          <h3 className=\"text-lg font-semibold text-gray-900\">\n            Revenue Trend\n          </h3>\n          <p className=\"text-sm text-gray-500 mt-1\">\n            Last 7 days performance\n          </p>\n        </div>\n\n        {/* SVG placeholder chart */}\n        <div className=\"flex-1 flex items-end justify-between gap-2 px-4 pb-8\">\n          {[\n            { height: 40, label: 'Mon' },\n            { height: 65, label: 'Tue' },\n            { height: 55, label: 'Wed' },\n            { height: 75, label: 'Thu' },\n            { height: 70, label: 'Fri' },\n            { height: 85, label: 'Sat' },\n            { height: 80, label: 'Sun' },\n          ].map((bar, idx) => (\n            <div key={idx} className=\"flex-1 flex flex-col items-center gap-2\">\n              <div\n                className=\"w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all duration-300 hover:from-blue-600 hover:to-blue-500 cursor-pointer\"\n                style={{ height: `${bar.height * 2.5}px` }}\n              />\n              <span className=\"text-xs text-gray-500\">{bar.label}</span>\n            </div>\n          ))}\n        </div>\n\n        {/* Footer */}\n        <div className=\"flex justify-between items-center pt-4 border-t border-gray-100\">\n          <span className=\"text-xs font-medium text-gray-600\">\n            Total: $48,291\n          </span>\n          <span className=\"text-xs text-green-600 font-semibold\">\n            \u2191 +12.4% vs last week\n          </span>\n        </div>\n      </div>\n    </div>\n  );\n};\n\nconst DashboardKPI: React.FC = () => {\n  const kpiData: KPICardProps[] = [\n    {\n      title: 'Monthly Revenue',\n      value: 48291,\n      change: 12.4,\n      unit: '$',\n      isPercentage: true,\n    },\n    {\n      title: 'Active Users',\n      value: 2847,\n      change: 8.1,\n      unit: '',\n      isPercentage: true,\n    },\n    {\n      title: 'Conversion Rate',\n      value: 3.24,\n      change: -0.3,\n      unit: '%',\n      isPercentage: true,\n    },\n    {\n      title: 'Avg Session Duration',\n      value: '4m 12s',\n      change: 18,\n      unit: '',\n      isPercentage: true,\n    },\n  ];\n\n  return (\n    <div className=\"min-h-screen bg-gray-50 p-6\">\n      <div className=\"max-w-7xl mx-auto\">\n        {/* Header */}\n        <div className=\"mb-8\">\n          <h1 className=\"text-3xl font-bold text-gray-900\">Dashboard</h1>\n          <p className=\"text-gray-600 mt-2\">\n            Welcome back! Here's your performance overview.\n          </p>\n        </div>\n\n        {/* KPI Cards Grid */}\n        <div className=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8\">\n          {kpiData.map((kpi, index) => (\n            <div key={index} className=\"animate-fadeIn\" style={{\n              animationDelay: `${index * 100}ms`,\n            }}>\n              <KPICard {...kpi} />\n            </div>\n          ))}\n        </div>\n\n        {/* Chart Section */}\n        <div className=\"animate-fadeIn\" style={{\n          animationDelay: '400ms',\n        }}>\n          <ChartPlaceholder />\n        </div>\n      </div>\n\n      {/* Animations */}\n      <style jsx>{`\n        @keyframes fadeIn {\n          from {\n            opacity: 0;\n            transform: translateY(20px);\n          }\n          to {\n            opacity: 1;\n            transform: translateY(0);\n          }\n        }\n\n        .animate-fadeIn {\n          animation: fadeIn 0.6s ease-out forwards;\n        }\n      `}</style>\n    </div>\n  );\n};\n\nexport default DashboardKPI;\n"}], "grading": {"run_id": "eval-dashboard-without_skill", "file": "/sessions/hopeful-funny-wright/frontend-design-workspace/iteration-1/eval-dashboard/without_skill/outputs/DashboardKPI.tsx", "pass_rate": 0.3333333333333333, "passed": 2, "total": 6, "expectations": [{"text": "Uses CSS variable color tokens \u2014 consistent color system across all cards", "passed": false, "evidence": "FAIL: uses_css_variable_tokens"}, {"text": "Uses Framer Motion for card entrance/number animation \u2014 not raw CSS transitions", "passed": false, "evidence": "FAIL: uses_framer_motion_animation"}, {"text": "Applies tabular-nums to number display \u2014 prevents layout shift as numbers change", "passed": true, "evidence": "PASS: uses_tabular_nums"}, {"text": "Uses staggered entrance animation for cards \u2014 cards appear sequentially, not all at once", "passed": false, "evidence": "FAIL: has_stagger_animation"}, {"text": "Uses emerald/green for positive delta and red for negative delta \u2014 not just a generic color", "passed": true, "evidence": "PASS: semantic_delta_colors"}, {"text": "Uses small uppercase tracking-widest label above the number \u2014 proper KPI card typography hierarchy", "passed": false, "evidence": "FAIL: kpi_micro_label_pattern"}]}}, {"id": "eval-settings-with_skill", "prompt": "\u7528 React + TypeScript + Tailwind CSS \u505a\u4e00\u4e2a\u7528\u6237\u8bbe\u7f6e\u9875\u9762\uff08Settings Page\uff09\u3002\u5de6\u4fa7\u6709\u5bfc\u822a\u83dc\u5355\uff08Profile\u3001Security\u3001Notifications\u3001Billing 4\u4e2a\u9009\u9879\uff09\uff0c\u53f3\u4fa7\u663e\u793a Profile \u5185\u5bb9\uff1a\u5934\u50cf\u4e0a\u4f20\u533a\u57df\uff08\u5706\u5f62\u5934\u50cf + \u4e0a\u4f20\u6309\u94ae\uff09\u3001\u59d3\u540d/\u90ae\u7bb1\u8f93\u5165\u6846\u3001Bio \u6587\u672c\u6846\u3001\u4fdd\u5b58\u6309\u94ae\u3002\u6574\u4f53\u98ce\u683c\u8981\u73b0\u4ee3\u7b80\u6d01\uff0c\u6709 section \u5206\u7ec4\uff0c\u5b57\u4f53\u6392\u7248\u4e13\u4e1a\uff0cactive \u72b6\u6001\u8981\u7cbe\u81f4\u3002\u8f93\u51fa\u5b8c\u6574\u7684 SettingsPage.tsx\u3002", "eval_id": 2, "outputs": [{"name": "SettingsPage.tsx", "type": "text", "content": "'use client';\n\nimport { useState, useRef } from 'react';\nimport { motion } from 'framer-motion';\nimport { User, Lock, Bell, CreditCard, Camera, Check } from 'lucide-react';\n\ntype Tab = 'profile' | 'security' | 'notifications' | 'billing';\n\nconst spring = { type: 'spring' as const, stiffness: 280, damping: 22 };\n\nexport default function SettingsPage() {\n  const [activeTab, setActiveTab] = useState<Tab>('profile');\n  const [isSaving, setIsSaving] = useState(false);\n  const [fullName, setFullName] = useState('Sarah Anderson');\n  const [email, setEmail] = useState('sarah.anderson@company.com');\n  const [bio, setBio] = useState('Product designer based in San Francisco. Coffee enthusiast.');\n  const [avatar, setAvatar] = useState('/avatar.jpg');\n  const fileInputRef = useRef<HTMLInputElement>(null);\n\n  const navItems: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [\n    { id: 'profile', label: 'Profile', icon: <User className=\"h-4 w-4\" /> },\n    { id: 'security', label: 'Security', icon: <Lock className=\"h-4 w-4\" /> },\n    { id: 'notifications', label: 'Notifications', icon: <Bell className=\"h-4 w-4\" /> },\n    { id: 'billing', label: 'Billing', icon: <CreditCard className=\"h-4 w-4\" /> },\n  ];\n\n  const handleAvatarClick = () => {\n    fileInputRef.current?.click();\n  };\n\n  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {\n    const file = e.target.files?.[0];\n    if (file) {\n      const reader = new FileReader();\n      reader.onload = (event) => {\n        setAvatar(event.target?.result as string);\n      };\n      reader.readAsDataURL(file);\n    }\n  };\n\n  const handleSave = async () => {\n    setIsSaving(true);\n    // Simulate API call\n    await new Promise((resolve) => setTimeout(resolve, 1200));\n    setIsSaving(false);\n  };\n\n  return (\n    <main className=\"min-h-screen bg-background\">\n      <div className=\"mx-auto max-w-screen-lg px-6 py-10\">\n        {/* Page header */}\n        <motion.div\n          initial={{ opacity: 0, y: -8 }}\n          animate={{ opacity: 1, y: 0 }}\n          transition={{ duration: 0.3 }}\n          className=\"mb-10\"\n        >\n          <h1 className=\"text-3xl font-semibold tracking-tight text-foreground\">\n            Settings\n          </h1>\n          <p className=\"mt-3 text-[15px] text-muted-foreground leading-7 max-w-xl\">\n            Manage your account preferences and profile information. Keep your details up to date.\n          </p>\n        </motion.div>\n\n        {/* Settings layout: sidebar nav + content panel */}\n        <div className=\"grid grid-cols-[240px_1fr] gap-12\">\n          {/* Sidebar Navigation */}\n          <motion.nav\n            initial={{ opacity: 0, x: -12 }}\n            animate={{ opacity: 1, x: 0 }}\n            transition={{ duration: 0.3 }}\n            className=\"space-y-1.5\"\n          >\n            {navItems.map((item) => (\n              <motion.button\n                key={item.id}\n                onClick={() => setActiveTab(item.id)}\n                whileHover={{ x: 2 }}\n                whileTap={{ scale: 0.98 }}\n                transition={spring}\n                className={`w-full flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${\n                  activeTab === item.id\n                    ? 'bg-[hsl(var(--accent)/0.08)] text-[hsl(var(--accent))]'\n                    : 'text-muted-foreground hover:bg-[hsl(var(--surface))] hover:text-foreground'\n                }`}\n              >\n                {item.icon}\n                {item.label}\n              </motion.button>\n            ))}\n          </motion.nav>\n\n          {/* Content Panel */}\n          <motion.div\n            initial={{ opacity: 0, y: 8 }}\n            animate={{ opacity: 1, y: 0 }}\n            transition={{ duration: 0.3, delay: 0.05 }}\n            className=\"space-y-8\"\n          >\n            {activeTab === 'profile' && (\n              <div className=\"space-y-6\">\n                {/* Avatar Section */}\n                <section className=\"rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6\">\n                  <div className=\"space-y-4\">\n                    <div>\n                      <h2 className=\"text-base font-semibold text-foreground\">\n                        Profile Photo\n                      </h2>\n                      <p className=\"mt-1 text-sm text-muted-foreground\">\n                        Upload a new profile picture to personalize your account.\n                      </p>\n                    </div>\n\n                    <div className=\"flex items-center gap-6\">\n                      {/* Avatar Display */}\n                      <motion.div\n                        whileHover={{ scale: 1.02 }}\n                        transition={spring}\n                        className=\"relative h-24 w-24 shrink-0\"\n                      >\n                        <img\n                          src={avatar}\n                          alt=\"Profile\"\n                          className=\"h-24 w-24 rounded-full border-3 border-[hsl(var(--border))] object-cover\"\n                        />\n                        <motion.button\n                          onClick={handleAvatarClick}\n                          whileHover={{ scale: 1.1 }}\n                          whileTap={{ scale: 0.9 }}\n                          transition={spring}\n                          className=\"absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--accent))] text-[hsl(var(--accent-fg))] shadow-lg hover:opacity-90 transition-opacity\"\n                        >\n                          <Camera className=\"h-5 w-5\" />\n                        </motion.button>\n                      </motion.div>\n\n                      {/* Upload instructions */}\n                      <div className=\"space-y-2.5\">\n                        <p className=\"text-sm font-medium text-foreground\">\n                          Change your avatar\n                        </p>\n                        <p className=\"text-[13px] text-muted-foreground max-w-xs leading-6\">\n                          JPG, PNG or GIF. Max size 2MB. For best results, use a square image.\n                        </p>\n                        <input\n                          ref={fileInputRef}\n                          type=\"file\"\n                          accept=\"image/*\"\n                          onChange={handleAvatarChange}\n                          className=\"hidden\"\n                        />\n                      </div>\n                    </div>\n                  </div>\n                </section>\n\n                {/* Profile Information Section */}\n                <section className=\"rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6\">\n                  <div className=\"space-y-4\">\n                    <div>\n                      <h2 className=\"text-base font-semibold text-foreground\">\n                        Profile Information\n                      </h2>\n                      <p className=\"mt-1 text-sm text-muted-foreground\">\n                        Update your name and email address.\n                      </p>\n                    </div>\n\n                    {/* Form Fields */}\n                    <div className=\"space-y-4 pt-2\">\n                      {/* Full Name Field */}\n                      <div className=\"space-y-1.5\">\n                        <label className=\"text-sm font-medium text-foreground\">\n                          Full Name\n                        </label>\n                        <input\n                          type=\"text\"\n                          value={fullName}\n                          onChange={(e) => setFullName(e.target.value)}\n                          placeholder=\"Your full name\"\n                          className=\"w-full rounded-xl border border-[hsl(var(--border))] bg-background px-3.5 py-2.5 text-[15px] text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-200 focus:border-[hsl(var(--accent))] focus:ring-2 focus:ring-[hsl(var(--accent)/0.2)]\"\n                        />\n                      </div>\n\n                      {/* Email Field */}\n                      <div className=\"space-y-1.5\">\n                        <label className=\"text-sm font-medium text-foreground\">\n                          Email Address\n                        </label>\n                        <input\n                          type=\"email\"\n                          value={email}\n                          onChange={(e) => setEmail(e.target.value)}\n                          placeholder=\"your.email@company.com\"\n                          className=\"w-full rounded-xl border border-[hsl(var(--border))] bg-background px-3.5 py-2.5 text-[15px] text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-200 focus:border-[hsl(var(--accent))] focus:ring-2 focus:ring-[hsl(var(--accent)/0.2)]\"\n                        />\n                      </div>\n\n                      {/* Bio Field */}\n                      <div className=\"space-y-1.5\">\n                        <label className=\"text-sm font-medium text-foreground\">\n                          Bio\n                        </label>\n                        <textarea\n                          value={bio}\n                          onChange={(e) => setBio(e.target.value)}\n                          placeholder=\"Tell us about yourself...\"\n                          rows={3}\n                          className=\"w-full rounded-xl border border-[hsl(var(--border))] bg-background px-3.5 py-2.5 text-[15px] text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-200 focus:border-[hsl(var(--accent))] focus:ring-2 focus:ring-[hsl(var(--accent)/0.2)] resize-none\"\n                        />\n                      </div>\n                    </div>\n                  </div>\n\n                  {/* Action Footer */}\n                  <div className=\"mt-6 flex justify-end border-t border-[hsl(var(--border))] pt-6\">\n                    <motion.button\n                      onClick={handleSave}\n                      disabled={isSaving}\n                      whileHover={!isSaving ? { y: -1, opacity: 0.92 } : {}}\n                      whileTap={!isSaving ? { scale: 0.96, y: 0 } : {}}\n                      transition={spring}\n                      className=\"inline-flex items-center gap-2 rounded-xl px-5 h-10 bg-[hsl(var(--accent))] text-[hsl(var(--accent-fg))] text-sm font-medium shadow-[0_1px_3px_hsl(var(--accent)/0.5)] hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-75\"\n                    >\n                      {isSaving ? (\n                        <>\n                          <motion.div\n                            animate={{ rotate: 360 }}\n                            transition={{\n                              duration: 1,\n                              repeat: Infinity,\n                              ease: 'linear',\n                            }}\n                            className=\"h-4 w-4 rounded-full border-2 border-[hsl(var(--accent-fg))] border-t-transparent\"\n                          />\n                          Saving...\n                        </>\n                      ) : (\n                        <>\n                          <Check className=\"h-4 w-4\" />\n                          Save Changes\n                        </>\n                      )}\n                    </motion.button>\n                  </div>\n                </section>\n              </div>\n            )}\n\n            {/* Placeholder sections for other tabs */}\n            {activeTab === 'security' && (\n              <section className=\"rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6\">\n                <h2 className=\"text-base font-semibold text-foreground\">Security Settings</h2>\n                <p className=\"mt-3 text-sm text-muted-foreground\">\n                  Manage your password and two-factor authentication.\n                </p>\n              </section>\n            )}\n\n            {activeTab === 'notifications' && (\n              <section className=\"rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6\">\n                <h2 className=\"text-base font-semibold text-foreground\">Notification Preferences</h2>\n                <p className=\"mt-3 text-sm text-muted-foreground\">\n                  Control what notifications you receive and how.\n                </p>\n              </section>\n            )}\n\n            {activeTab === 'billing' && (\n              <section className=\"rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6\">\n                <h2 className=\"text-base font-semibold text-foreground\">Billing & Subscription</h2>\n                <p className=\"mt-3 text-sm text-muted-foreground\">\n                  Manage your subscription plan and payment methods.\n                </p>\n              </section>\n            )}\n          </motion.div>\n        </div>\n      </div>\n    </main>\n  );\n}\n"}], "grading": {"run_id": "eval-settings-with_skill", "file": "/sessions/hopeful-funny-wright/frontend-design-workspace/iteration-1/eval-settings/with_skill/outputs/SettingsPage.tsx", "pass_rate": 1.0, "passed": 6, "total": 6, "expectations": [{"text": "Uses CSS variable color tokens for consistent theming", "passed": true, "evidence": "PASS: uses_css_variable_tokens"}, {"text": "Uses CSS grid for sidebar layout (grid-cols-[...]) \u2014 not just flexbox that can break at narrow widths", "passed": true, "evidence": "PASS: uses_grid_sidebar_layout"}, {"text": "Active nav item uses accent tint background, not just font-bold \u2014 more refined visual indicator", "passed": true, "evidence": "PASS: accent_tinted_active_state"}, {"text": "Uses Framer Motion for micro-interactions", "passed": true, "evidence": "PASS: uses_framer_motion"}, {"text": "Input fields have focus ring tied to accent color \u2014 visually connected to brand", "passed": true, "evidence": "PASS: input_focus_ring_accent"}, {"text": "Content is organized in rounded section cards with border \u2014 not flat unseparated fields", "passed": true, "evidence": "PASS: section_card_pattern"}]}}, {"id": "eval-settings-without_skill", "prompt": "\u7528 React + TypeScript + Tailwind CSS \u505a\u4e00\u4e2a\u7528\u6237\u8bbe\u7f6e\u9875\u9762\uff08Settings Page\uff09\u3002\u5de6\u4fa7\u6709\u5bfc\u822a\u83dc\u5355\uff08Profile\u3001Security\u3001Notifications\u3001Billing 4\u4e2a\u9009\u9879\uff09\uff0c\u53f3\u4fa7\u663e\u793a Profile \u5185\u5bb9\uff1a\u5934\u50cf\u4e0a\u4f20\u533a\u57df\uff08\u5706\u5f62\u5934\u50cf + \u4e0a\u4f20\u6309\u94ae\uff09\u3001\u59d3\u540d/\u90ae\u7bb1\u8f93\u5165\u6846\u3001Bio \u6587\u672c\u6846\u3001\u4fdd\u5b58\u6309\u94ae\u3002\u6574\u4f53\u98ce\u683c\u8981\u73b0\u4ee3\u7b80\u6d01\uff0c\u6709 section \u5206\u7ec4\uff0c\u5b57\u4f53\u6392\u7248\u4e13\u4e1a\uff0cactive \u72b6\u6001\u8981\u7cbe\u81f4\u3002\u8f93\u51fa\u5b8c\u6574\u7684 SettingsPage.tsx\u3002", "eval_id": 2, "outputs": [{"name": "SettingsPage.tsx", "type": "text", "content": "'use client';\n\nimport React, { useState, useRef } from 'react';\nimport { User, Lock, Bell, CreditCard, Upload, X } from 'lucide-react';\n\ntype SettingsSection = 'profile' | 'security' | 'notifications' | 'billing';\n\ninterface ProfileFormData {\n  name: string;\n  email: string;\n  bio: string;\n  avatar: string | null;\n}\n\nconst SettingsPage: React.FC = () => {\n  const [activeSection, setActiveSection] = useState<SettingsSection>('profile');\n  const [formData, setFormData] = useState<ProfileFormData>({\n    name: 'John Doe',\n    email: 'john.doe@example.com',\n    bio: 'Software developer and creative thinker.',\n    avatar: null,\n  });\n  const [isSaving, setIsSaving] = useState(false);\n  const [saveSuccess, setSaveSuccess] = useState(false);\n  const fileInputRef = useRef<HTMLInputElement>(null);\n\n  const handleAvatarClick = () => {\n    fileInputRef.current?.click();\n  };\n\n  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {\n    const file = event.target.files?.[0];\n    if (file) {\n      const reader = new FileReader();\n      reader.onload = (e) => {\n        setFormData((prev) => ({\n          ...prev,\n          avatar: e.target?.result as string,\n        }));\n      };\n      reader.readAsDataURL(file);\n    }\n  };\n\n  const handleRemoveAvatar = (e: React.MouseEvent) => {\n    e.stopPropagation();\n    setFormData((prev) => ({\n      ...prev,\n      avatar: null,\n    }));\n    if (fileInputRef.current) {\n      fileInputRef.current.value = '';\n    }\n  };\n\n  const handleInputChange = (\n    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>\n  ) => {\n    const { name, value } = e.target;\n    setFormData((prev) => ({\n      ...prev,\n      [name]: value,\n    }));\n  };\n\n  const handleSave = async () => {\n    setIsSaving(true);\n    // Simulate API call\n    await new Promise((resolve) => setTimeout(resolve, 1000));\n    setIsSaving(false);\n    setSaveSuccess(true);\n    setTimeout(() => setSaveSuccess(false), 3000);\n  };\n\n  const navItems: Array<{\n    id: SettingsSection;\n    label: string;\n    icon: React.ReactNode;\n  }> = [\n    { id: 'profile', label: 'Profile', icon: <User size={20} /> },\n    { id: 'security', label: 'Security', icon: <Lock size={20} /> },\n    { id: 'notifications', label: 'Notifications', icon: <Bell size={20} /> },\n    { id: 'billing', label: 'Billing', icon: <CreditCard size={20} /> },\n  ];\n\n  return (\n    <div className=\"min-h-screen bg-gradient-to-br from-slate-50 to-slate-100\">\n      <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8\">\n        {/* Header */}\n        <div className=\"mb-8\">\n          <h1 className=\"text-3xl font-bold text-slate-900\">Settings</h1>\n          <p className=\"text-slate-600 mt-2\">Manage your account preferences and settings</p>\n        </div>\n\n        <div className=\"flex gap-8\">\n          {/* Left Sidebar Navigation */}\n          <aside className=\"w-64 flex-shrink-0\">\n            <nav className=\"space-y-2\">\n              {navItems.map((item) => (\n                <button\n                  key={item.id}\n                  onClick={() => setActiveSection(item.id)}\n                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${\n                    activeSection === item.id\n                      ? 'bg-white text-blue-600 shadow-md border-l-4 border-blue-600'\n                      : 'text-slate-700 hover:bg-white/50 hover:text-slate-900'\n                  }`}\n                >\n                  <span\n                    className={`transition-colors ${\n                      activeSection === item.id ? 'text-blue-600' : 'text-slate-400'\n                    }`}\n                  >\n                    {item.icon}\n                  </span>\n                  {item.label}\n                </button>\n              ))}\n            </nav>\n          </aside>\n\n          {/* Right Content Area */}\n          <main className=\"flex-1\">\n            {activeSection === 'profile' && (\n              <div className=\"bg-white rounded-xl shadow-sm border border-slate-200 p-8\">\n                {/* Avatar Section */}\n                <div className=\"mb-8\">\n                  <h2 className=\"text-xl font-semibold text-slate-900 mb-6\">Profile Picture</h2>\n                  <div className=\"flex items-end gap-6\">\n                    {/* Avatar Circle */}\n                    <div\n                      onClick={handleAvatarClick}\n                      className=\"relative group cursor-pointer flex-shrink-0\"\n                    >\n                      <div className=\"w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden shadow-lg transition-transform duration-200 group-hover:scale-105\">\n                        {formData.avatar ? (\n                          <img\n                            src={formData.avatar}\n                            alt=\"Avatar\"\n                            className=\"w-full h-full object-cover\"\n                          />\n                        ) : (\n                          <User size={48} className=\"text-white\" />\n                        )}\n                      </div>\n                      {/* Hover Overlay */}\n                      <div className=\"absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center\">\n                        <Upload size={28} className=\"text-white\" />\n                      </div>\n                      {/* Remove Button */}\n                      {formData.avatar && (\n                        <button\n                          onClick={handleRemoveAvatar}\n                          className=\"absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition-colors\"\n                        >\n                          <X size={16} />\n                        </button>\n                      )}\n                    </div>\n\n                    <div>\n                      <input\n                        ref={fileInputRef}\n                        type=\"file\"\n                        accept=\"image/*\"\n                        onChange={handleAvatarChange}\n                        className=\"hidden\"\n                        aria-label=\"Upload avatar\"\n                      />\n                      <p className=\"text-sm text-slate-600 mb-2\">\n                        Click on the image to upload a new photo\n                      </p>\n                      <p className=\"text-xs text-slate-500\">\n                        Recommended size: 400x400px. Max file size: 5MB\n                      </p>\n                    </div>\n                  </div>\n                </div>\n\n                <hr className=\"my-8 border-slate-200\" />\n\n                {/* Personal Information Section */}\n                <div className=\"mb-8\">\n                  <h2 className=\"text-xl font-semibold text-slate-900 mb-6\">\n                    Personal Information\n                  </h2>\n                  <div className=\"space-y-6\">\n                    {/* Name Field */}\n                    <div>\n                      <label htmlFor=\"name\" className=\"block text-sm font-medium text-slate-700 mb-2\">\n                        Full Name\n                      </label>\n                      <input\n                        id=\"name\"\n                        type=\"text\"\n                        name=\"name\"\n                        value={formData.name}\n                        onChange={handleInputChange}\n                        className=\"w-full px-4 py-2.5 border border-slate-300 rounded-lg font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200\"\n                        placeholder=\"Enter your full name\"\n                      />\n                    </div>\n\n                    {/* Email Field */}\n                    <div>\n                      <label htmlFor=\"email\" className=\"block text-sm font-medium text-slate-700 mb-2\">\n                        Email Address\n                      </label>\n                      <input\n                        id=\"email\"\n                        type=\"email\"\n                        name=\"email\"\n                        value={formData.email}\n                        onChange={handleInputChange}\n                        className=\"w-full px-4 py-2.5 border border-slate-300 rounded-lg font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200\"\n                        placeholder=\"Enter your email address\"\n                      />\n                    </div>\n\n                    {/* Bio Field */}\n                    <div>\n                      <label htmlFor=\"bio\" className=\"block text-sm font-medium text-slate-700 mb-2\">\n                        Bio\n                      </label>\n                      <textarea\n                        id=\"bio\"\n                        name=\"bio\"\n                        value={formData.bio}\n                        onChange={handleInputChange}\n                        rows={4}\n                        className=\"w-full px-4 py-2.5 border border-slate-300 rounded-lg font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none\"\n                        placeholder=\"Tell us about yourself\"\n                      />\n                      <p className=\"text-xs text-slate-500 mt-2\">\n                        Maximum 500 characters\n                      </p>\n                    </div>\n                  </div>\n                </div>\n\n                <hr className=\"my-8 border-slate-200\" />\n\n                {/* Action Buttons */}\n                <div className=\"flex items-center gap-4\">\n                  <button\n                    onClick={handleSave}\n                    disabled={isSaving}\n                    className=\"px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md\"\n                  >\n                    {isSaving ? 'Saving...' : 'Save Changes'}\n                  </button>\n                  <button className=\"px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors duration-200\">\n                    Cancel\n                  </button>\n\n                  {/* Success Message */}\n                  {saveSuccess && (\n                    <div className=\"ml-auto flex items-center gap-2 text-green-600 text-sm font-medium\">\n                      <div className=\"w-5 h-5 rounded-full bg-green-100 flex items-center justify-center\">\n                        <span className=\"text-green-600\">\u2713</span>\n                      </div>\n                      Changes saved successfully!\n                    </div>\n                  )}\n                </div>\n              </div>\n            )}\n\n            {activeSection === 'security' && (\n              <div className=\"bg-white rounded-xl shadow-sm border border-slate-200 p-8\">\n                <h2 className=\"text-2xl font-bold text-slate-900 mb-6\">Security Settings</h2>\n                <p className=\"text-slate-600\">Security settings content coming soon...</p>\n              </div>\n            )}\n\n            {activeSection === 'notifications' && (\n              <div className=\"bg-white rounded-xl shadow-sm border border-slate-200 p-8\">\n                <h2 className=\"text-2xl font-bold text-slate-900 mb-6\">Notifications</h2>\n                <p className=\"text-slate-600\">Notification preferences content coming soon...</p>\n              </div>\n            )}\n\n            {activeSection === 'billing' && (\n              <div className=\"bg-white rounded-xl shadow-sm border border-slate-200 p-8\">\n                <h2 className=\"text-2xl font-bold text-slate-900 mb-6\">Billing</h2>\n                <p className=\"text-slate-600\">Billing information content coming soon...</p>\n              </div>\n            )}\n          </main>\n        </div>\n      </div>\n    </div>\n  );\n};\n\nexport default SettingsPage;\n"}], "grading": {"run_id": "eval-settings-without_skill", "file": "/sessions/hopeful-funny-wright/frontend-design-workspace/iteration-1/eval-settings/without_skill/outputs/SettingsPage.tsx", "pass_rate": 0.0, "passed": 0, "total": 6, "expectations": [{"text": "Uses CSS variable color tokens for consistent theming", "passed": false, "evidence": "FAIL: uses_css_variable_tokens"}, {"text": "Uses CSS grid for sidebar layout (grid-cols-[...]) \u2014 not just flexbox that can break at narrow widths", "passed": false, "evidence": "FAIL: uses_grid_sidebar_layout"}, {"text": "Active nav item uses accent tint background, not just font-bold \u2014 more refined visual indicator", "passed": false, "evidence": "FAIL: accent_tinted_active_state"}, {"text": "Uses Framer Motion for micro-interactions", "passed": false, "evidence": "FAIL: uses_framer_motion"}, {"text": "Input fields have focus ring tied to accent color \u2014 visually connected to brand", "passed": false, "evidence": "FAIL: input_focus_ring_accent"}, {"text": "Content is organized in rounded section cards with border \u2014 not flat unseparated fields", "passed": false, "evidence": "FAIL: section_card_pattern"}]}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "frontend-design", "skill_path": "/sessions/hopeful-funny-wright/frontend-design", "executor_model": "claude-sonnet-4-6", "timestamp": "2026-03-22T00:00:00Z", "evals_run": [0, 1, 2], "runs_per_configuration": 1}, "runs": [{"eval_id": 0, "eval_name": "eval-login", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 40.2, "tokens": 47912, "tool_calls": 7, "errors": 0}, "expectations": [{"text": "Uses semantic CSS variable tokens instead of raw Tailwind color names", "passed": true, "evidence": "36 occurrences of hsl(var(--"}, {"text": "Imports and uses Framer Motion for entrance animations", "passed": true, "evidence": "48 references to framer-motion/motion."}, {"text": "Does not use from-blue/from-indigo hero gradients", "passed": true, "evidence": "0 gradient hero patterns"}, {"text": "Uses tracking-tight on the main heading", "passed": true, "evidence": "tracking-tight found"}, {"text": "Uses semantic text color tokens (text-foreground, muted-foreground)", "passed": true, "evidence": "text-foreground and muted-foreground found throughout"}, {"text": "Inputs have a custom focus ring tied to the brand accent color", "passed": true, "evidence": "focus:ring and accent patterns found"}]}, {"eval_id": 0, "eval_name": "eval-login", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.333, "passed": 2, "failed": 4, "total": 6, "time_seconds": 28.2, "tokens": 26099, "tool_calls": 2, "errors": 0}, "expectations": [{"text": "Uses semantic CSS variable tokens instead of raw Tailwind color names", "passed": false, "evidence": "0 occurrences of hsl(var(-- \u2014 uses raw Tailwind colors throughout"}, {"text": "Imports and uses Framer Motion for entrance animations", "passed": false, "evidence": "No framer-motion import \u2014 static UI with CSS transitions only"}, {"text": "Does not use from-blue/from-indigo hero gradients", "passed": false, "evidence": "4 occurrences of from-blue/from-indigo gradient patterns in hero+logo+avatar"}, {"text": "Uses tracking-tight on the main heading", "passed": true, "evidence": "tracking-tight found on heading"}, {"text": "Uses semantic text color tokens (text-foreground, muted-foreground)", "passed": false, "evidence": "Uses text-slate-* and text-white \u2014 not semantic tokens"}, {"text": "Inputs have a custom focus ring tied to the brand accent color", "passed": true, "evidence": "focus:ring found"}]}, {"eval_id": 1, "eval_name": "eval-dashboard", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 33.9, "tokens": 46525, "tool_calls": 7, "errors": 0}, "expectations": [{"text": "Uses CSS variable color tokens for consistent theming", "passed": true, "evidence": "11 occurrences of hsl(var(--"}, {"text": "Uses Framer Motion for card entrance and number animation", "passed": true, "evidence": "framer-motion imported, animate() and motion.div used"}, {"text": "Applies tabular-nums to KPI number display", "passed": true, "evidence": "tabular-nums found 2 times"}, {"text": "Uses staggered entrance animation for cards (not all-at-once)", "passed": true, "evidence": "staggerChildren and delayChildren found in variants"}, {"text": "Uses emerald for positive delta and red for negative delta", "passed": true, "evidence": "emerald-600 and red-500 used for semantic delta colors"}, {"text": "Uses micro-label typography (uppercase tracking-widest above number)", "passed": true, "evidence": "tracking-widest and uppercase found for stat labels"}]}, {"eval_id": 1, "eval_name": "eval-dashboard", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.333, "passed": 2, "failed": 4, "total": 6, "time_seconds": 17.7, "tokens": 24871, "tool_calls": 1, "errors": 0}, "expectations": [{"text": "Uses CSS variable color tokens for consistent theming", "passed": false, "evidence": "0 occurrences of hsl(var(-- \u2014 raw Tailwind colors"}, {"text": "Uses Framer Motion for card entrance and number animation", "passed": false, "evidence": "No framer-motion \u2014 uses requestAnimationFrame directly"}, {"text": "Applies tabular-nums to KPI number display", "passed": true, "evidence": "tabular-nums found"}, {"text": "Uses staggered entrance animation for cards (not all-at-once)", "passed": false, "evidence": "No staggerChildren \u2014 all cards fade in simultaneously"}, {"text": "Uses emerald for positive delta and red for negative delta", "passed": true, "evidence": "TrendingUp/TrendingDown with green/red coloring"}, {"text": "Uses micro-label typography (uppercase tracking-widest above number)", "passed": false, "evidence": "No tracking-widest or uppercase \u2014 flat typography hierarchy"}]}, {"eval_id": 2, "eval_name": "eval-settings", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 30.4, "tokens": 46737, "tool_calls": 6, "errors": 0}, "expectations": [{"text": "Uses CSS variable color tokens for consistent theming", "passed": true, "evidence": "15 occurrences of hsl(var(--"}, {"text": "Uses CSS grid for sidebar layout (grid-cols-[...])", "passed": true, "evidence": "grid-cols-[ found in layout"}, {"text": "Active nav item uses accent tint background (not just font-bold)", "passed": true, "evidence": "accent/0. opacity pattern found for active state"}, {"text": "Uses Framer Motion for micro-interactions", "passed": true, "evidence": "framer-motion imported and used on interactive elements"}, {"text": "Input fields have focus ring tied to accent color", "passed": true, "evidence": "focus:ring with accent color pattern found"}, {"text": "Content organized in rounded section cards with border", "passed": true, "evidence": "rounded-2xl border pattern found multiple times"}]}, {"eval_id": 2, "eval_name": "eval-settings", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.0, "passed": 0, "failed": 6, "total": 6, "time_seconds": 23.3, "tokens": 25917, "tool_calls": 2, "errors": 0}, "expectations": [{"text": "Uses CSS variable color tokens for consistent theming", "passed": false, "evidence": "0 occurrences of hsl(var(-- \u2014 hardcoded raw Tailwind colors throughout"}, {"text": "Uses CSS grid for sidebar layout (grid-cols-[...])", "passed": false, "evidence": "No grid-cols-[ \u2014 uses flex layout"}, {"text": "Active nav item uses accent tint background (not just font-bold)", "passed": false, "evidence": "Active uses border-left + gradient background, no accent token"}, {"text": "Uses Framer Motion for micro-interactions", "passed": false, "evidence": "No framer-motion \u2014 CSS transitions only"}, {"text": "Input fields have focus ring tied to accent color", "passed": false, "evidence": "Default browser focus ring \u2014 not tied to brand accent"}, {"text": "Content organized in rounded section cards with border", "passed": false, "evidence": "Uses bg-white with shadow-sm \u2014 shadow-based, not border-based"}]}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 34.8, "stddev": 4.9, "min": 30.4, "max": 40.2}, "tokens": {"mean": 47058, "stddev": 561, "min": 46525, "max": 47912}}, "without_skill": {"pass_rate": {"mean": 0.222, "stddev": 0.192, "min": 0.0, "max": 0.333}, "time_seconds": {"mean": 23.1, "stddev": 5.3, "min": 17.7, "max": 28.2}, "tokens": {"mean": 25629, "stddev": 1089, "min": 24871, "max": 26099}}}}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

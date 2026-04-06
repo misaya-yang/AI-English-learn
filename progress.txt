@@ -1,0 +1,115 @@
+## [S01-design-system] - 2026-04-06
+- 完成: 统一设计系统升级 — 补全语义化颜色令牌、字体比例、微交互动画
+- 注意事项:
+  - 项目已有完善的设计令牌系统（CSS vars + Tailwind），主要补全 danger 颜色和 fontSize 映射
+  - 修复了 gamification.ts 和 wordService.ts 中预存在的 TS 构建错误
+  - 页面级文件（PricingPage、TodayPage 等）仍有大量 hardcoded emerald 颜色，后续 story 可逐步替换
+  - UI 组件库（src/components/ui/）已全部使用语义化令牌，质量很好
+- 文件变更:
+  - tailwind.config.js (danger color, fontSize tokens, keyframes, animations)
+  - src/index.css (danger CSS vars, micro-interaction utilities, fix hardcoded emerald in markdown)
+  - src/services/gamification.ts (fix TS2322 type error)
+  - src/services/wordService.ts (fix TS2551 type error)
+
+## [S02-landing-page] - 2026-04-06
+- 完成: Landing Page 增加 AI 对话演示动画和第 4 张核心功能卡片
+- 注意事项:
+  - 现有 Home.tsx 已经非常完善（parallax hero、3D cards、glass 效果、响应式、i18n）
+  - 新增 AIChatDemo 组件使用 framer-motion AnimatePresence + 循环定时器模拟对话
+  - Outcomes 区域从 3 列升级为 4 列响应式布局
+  - 所有滚动动画和 CTA 按钮保持不变
+- 文件变更:
+  - src/pages/Home.tsx (AIChatDemo component, 4th outcome card, grid update)
+
+## [S03-ai-chat-upgrade] - 2026-04-06
+- 完成: AI 对话引擎升级 — 动态提示词、主动推荐、语音输入
+- 注意事项:
+  - 弱点标签注入（deriveChatWeakTags）已经完整实现，无需额外修改
+  - 流式渲染已有 framer-motion 动画 cursor，质量好
+  - Quick Prompts 现在根据 level/dueCount/examGoal/incompleteTasks 动态生成
+  - 主动推荐支持 3 场景：复习压力、每日任务、等级建议
+  - Web Speech API 仅支持 Chrome/Edge/Safari，已做 isSupported 检测
+- 文件变更:
+  - src/pages/dashboard/ChatPage.tsx (dynamic prompts, recommendations, voice integration)
+  - src/features/chat/components/ChatWelcome.tsx (recommendations UI, buildRecommendations)
+  - src/features/chat/components/ChatComposer.tsx (mic button)
+  - src/hooks/useSpeechRecognition.ts (new: Web Speech API hook)
+
+## [S04-learning-dashboard] - 2026-04-06
+- 完成: Today 页面智能化升级 — 庆祝动画、连续学习火焰、XP 计数器
+- 注意事项:
+  - TodayPage 已有完善的 AI 驱动摘要（useLearningOverviewQuery）和智能任务排序
+  - 主要新增：ConfettiCelebration（CSS粒子）、StreakFire（bouncing 火焰）、XPCounter（spring 动画）
+  - 全部词汇学完触发 confetti + 自动 3 秒后消失
+  - CircularProgress 环形进度条和快速开始按钮已存在
+- 文件变更:
+  - src/pages/dashboard/TodayPage.tsx (ConfettiCelebration, StreakFire, XPCounter, confetti trigger)
+  - src/index.css (confetti-fall keyframe)
+
+## [S05-review-experience] - 2026-04-06
+- 完成: 复习体验优化 — 记忆强度色条、AI 助记提示
+- 注意事项:
+  - ReviewPage 已有完善功能：键盘 1-4 快捷键、TTS、FSRS 数据显示、批量统计
+  - 新增 retrievability 渐变色条（绿/橙/红，带动画）
+  - 新增 AI 助记提示（使用 word.memoryTip/etymology，reveal 后显示）
+  - FlashCard 翻转动画用 spring physics，已流畅
+- 文件变更:
+  - src/pages/dashboard/ReviewPage.tsx (MemoryStrengthBar, MnemonicHint)
+
+## [S06-practice-gamification] - 2026-04-06
+- 完成: 练习系统游戏化增强 — 限时模式、连击计数、动画反馈、错题本
+- 注意事项:
+  - PracticePage 已支持 4 种模式（quiz/fill_blank/listening/writing）
+  - 新增 timedMode 状态 + 60 秒倒计时，时间到自动结束
+  - combo 连击系统：每次正确 +1，错误归零，结果页显示最高连击
+  - motion.div 包裹选项：正确放大脉冲、错误左右抖动
+  - errorNotebook 在结果页显示错过的单词列表
+- 文件变更:
+  - src/pages/dashboard/PracticePage.tsx (timed mode, combo, animations, error notebook)
+
+## [S07-analytics-insights] - 2026-04-06
+- 完成: 学习分析与 AI 洞察 — 周报、词汇分布、雷达图
+- 注意事项:
+  - AnalyticsPage 已有完善的图表（BarChart/PieChart/AreaChart/LineChart + 热力图 + 遗忘曲线）
+  - 新增 AI Insights Tab：周报 + 词汇状态分布 + 6 维雷达图
+  - RadarChart 使用 Recharts 原生组件，6 个维度全来自真实数据
+  - 周报根据 weeklyData/fsrsStats/streak 动态生成建议
+- 文件变更:
+  - src/pages/dashboard/AnalyticsPage.tsx (Insights tab, RadarChart, vocabDistribution, weeklyReport)
+
+## [S08-performance-optimization] - 2026-04-06
+- 完成: 性能与体验优化 — PWA 支持
+- 注意事项:
+  - 代码分割已通过 lazyWithRetry 完整实现（16+ 路由）
+  - 错误边界已通过 withRouteFallback 覆盖所有路由
+  - Vite vendor chunks 已优化（8 个逻辑分组）
+  - 新增 PWA：manifest.json + sw.js + meta tags + SW 注册
+  - Service Worker 策略：静态资源 cache-first，导航 network-first
+- 文件变更:
+  - public/manifest.json (PWA manifest)
+  - public/sw.js (service worker)
+  - index.html (meta tags, SW registration)
+
+## [S09-accessibility-i18n] - 2026-04-06
+- 完成: 无障碍与国际化完善 — skip-to-content、aria-labels、键盘导航
+- 注意事项:
+  - i18n 已有 100% 覆盖率（en/zh 各 350+ keys，完全对等）
+  - Radix UI 基础组件自带 aria 属性（dialog、accordion、tabs 等）
+  - 主要新增：skip-to-content 链接、ChatComposer aria-labels、main-content ID
+  - 颜色对比度：emerald-on-dark 符合 WCAG AA
+- 文件变更:
+  - index.html (skip-to-content link, aria-live region)
+  - src/features/chat/components/ChatComposer.tsx (aria-labels)
+  - src/layouts/DashboardLayout.tsx (main-content id)
+
+## [S10-test-coverage] - 2026-04-06
+- 完成: 测试覆盖率提升 — retentionInsights + reviewWindows 测试
+- 注意事项:
+  - 已有 4 个优秀的测试文件（fsrs 185 tests, learnerModel 14, learningMissions 194, gamification 157）
+  - 新增 retentionInsights.test.ts (6 tests) 和 reviewWindows.test.ts (7 tests)
+  - 总测试数：130（从 115 增加）
+  - 注意 ensureFSRS 会迁移数据，测试中不要假设 fsrs 字段值不变
+  - reviewWindows 测试需要使用本地时间（getHours 返回本地时间）
+- 文件变更:
+  - src/services/retentionInsights.test.ts (new: 6 tests)
+  - src/services/reviewWindows.test.ts (new: 7 tests)

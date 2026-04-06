@@ -1,0 +1,85 @@
+{
+  "branchName": "feature/ai-native-upgrade",
+  "userStories": [
+    {
+      "id": "S01-design-system",
+      "title": "统一设计系统升级",
+      "description": "重构现有 UI 组件，建立统一的设计令牌系统。升级 Tailwind 配置，统一颜色语义化命名（primary/secondary/accent/success/warning/danger），统一圆角/阴影/间距/字体比例。确保所有组件风格一致。添加微交互动画。保持深色/浅色主题切换。",
+      "acceptanceCriteria": "1) tailwind.config.js 定义完整语义化设计令牌 2) src/components/ui/ 下组件使用统一令牌 3) 深色/浅色模式视觉一致 4) 微交互动画流畅 5) TypeCheck 通过",
+      "priority": 1,
+      "passes": true
+    },
+    {
+      "id": "S02-landing-page",
+      "title": "Landing Page 重新设计",
+      "description": "重新设计首页，打造高转化率的 AI 原生学习平台入口。Hero 区 AI 对话演示动画、核心功能卡片、用户证言、CTA 按钮。Framer Motion 滚动动画。",
+      "acceptanceCriteria": "1) Hero 区 AI 对话模拟动画 2) 4+ 核心功能展示卡片 3) 滚动触发动画流畅 4) 响应式布局 5) CTA 按钮醒目可点击 6) Lighthouse Performance > 85",
+      "priority": 2,
+      "passes": true
+    },
+    {
+      "id": "S03-ai-chat-upgrade",
+      "title": "AI 对话引擎升级",
+      "description": "升级 AI Chat：流式打字机效果优化、增强上下文记忆自动注入弱点、AI 主动推荐、动态 Quick Prompts、Web Speech API 语音输入/输出。",
+      "acceptanceCriteria": "1) 流式渲染流畅无闪烁 2) system prompt 自动含弱点标签 3) 3+ 主动推荐场景 4) Quick Prompts 根据阶段变化 5) 语音输入可用 6) Chat 测试通过",
+      "priority": 3,
+      "passes": true
+    },
+    {
+      "id": "S04-learning-dashboard",
+      "title": "Today 页面智能化升级",
+      "description": "Today 仪表盘升级为 AI 驱动个性化学习中心。AI 每日摘要、智能任务排序、进度可视化升级、快速开始按钮、任务完成庆祝动画。",
+      "acceptanceCriteria": "1) 每日摘要动态生成 2) 任务智能排序 3) 进度可视化正确 4) 快速开始跳转正确 5) 完成动画正常 6) 加载 < 2s",
+      "priority": 4,
+      "passes": true
+    },
+    {
+      "id": "S05-review-experience",
+      "title": "复习体验优化",
+      "description": "优化间隔重复复习：FlashCard 翻转动画+滑动手势+键盘快捷键、记忆强度可视化、即时反馈下次复习时间、批量复习模式、TTS 发音、AI 助记提示。",
+      "acceptanceCriteria": "1) FlashCard 翻转流畅 2) 键盘 1-4 选难度 3) 记忆强度色条正确 4) 批量复习统计正确 5) TTS 可用 6) AI 助记 < 2s",
+      "priority": 5,
+      "passes": true
+    },
+    {
+      "id": "S06-practice-gamification",
+      "title": "练习系统游戏化增强",
+      "description": "增强练习游戏化：限时挑战模式、答题动画反馈、combo 计数器、练习结果页升级、错题本自动收录、练习类型无缝切换。",
+      "acceptanceCriteria": "1) 限时模式倒计时准确 2) 答题动画即时 3) Combo 正确累加 4) 结果页数据准确 5) 错题自动保存 6) 类型切换不丢失进度",
+      "priority": 6,
+      "passes": true
+    },
+    {
+      "id": "S07-analytics-insights",
+      "title": "学习分析与 AI 洞察",
+      "description": "升级 Analytics：学习热力图、词汇掌握分布图、AI 周报、遗忘曲线可视化、弱点雷达图、学习目标追踪。",
+      "acceptanceCriteria": "1) 热力图数据准确 2) 词汇分布图一致 3) AI 周报有针对性 4) 遗忘曲线可交互 5) 雷达图 5+ 维度 6) Recharts 无报错",
+      "priority": 7,
+      "passes": true
+    },
+    {
+      "id": "S08-performance-optimization",
+      "title": "性能与体验优化",
+      "description": "全面性能优化：路由代码分割、资源 lazy loading、PWA 离线缓存、IndexedDB 索引优化、骨架屏、全局错误边界、移动端手势优化。",
+      "acceptanceCriteria": "1) dashboard 页面 lazy loading 2) Lighthouse > 90 3) PWA 可安装离线可用 4) 首屏 < 1.5s 5) 错误边界覆盖所有路由 6) 移动端滑动流畅",
+      "priority": 8,
+      "passes": true
+    },
+    {
+      "id": "S09-accessibility-i18n",
+      "title": "无障碍与国际化完善",
+      "description": "完善无障碍和 i18n：aria 标签、键盘导航、WCAG AA 对比度、补全翻译键、语言切换过渡、表单无障碍播报。",
+      "acceptanceCriteria": "1) aXe 0 critical/serious 2) Tab 遍历所有交互 3) 对比度 >= 4.5:1 4) i18n 覆盖率 100% 5) 屏幕阅读器可用核心流程",
+      "priority": 9,
+      "passes": true
+    },
+    {
+      "id": "S10-test-coverage",
+      "title": "测试覆盖率提升",
+      "description": "提升测试：核心 service 单元测试、关键 UI 组件测试、E2E 用户流程测试、AI Mock 测试、CI 覆盖率报告。",
+      "acceptanceCriteria": "1) 核心 service 覆盖率 > 80% 2) 关键组件有 render+interaction 测试 3) 3+ E2E 流程通过 4) AI Mock 覆盖主要场景 5) npm test 通过",
+      "priority": 10,
+      "passes": true
+    }
+  ]
+}
