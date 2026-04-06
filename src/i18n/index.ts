@@ -70,6 +70,7 @@ const en = {
     register: 'Register',
     logout: 'Logout',
     pronunciation: 'Pronunciation',
+    writing: 'Writing',
   },
   chat: {
     title: 'AI English Tutor',
@@ -507,6 +508,7 @@ const zh = {
     register: '注册',
     logout: '退出登录',
     pronunciation: '发音练习',
+    writing: '写作练习',
   },
   chat: {
     title: 'AI English Tutor',
