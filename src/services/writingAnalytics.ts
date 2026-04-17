@@ -3,6 +3,7 @@
  */
 
 import { invokeEdgeFunction } from '@/services/aiGateway';
+import type { AiFeedback, FeedbackIssue } from '@/types/examContent';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,10 @@ export interface WritingEntry {
   createdAt: string;
   updatedAt: string;
 }
+
+type WritingSuggestionType = WritingSuggestion['type'];
+
+const IELTS_TASK_1_HINT_PATTERN = /\b(chart|graph|table|diagram|map|process|summarize the information|report the main features)\b/i;
 
 // ─── Local text stats ────────────────────────────────────────────────────────
 
@@ -108,11 +113,90 @@ export function gradeLocally(text: string, type: WritingType): WritingGradeResul
 
 // ─── AI grading ─────────────────────────────────────────────────────────────
 
-interface AiGradeResponse {
-  overallScore: number;
-  bandScore: number | null;
-  dimensions: WritingGradeResult['dimensions'];
-  suggestions: WritingSuggestion[];
+const issueTypeMap: Record<FeedbackIssue['tag'], WritingSuggestionType> = {
+  task_response: 'coherence',
+  coherence: 'coherence',
+  lexical: 'vocabulary',
+  grammar: 'grammar',
+  logic: 'coherence',
+  collocation: 'vocabulary',
+  tense: 'grammar',
+  word_count: 'style',
+};
+
+const bandToScore = (value: number): number => {
+  if (!Number.isFinite(value)) return 0;
+  return Math.round((Math.min(9, Math.max(0, value)) / 9) * 100);
+};
+
+export function inferIeltsTaskType(prompt: string): 'task1' | 'task2' {
+  return IELTS_TASK_1_HINT_PATTERN.test(prompt) ? 'task1' : 'task2';
+}
+
+export function buildSuggestionsFromFeedback(feedback: AiFeedback): WritingSuggestion[] {
+  const issueSuggestions = feedback.issues.map((issue, index) => ({
+    id: `issue-${index + 1}`,
+    original: issue.sentence || issue.message,
+    suggested: issue.correction || issue.suggestion,
+    reason: issue.message,
+    reasonZh: issue.messageZh || issue.suggestionZh || issue.suggestion,
+    type: issueTypeMap[issue.tag] || 'style',
+  }));
+
+  const rewriteSuggestions = feedback.rewrites.map((rewrite, index) => ({
+    id: `rewrite-${index + 1}`,
+    original: feedback.summary || 'Rewrite suggestion',
+    suggested: rewrite,
+    reason: feedback.nextActions[index] || 'Upgrade this sentence to sound clearer and more natural.',
+    reasonZh: feedback.summaryZh || '根据当前批改结果进行更自然的表达升级。',
+    type: 'style' as const,
+  }));
+
+  return [...issueSuggestions, ...rewriteSuggestions].slice(0, 8);
+}
+
+export function mapIeltsFeedbackToWritingGradeResult(
+  feedback: AiFeedback,
+  text: string,
+): WritingGradeResult {
+  return {
+    overallScore: bandToScore(feedback.scores.overallBand),
+    bandScore: feedback.scores.overallBand,
+    dimensions: {
+      taskAchievement: {
+        score: bandToScore(feedback.scores.taskResponse),
+        label: 'Task Achievement',
+        labelZh: '任务完成',
+        feedback: feedback.summary || 'Strengthen how directly and fully you answer the prompt.',
+        feedbackZh: feedback.summaryZh || '进一步提升对题目的回应完整度和直接性。',
+      },
+      coherenceCohesion: {
+        score: bandToScore(feedback.scores.coherenceCohesion),
+        label: 'Coherence & Cohesion',
+        labelZh: '连贯与衔接',
+        feedback: feedback.issues.find((issue) => issue.tag === 'coherence' || issue.tag === 'logic')?.message || 'Improve logical flow between ideas.',
+        feedbackZh: feedback.issues.find((issue) => issue.tag === 'coherence' || issue.tag === 'logic')?.messageZh || '继续加强论点之间的衔接和推进。',
+      },
+      lexicalResource: {
+        score: bandToScore(feedback.scores.lexicalResource),
+        label: 'Lexical Resource',
+        labelZh: '词汇资源',
+        feedback: feedback.issues.find((issue) => issue.tag === 'lexical' || issue.tag === 'collocation')?.message || 'Use more precise collocations and topic vocabulary.',
+        feedbackZh: feedback.issues.find((issue) => issue.tag === 'lexical' || issue.tag === 'collocation')?.messageZh || '继续提升搭配准确度和主题词汇精度。',
+      },
+      grammaticalRange: {
+        score: bandToScore(feedback.scores.grammaticalRangeAccuracy),
+        label: 'Grammatical Range',
+        labelZh: '语法范围与准确度',
+        feedback: feedback.issues.find((issue) => issue.tag === 'grammar' || issue.tag === 'tense')?.message || 'Keep sentence structures varied while protecting accuracy.',
+        feedbackZh: feedback.issues.find((issue) => issue.tag === 'grammar' || issue.tag === 'tense')?.messageZh || '在保证正确率的前提下增加句式变化。',
+      },
+    },
+    suggestions: buildSuggestionsFromFeedback(feedback),
+    wordCount: countWords(text),
+    sentenceCount: countSentences(text),
+    hasAiFeedback: feedback.provider === 'edge' || feedback.provider === 'cache',
+  };
 }
 
 export async function gradeWithAi(
@@ -123,22 +207,22 @@ export async function gradeWithAi(
 ): Promise<WritingGradeResult> {
   const localResult = gradeLocally(text, type);
 
+  if (type !== 'ielts') {
+    return localResult;
+  }
+
   try {
-    const aiResult = await invokeEdgeFunction<AiGradeResponse>(
-      'writing-grade',
-      { text, type, prompt },
+    const aiResult = await invokeEdgeFunction<AiFeedback>(
+      'ai-grade-writing',
+      {
+        prompt,
+        answer: text,
+        taskType: inferIeltsTaskType(prompt),
+      },
       { signal },
     );
 
-    return {
-      overallScore: aiResult.overallScore ?? localResult.overallScore,
-      bandScore: aiResult.bandScore ?? localResult.bandScore,
-      dimensions: aiResult.dimensions ?? localResult.dimensions,
-      suggestions: aiResult.suggestions ?? [],
-      wordCount: localResult.wordCount,
-      sentenceCount: localResult.sentenceCount,
-      hasAiFeedback: true,
-    };
+    return mapIeltsFeedbackToWritingGradeResult(aiResult, text);
   } catch {
     return localResult;
   }

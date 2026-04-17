@@ -4,6 +4,7 @@ This folder contains the first version of the AI gateway and content/member endp
 
 - `ai-chat`
 - `ai-grade-writing`
+- `pronunciation-assess`
 - `ai-generate-sim-item`
 - `ai-generate-micro-lesson`
 - `content-units`
@@ -46,6 +47,7 @@ Set in Supabase project secrets:
 ```bash
 supabase functions deploy ai-chat
 supabase functions deploy ai-grade-writing
+supabase functions deploy pronunciation-assess
 supabase functions deploy ai-generate-sim-item
 supabase functions deploy ai-generate-micro-lesson
 supabase functions deploy content-units
@@ -61,3 +63,7 @@ supabase functions deploy memory-delete
 supabase functions deploy memory-pin
 supabase functions deploy memory-clear-expired
 ```
+
+## Vercel note
+
+If the frontend is deployed from Vercel, remember that Vercel does not deploy these Supabase Edge Functions for you. Pushes can auto-deploy the client, but database migrations and edge functions still need to be deployed with the Supabase CLI.

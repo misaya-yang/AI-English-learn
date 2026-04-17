@@ -4,8 +4,12 @@ import {
   countSentences,
   averageWordLength,
   uniqueWordRatio,
+  buildSuggestionsFromFeedback,
   gradeLocally,
+  inferIeltsTaskType,
+  mapIeltsFeedbackToWritingGradeResult,
 } from './writingAnalytics';
+import type { AiFeedback } from '@/types/examContent';
 
 describe('writingAnalytics', () => {
   describe('countWords', () => {
@@ -64,6 +68,66 @@ describe('writingAnalytics', () => {
       const result = gradeLocally('Some text about a topic.', 'ielts');
       expect(result.bandScore).toBeGreaterThanOrEqual(0);
       expect(result.bandScore).toBeLessThanOrEqual(9);
+    });
+  });
+
+  describe('inferIeltsTaskType', () => {
+    it('detects task 1 prompts', () => {
+      expect(inferIeltsTaskType('The chart shows changes in transport usage over time.')).toBe('task1');
+    });
+
+    it('defaults to task 2 for opinion essays', () => {
+      expect(inferIeltsTaskType('Some people think public transport should receive more funding.')).toBe('task2');
+    });
+  });
+
+  describe('mapIeltsFeedbackToWritingGradeResult', () => {
+    const feedback: AiFeedback = {
+      attemptId: 'attempt-1',
+      scores: {
+        taskResponse: 6.5,
+        coherenceCohesion: 6,
+        lexicalResource: 6.5,
+        grammaticalRangeAccuracy: 5.5,
+        overallBand: 6,
+      },
+      issues: [
+        {
+          tag: 'grammar',
+          severity: 'medium',
+          sentence: 'People go to city for work.',
+          message: 'Article usage is weak in noun phrases.',
+          suggestion: 'Use articles more accurately in singular countable nouns.',
+          correction: 'People go to the city for work.',
+        },
+      ],
+      rewrites: ['A clearer thesis statement would make your position easier to follow.'],
+      nextActions: ['Add one more concrete example in the second body paragraph.'],
+      confidence: 0.7,
+      provider: 'edge',
+      createdAt: '2026-04-18T00:00:00.000Z',
+      summary: 'Solid structure, but grammar accuracy still limits the band score.',
+      summaryZh: '整体结构不错，但语法准确度仍然限制了分数。',
+    };
+
+    it('converts IELTS feedback into the writing page shape', () => {
+      const result = mapIeltsFeedbackToWritingGradeResult(
+        feedback,
+        'People go to city for work. Public transport matters.',
+      );
+
+      expect(result.bandScore).toBe(6);
+      expect(result.overallScore).toBeGreaterThan(60);
+      expect(result.hasAiFeedback).toBe(true);
+      expect(result.suggestions.length).toBeGreaterThan(0);
+      expect(result.dimensions.grammaticalRange.feedback).toContain('Article usage');
+    });
+
+    it('builds suggestions from issues and rewrites', () => {
+      const suggestions = buildSuggestionsFromFeedback(feedback);
+      expect(suggestions).toHaveLength(2);
+      expect(suggestions[0].type).toBe('grammar');
+      expect(suggestions[1].type).toBe('style');
     });
   });
 });

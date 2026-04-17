@@ -1,28 +1,20 @@
-/**
- * LeaderboardPage — Community vocabulary challenge leaderboard
- * ─────────────────────────────────────────────────────────────────
- * Phase 4 stub: shows weekly XP rankings + streak leaders.
- * Data is seeded locally (mock) until Supabase leaderboard RPC is live.
- * When real-time is connected, swap MOCK_ENTRIES for a useQuery call.
- */
-
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Trophy,
-  Flame,
   BookOpen,
   Crown,
+  Flame,
   Medal,
   TrendingUp,
+  Trophy,
   Users,
-  Star,
 } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { LEAGUE_TIERS } from '@/features/social/types';
+import { buildSocialLeaderboardSnapshot } from '@/services/socialLeaderboard';
 
 interface LeaderEntry {
   rank: number;
@@ -33,75 +25,11 @@ interface LeaderEntry {
   weeklyXp: number;
   streak: number;
   totalWords: number;
-  level: string;        // CEFR level badge
+  level: string;
   isCurrentUser?: boolean;
 }
 
 type LeaderboardTab = 'weekly' | 'streak' | 'total';
-
-// ─── Seed / mock data ─────────────────────────────────────────────────────────
-
-const AVATAR_COLORS = [
-  'bg-violet-500',
-  'bg-blue-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-  'bg-pink-500',
-  'bg-indigo-500',
-];
-
-const MOCK_ENTRIES: Omit<LeaderEntry, 'rank' | 'isCurrentUser'>[] = [
-  { userId: 'u1', displayName: 'Meilin Zhang', avatarInitials: 'MZ', avatarColor: AVATAR_COLORS[0], weeklyXp: 1420, streak: 34, totalWords: 892, level: 'C1' },
-  { userId: 'u2', displayName: 'Kai Chen',     avatarInitials: 'KC', avatarColor: AVATAR_COLORS[1], weeklyXp: 1305, streak: 21, totalWords: 756, level: 'B2' },
-  { userId: 'u3', displayName: 'Aria Liu',     avatarInitials: 'AL', avatarColor: AVATAR_COLORS[2], weeklyXp: 1180, streak: 18, totalWords: 640, level: 'B2' },
-  { userId: 'u4', displayName: 'David Park',   avatarInitials: 'DP', avatarColor: AVATAR_COLORS[3], weeklyXp: 980,  streak: 45, totalWords: 1203, level: 'C1' },
-  { userId: 'u5', displayName: 'Sophia Tan',   avatarInitials: 'ST', avatarColor: AVATAR_COLORS[4], weeklyXp: 870,  streak: 12, totalWords: 445, level: 'B1' },
-  { userId: 'u6', displayName: 'Wei Wang',     avatarInitials: 'WW', avatarColor: AVATAR_COLORS[5], weeklyXp: 760,  streak: 8,  totalWords: 382, level: 'B1' },
-  { userId: 'u7', displayName: 'Priya Raj',    avatarInitials: 'PR', avatarColor: AVATAR_COLORS[6], weeklyXp: 640,  streak: 29, totalWords: 721, level: 'B2' },
-  { userId: 'u8', displayName: 'James Wu',     avatarInitials: 'JW', avatarColor: AVATAR_COLORS[7], weeklyXp: 590,  streak: 5,  totalWords: 298, level: 'A2' },
-  { userId: 'u9', displayName: 'Hana Kim',     avatarInitials: 'HK', avatarColor: AVATAR_COLORS[0], weeklyXp: 480,  streak: 16, totalWords: 534, level: 'B2' },
-  { userId: 'u10',displayName: 'Carlos Diaz',  avatarInitials: 'CD', avatarColor: AVATAR_COLORS[1], weeklyXp: 390,  streak: 3,  totalWords: 215, level: 'B1' },
-];
-
-function buildRankedList(
-  entries: typeof MOCK_ENTRIES,
-  sortKey: LeaderboardTab,
-  currentUserId: string,
-  currentUserName: string,
-  currentUserXp: number,
-  currentUserStreak: number,
-  currentUserWords: number,
-): LeaderEntry[] {
-  // Inject current user if not in mock list
-  const augmented = entries.map((e) => ({ ...e }));
-  const alreadyIn = augmented.some((e) => e.userId === currentUserId);
-  if (!alreadyIn) {
-    augmented.push({
-      userId: currentUserId,
-      displayName: currentUserName,
-      avatarInitials: currentUserName.slice(0, 2).toUpperCase() || 'ME',
-      avatarColor: 'bg-emerald-600',
-      weeklyXp: currentUserXp,
-      streak: currentUserStreak,
-      totalWords: currentUserWords,
-      level: 'B1',
-    });
-  }
-
-  const sortFn: Record<LeaderboardTab, (a: typeof augmented[0], b: typeof augmented[0]) => number> = {
-    weekly:  (a, b) => b.weeklyXp    - a.weeklyXp,
-    streak:  (a, b) => b.streak      - a.streak,
-    total:   (a, b) => b.totalWords  - a.totalWords,
-  };
-
-  return augmented
-    .sort(sortFn[sortKey])
-    .map((e, i) => ({ ...e, rank: i + 1, isCurrentUser: e.userId === currentUserId }));
-}
-
-// ─── Rank icon ────────────────────────────────────────────────────────────────
 
 function RankIcon({ rank }: { rank: number }) {
   if (rank === 1) return <Crown className="h-5 w-5 text-amber-400" />;
@@ -110,11 +38,23 @@ function RankIcon({ rank }: { rank: number }) {
   return <span className="text-sm font-bold text-slate-400 dark:text-white/40">{rank}</span>;
 }
 
-// ─── Row ─────────────────────────────────────────────────────────────────────
+function sortEntries(entries: LeaderEntry[], tab: LeaderboardTab): LeaderEntry[] {
+  const sorted = [...entries].sort((left, right) => {
+    if (tab === 'weekly' && right.weeklyXp !== left.weeklyXp) return right.weeklyXp - left.weeklyXp;
+    if (tab === 'streak' && right.streak !== left.streak) return right.streak - left.streak;
+    if (tab === 'total' && right.totalWords !== left.totalWords) return right.totalWords - left.totalWords;
+    return right.weeklyXp - left.weeklyXp;
+  });
+
+  return sorted.map((entry, index) => ({
+    ...entry,
+    rank: index + 1,
+  }));
+}
 
 function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) {
   const value = tab === 'weekly' ? entry.weeklyXp : tab === 'streak' ? entry.streak : entry.totalWords;
-  const unit  = tab === 'weekly' ? 'XP' : tab === 'streak' ? '天' : '词';
+  const unit = tab === 'weekly' ? 'XP' : tab === 'streak' ? 'days' : 'words';
 
   return (
     <motion.div
@@ -125,47 +65,45 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
         'flex items-center gap-3 rounded-2xl px-4 py-3 transition-all',
         entry.isCurrentUser
           ? 'border border-emerald-500/25 bg-emerald-500/[0.06]'
-          : 'border border-transparent hover:border-black/5 dark:hover:border-white/[0.06] hover:bg-black/[0.02] dark:hover:bg-white/[0.02]',
+          : 'border border-transparent hover:border-black/5 hover:bg-black/[0.02] dark:hover:border-white/[0.06] dark:hover:bg-white/[0.02]',
       )}
     >
-      {/* Rank */}
-      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center">
         <RankIcon rank={entry.rank} />
       </div>
 
-      {/* Avatar */}
-      <div className={cn(
-        'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
-        entry.avatarColor,
-      )}>
+      <div
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
+          entry.avatarColor,
+        )}
+      >
         {entry.avatarInitials}
       </div>
 
-      {/* Name + level */}
-      <div className="flex-1 min-w-0">
-        <p className={cn(
-          'truncate text-sm font-semibold',
-          entry.isCurrentUser ? 'text-emerald-600 dark:text-emerald-300' : 'text-slate-800 dark:text-white',
-        )}>
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            'truncate text-sm font-semibold',
+            entry.isCurrentUser ? 'text-emerald-600 dark:text-emerald-300' : 'text-slate-800 dark:text-white',
+          )}
+        >
           {entry.displayName}
-          {entry.isCurrentUser && <span className="ml-1.5 text-[10px] font-normal text-emerald-500">(You)</span>}
+          {entry.isCurrentUser ? <span className="ml-1.5 text-[10px] font-normal text-emerald-500">(You)</span> : null}
         </p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="rounded-full bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 dark:text-white/40">
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 dark:bg-white/10 dark:text-white/40">
             {entry.level}
           </span>
           <span className="flex items-center gap-0.5 text-[10px] text-slate-400 dark:text-white/35">
-            <Flame className="h-2.5 w-2.5 text-orange-400" />{entry.streak}d
+            <Flame className="h-2.5 w-2.5 text-orange-400" />
+            {entry.streak}d
           </span>
         </div>
       </div>
 
-      {/* Score */}
-      <div className="text-right flex-shrink-0">
-        <p className={cn(
-          'text-base font-bold',
-          entry.isCurrentUser ? 'text-emerald-500' : 'text-slate-800 dark:text-white',
-        )}>
+      <div className="shrink-0 text-right">
+        <p className={cn('text-base font-bold', entry.isCurrentUser ? 'text-emerald-500' : 'text-slate-800 dark:text-white')}>
           {value.toLocaleString()}
         </p>
         <p className="text-[10px] text-slate-400 dark:text-white/35">{unit}</p>
@@ -174,54 +112,83 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
 export default function LeaderboardPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { xp, streak, stats } = useUserData();
   const [activeTab, setActiveTab] = useState<LeaderboardTab>('weekly');
+  const currentStreak = streak.current || 0;
 
-  const entries = useMemo(() => buildRankedList(
-    MOCK_ENTRIES,
-    activeTab,
-    user?.id ?? 'me',
-    user?.displayName || user?.email?.split('@')[0] || 'You',
-    xp?.today ?? 0,
-    streak?.current ?? 0,
-    stats?.totalWords ?? 0,
-  ), [activeTab, user, xp, streak, stats]);
+  const snapshot = useMemo(
+    () =>
+      buildSocialLeaderboardSnapshot({
+        userId: user?.id || 'guest',
+        displayName: user?.displayName || user?.email?.split('@')[0] || 'You',
+        level: profile?.cefrLevel || 'B1',
+        weeklyXp: stats.weeklyXP || xp.today || 0,
+        streak: currentStreak,
+        totalWords: stats.totalWords || 0,
+      }),
+    [currentStreak, profile?.cefrLevel, stats.totalWords, stats.weeklyXP, user?.displayName, user?.email, user?.id, xp.today],
+  );
 
-  const currentUserEntry = entries.find((e) => e.isCurrentUser);
+  const entries = useMemo(() => {
+    const baseEntries: LeaderEntry[] = snapshot.leagueMembers.map((member) => ({
+      rank: member.rank,
+      userId: member.userId,
+      displayName: member.displayName,
+      avatarInitials: member.avatarInitials,
+      avatarColor: member.avatarColor,
+      weeklyXp: member.weeklyXp,
+      streak: member.streak,
+      totalWords: member.totalWords,
+      level: member.cefrLevel,
+      isCurrentUser: member.isCurrentUser,
+    }));
 
-  const tabs: { id: LeaderboardTab; label: string; labelZh: string; icon: React.ReactNode }[] = [
-    { id: 'weekly', label: 'Weekly XP',   labelZh: '本周 XP',  icon: <TrendingUp className="h-3.5 w-3.5" /> },
-    { id: 'streak', label: 'Streak',      labelZh: '连续天数', icon: <Flame className="h-3.5 w-3.5" /> },
-    { id: 'total',  label: 'Total Words', labelZh: '累计词量', icon: <BookOpen className="h-3.5 w-3.5" /> },
+    return sortEntries(baseEntries, activeTab);
+  }, [activeTab, snapshot.leagueMembers]);
+
+  const currentUserEntry = entries.find((entry) => entry.isCurrentUser) || null;
+  const leagueMeta = LEAGUE_TIERS.find((tier) => tier.id === snapshot.leagueTier);
+
+  const tabs: Array<{ id: LeaderboardTab; label: string; labelZh: string; icon: React.ReactNode }> = [
+    { id: 'weekly', label: 'Weekly XP', labelZh: '本周 XP', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+    { id: 'streak', label: 'Streak', labelZh: '连续天数', icon: <Flame className="h-3.5 w-3.5" /> },
+    { id: 'total', label: 'Total Words', labelZh: '累计词量', icon: <BookOpen className="h-3.5 w-3.5" /> },
   ];
 
+  const movementCopy = snapshot.promoted
+    ? '你目前处于晋级区，继续保持就能升到下一联赛。'
+    : snapshot.demoted
+      ? '你目前处于降级区，建议优先完成今日复习和短测。'
+      : snapshot.promotionCutoffRank
+        ? `距离晋级区还差 ${Math.max(currentUserEntry ? currentUserEntry.rank - snapshot.promotionCutoffRank : 0, 0)} 名。`
+        : '你已经处于最高联赛，继续拉开分差。';
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Leaderboard</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-white/50 flex items-center gap-1.5">
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500 dark:text-white/50">
             <Users className="h-3.5 w-3.5" />
-            本周 {entries.length} 名学习者正在竞争
+            {leagueMeta?.labelZh || '联赛'} · 本周 {entries.length} 名学习者
           </p>
         </div>
-        {currentUserEntry && (
-          <div className="text-right">
-            <p className="text-xs text-slate-400 dark:text-white/40">Your rank</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">#{currentUserEntry.rank}</p>
+
+        {leagueMeta ? (
+          <div className="rounded-2xl border border-black/5 bg-black/[0.02] px-4 py-3 text-right dark:border-white/[0.07] dark:bg-white/[0.03]">
+            <p className="text-xs text-slate-400 dark:text-white/40">Current League</p>
+            <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+              {leagueMeta.icon} {leagueMeta.labelZh}
+            </p>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Current user highlight banner */}
-      {currentUserEntry && (
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+      {currentUserEntry ? (
+        <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
             {currentUserEntry.avatarInitials}
           </div>
           <div className="flex-1">
@@ -230,21 +197,56 @@ export default function LeaderboardPage() {
               Rank #{currentUserEntry.rank} · {currentUserEntry.weeklyXp} XP this week
             </p>
           </div>
-          <Star className="h-5 w-5 text-emerald-500" />
+          <Trophy className="h-5 w-5 text-emerald-500" />
         </div>
-      )}
+      ) : null}
 
-      {/* Tab switcher */}
-      <div className="flex rounded-2xl border border-black/5 dark:border-white/[0.07] bg-black/[0.02] dark:bg-white/[0.02] p-1 gap-1">
+      <div className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-2xl border border-black/5 bg-black/[0.02] p-4 dark:border-white/[0.07] dark:bg-white/[0.03]">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-slate-400 dark:text-white/36">League Status</p>
+              <p className="mt-1 text-sm font-medium text-slate-800 dark:text-white">{movementCopy}</p>
+            </div>
+            <BadgeLike text={snapshot.promoted ? 'Promotion zone' : snapshot.demoted ? 'Demotion risk' : 'Holding steady'} />
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+            <MetricCard label="Rank" value={`#${snapshot.currentUserRank}`} />
+            <MetricCard label="Promote" value={snapshot.promotionCutoffRank ? `Top ${snapshot.promotionCutoffRank}` : 'Locked'} />
+            <MetricCard label="Safe line" value={snapshot.demotionCutoffRank ? `#${snapshot.demotionCutoffRank - 1}` : 'Safe'} />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-black/5 bg-black/[0.02] p-4 dark:border-white/[0.07] dark:bg-white/[0.03]">
+          <p className="text-xs uppercase tracking-wider text-slate-400 dark:text-white/36">Friend Pulse</p>
+          <div className="mt-3 space-y-2">
+            {snapshot.friends.slice(0, 4).map((friend) => (
+              <div key={friend.userId} className="flex items-center gap-3 rounded-xl bg-white/70 px-3 py-2 dark:bg-white/[0.04]">
+                <div className={cn('flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold text-white', friend.avatarColor)}>
+                  {friend.avatarInitials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-800 dark:text-white">{friend.displayName}</p>
+                  <p className="text-[11px] text-slate-400 dark:text-white/35">{friend.weeklyXp} XP · {friend.streak}d streak</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-1 rounded-2xl border border-black/5 bg-black/[0.02] p-1 dark:border-white/[0.07] dark:bg-white/[0.02]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              'flex-1 flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200',
+              'flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200',
               activeTab === tab.id
-                ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70',
+                ? 'bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white'
+                : 'text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70',
             )}
           >
             {tab.icon}
@@ -253,47 +255,42 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
-      {/* Top 3 podium */}
       <div className="grid grid-cols-3 gap-3">
         {entries.slice(0, 3).map((entry) => {
           const podiumHeights = ['h-20', 'h-16', 'h-14'];
           const colors = ['border-amber-400/30 bg-amber-500/[0.08]', 'border-slate-400/20 bg-slate-500/[0.05]', 'border-amber-700/20 bg-amber-700/[0.05]'];
-          const idx = entry.rank - 1;
+          const index = entry.rank - 1;
           const value = activeTab === 'weekly' ? entry.weeklyXp : activeTab === 'streak' ? entry.streak : entry.totalWords;
-          const unit  = activeTab === 'weekly' ? 'XP' : activeTab === 'streak' ? '天' : '词';
+          const unit = activeTab === 'weekly' ? 'XP' : activeTab === 'streak' ? 'days' : 'words';
+
           return (
             <div
               key={entry.userId}
               className={cn(
                 'flex flex-col items-center rounded-2xl border p-3 transition-all',
-                colors[idx],
+                colors[index],
                 entry.isCurrentUser && 'ring-2 ring-emerald-500/50',
               )}
             >
               <div className="mb-1">
                 <RankIcon rank={entry.rank} />
               </div>
-              <div className={cn(
-                'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold text-white mb-1',
-                entry.avatarColor,
-              )}>
+              <div className={cn('mb-1 flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white', entry.avatarColor)}>
                 {entry.avatarInitials}
               </div>
-              <p className="text-[11px] font-semibold text-slate-700 dark:text-white/80 text-center truncate w-full">
+              <p className="w-full truncate text-center text-[11px] font-semibold text-slate-700 dark:text-white/80">
                 {entry.displayName.split(' ')[0]}
               </p>
               <p className="text-sm font-bold text-slate-900 dark:text-white">{value.toLocaleString()}</p>
               <p className="text-[9px] text-slate-400 dark:text-white/35">{unit}</p>
-              {/* Podium bar */}
-              <div className={cn('mt-2 w-full rounded-t-lg bg-current opacity-10', podiumHeights[idx])} />
+              <div className={cn('mt-2 w-full rounded-t-lg bg-current opacity-10', podiumHeights[index])} />
             </div>
           );
         })}
       </div>
 
-      {/* Full ranking */}
       <div>
-        <p className="px-1 mb-2 text-[11px] uppercase tracking-wider text-slate-400 dark:text-white/36">Full Ranking</p>
+        <p className="mb-2 px-1 text-[11px] uppercase tracking-wider text-slate-400 dark:text-white/36">Full Ranking</p>
         <div className="space-y-1">
           {entries.map((entry) => (
             <LeaderRow key={entry.userId} entry={entry} tab={activeTab} />
@@ -301,13 +298,29 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      {/* Coming soon note */}
-      <div className="rounded-2xl border border-blue-500/15 bg-blue-500/[0.05] px-4 py-3 flex items-center gap-2.5">
-        <Trophy className="h-4 w-4 text-blue-400 flex-shrink-0" />
+      <div className="flex items-center gap-2.5 rounded-2xl border border-blue-500/15 bg-blue-500/[0.05] px-4 py-3">
+        <Trophy className="h-4 w-4 shrink-0 text-blue-400" />
         <p className="text-sm text-blue-500 dark:text-blue-400">
-          实时排行榜即将上线 — 积分将与好友共享
+          联赛按周重置，当前页面会稳定保留你这一周的本地联赛快照，等后端实时榜接入后可无缝切换。
         </p>
       </div>
     </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-white/70 px-3 py-2 dark:bg-white/[0.04]">
+      <p className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-white/35">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-white">{value}</p>
+    </div>
+  );
+}
+
+function BadgeLike({ text }: { text: string }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-white/60 px-3 py-1 text-[11px] font-medium text-slate-700 dark:bg-white/[0.08] dark:text-white/70">
+      {text}
+    </span>
   );
 }

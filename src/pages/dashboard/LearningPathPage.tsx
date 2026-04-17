@@ -1,13 +1,28 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ChevronRight, CheckCircle2, Circle, Clock, MapPin } from 'lucide-react';
+import {
+  ChevronRight,
+  CheckCircle2,
+  Circle,
+  Clock,
+  MapPin,
+  Sparkles,
+} from 'lucide-react';
+
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { motionPresets, motionStagger } from '@/lib/motion';
 import { learningPaths, type LearningPath, type LessonItem } from '@/data/learningPaths';
+import {
+  getLearningPathProgress,
+  getPathCompletionPercent,
+  setLearningPathActivePath,
+  toggleLearningPathLesson,
+} from '@/services/learningPathProgress';
 
 const DIFFICULTY_COLORS = {
   beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -15,84 +30,141 @@ const DIFFICULTY_COLORS = {
   advanced: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 };
 
+const lessonTypeIcon: Record<LessonItem['type'], string> = {
+  vocabulary: '📖',
+  grammar: '📝',
+  practice: '🎯',
+  conversation: '💬',
+  review: '🔄',
+};
+
+const getLessonIds = (path: LearningPath): string[] =>
+  path.stages.flatMap((stage) => stage.units.flatMap((unit) => unit.lessons.map((lesson) => lesson.id)));
+
+const getInitialProgressState = (userId: string) => {
+  const progress = getLearningPathProgress(userId);
+  const activePathId = progress.activePathId && learningPaths.some((path) => path.id === progress.activePathId)
+    ? progress.activePathId
+    : null;
+
+  return {
+    activePathId,
+    completedLessonIds: progress.completedLessonIds,
+  };
+};
+
 export default function LearningPathPage() {
   const { i18n } = useTranslation();
+  const { user } = useAuth();
   const isZh = i18n.language === 'zh';
-  const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
-  const [completedLessons] = useState<Set<string>>(new Set());
+  const userId = user?.id || 'guest';
+  const initialProgress = getInitialProgressState(userId);
+
+  const [selectedPathId, setSelectedPathId] = useState<string | null>(initialProgress.activePathId);
+  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(initialProgress.completedLessonIds);
+
+  const completedLessonSet = useMemo(() => new Set(completedLessonIds), [completedLessonIds]);
+
+  const selectedPath = useMemo(
+    () => learningPaths.find((path) => path.id === selectedPathId) || null,
+    [selectedPathId],
+  );
+
+  const pathProgressMap = useMemo(() => {
+    return new Map(
+      learningPaths.map((path) => [
+        path.id,
+        getPathCompletionPercent(completedLessonIds, getLessonIds(path)),
+      ]),
+    );
+  }, [completedLessonIds]);
+
+  const handleSelectPath = (pathId: string | null) => {
+    setSelectedPathId(pathId);
+    setLearningPathActivePath(userId, pathId);
+  };
+
+  const handleToggleLesson = (lessonId: string) => {
+    const next = toggleLearningPathLesson(userId, lessonId);
+    setCompletedLessonIds(next.completedLessonIds);
+  };
+
+  const nextLesson = useMemo(() => {
+    if (!selectedPath) return null;
+
+    return selectedPath.stages
+      .flatMap((stage) => stage.units.flatMap((unit) => unit.lessons))
+      .find((lesson) => !completedLessonSet.has(lesson.id)) || null;
+  }, [completedLessonSet, selectedPath]);
 
   if (!selectedPath) {
-    // Path selector view
     return (
       <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
         <motion.div {...motionPresets.fadeIn}>
           <h1 className="text-2xl font-bold tracking-tight">
             {isZh ? '学习路径' : 'Learning Paths'}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             {isZh ? '选择一条路径，系统化提升你的英语能力' : 'Choose a path to systematically improve your English'}
           </p>
         </motion.div>
 
         <div className="grid gap-4">
-          {learningPaths.map((path, idx) => (
-            <motion.div key={path.id} {...motionStagger(idx)}>
-              <Card
-                className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => setSelectedPath(path)}
-              >
-                <CardContent className="p-4 flex items-center gap-4">
-                  <span className="text-3xl">{path.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold">
-                      {isZh ? path.titleZh : path.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {isZh ? path.descriptionZh : path.description}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-xs rounded px-1.5 py-0.5 ${DIFFICULTY_COLORS[path.difficulty]}`}>
-                        {path.difficulty}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {path.totalLessons} {isZh ? '课' : 'lessons'}
-                      </span>
+          {learningPaths.map((path, index) => {
+            const percent = pathProgressMap.get(path.id) || 0;
+            const lessonIds = getLessonIds(path);
+            const completedCount = lessonIds.filter((lessonId) => completedLessonSet.has(lessonId)).length;
+
+            return (
+              <motion.div key={path.id} {...motionStagger(index)}>
+                <Card
+                  className="cursor-pointer transition-colors hover:border-primary/50"
+                  onClick={() => handleSelectPath(path.id)}
+                >
+                  <CardContent className="flex items-center gap-4 p-4">
+                    <span className="text-3xl">{path.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-semibold">
+                          {isZh ? path.titleZh : path.title}
+                        </h3>
+                        <span className={`rounded px-1.5 py-0.5 text-xs ${DIFFICULTY_COLORS[path.difficulty]}`}>
+                          {path.difficulty}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {isZh ? path.descriptionZh : path.description}
+                      </p>
+                      <div className="mt-3 flex items-center gap-3">
+                        <Progress value={percent} className="h-2 flex-1" />
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {completedCount}/{path.totalLessons}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     );
   }
 
-  // Path detail view — map-style visualization
   const totalLessons = selectedPath.totalLessons;
-  const doneCount = selectedPath.stages.reduce(
-    (sum, s) => sum + s.units.reduce(
-      (u, unit) => u + unit.lessons.filter((l) => completedLessons.has(l.id)).length, 0,
-    ), 0,
-  );
-  const progressPercent = totalLessons > 0 ? Math.round((doneCount / totalLessons) * 100) : 0;
-
-  const lessonTypeIcon: Record<LessonItem['type'], string> = {
-    vocabulary: '📖',
-    grammar: '📝',
-    practice: '🎯',
-    conversation: '💬',
-    review: '🔄',
-  };
+  const progressPercent = pathProgressMap.get(selectedPath.id) || 0;
+  const doneCount = getLessonIds(selectedPath).filter((lessonId) => completedLessonSet.has(lessonId)).length;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <motion.div {...motionPresets.fadeIn}>
-        <Button variant="ghost" size="sm" onClick={() => setSelectedPath(null)}>
+        <Button variant="ghost" size="sm" onClick={() => handleSelectPath(null)}>
           ← {isZh ? '返回路径列表' : 'Back to paths'}
         </Button>
-        <div className="flex items-center gap-3 mt-2">
+
+        <div className="mt-2 flex items-center gap-3">
           <span className="text-2xl">{selectedPath.icon}</span>
           <div>
             <h1 className="text-xl font-bold">
@@ -103,14 +175,34 @@ export default function LearningPathPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3 mt-3">
+
+        <div className="mt-3 flex items-center gap-3">
           <Progress value={progressPercent} className="flex-1" />
-          <span className="text-xs text-muted-foreground">{doneCount}/{totalLessons}</span>
+          <span className="text-xs text-muted-foreground">
+            {doneCount}/{totalLessons}
+          </span>
         </div>
       </motion.div>
 
-      {/* Stages & units — vertical map */}
-      {selectedPath.stages.map((stage, stageIdx) => (
+      <Card className="border-emerald-500/15 bg-emerald-500/[0.04]">
+        <CardContent className="flex items-start gap-3 p-4">
+          <Sparkles className="mt-0.5 h-4 w-4 text-emerald-500" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium">
+              {isZh ? '下一步建议' : 'Suggested next step'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {nextLesson
+                ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${nextLesson.estimatedMinutes}m`
+                : isZh
+                  ? '这条路径已经完成，可以切换到下一条更高阶路径。'
+                  : 'This path is complete. You can switch to a more advanced path next.'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {selectedPath.stages.map((stage) => (
         <div key={stage.id} className="space-y-3">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
@@ -128,26 +220,29 @@ export default function LearningPathPage() {
               </CardHeader>
               <CardContent className="space-y-1.5 pb-3">
                 {unit.lessons.map((lesson) => {
-                  const done = completedLessons.has(lesson.id);
+                  const done = completedLessonSet.has(lesson.id);
+
                   return (
-                    <div
+                    <button
                       key={lesson.id}
-                      className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors cursor-pointer"
+                      type="button"
+                      onClick={() => handleToggleLesson(lesson.id)}
+                      className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
                     >
                       {done ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
                       ) : (
-                        <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />
                       )}
                       <span className="text-sm">{lessonTypeIcon[lesson.type]}</span>
-                      <span className={`text-sm flex-1 ${done ? 'line-through text-muted-foreground' : ''}`}>
+                      <span className={`flex-1 text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>
                         {isZh ? lesson.titleZh : lesson.title}
                       </span>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {lesson.estimatedMinutes}m
                       </span>
-                    </div>
+                    </button>
                   );
                 })}
               </CardContent>
@@ -155,6 +250,11 @@ export default function LearningPathPage() {
           ))}
         </div>
       ))}
+
+      <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+        <span>{isZh ? '点击课程即可标记完成或取消完成。' : 'Click any lesson to mark it complete or undo it.'}</span>
+        <Badge variant="secondary">{progressPercent}%</Badge>
+      </div>
     </div>
   );
 }
