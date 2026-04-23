@@ -18,12 +18,20 @@ export interface UserProfile {
 }
 
 const PROFILE_KEY_PREFIX = 'vocabdaily-profile-';
+const LOCAL_AUTH_USER_KEY = 'vocabdaily-local-auth-user';
+const LOCAL_AUTH_EVENT = 'vocabdaily-local-auth-change';
+const DEFAULT_DEMO_EMAIL = 'demo@example.com';
 const SPECIAL_CHARACTER_REGEX = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
 
-function clearStoredAuthCache(): void {
+function clearStoredAuthCache(includeLocalAuth = false): void {
   localStorage.removeItem('supabase_access_token');
   localStorage.removeItem('supabase_refresh_token');
-  localStorage.removeItem('supabase_user');
+  if (includeLocalAuth || !getLocalAuthUser()) {
+    localStorage.removeItem('supabase_user');
+  }
+  if (includeLocalAuth) {
+    localStorage.removeItem(LOCAL_AUTH_USER_KEY);
+  }
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -62,6 +70,118 @@ function loadLocalProfile(userId: string): UserProfile | null {
 
 function saveLocalProfile(profile: UserProfile): void {
   localStorage.setItem(getProfileStorageKey(profile.userId), JSON.stringify(profile));
+}
+
+function isBrowserEnvironment(): boolean {
+  return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+}
+
+function isLocalDevelopmentHost(): boolean {
+  if (!isBrowserEnvironment()) {
+    return false;
+  }
+
+  return window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+}
+
+function isDemoAccountEmail(email: string): boolean {
+  const configuredDemoEmail =
+    typeof import.meta !== 'undefined' && import.meta.env?.VITE_DEMO_EMAIL
+      ? String(import.meta.env.VITE_DEMO_EMAIL)
+      : DEFAULT_DEMO_EMAIL;
+
+  return email.trim().toLowerCase() === configuredDemoEmail.trim().toLowerCase();
+}
+
+function normalizeLocalUserId(email: string): string {
+  const normalized = email.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return `local-dev-${normalized || 'user'}`;
+}
+
+function getLocalAuthUser(): AuthUser | null {
+  if (!isBrowserEnvironment()) {
+    return null;
+  }
+
+  const raw = localStorage.getItem(LOCAL_AUTH_USER_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+function syncCompatibilityAuthCache(user: AuthUser): void {
+  localStorage.setItem('supabase_user', JSON.stringify({
+    id: user.id,
+    email: user.email,
+    user_metadata: {
+      display_name: user.displayName,
+    },
+    created_at: user.createdAt,
+  }));
+}
+
+function emitLocalAuthChange(user: AuthUser | null): void {
+  if (!isBrowserEnvironment()) {
+    return;
+  }
+
+  window.dispatchEvent(new CustomEvent<AuthUser | null>(LOCAL_AUTH_EVENT, {
+    detail: user,
+  }));
+}
+
+function persistLocalAuthUser(user: AuthUser): void {
+  if (!isBrowserEnvironment()) {
+    return;
+  }
+
+  localStorage.setItem(LOCAL_AUTH_USER_KEY, JSON.stringify(user));
+  syncCompatibilityAuthCache(user);
+  saveLocalProfile(loadLocalProfile(user.id) || getDefaultProfile(user.id));
+  emitLocalAuthChange(user);
+}
+
+function buildLocalAuthUser(email: string, displayName?: string): AuthUser {
+  return {
+    id: normalizeLocalUserId(email),
+    email,
+    displayName: displayName || email.split('@')[0] || 'Local User',
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function shouldUseLocalAuthFallback(error: unknown, email?: string): boolean {
+  if (!isLocalDevelopmentHost() && !(email && isDemoAccountEmail(email))) {
+    return false;
+  }
+
+  return isNetworkResolutionError(error);
+}
+
+function isNetworkResolutionError(error: unknown): boolean {
+  const message = getErrorMessage(error, '').toLowerCase();
+  return (
+    message.includes('failed to fetch') ||
+    message.includes('fetch failed') ||
+    message.includes('name_not_resolved') ||
+    message.includes('err_name_not_resolved') ||
+    message.includes('networkerror') ||
+    message.includes('load failed') ||
+    message.includes('connection closed')
+  );
+}
+
+function createLocalFallbackUser(email: string, displayName?: string): AuthUser {
+  const user = buildLocalAuthUser(email, displayName);
+  persistLocalAuthUser(user);
+  console.warn('Supabase unavailable on localhost, using local auth fallback for development.');
+  return user;
 }
 
 // Password validation according to i18n best practices
@@ -229,6 +349,12 @@ export async function registerUser(
     return { user, error: null };
   } catch (error) {
     console.error('Register error:', error);
+    if (shouldUseLocalAuthFallback(error, email)) {
+      return { user: createLocalFallbackUser(email, displayName), error: null };
+    }
+    if (isNetworkResolutionError(error)) {
+      return { user: null, error: '认证服务暂时不可用，请稍后重试' };
+    }
     return { user: null, error: '注册失败，请稍后重试' };
   }
 }
@@ -290,6 +416,12 @@ export async function loginUser(
     return { user, error: null };
   } catch (error: unknown) {
     console.error('Login catch error:', error);
+    if (shouldUseLocalAuthFallback(error, email)) {
+      return { user: createLocalFallbackUser(email), error: null };
+    }
+    if (isNetworkResolutionError(error)) {
+      return { user: null, error: '认证服务暂时不可用，请稍后重试' };
+    }
     return { user: null, error: getErrorMessage(error, '登录失败，请稍后重试') };
   }
 }
@@ -304,18 +436,54 @@ export async function resetPassword(email: string): Promise<{ success: boolean; 
     }
     return { success: true };
   } catch (err) {
+    if (shouldUseLocalAuthFallback(err)) {
+      return { success: false, error: '当前本地开发环境无法连接 Supabase，暂时不能发送重置邮件' };
+    }
     return { success: false, error: err instanceof Error ? err.message : 'Failed to send reset email' };
   }
 }
 
 // Logout user
 export async function logoutUser(): Promise<void> {
-  await supabase.auth.signOut();
-  clearStoredAuthCache();
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.warn('Supabase sign out failed, clearing local auth state instead:', error);
+  }
+  clearStoredAuthCache(true);
+  emitLocalAuthChange(null);
 }
 
 export async function getAuthSession() {
-  return supabase.auth.getSession();
+  try {
+    const session = await supabase.auth.getSession();
+    if (session.data.session) {
+      return session;
+    }
+  } catch (error) {
+    console.warn('Get auth session failed, checking local fallback session:', error);
+  }
+
+  const localUser = getLocalAuthUser();
+  if (localUser) {
+    syncCompatibilityAuthCache(localUser);
+    return {
+      data: {
+        session: {
+          user: localUser,
+        },
+      },
+      error: null,
+    };
+  }
+
+  clearStoredAuthCache();
+  return {
+    data: {
+      session: null,
+    },
+    error: null,
+  };
 }
 
 // Get current user from active Supabase session
@@ -326,6 +494,11 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     } = await supabase.auth.getSession();
 
     if (!session) {
+      const localUser = getLocalAuthUser();
+      if (localUser) {
+        syncCompatibilityAuthCache(localUser);
+        return localUser;
+      }
       clearStoredAuthCache();
       return null;
     }
@@ -345,6 +518,11 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     };
   } catch (error) {
     console.error('Get current user error:', error);
+    const localUser = getLocalAuthUser();
+    if (localUser) {
+      syncCompatibilityAuthCache(localUser);
+      return localUser;
+    }
     return null;
   }
 }
@@ -446,20 +624,23 @@ export async function updateUserDisplayName(
 export async function isLoggedIn(): Promise<boolean> {
   const {
     data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    clearStoredAuthCache();
-  }
+  } = await getAuthSession();
 
   return !!session;
 }
 
 // Subscribe to auth changes
 export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
-  return supabase.auth.onAuthStateChange((_event, session) => {
+  const supabaseSubscription = supabase.auth.onAuthStateChange((_event, session) => {
     const authUser = session?.user;
     if (!authUser) {
+      const localUser = getLocalAuthUser();
+      if (localUser) {
+        syncCompatibilityAuthCache(localUser);
+        callback(localUser);
+        return;
+      }
+
       clearStoredAuthCache();
       callback(null);
       return;
@@ -480,4 +661,26 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
       createdAt: authUser.created_at || new Date().toISOString(),
     });
   });
+
+  const handleLocalAuthChange = (event: Event) => {
+    const localUser = (event as CustomEvent<AuthUser | null>).detail;
+    callback(localUser);
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener(LOCAL_AUTH_EVENT, handleLocalAuthChange as EventListener);
+  }
+
+  return {
+    data: {
+      subscription: {
+        unsubscribe: () => {
+          supabaseSubscription.data.subscription.unsubscribe();
+          if (typeof window !== 'undefined') {
+            window.removeEventListener(LOCAL_AUTH_EVENT, handleLocalAuthChange as EventListener);
+          }
+        },
+      },
+    },
+  };
 }
