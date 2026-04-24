@@ -26,19 +26,27 @@ const safeEqual = (a: string, b: string): boolean => {
   return diff === 0;
 };
 
-const verifyStripeSignature = async (payload: string, header: string | null): Promise<boolean> => {
-  const secret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-  if (!secret) {
-    return true;
-  }
+// Result distinguishes between a misconfigured secret and a bad signature
+// so the request handler can return 503 vs 400 with accurate logging.
+export type StripeSignatureResult =
+  | { ok: true }
+  | { ok: false; reason: 'missing_secret' | 'missing_header' | 'malformed_header' | 'mismatch' };
 
-  if (!header) return false;
+export const verifyStripeSignature = async (
+  payload: string,
+  header: string | null,
+  secret: string | undefined,
+): Promise<StripeSignatureResult> => {
+  // Fail closed: a deployed webhook MUST have STRIPE_WEBHOOK_SECRET configured.
+  // Treating a missing secret as "verified" lets anyone post fake billing events
+  // and self-upgrade to pro.
+  if (!secret) return { ok: false, reason: 'missing_secret' };
+  if (!header) return { ok: false, reason: 'missing_header' };
 
   const sections = header.split(',').map((part) => part.trim());
   const timestamp = sections.find((part) => part.startsWith('t='))?.slice(2);
   const signature = sections.find((part) => part.startsWith('v1='))?.slice(3);
-
-  if (!timestamp || !signature) return false;
+  if (!timestamp || !signature) return { ok: false, reason: 'malformed_header' };
 
   const signingPayload = `${timestamp}.${payload}`;
   const key = await crypto.subtle.importKey(
@@ -51,7 +59,7 @@ const verifyStripeSignature = async (payload: string, header: string | null): Pr
 
   const digest = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signingPayload));
   const expected = toHex(digest);
-  return safeEqual(expected, signature);
+  return safeEqual(expected, signature) ? { ok: true } : { ok: false, reason: 'mismatch' };
 };
 
 Deno.serve(async (req) => {
@@ -67,9 +75,15 @@ Deno.serve(async (req) => {
     const rawBody = await req.text();
     const signature = req.headers.get('stripe-signature');
 
-    const verified = await verifyStripeSignature(rawBody, signature);
-    if (!verified) {
-      return jsonResponse({ error: 'invalid_signature' }, 400);
+    const secret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+    const verification = await verifyStripeSignature(rawBody, signature, secret);
+    if (!verification.ok) {
+      console.error('[billing-webhook-stripe] verification_failed', verification.reason);
+      // Misconfigured secret is an operator error, not a request error.
+      if (verification.reason === 'missing_secret') {
+        return jsonResponse({ error: 'webhook_not_configured' }, 503);
+      }
+      return jsonResponse({ error: 'invalid_signature', reason: verification.reason }, 400);
     }
 
     const event = JSON.parse(rawBody) as {

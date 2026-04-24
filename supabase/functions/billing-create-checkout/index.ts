@@ -36,6 +36,16 @@ const buildUrlWithParams = (
   return url.toString();
 };
 
+// Sentinel thrown when no real provider is wired up. Caller maps this to a
+// 503 so the client never receives a fake "success" URL it can replay to grant
+// itself pro entitlements.
+export class BillingNotConfiguredError extends Error {
+  constructor(public readonly provider: 'stripe' | 'alipay', message: string) {
+    super(message);
+    this.name = 'BillingNotConfiguredError';
+  }
+}
+
 const createStripeCheckout = async (args: {
   userId: string;
   planId: string;
@@ -45,14 +55,14 @@ const createStripeCheckout = async (args: {
   const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY');
   const priceId = stripePriceByPlan(args.planId);
 
-  if (!stripeSecret || !priceId) {
-    return {
-      checkoutUrl: buildUrlWithParams(args.successUrl, {
-        provider: 'stripe',
-        mock: '1',
-      }),
-      providerOrderId: `stripe_mock_${Date.now()}`,
-    };
+  if (!stripeSecret) {
+    throw new BillingNotConfiguredError('stripe', 'STRIPE_SECRET_KEY is not configured');
+  }
+  if (!priceId) {
+    throw new BillingNotConfiguredError(
+      'stripe',
+      `STRIPE_PRICE_${args.planId === 'pro_yearly' ? 'PRO_YEARLY' : 'PRO_MONTHLY'} is not configured`,
+    );
   }
 
   const form = new URLSearchParams();
@@ -106,11 +116,8 @@ Deno.serve(async (req) => {
     const successUrl = body.successUrl || `${appBaseUrl}/pricing?checkout=success`;
     const cancelUrl = body.cancelUrl || `${appBaseUrl}/pricing?checkout=canceled`;
 
-    let checkoutUrl = buildUrlWithParams(successUrl, {
-      provider,
-      mock: '1',
-    });
-    let providerOrderId = `${provider}_mock_${Date.now()}`;
+    let checkoutUrl: string;
+    let providerOrderId: string;
 
     if (provider === 'stripe') {
       const stripe = await createStripeCheckout({
@@ -121,16 +128,14 @@ Deno.serve(async (req) => {
       });
       checkoutUrl = stripe.checkoutUrl;
       providerOrderId = stripe.providerOrderId;
-    }
-
-    if (provider === 'alipay') {
-      const appId = Deno.env.get('ALIPAY_APP_ID') || 'sandbox';
-      providerOrderId = `alipay_${Date.now()}`;
-      checkoutUrl = buildUrlWithParams(successUrl, {
-        provider: 'alipay',
-        app_id: appId,
-        order_id: providerOrderId,
-      });
+    } else {
+      // Alipay integration is not implemented yet. Returning a mock success URL
+      // would let any caller flip themselves to pro because the success URL is
+      // what the client treats as proof of payment. Fail closed instead.
+      throw new BillingNotConfiguredError(
+        'alipay',
+        'Alipay checkout is not yet implemented in production',
+      );
     }
 
     const createdAt = nowIso();
@@ -173,6 +178,16 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('[billing-create-checkout] error', error);
+    if (error instanceof BillingNotConfiguredError) {
+      return jsonResponse(
+        {
+          error: 'billing_provider_not_configured',
+          provider: error.provider,
+          message: error.message,
+        },
+        503,
+      );
+    }
     return jsonResponse(
       {
         error: 'billing_checkout_failed',

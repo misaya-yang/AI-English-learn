@@ -2,12 +2,51 @@ import { createClient } from '@supabase/supabase-js';
 import type { FSRSState, Rating } from '@/types/core';
 import { buildWordProgressSyncPayload, normalizeWordUuid } from '@/lib/wordProgressSync';
 
-// Supabase configuration
+// Dev fallbacks let `npm run dev` boot without a `.env`. In production we
+// MUST refuse to silently use these — a misconfigured Vercel deploy that
+// silently used the dev project would mix prod users into the dev DB and let
+// anyone with the dev anon key read prod traffic.
 const DEFAULT_SUPABASE_URL = 'https://zjkbktdmwencnouwfrij.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_0_pU0AO93wz-7Bmt6xROJg_stLwrT0h';
 
-export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+export function resolveSupabaseEnv(env: {
+  VITE_SUPABASE_URL?: string;
+  VITE_SUPABASE_ANON_KEY?: string;
+  PROD?: boolean;
+  MODE?: string;
+}): { url: string; anonKey: string } {
+  const url = env.VITE_SUPABASE_URL?.trim();
+  const anonKey = env.VITE_SUPABASE_ANON_KEY?.trim();
+  const isProd = Boolean(env.PROD) || env.MODE === 'production';
+
+  if (isProd) {
+    const missing: string[] = [];
+    if (!url) missing.push('VITE_SUPABASE_URL');
+    if (!anonKey) missing.push('VITE_SUPABASE_ANON_KEY');
+    if (missing.length > 0) {
+      throw new Error(
+        `[supabase] Missing required production env: ${missing.join(', ')}. ` +
+          'Refusing to fall back to development credentials. Configure these on the deploy target.',
+      );
+    }
+    return { url: url!, anonKey: anonKey! };
+  }
+
+  return {
+    url: url || DEFAULT_SUPABASE_URL,
+    anonKey: anonKey || DEFAULT_SUPABASE_ANON_KEY,
+  };
+}
+
+const resolved = resolveSupabaseEnv({
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+  PROD: import.meta.env.PROD,
+  MODE: import.meta.env.MODE,
+});
+
+export const SUPABASE_URL = resolved.url;
+export const SUPABASE_ANON_KEY = resolved.anonKey;
 
 // Create Supabase client
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
