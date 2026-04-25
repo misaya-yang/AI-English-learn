@@ -49,6 +49,14 @@ import {
   MODE_LABELS,
   MODE_DESCRIPTIONS,
 } from '@/services/learnerModel';
+import {
+  loadTodayFlags,
+  markTodayWordHard,
+  toggleTodayBookmark,
+  type DayKey,
+} from '@/services/todayWorkbenchPersistence';
+import { MissionWhyBadge } from '@/features/learning/components/MissionWhyBadge';
+import { useTranslation } from 'react-i18next';
 import type { UserProgress } from '@/data/localStorage';
 
 interface WordWorkbenchProps {
@@ -387,11 +395,18 @@ export default function TodayPage() {
     progress: wordProgress,
     streak,
   } = useUserData();
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
+  // Persistence keys derived from (userId, today). The day rolls over at
+  // local midnight so refresh-after-midnight starts a new workbench, not
+  // yesterday's flags.
+  const dayKey: DayKey = useMemo(() => ({ userId, date: new Date() }), [userId]);
+  const initialFlags = useMemo(() => loadTodayFlags(dayKey), [dayKey]);
   const [learnedWords, setLearnedWords] = useState<Set<string>>(new Set());
-  const [hardWords, setHardWords] = useState<Set<string>>(new Set());
-  const [bookmarkedWords, setBookmarkedWords] = useState<Set<string>>(new Set());
+  const [hardWords, setHardWords] = useState<Set<string>>(initialFlags.hard);
+  const [bookmarkedWords, setBookmarkedWords] = useState<Set<string>>(initialFlags.bookmark);
   const currentStreak = streak.current;
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -404,6 +419,40 @@ export default function TodayPage() {
     refreshDailyWords();
     refreshDailyMission();
   }, [refreshDailyMission, refreshDailyWords]);
+
+  // Hydrate `learnedWords` from durable progress so a refresh does not
+  // reset the workbench. Only words that the daily list still contains
+  // and that have been touched today are counted as "learned today" — a
+  // word reviewed last week is durable progress, not part of this
+  // session's hero metric.
+  useEffect(() => {
+    if (words.length === 0) return;
+    const todayKey = `${dayKey.date.getFullYear()}-${String(dayKey.date.getMonth() + 1).padStart(2, '0')}-${String(dayKey.date.getDate()).padStart(2, '0')}`;
+    const wordIdsToday = new Set(words.map((word) => word.id));
+    const learnedToday = new Set<string>();
+    for (const entry of wordProgress as UserProgress[]) {
+      if (!wordIdsToday.has(entry.wordId)) continue;
+      const last = entry.lastReviewed ? new Date(entry.lastReviewed) : null;
+      if (!last) continue;
+      const lastKey = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
+      const counts = lastKey === todayKey || entry.status === 'mastered';
+      if (counts) learnedToday.add(entry.wordId);
+    }
+    setLearnedWords((prev) => {
+      // Preserve any optimistic adds (e.g. mid-session marks the user just
+      // tapped) so we never visually undo a fresh tap if the durable write
+      // hasn't roundtripped yet.
+      let changed = false;
+      const next = new Set(prev);
+      learnedToday.forEach((id) => {
+        if (!next.has(id)) {
+          next.add(id);
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [dayKey.date, wordProgress, words]);
 
   // ── FSRS-5 Learner Model ──────────────────────────────────────────────────
   const learnerModel = useMemo(() => {
@@ -481,7 +530,8 @@ export default function TodayPage() {
         return;
       }
 
-      setHardWords((prev) => new Set(prev).add(currentWord.id));
+      const updated = markTodayWordHard(dayKey, currentWord.id);
+      setHardWords(new Set(updated.hard));
       void recordLearningEvent({
         userId,
         eventName: 'today.word_marked',
@@ -506,18 +556,14 @@ export default function TodayPage() {
 
   const handleBookmark = () => {
     if (!currentWord) return;
-
-    setBookmarkedWords((prev) => {
-      const next = new Set(prev);
-      if (next.has(currentWord.id)) {
-        next.delete(currentWord.id);
-        toast.info(`已取消收藏 "${currentWord.word}"`);
-      } else {
-        next.add(currentWord.id);
-        toast.success(`已收藏 "${currentWord.word}"`);
-      }
-      return next;
-    });
+    const wasBookmarked = bookmarkedWords.has(currentWord.id);
+    const updated = toggleTodayBookmark(dayKey, currentWord.id);
+    setBookmarkedWords(new Set(updated.bookmark));
+    if (wasBookmarked) {
+      toast.info(`已取消收藏 "${currentWord.word}"`);
+    } else {
+      toast.success(`已收藏 "${currentWord.word}"`);
+    }
   };
 
   const handleShare = async () => {
@@ -609,31 +655,41 @@ export default function TodayPage() {
   return (
     <LearningShellFrame>
       <ConfettiCelebration active={showConfetti} />
+
+      <MissionWhyBadge
+        reason={missionCard?.primaryAction.reason}
+        learnerMode={learnerModel?.mode || null}
+        burnoutRisk={learnerModel?.burnoutRisk}
+        language={language}
+      />
+
       <LearningHeroPanel
-        eyebrow={`Today mission · ${new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}`}
-        title={missionCard?.headlineZh || '先做最该做的一步'}
+        eyebrow={`Today mission · ${new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}`}
+        title={(language.startsWith('zh') ? missionCard?.headlineZh : missionCard?.headline) || (language.startsWith('zh') ? '先做最该做的一步' : 'Pick the highest-impact next step')}
+        description={(language.startsWith('zh') ? missionCard?.supportZh : missionCard?.support) || undefined}
         progress={missionProgress}
-        progressLabel="Mission progress"
+        progressLabel={language.startsWith('zh') ? '任务进度' : 'Mission progress'}
         metrics={[
           {
-            label: 'Estimated time',
+            label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
             value: `${missionCard?.estimatedMinutes || learningProfile.dailyMinutes} min`,
           },
           {
-            label: 'Words left',
+            label: language.startsWith('zh') ? '今日剩余' : 'Words left',
             value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
             accent: 'emerald',
           },
           {
-            label: 'Due reviews',
+            label: language.startsWith('zh') ? '到期复习' : 'Due reviews',
             value: dueWords.length,
+            accent: dueWords.length > 0 ? 'warm' : 'default',
           },
         ]}
         actions={
           <>
             <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
               <Link to={missionCard?.primaryAction.href || '/dashboard/today'}>
-                {missionCard?.primaryAction.ctaZh || '继续今日任务'}
+                {(language.startsWith('zh') ? missionCard?.primaryAction.ctaZh : missionCard?.primaryAction.cta) || (language.startsWith('zh') ? '继续今日任务' : 'Continue today')}
               </Link>
             </Button>
             {(missionCard?.secondaryActions || []).slice(0, 2).map((action) => (
@@ -643,7 +699,7 @@ export default function TodayPage() {
                 className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
                 asChild
               >
-                <Link to={action.href}>{action.ctaZh}</Link>
+                <Link to={action.href}>{language.startsWith('zh') ? action.ctaZh : action.cta}</Link>
               </Button>
             ))}
           </>
