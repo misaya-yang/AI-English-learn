@@ -277,3 +277,81 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
     Function still falls back to the empty-context branch of the policy
     because no caller supplies the snapshot.
 
+---
+
+## 2026-04-25 11:30 - COACH-01 (Feed Real Learner Context Into Chat)
+
+- Changed:
+  - `src/features/chat/utils/learnerContext.ts`: new
+    `buildChatLearnerProfile({ learningProfile, weakTags, learnerModel,
+    recentMistakes })` returns `Partial<LearnerContext>`. Helpers:
+    `mapBurnoutBucket` (0–1 → 'low' | 'medium' | 'high', NaN/Infinity
+    safe, clamped) and `mapMistakeCategoryToErrorType` (case-insensitive
+    keyword bucketing of free-form `MistakeEntry.category` strings into
+    the canonical `CoachingErrorType` set, returns undefined for
+    miscellaneous so the entry still surfaces the word without a wrong
+    skill tag). Promotes `weakTags` onto the canonical `weaknessTags`
+    field; the request payload still carries `weakTags` separately so
+    older Edge Function revisions stay compatible.
+  - `src/features/chat/utils/learnerContext.test.ts` (new): 14 cases —
+    bucketing, dedupe, drop empty target / non-positive dailyMinutes,
+    learnerModel field mapping (mode, burnoutRisk, dueCount,
+    recommendedDailyReview), predictedRetention rescaling 0–100 → 0–1,
+    recent-error sort-by-recency + cap at 6 + filter out eliminated +
+    note formatting from userAnswer/correctAnswer, unknown category
+    passthrough with skill=undefined, and a round-trip through
+    `normalizeLearningContext` proving the legacy `weakTags` merge rule
+    still wins for callers that supply both.
+  - `src/pages/dashboard/ChatPage.tsx`: pull `progress`, `streak`, and
+    `activeBookSummary` from `useUserData`. New memoised
+    `chatLearnerModelSnapshot` (= `computeLearnerModel(userId, progress,
+    streak.current, activeBookSummary.dailyGoal)` when there is
+    progress). New `getChatLearnerProfile` callback that reads
+    `getMistakes({ eliminated: false })` fresh on each invocation so
+    practice errors land in the next chat turn even if the React tree
+    has not re-rendered. Threads `learnerProfile: getChatLearnerProfile()`
+    into all five `sendMessage(...)` call sites (manual send, quick
+    prompt, manual quiz button, force web search, quiz batch
+    requester) and updates each `useCallback` dep array.
+
+- Verified:
+  - `npx vitest run src/features/chat/utils/learnerContext.test.ts` →
+    14/14 passed.
+  - `npx vitest run` (full) → 29 files, 379/379 (366 prior + 14 new).
+    Zero regressions in the existing coachingPolicy /
+    coachReviewQueue / coachingActionRouter suites.
+  - `npm run build` → tsc + vite clean. ChatPage chunk grew slightly
+    (122.7 KB) — within budget.
+  - Browser smoke: vite dev server on `127.0.0.1:4173` returned 200 for
+    `/`, transformed `learnerContext.ts` (26 KB) and `ChatPage.tsx`
+    (227 KB) without errors.
+
+- Deploy:
+  - Pure frontend change. Vercel auto-deploy is sufficient.
+  - No Edge Function or migration changes.
+  - The coach Edge Function already handles the canonical
+    `weaknessTags` and the learner-model fields (Round 2 work).
+
+- Risks:
+  - `chatLearnerModelSnapshot` recomputes on every progress mutation —
+    cheap (O(n) over wordProgress) but worth keeping an eye on for
+    learners with large libraries.
+  - `getMistakes()` is a synchronous localStorage read on every send.
+    Acceptable for v1 (the queue caps at a few hundred entries) but
+    should move to a hook with a memoised snapshot once the mistake
+    collector grows or moves to IndexedDB.
+  - `learnerProfile` payload now adds ~200–400 bytes to the chat
+    request when populated. Within DeepSeek context budget; the
+    server-side context-engine still clips `learning_context` before
+    it hits the model.
+
+- Next:
+  - COACH-02: surface `coachingActions` in the chat UI as a compact
+    "Next step" affordance the learner can act on (retry,
+    schedule_review, micro_task). The actions are already extracted on
+    the response (Round 2) and persisted into the review queue (Round
+    3); only the UI surface is missing.
+  - COACH-03: integrate the persisted coach review queue into the
+    Review/Practice loop so `getDueCoachReviews()` items appear
+    visually distinct from FSRS-due cards.
+
