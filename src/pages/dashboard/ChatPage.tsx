@@ -42,7 +42,7 @@ import type { FeedbackIssue } from '@/types/examContent';
 import { saveAiFeedbackRecord } from '@/data/examContent';
 import { deleteMemoryItems, rememberMemoryItems } from '@/services/memoryCenter';
 import { computeLearnerModel } from '@/services/learnerModel';
-import { getMistakes } from '@/services/mistakeCollector';
+import { getMistakes, type MistakeEntry } from '@/services/mistakeCollector';
 import { buildQuizSequencePrompt, parseRequestedQuizCount } from '@/features/chat/quizSequence';
 import { ChatComposer } from '@/features/chat/components/ChatComposer';
 import { ChatHistorySidebar } from '@/features/chat/components/ChatHistorySidebar';
@@ -385,10 +385,17 @@ export default function ChatPage() {
     [activeBook?.name, dailyMission, dueWords.length, learningProfile],
   );
 
-  // Recompute the learner-model snapshot whenever progress/streak/goal
-  // changes. The mistake list is read fresh inside `getChatLearnerProfile`
-  // because the mistake collector writes during practice flows and we want
-  // the next chat turn to see the most recent errors.
+  // Mistake list is async (IndexedDB-backed). Cache snapshot in state and
+  // refresh whenever the user changes; chat turns read the latest snapshot.
+  const [recentMistakes, setRecentMistakes] = useState<MistakeEntry[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    void getMistakes(chatUserId, { eliminated: false }).then((list) => {
+      if (!cancelled) setRecentMistakes(list);
+    });
+    return () => { cancelled = true; };
+  }, [chatUserId]);
+
   const chatLearnerModelSnapshot = useMemo(() => {
     if (!progress || progress.length === 0) return null;
     return computeLearnerModel(
@@ -404,9 +411,9 @@ export default function ChatPage() {
       learningProfile,
       weakTags: chatWeakTags,
       learnerModel: chatLearnerModelSnapshot,
-      recentMistakes: getMistakes({ eliminated: false }),
+      recentMistakes,
     });
-  }, [chatLearnerModelSnapshot, chatWeakTags, learningProfile]);
+  }, [chatLearnerModelSnapshot, chatWeakTags, learningProfile, recentMistakes]);
 
   const recommendations = useMemo(() => buildRecommendations({
     dueCount: dueWords.length,

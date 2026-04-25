@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   addCoachReviewItems,
   clearCoachReviewQueue,
@@ -7,6 +7,8 @@ import {
   markCoachReviewCompleted,
 } from './coachReviewQueue';
 import type { ReviewQueueItem } from '@/features/coach/coachingPolicy';
+
+const USER = 'test-user-coach-queue';
 
 const item = (over: Partial<ReviewQueueItem> = {}): ReviewQueueItem => ({
   id: over.id ?? 'rq_aaaa1111',
@@ -18,133 +20,99 @@ const item = (over: Partial<ReviewQueueItem> = {}): ReviewQueueItem => ({
   sourceAction: over.sourceAction ?? 'schedule_review',
 });
 
-beforeEach(() => {
-  clearCoachReviewQueue();
+beforeEach(async () => {
+  await clearCoachReviewQueue(USER);
 });
 
 describe('coachReviewQueue', () => {
-  it('persists items and reads them back', () => {
-    addCoachReviewItems([item({ id: 'rq_a' }), item({ id: 'rq_b' })]);
-    const all = getCoachReviews();
+  it('persists items and reads them back', async () => {
+    await addCoachReviewItems(USER, [item({ id: 'rq_a' }), item({ id: 'rq_b' })]);
+    const all = await getCoachReviews(USER);
     expect(all.map((i) => i.id).sort()).toEqual(['rq_a', 'rq_b']);
   });
 
-  it('dedupes by id when the same action is replayed', () => {
+  it('dedupes by id when the same action is replayed', async () => {
     const repeated = item({ id: 'rq_dup' });
-    addCoachReviewItems([repeated]);
-    addCoachReviewItems([repeated]);
-    expect(getCoachReviews()).toHaveLength(1);
+    await addCoachReviewItems(USER, [repeated]);
+    await addCoachReviewItems(USER, [repeated]);
+    expect(await getCoachReviews(USER)).toHaveLength(1);
   });
 
-  it('updates the dueAt + prompt when an item with the same id is re-added', () => {
-    addCoachReviewItems([item({ id: 'rq_x', dueAt: '2026-01-01T00:00:00.000Z', prompt: 'old' })]);
-    addCoachReviewItems([item({ id: 'rq_x', dueAt: '2026-05-01T00:00:00.000Z', prompt: 'new' })]);
-    const all = getCoachReviews();
+  it('updates the dueAt + prompt when an item with the same id is re-added', async () => {
+    await addCoachReviewItems(USER, [item({ id: 'rq_x', dueAt: '2026-01-01T00:00:00.000Z', prompt: 'old' })]);
+    await addCoachReviewItems(USER, [item({ id: 'rq_x', dueAt: '2026-05-01T00:00:00.000Z', prompt: 'new' })]);
+    const all = await getCoachReviews(USER);
     expect(all).toHaveLength(1);
     expect(all[0].dueAt).toBe('2026-05-01T00:00:00.000Z');
     expect(all[0].prompt).toBe('new');
   });
 
-  it('returns only items whose dueAt is in the past for getDueCoachReviews', () => {
+  it('returns only items whose dueAt is in the past for getDueCoachReviews', async () => {
     const now = new Date('2026-04-25T12:00:00.000Z');
-    addCoachReviewItems([
+    await addCoachReviewItems(USER, [
       item({ id: 'rq_due', dueAt: '2026-04-25T11:00:00.000Z' }),
       item({ id: 'rq_future', dueAt: '2026-04-26T12:00:00.000Z' }),
       item({ id: 'rq_now', dueAt: '2026-04-25T12:00:00.000Z' }),
     ]);
-    const due = getDueCoachReviews({ now });
+    const due = await getDueCoachReviews(USER, { now });
     expect(due.map((i) => i.id).sort()).toEqual(['rq_due', 'rq_now']);
   });
 
-  it('skips completed items in getCoachReviews + getDueCoachReviews unless includeCompleted is set', () => {
+  it('skips completed items in getCoachReviews + getDueCoachReviews unless includeCompleted is set', async () => {
     const past = '2026-04-20T00:00:00.000Z';
-    addCoachReviewItems([item({ id: 'rq_a', dueAt: past }), item({ id: 'rq_b', dueAt: past })]);
-    markCoachReviewCompleted('rq_a');
+    await addCoachReviewItems(USER, [item({ id: 'rq_a', dueAt: past }), item({ id: 'rq_b', dueAt: past })]);
+    await markCoachReviewCompleted(USER, 'rq_a');
 
-    const open = getCoachReviews();
+    const open = await getCoachReviews(USER);
     expect(open.map((i) => i.id)).toEqual(['rq_b']);
 
-    const all = getCoachReviews({ includeCompleted: true });
+    const all = await getCoachReviews(USER, { includeCompleted: true });
     expect(all.map((i) => i.id).sort()).toEqual(['rq_a', 'rq_b']);
 
-    const due = getDueCoachReviews({ now: new Date('2026-04-25T00:00:00.000Z') });
+    const due = await getDueCoachReviews(USER, { now: new Date('2026-04-25T00:00:00.000Z') });
     expect(due.map((i) => i.id)).toEqual(['rq_b']);
   });
 
-  it('markCoachReviewCompleted is a no-op for unknown ids', () => {
-    addCoachReviewItems([item({ id: 'rq_a' })]);
-    markCoachReviewCompleted('rq_nonexistent');
-    const all = getCoachReviews({ includeCompleted: true });
+  it('markCoachReviewCompleted is a no-op for unknown ids', async () => {
+    await addCoachReviewItems(USER, [item({ id: 'rq_a' })]);
+    await markCoachReviewCompleted(USER, 'rq_nonexistent');
+    const all = await getCoachReviews(USER, { includeCompleted: true });
     expect(all).toHaveLength(1);
     expect(all[0].id).toBe('rq_a');
   });
 
-  it('survives malformed localStorage payloads without throwing', () => {
-    localStorage.setItem('vocabdaily_coach_reviews', '{"not":"an array"}');
-    // Reading returns []; subsequent writes overwrite the malformed blob.
-    expect(getCoachReviews()).toEqual([]);
-    addCoachReviewItems([item({ id: 'rq_recover' })]);
-    expect(getCoachReviews()).toHaveLength(1);
+  it('addCoachReviewItems is a no-op for empty input', async () => {
+    await addCoachReviewItems(USER, []);
+    expect(await getCoachReviews(USER)).toEqual([]);
   });
 
-  it('addCoachReviewItems is a no-op for empty input', () => {
-    addCoachReviewItems([]);
-    expect(getCoachReviews()).toEqual([]);
-  });
-
-  it('caps the queue size to prevent runaway storage growth', () => {
+  it('caps the queue size to prevent runaway storage growth', async () => {
     const many: ReviewQueueItem[] = [];
-    for (let i = 0; i < 800; i += 1) {
-      many.push(item({ id: `rq_${i}` }));
+    for (let i = 0; i < 600; i += 1) {
+      many.push(item({ id: `rq_${i}`, dueAt: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString() }));
     }
-    addCoachReviewItems(many);
-    // The cap exists; we don't pin the exact number, just verify it's
-    // bounded at a sensible upper limit.
-    const all = getCoachReviews({ includeCompleted: true });
+    await addCoachReviewItems(USER, many);
+    const all = await getCoachReviews(USER, { includeCompleted: true });
     expect(all.length).toBeGreaterThan(0);
     expect(all.length).toBeLessThanOrEqual(500);
   });
 
-  it('preserves insertion order for replayed runs', () => {
-    addCoachReviewItems([item({ id: 'rq_1' })]);
-    addCoachReviewItems([item({ id: 'rq_2' })]);
-    addCoachReviewItems([item({ id: 'rq_3' })]);
-    const all = getCoachReviews();
-    expect(all.map((i) => i.id)).toEqual(['rq_1', 'rq_2', 'rq_3']);
+  it('uses Date.now() by default for getDueCoachReviews', async () => {
+    await addCoachReviewItems(USER, [
+      item({ id: 'rq_past', dueAt: '2000-01-01T00:00:00.000Z' }),
+      item({ id: 'rq_future', dueAt: '2099-01-01T00:00:00.000Z' }),
+    ]);
+    expect((await getDueCoachReviews(USER)).map((i) => i.id)).toEqual(['rq_past']);
   });
 
-  it('does nothing when localStorage is unavailable (defensive guard)', () => {
-    const original = (globalThis as unknown as { localStorage?: Storage }).localStorage;
-    Object.defineProperty(globalThis, 'localStorage', {
-      configurable: true,
-      get() {
-        throw new Error('storage unavailable');
-      },
-    });
-    try {
-      // None of these throw — they degrade silently. SSR / privacy-mode safe.
-      expect(() => addCoachReviewItems([item()])).not.toThrow();
-      expect(getCoachReviews()).toEqual([]);
-      expect(() => markCoachReviewCompleted('rq_a')).not.toThrow();
-    } finally {
-      Object.defineProperty(globalThis, 'localStorage', {
-        configurable: true,
-        value: original,
-      });
-    }
-  });
-
-  it('uses Date.now() by default for getDueCoachReviews', () => {
-    vi.useFakeTimers();
-    try {
-      vi.setSystemTime(new Date('2026-04-25T12:00:00.000Z'));
-      addCoachReviewItems([
-        item({ id: 'rq_due', dueAt: '2026-04-25T10:00:00.000Z' }),
-        item({ id: 'rq_future', dueAt: '2026-04-25T14:00:00.000Z' }),
-      ]);
-      expect(getDueCoachReviews().map((i) => i.id)).toEqual(['rq_due']);
-    } finally {
-      vi.useRealTimers();
-    }
+  it('isolates entries between users', async () => {
+    const userA = 'user-a';
+    const userB = 'user-b';
+    await clearCoachReviewQueue(userA);
+    await clearCoachReviewQueue(userB);
+    await addCoachReviewItems(userA, [item({ id: 'a1' })]);
+    await addCoachReviewItems(userB, [item({ id: 'b1' })]);
+    expect((await getCoachReviews(userA)).map((i) => i.id)).toEqual(['a1']);
+    expect((await getCoachReviews(userB)).map((i) => i.id)).toEqual(['b1']);
   });
 });

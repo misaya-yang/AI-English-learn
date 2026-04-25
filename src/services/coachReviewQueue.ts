@@ -1,143 +1,172 @@
 // Coach-driven review queue.
 //
 // Persists ReviewQueueItems produced by `toReviewQueueItems(coachingActions)`
-// so a chat-coach `schedule_review` or `retry_with_hint` action becomes a
-// real, due-able review entry. Lives in localStorage today (matches the
-// existing mistake collector pattern); a future story can promote this to
-// Supabase.
-//
-// Items are keyed by their FNV-1a id from the policy module: replays of the
-// same action overwrite (refresh dueAt + prompt) instead of duplicating.
+// in IndexedDB and syncs to Supabase `coach_review_queue` via syncQueue. Each
+// item's id is the FNV-1a hash of the source action, so replays of the same
+// action upsert (refresh dueAt + prompt) instead of duplicating.
 
 import { emitStructuredEvent } from '@/lib/observability';
+import {
+  putCoachReview,
+  getCoachReview,
+  getCoachReviewsForUser,
+  deleteCoachReview,
+  deleteCoachReviewsForUser,
+  type CoachReviewRecord,
+} from '@/lib/localDb';
+import { syncQueue, buildIdempotencyKey } from '@/services/syncQueue';
 import type { ReviewQueueItem } from '@/features/coach/coachingPolicy';
 
-const STORAGE_KEY = 'vocabdaily_coach_reviews';
+const LEGACY_STORAGE_KEY = 'vocabdaily_coach_reviews';
 const MAX_ENTRIES = 500;
+const migratedUsers = new Set<string>();
 
-interface StoredItem extends ReviewQueueItem {
-  completedAt?: string;
+function recordToItem(rec: CoachReviewRecord): ReviewQueueItem {
+  return {
+    id: rec.id,
+    userInputRef: rec.user_input_ref,
+    skill: rec.skill as ReviewQueueItem['skill'],
+    targetWord: rec.target_word,
+    prompt: rec.prompt,
+    dueAt: rec.due_at,
+    sourceAction: rec.source_action as ReviewQueueItem['sourceAction'],
+  };
 }
 
-const safeGetStorage = (): Storage | null => {
-  try {
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
-};
+function itemToRecord(
+  userId: string,
+  item: ReviewQueueItem,
+  prev?: CoachReviewRecord,
+): CoachReviewRecord {
+  return {
+    id: item.id,
+    user_id: userId,
+    user_input_ref: item.userInputRef,
+    skill: item.skill,
+    target_word: item.targetWord,
+    prompt: item.prompt,
+    due_at: item.dueAt,
+    source_action: item.sourceAction,
+    completed_at: prev?.completed_at,
+    created_at: prev?.created_at ?? new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
 
-const loadAll = (): StoredItem[] => {
-  const storage = safeGetStorage();
-  if (!storage) return [];
+async function enqueueSync(record: CoachReviewRecord): Promise<void> {
+  await syncQueue.enqueue({
+    table: 'coach_review_queue',
+    operation: 'upsert',
+    payload: record as unknown as Record<string, unknown>,
+    idempotency_key: buildIdempotencyKey('coach_review_queue', { id: record.id }),
+  });
+}
+
+async function migrateLegacyOnce(userId: string): Promise<void> {
+  if (migratedUsers.has(userId)) return;
+  migratedUsers.add(userId);
+  let raw: string | null = null;
   try {
-    const raw = storage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    raw = globalThis.localStorage?.getItem(LEGACY_STORAGE_KEY) ?? null;
+  } catch {
+    return;
+  }
+  if (!raw) return;
+  try {
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((entry): entry is StoredItem => {
-      return (
-        entry &&
-        typeof entry === 'object' &&
-        typeof (entry as StoredItem).id === 'string' &&
-        typeof (entry as StoredItem).dueAt === 'string'
-      );
-    });
+    if (!Array.isArray(parsed)) return;
+    for (const entry of parsed) {
+      if (!entry?.id || !entry?.dueAt) continue;
+      const existing = await getCoachReview(userId, entry.id);
+      if (existing) continue;
+      const record: CoachReviewRecord = {
+        id: entry.id,
+        user_id: userId,
+        user_input_ref: entry.userInputRef,
+        skill: entry.skill,
+        target_word: entry.targetWord,
+        prompt: entry.prompt,
+        due_at: entry.dueAt,
+        source_action: entry.sourceAction,
+        completed_at: entry.completedAt,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      await putCoachReview(record);
+      await enqueueSync(record);
+    }
+    globalThis.localStorage?.removeItem(LEGACY_STORAGE_KEY);
   } catch {
-    return [];
+    try { globalThis.localStorage?.removeItem(LEGACY_STORAGE_KEY); } catch { /* noop */ }
   }
-};
-
-const saveAll = (entries: StoredItem[]): void => {
-  const storage = safeGetStorage();
-  if (!storage) return;
-  try {
-    storage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  } catch {
-    // QuotaExceeded / private mode — degrade silently.
-  }
-};
+}
 
 export interface ReviewQueueQuery {
   includeCompleted?: boolean;
 }
 
-export function getCoachReviews(query: ReviewQueueQuery = {}): ReviewQueueItem[] {
-  const entries = loadAll();
-  const filtered = query.includeCompleted ? entries : entries.filter((e) => !e.completedAt);
-  return filtered.map((entry) => ({
-    id: entry.id,
-    userInputRef: entry.userInputRef,
-    skill: entry.skill,
-    targetWord: entry.targetWord,
-    prompt: entry.prompt,
-    dueAt: entry.dueAt,
-    sourceAction: entry.sourceAction,
-  }));
+export async function getCoachReviews(
+  userId: string,
+  query: ReviewQueueQuery = {},
+): Promise<ReviewQueueItem[]> {
+  await migrateLegacyOnce(userId);
+  const records = await getCoachReviewsForUser(userId);
+  const filtered = query.includeCompleted
+    ? records
+    : records.filter((r) => !r.completed_at);
+  return filtered.map(recordToItem);
 }
 
-export function getDueCoachReviews(opts: { now?: Date } = {}): ReviewQueueItem[] {
-  const now = opts.now ?? new Date();
-  const cutoff = now.getTime();
-  return getCoachReviews().filter((item) => new Date(item.dueAt).getTime() <= cutoff);
+export async function getDueCoachReviews(
+  userId: string,
+  opts: { now?: Date } = {},
+): Promise<ReviewQueueItem[]> {
+  const cutoff = (opts.now ?? new Date()).getTime();
+  const all = await getCoachReviews(userId);
+  return all.filter((item) => new Date(item.dueAt).getTime() <= cutoff);
 }
 
-export function addCoachReviewItems(items: ReviewQueueItem[]): void {
-  if (!Array.isArray(items) || items.length === 0) return;
-  const storage = safeGetStorage();
-  if (!storage) return;
-
-  const existing = loadAll();
-  const byId = new Map(existing.map((entry) => [entry.id, entry] as const));
-
-  for (const item of items) {
-    if (!item || typeof item !== 'object') continue;
-    if (typeof item.id !== 'string' || typeof item.dueAt !== 'string') continue;
-    const previous = byId.get(item.id);
-    byId.set(item.id, {
-      ...(previous || {}),
-      ...item,
-      // Preserve completion across repeats — don't resurrect a finished item.
-      completedAt: previous?.completedAt,
+async function trimToCap(userId: string): Promise<void> {
+  const all = await getCoachReviewsForUser(userId);
+  if (all.length <= MAX_ENTRIES) return;
+  const sortedByCreated = [...all].sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const overflow = all.length - MAX_ENTRIES;
+  const completed = sortedByCreated.filter((r) => r.completed_at);
+  const open = sortedByCreated.filter((r) => !r.completed_at);
+  let toDrop: CoachReviewRecord[];
+  if (completed.length >= overflow) {
+    toDrop = completed.slice(0, overflow);
+  } else {
+    toDrop = [...completed, ...open.slice(0, overflow - completed.length)];
+  }
+  for (const r of toDrop) {
+    await syncQueue.enqueue({
+      table: 'coach_review_queue',
+      operation: 'delete',
+      payload: { id: r.id, user_id: userId },
+      idempotency_key: buildIdempotencyKey('coach_review_queue:delete', { id: r.id }),
     });
+    await deleteCoachReview(userId, r.id);
   }
+}
 
-  // Maintain insertion order for the existing IDs and append fresh ones.
-  const merged: StoredItem[] = [];
-  const inserted = new Set<string>();
-  for (const entry of existing) {
-    const next = byId.get(entry.id);
-    if (next) {
-      merged.push(next);
-      inserted.add(entry.id);
-    }
-  }
+export async function addCoachReviewItems(
+  userId: string,
+  items: ReviewQueueItem[],
+): Promise<void> {
+  if (!Array.isArray(items) || items.length === 0) return;
+  await migrateLegacyOnce(userId);
+
   for (const item of items) {
-    if (typeof item.id !== 'string') continue;
-    if (inserted.has(item.id)) continue;
-    const stored = byId.get(item.id);
-    if (!stored) continue;
-    merged.push(stored);
-    inserted.add(item.id);
+    if (!item || typeof item.id !== 'string' || typeof item.dueAt !== 'string') continue;
+    const previous = await getCoachReview(userId, item.id);
+    const record = itemToRecord(userId, item, previous);
+    await putCoachReview(record);
+    await enqueueSync(record);
   }
 
-  // Cap to keep storage bounded. Drop the oldest *completed* items first;
-  // if we still need to trim, drop the oldest open ones too. Either way the
-  // freshest entries — which are most likely to be due — survive.
-  let trimmed = merged;
-  if (trimmed.length > MAX_ENTRIES) {
-    const completed = trimmed.filter((e) => e.completedAt);
-    const open = trimmed.filter((e) => !e.completedAt);
-    const overflow = trimmed.length - MAX_ENTRIES;
-    if (completed.length >= overflow) {
-      trimmed = [...completed.slice(overflow), ...open];
-    } else {
-      const remaining = overflow - completed.length;
-      trimmed = open.slice(remaining);
-    }
-  }
+  await trimToCap(userId);
 
-  saveAll(trimmed);
   try {
     emitStructuredEvent({
       category: 'coach',
@@ -151,7 +180,6 @@ export function addCoachReviewItems(items: ReviewQueueItem[]): void {
               .filter(Boolean),
           ),
         ),
-        totalAfter: trimmed.length,
       },
     });
   } catch {
@@ -159,24 +187,32 @@ export function addCoachReviewItems(items: ReviewQueueItem[]): void {
   }
 }
 
-export function markCoachReviewCompleted(id: string, opts: { now?: Date } = {}): void {
-  const all = loadAll();
-  const idx = all.findIndex((entry) => entry.id === id);
-  if (idx === -1) return;
-  const completedAt = (opts.now ?? new Date()).toISOString();
-  all[idx] = { ...all[idx], completedAt };
-  saveAll(all);
+export async function markCoachReviewCompleted(
+  userId: string,
+  id: string,
+  opts: { now?: Date } = {},
+): Promise<void> {
+  const existing = await getCoachReview(userId, id);
+  if (!existing) return;
+  const next: CoachReviewRecord = {
+    ...existing,
+    completed_at: (opts.now ?? new Date()).toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  await putCoachReview(next);
+  await enqueueSync(next);
   try {
     emitStructuredEvent({
       category: 'coach',
       name: 'review_queue.complete',
-      payload: { id, skill: all[idx].skill },
+      payload: { id, skill: existing.skill },
     });
   } catch {
-    // see above
+    /* noop */
   }
 }
 
-export function clearCoachReviewQueue(): void {
-  saveAll([]);
+export async function clearCoachReviewQueue(userId: string): Promise<void> {
+  migratedUsers.delete(userId);
+  await deleteCoachReviewsForUser(userId);
 }

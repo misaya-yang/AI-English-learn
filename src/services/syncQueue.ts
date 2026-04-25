@@ -29,6 +29,8 @@ const UPSERT_CONFLICT_COLUMNS: Record<string, string> = {
   user_learning_profiles: 'user_id',
   review_log_daily_summaries: 'user_id,summary_date',
   user_gamification: 'user_id',
+  user_mistakes: 'id',
+  coach_review_queue: 'id',
 };
 
 interface SyncBatch {

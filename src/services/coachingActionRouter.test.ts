@@ -3,14 +3,16 @@ import { applyCoachingActions } from './coachingActionRouter';
 import { clearCoachReviewQueue, getCoachReviews } from './coachReviewQueue';
 import type { CoachingAction } from '@/features/coach/coachingPolicy';
 
-beforeEach(() => {
-  clearCoachReviewQueue();
+const USER = 'test-user-coach-router';
+
+beforeEach(async () => {
+  await clearCoachReviewQueue(USER);
 });
 
 const now = new Date('2026-04-25T12:00:00.000Z');
 
 describe('applyCoachingActions', () => {
-  it('persists schedule_review actions into the review queue', () => {
+  it('persists schedule_review actions into the review queue', async () => {
     const actions: CoachingAction[] = [
       {
         type: 'schedule_review',
@@ -20,16 +22,16 @@ describe('applyCoachingActions', () => {
         reviewAfterHours: 24,
       },
     ];
-    const summary = applyCoachingActions(actions, { userInputRef: 'msg-1', now });
+    const summary = await applyCoachingActions(USER, actions, { userInputRef: 'msg-1', now });
     expect(summary.persisted).toBe(1);
-    const stored = getCoachReviews();
+    const stored = await getCoachReviews(USER);
     expect(stored).toHaveLength(1);
     expect(stored[0].targetWord).toBe('ephemeral');
     expect(stored[0].sourceAction).toBe('schedule_review');
     expect(stored[0].dueAt).toBe('2026-04-26T12:00:00.000Z');
   });
 
-  it('persists retry_with_hint actions into the review queue at a short interval', () => {
+  it('persists retry_with_hint actions into the review queue at a short interval', async () => {
     const actions: CoachingAction[] = [
       {
         type: 'retry_with_hint',
@@ -37,9 +39,9 @@ describe('applyCoachingActions', () => {
         targetSkill: 'grammar',
       },
     ];
-    const summary = applyCoachingActions(actions, { userInputRef: 'msg-2', now });
+    const summary = await applyCoachingActions(USER, actions, { userInputRef: 'msg-2', now });
     expect(summary.persisted).toBe(1);
-    const stored = getCoachReviews();
+    const stored = await getCoachReviews(USER);
     expect(stored).toHaveLength(1);
     expect(stored[0].skill).toBe('grammar');
     expect(stored[0].sourceAction).toBe('retry_with_hint');
@@ -48,19 +50,19 @@ describe('applyCoachingActions', () => {
     );
   });
 
-  it('does not persist non-review actions', () => {
+  it('does not persist non-review actions', async () => {
     const actions: CoachingAction[] = [
       { type: 'celebrate_effort', prompt: 'Nice specific reasoning on the tense cue.' },
       { type: 'ask_socratic_question', prompt: 'What time marker would you use here?' },
       { type: 'micro_task', prompt: 'Rewrite the sentence in one breath.' },
       { type: 'reflection_prompt', prompt: 'What clue made the difference?' },
     ];
-    const summary = applyCoachingActions(actions, { userInputRef: 'msg-3', now });
+    const summary = await applyCoachingActions(USER, actions, { userInputRef: 'msg-3', now });
     expect(summary.persisted).toBe(0);
-    expect(getCoachReviews()).toEqual([]);
+    expect(await getCoachReviews(USER)).toEqual([]);
   });
 
-  it('returns the typed review items so the UI can show "you scheduled a review" affordance', () => {
+  it('returns the typed review items so the UI can show "you scheduled a review" affordance', async () => {
     const actions: CoachingAction[] = [
       {
         type: 'schedule_review',
@@ -71,12 +73,12 @@ describe('applyCoachingActions', () => {
       },
       { type: 'celebrate_effort', prompt: 'Great chained reasoning' },
     ];
-    const summary = applyCoachingActions(actions, { userInputRef: 'msg-4', now });
+    const summary = await applyCoachingActions(USER, actions, { userInputRef: 'msg-4', now });
     expect(summary.reviewItems).toHaveLength(1);
     expect(summary.reviewItems[0].targetWord).toBe('ephemeral');
   });
 
-  it('is idempotent: re-running with the same userInputRef + actions does not create duplicates', () => {
+  it('is idempotent: re-running with the same userInputRef + actions does not create duplicates', async () => {
     const actions: CoachingAction[] = [
       {
         type: 'schedule_review',
@@ -86,25 +88,23 @@ describe('applyCoachingActions', () => {
         reviewAfterHours: 24,
       },
     ];
-    applyCoachingActions(actions, { userInputRef: 'msg-5', now });
-    applyCoachingActions(actions, { userInputRef: 'msg-5', now });
-    expect(getCoachReviews()).toHaveLength(1);
+    await applyCoachingActions(USER, actions, { userInputRef: 'msg-5', now });
+    await applyCoachingActions(USER, actions, { userInputRef: 'msg-5', now });
+    expect(await getCoachReviews(USER)).toHaveLength(1);
   });
 
-  it('is a no-op for undefined / empty actions', () => {
-    expect(applyCoachingActions(undefined, { now }).persisted).toBe(0);
-    expect(applyCoachingActions([], { now }).persisted).toBe(0);
-    expect(getCoachReviews()).toEqual([]);
+  it('is a no-op for undefined / empty actions', async () => {
+    expect((await applyCoachingActions(USER, undefined, { now })).persisted).toBe(0);
+    expect((await applyCoachingActions(USER, [], { now })).persisted).toBe(0);
+    expect(await getCoachReviews(USER)).toEqual([]);
   });
 
-  it('skips actions that miss the data needed to schedule a review', () => {
+  it('skips actions that miss the data needed to schedule a review', async () => {
     const actions: CoachingAction[] = [
-      // schedule_review without a skill cannot be routed — drop silently.
       { type: 'schedule_review', prompt: 'Vague schedule', reviewAfterHours: 24 },
-      // retry_with_hint without a skill is also not routable.
       { type: 'retry_with_hint', prompt: 'Vague retry' },
     ];
-    const summary = applyCoachingActions(actions, { userInputRef: 'msg-6', now });
+    const summary = await applyCoachingActions(USER, actions, { userInputRef: 'msg-6', now });
     expect(summary.persisted).toBe(0);
   });
 });

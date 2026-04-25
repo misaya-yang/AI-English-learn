@@ -21,17 +21,18 @@ export interface ApplyCoachingActionsResult {
   persisted: number;
 }
 
-export function applyCoachingActions(
+export async function applyCoachingActions(
+  userId: string,
   actions: CoachingAction[] | undefined,
   opts: { userInputRef?: string; now?: Date } = {},
-): ApplyCoachingActionsResult {
+): Promise<ApplyCoachingActionsResult> {
   if (!Array.isArray(actions) || actions.length === 0) {
     return { reviewItems: [], persisted: 0 };
   }
 
   const reviewItems = toReviewQueueItems(actions, opts);
   if (reviewItems.length > 0) {
-    addCoachReviewItems(reviewItems);
+    await addCoachReviewItems(userId, reviewItems);
   }
 
   return {

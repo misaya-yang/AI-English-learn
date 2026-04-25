@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { addMistake, getMistakes } from './mistakeCollector';
+import { addMistake, getMistakes, clearAllMistakes } from './mistakeCollector';
 import {
   buildPracticeMistakeRecord,
   type PracticeAttemptInput,
 } from './practiceMistakes';
+
+const USER = 'test-user-practice-mistakes';
 
 const baseInput = (overrides: Partial<PracticeAttemptInput> = {}): PracticeAttemptInput => ({
   word: { id: 'w1', word: 'aberration' },
@@ -79,11 +81,11 @@ describe('buildPracticeMistakeRecord', () => {
     expect(record.correctAnswer).toBe('aberration');
   });
 
-  it('round-trips through addMistake/getMistakes', () => {
-    localStorage.removeItem('vocabdaily_mistakes');
+  it('round-trips through addMistake/getMistakes', async () => {
+    await clearAllMistakes(USER);
     const record = buildPracticeMistakeRecord(baseInput({ mode: 'quiz' }))!;
-    const created = addMistake(record);
-    const all = getMistakes();
+    const created = await addMistake(USER, record);
+    const all = await getMistakes(USER);
     expect(all.length).toBe(1);
     expect(all[0]).toMatchObject({
       id: created.id,
@@ -96,25 +98,25 @@ describe('buildPracticeMistakeRecord', () => {
 });
 
 describe('mistakeCollector + practice integration', () => {
-  beforeEach(() => localStorage.removeItem('vocabdaily_mistakes'));
-  afterEach(() => localStorage.removeItem('vocabdaily_mistakes'));
+  beforeEach(() => clearAllMistakes(USER));
+  afterEach(() => clearAllMistakes(USER));
 
-  it('does not write anything for correct attempts', () => {
+  it('does not write anything for correct attempts', async () => {
     const record = buildPracticeMistakeRecord(baseInput({ isCorrect: true, userAnswer: 'aberration' }));
-    if (record) addMistake(record);
-    expect(getMistakes().length).toBe(0);
+    if (record) await addMistake(USER, record);
+    expect((await getMistakes(USER)).length).toBe(0);
   });
 
-  it('persists multiple wrong attempts and respects the source filter', () => {
+  it('persists multiple wrong attempts and respects the source filter', async () => {
     const a = buildPracticeMistakeRecord(baseInput({ mode: 'quiz' }))!;
     const b = buildPracticeMistakeRecord(
       baseInput({ mode: 'pronunciation', word: { id: 'w2', word: 'ubiquitous' }, userAnswer: 'wrang', correctAnswer: 'ubiquitous' }),
     )!;
-    addMistake(a);
-    addMistake(b);
-    const all = getMistakes();
+    await addMistake(USER, a);
+    await addMistake(USER, b);
+    const all = await getMistakes(USER);
     expect(all.length).toBe(2);
-    expect(getMistakes({ source: 'pronunciation' }).map((entry) => entry.word)).toEqual(['ubiquitous']);
-    expect(getMistakes({ source: 'practice' }).map((entry) => entry.word)).toEqual(['aberration']);
+    expect((await getMistakes(USER, { source: 'pronunciation' })).map((entry) => entry.word)).toEqual(['ubiquitous']);
+    expect((await getMistakes(USER, { source: 'practice' })).map((entry) => entry.word)).toEqual(['aberration']);
   });
 });

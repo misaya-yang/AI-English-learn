@@ -35,6 +35,35 @@ export interface SyncQueueRecord extends Omit<SyncQueueEntry, 'id'> {
   last_attempt_at?: string;
 }
 
+export interface MistakeRecord {
+  id: string;
+  user_id: string;
+  source: 'practice' | 'pronunciation' | 'roleplay' | 'manual';
+  word: string;
+  correct_answer: string;
+  user_answer: string;
+  category: string;
+  severity: 'low' | 'medium' | 'high';
+  review_count: number;
+  eliminated: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CoachReviewRecord {
+  id: string;
+  user_id: string;
+  user_input_ref?: string;
+  skill: string;
+  target_word?: string;
+  prompt: string;
+  due_at: string;
+  source_action: unknown;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface GamificationRecord {
   user_id: string;
   streak_freezes: number;
@@ -100,12 +129,26 @@ export interface VocabDailyDB extends DBSchema {
     key: string; // user_id
     value: GamificationRecord;
   };
+  mistakes: {
+    key: [string, string]; // [user_id, id]
+    value: MistakeRecord;
+    indexes: {
+      'by_user_created': [string, string]; // [user_id, created_at]
+    };
+  };
+  coach_reviews: {
+    key: [string, string]; // [user_id, id]
+    value: CoachReviewRecord;
+    indexes: {
+      'by_user_due': [string, string]; // [user_id, due_at]
+    };
+  };
 }
 
 // ─── Database singleton ───────────────────────────────────────────────────────
 
 const DB_NAME    = 'vocabdaily';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 let _dbPromise: Promise<IDBPDatabase<VocabDailyDB>> | null = null;
 
@@ -201,6 +244,22 @@ function getDb(): Promise<IDBPDatabase<VocabDailyDB>> {
       // ── gamification ──────────────────────────────────────────────────
       if (!db.objectStoreNames.contains('gamification')) {
         db.createObjectStore('gamification', { keyPath: 'user_id' });
+      }
+
+      // ── mistakes ──────────────────────────────────────────────────────
+      if (!db.objectStoreNames.contains('mistakes')) {
+        const mistakes = db.createObjectStore('mistakes', {
+          keyPath: ['user_id', 'id'],
+        });
+        mistakes.createIndex('by_user_created', ['user_id', 'created_at']);
+      }
+
+      // ── coach_reviews ─────────────────────────────────────────────────
+      if (!db.objectStoreNames.contains('coach_reviews')) {
+        const reviews = db.createObjectStore('coach_reviews', {
+          keyPath: ['user_id', 'id'],
+        });
+        reviews.createIndex('by_user_due', ['user_id', 'due_at']);
       }
     },
 
@@ -521,6 +580,116 @@ export async function setGamificationRecord(
     await db.put('gamification', { ...record, updated_at: new Date().toISOString() });
   } catch (err) {
     console.warn('[localDb] setGamificationRecord failed:', err);
+  }
+}
+
+// ─── Mistakes ─────────────────────────────────────────────────────────────────
+
+export async function putMistake(record: MistakeRecord): Promise<void> {
+  try {
+    const db = await getDb();
+    await db.put('mistakes', { ...record, updated_at: new Date().toISOString() });
+  } catch (err) {
+    console.warn('[localDb] putMistake failed:', err);
+  }
+}
+
+export async function getMistakesForUser(userId: string): Promise<MistakeRecord[]> {
+  try {
+    const db = await getDb();
+    const range = IDBKeyRange.bound([userId, ''], [userId, '￿']);
+    const rows = await db.getAllFromIndex('mistakes', 'by_user_created', range);
+    return rows.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  } catch {
+    return [];
+  }
+}
+
+export async function getMistake(
+  userId: string,
+  id: string,
+): Promise<MistakeRecord | undefined> {
+  try {
+    const db = await getDb();
+    return db.get('mistakes', [userId, id]);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function clearMistakesForUser(userId: string): Promise<void> {
+  try {
+    const db = await getDb();
+    const tx = db.transaction('mistakes', 'readwrite');
+    const range = IDBKeyRange.bound([userId, ''], [userId, '￿']);
+    let cursor = await tx.store.openCursor(range);
+    while (cursor) {
+      await cursor.delete();
+      cursor = await cursor.continue();
+    }
+    await tx.done;
+  } catch (err) {
+    console.warn('[localDb] clearMistakesForUser failed:', err);
+  }
+}
+
+// ─── Coach reviews ────────────────────────────────────────────────────────────
+
+export async function putCoachReview(record: CoachReviewRecord): Promise<void> {
+  try {
+    const db = await getDb();
+    await db.put('coach_reviews', { ...record, updated_at: new Date().toISOString() });
+  } catch (err) {
+    console.warn('[localDb] putCoachReview failed:', err);
+  }
+}
+
+export async function getCoachReviewsForUser(
+  userId: string,
+): Promise<CoachReviewRecord[]> {
+  try {
+    const db = await getDb();
+    const range = IDBKeyRange.bound([userId, ''], [userId, '￿']);
+    return db.getAllFromIndex('coach_reviews', 'by_user_due', range);
+  } catch {
+    return [];
+  }
+}
+
+export async function getCoachReview(
+  userId: string,
+  id: string,
+): Promise<CoachReviewRecord | undefined> {
+  try {
+    const db = await getDb();
+    return db.get('coach_reviews', [userId, id]);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function deleteCoachReview(userId: string, id: string): Promise<void> {
+  try {
+    const db = await getDb();
+    await db.delete('coach_reviews', [userId, id]);
+  } catch (err) {
+    console.warn('[localDb] deleteCoachReview failed:', err);
+  }
+}
+
+export async function deleteCoachReviewsForUser(userId: string): Promise<void> {
+  try {
+    const db = await getDb();
+    const tx = db.transaction('coach_reviews', 'readwrite');
+    const range = IDBKeyRange.bound([userId, ''], [userId, '￿']);
+    let cursor = await tx.store.openCursor(range);
+    while (cursor) {
+      await cursor.delete();
+      cursor = await cursor.continue();
+    }
+    await tx.done;
+  } catch (err) {
+    console.warn('[localDb] deleteCoachReviewsForUser failed:', err);
   }
 }
 

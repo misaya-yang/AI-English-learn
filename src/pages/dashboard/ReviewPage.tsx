@@ -171,6 +171,7 @@ export default function ReviewPage() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [sessionStats, setSessionStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 });
   const [sessionQueue, setSessionQueue] = useState<ReviewItem[] | null>(null);
+  const [dueCoachReviewCount, setDueCoachReviewCount] = useState(0);
 
   const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
   const reviewItems = sessionQueue ?? buildReviewSession({
@@ -182,6 +183,11 @@ export default function ReviewPage() {
     wordCatalog: [...dailyWords, ...wordsDatabase],
   });
   const isComplete = reviewItems.length > 0 && currentIndex >= reviewItems.length;
+
+  useEffect(() => {
+    if (!isComplete) return;
+    void getDueCoachReviews(userId).then((items) => setDueCoachReviewCount(items.length));
+  }, [isComplete, userId]);
   const reviewTaskTarget =
     Number(
       dailyMission?.tasks.find((task) => task.id === 'task_review_today')?.meta?.target,
@@ -304,7 +310,6 @@ export default function ReviewPage() {
 
   if (isComplete) {
     const accuracy = totalReviewed > 0 ? Math.round(((sessionStats.good + sessionStats.easy) / totalReviewed) * 100) : 0;
-    const coachReviewsSnapshot = getDueCoachReviews();
 
     return (
       <LearningShellFrame>
@@ -313,7 +318,7 @@ export default function ReviewPage() {
             kind: 'review',
             stats: sessionStats,
             language,
-            coachReviews: { dueCount: coachReviewsSnapshot.length },
+            coachReviews: { dueCount: dueCoachReviewCount },
           }}
         />
         <LearningCompletionState

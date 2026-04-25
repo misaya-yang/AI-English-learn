@@ -284,7 +284,7 @@ export async function requestAssistantReplyPipeline(args: AssistantReplyPipeline
     // action shape, so a retry of the same turn won't double-add. Failures
     // here must not bubble — the user already has their reply.
     try {
-      const summary = applyCoachingActions(result.coachingActions, {
+      const summary = await applyCoachingActions(userId, result.coachingActions, {
         userInputRef: assistantMessage.id,
       });
       if (summary.persisted > 0) {

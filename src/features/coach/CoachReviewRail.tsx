@@ -15,6 +15,7 @@ import {
   getCoachReviews,
   markCoachReviewCompleted,
 } from '@/services/coachReviewQueue';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CoachReviewRailProps {
   language: string;
@@ -41,8 +42,10 @@ const URGENCY_BADGE: Record<CoachReviewUrgency, string> = {
 };
 
 export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
+  const { user } = useAuth();
+  const userId = user?.id || 'guest';
   const [tick, setTick] = useState(0);
-  const [allItems, setAllItems] = useState<ReviewQueueItem[]>(() => getCoachReviews());
+  const [allItems, setAllItems] = useState<ReviewQueueItem[]>([]);
 
   // Refresh once a minute so "Due in 5h" labels rotate while the page sits open.
   useEffect(() => {
@@ -54,8 +57,12 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
   }, []);
 
   const refresh = useCallback(() => {
-    setAllItems(getCoachReviews());
-  }, []);
+    void getCoachReviews(userId).then(setAllItems);
+  }, [userId]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   // Always run the hook so rules-of-hooks isn't violated when `now` is
   // injected for tests; the dependency on `tick` makes the timestamp
@@ -80,8 +87,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
   const upcomingHeading = isZh ? '即将到来' : 'Upcoming';
 
   const handleComplete = (id: string) => {
-    markCoachReviewCompleted(id);
-    refresh();
+    void markCoachReviewCompleted(userId, id).then(refresh);
   };
 
   return (

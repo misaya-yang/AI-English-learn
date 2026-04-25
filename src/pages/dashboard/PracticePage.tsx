@@ -103,6 +103,7 @@ export default function PracticePage() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [dueCoachReviewCount, setDueCoachReviewCount] = useState(0);
   const [writingInput, setWritingInput] = useState('');
   const [writingFeedback, setWritingFeedback] = useState<AiFeedback | null>(null);
   const [writingPrompt, setWritingPrompt] = useState('');
@@ -361,7 +362,7 @@ export default function PracticePage() {
       });
       if (mistakeRecord) {
         try {
-          addMistake(mistakeRecord);
+          void addMistake(userId, mistakeRecord);
         } catch {
           // localStorage failure is silent — never block the user's drill.
         }
@@ -540,7 +541,7 @@ export default function PracticePage() {
       });
       if (mistakeRecord) {
         try {
-          addMistake(mistakeRecord);
+          void addMistake(userId, mistakeRecord);
         } catch {
           // see comment in handleAnswer
         }
@@ -1249,11 +1250,15 @@ export default function PracticePage() {
     );
   }
 
+  useEffect(() => {
+    if (!isComplete) return;
+    void getDueCoachReviews(userId).then((items) => setDueCoachReviewCount(items.length));
+  }, [isComplete, userId]);
+
   if (isComplete) {
     const safeTotal = Math.max(totalQuestions, 1);
     const accuracy = Math.round((score / safeTotal) * 100);
     const incorrect = Math.max(0, totalQuestions - score);
-    const coachReviewsSnapshot = getDueCoachReviews();
 
     return renderPageShell(
       <>
@@ -1262,7 +1267,7 @@ export default function PracticePage() {
             kind: 'practice',
             stats: { total: totalQuestions, correct: score, incorrect },
             language: practiceLanguage,
-            coachReviews: { dueCount: coachReviewsSnapshot.length },
+            coachReviews: { dueCount: dueCoachReviewCount },
           }}
         />
         <LearningCompletionState
