@@ -1098,3 +1098,91 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
   shell), UI-04 (auth + conversion polish), QA-01 (split chat
   runtime). OPS-01 still blocked on payment secrets.
 
+---
+
+## 2026-04-25 13:09 - UI-02 (Learning cockpit shell)
+
+- Stabilization gate first: `git status --short` showed three
+  pre-session untracked files (HARNESS_ENGINE_RALPH_GUIDE.md /
+  PRD_V2.md / RALPH_PROMPT_V2.md) plus the session's own CLAUDE.md
+  from the /init at start. Committed CLAUDE.md (`ee770b1`) — left
+  the three pre-session files alone per the harness rules. Tests
+  510/510, build clean before starting the loop.
+
+- Changed:
+  - `src/features/learning/components/LearningCockpitShell.tsx`
+    (new): single mission-first wrapper. CockpitMission contract
+    requires a title and accepts an optional description (the
+    why-paragraph), estimatedMinutes (becomes a fallback metric
+    chip when no metrics array is supplied), primaryAction, up to 2
+    secondaryActions, and an optional why-badge hook (reason +
+    learnerMode + burnoutRisk). Renders a `<section>` with
+    `data-testid="learning-cockpit"` so tests and a future
+    diagnostics surface have a stable hook. No new breakpoints —
+    mobile invariants come for free via the existing primitives.
+  - `src/features/learning/components/LearningCockpitShell.test.tsx`
+    (new): 12 cases covering structural rendering, eyebrow + why
+    description, fallback estimated-time chip with EN/ZH
+    localisation, Link vs onClick action handling, secondary cap
+    at 2, why-badge rendering and forced recovery framing on
+    critical burnout, progress bar, and the no-actions render path.
+  - `src/features/learning/components/LearningWorkspace.tsx`:
+    export `AccentTone` and `MetricItem` so the shell can re-use
+    the same metric shape its callers already pass to
+    `LearningHeroPanel`.
+  - `src/pages/dashboard/TodayPage.tsx`: rewrite the top-of-page
+    render to use `LearningCockpitShell`. The why-badge pulls
+    reason + learnerMode + burnoutRisk straight from the existing
+    missionCard + learnerModel snapshot. Workspace body untouched.
+  - `src/pages/dashboard/ReviewPage.tsx`: same migration on the
+    active review-session render. Description names the FSRS /
+    coach-review separation explicitly.
+  - `src/pages/dashboard/PracticePage.tsx`: `renderPageShell`
+    helper now builds primary/secondary actions from the existing
+    selectedMode/hasStarted/timedMode state and passes them
+    through the cockpit. Timed-mode toggle's visual state is
+    conveyed through the label string ("60s 限时" /
+    "⏱️ 60s 限时 ON") instead of the previous custom amber styling
+    — functional parity preserved, no business-logic change.
+  - `src/pages/dashboard/LearningPathPage.tsx`: only the
+    path-list state is migrated. Recommended-path CTA picks the
+    first path with non-zero progress (or the first path if none)
+    so the primary action always lands somewhere. Detail view's
+    body is left untouched per the "header/mission area only"
+    guidance.
+
+- Verified:
+  - `npx vitest run
+    src/features/learning/components/LearningCockpitShell.test.tsx`
+    → 12/12.
+  - `npx vitest run` (full) → 42 files, 522/522 (was 510).
+  - `npm run build` → tsc + vite clean. Affected chunks unchanged
+    in size class (Today 47 KB, Review 15 KB, Practice 36 KB,
+    LearningPath 15 KB).
+  - Vite dev smoke: GET / 200; LearningCockpitShell (17 KB) +
+    TodayPage (205 KB) + ReviewPage (113 KB) + PracticePage
+    (240 KB) + LearningPathPage (52 KB) all transform cleanly.
+  - Mobile invariants: cockpit ships no new breakpoints; hero uses
+    the existing `p-4 sm:p-6 lg:p-8` /
+    `lg:grid-cols-[minmax(0,1.2fr)_300px]` pattern that collapses
+    to one column below lg, and `MissionWhyBadge` already stacks
+    vertical below sm.
+
+- Deploy: pure frontend change.
+
+- Risks:
+  - Practice timed-mode toggle no longer shows its previous amber
+    accent. Functional behavior is preserved (label flips to
+    indicate ON state); restore the colour only if user feedback
+    misses the visual.
+  - LearningPath detail view is intentionally unmigrated. The next
+    loop should either bring it under the cockpit too or document
+    the asymmetry so a future engineer doesn't think it was an
+    oversight.
+
+- Next:
+  - UI-04 (auth + conversion polish — Home / Login / Register /
+    Onboarding / Pricing visual coherence) and QA-01 (split chat
+    runtime) remain. OPS-01 still blocked on payment secrets.
+    Stopping at sustainable boundary per session brief.
+
