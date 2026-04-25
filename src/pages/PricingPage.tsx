@@ -502,7 +502,7 @@ export default function PricingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6">
           <BrandMark variant="compact" />
           <p className="text-xs text-slate-500 dark:text-white/50">
-            © 2026 VocabDaily AI. All rights reserved.
+            © 2026 VocabDaily · A learning workbench for English.
           </p>
         </div>
       </footer>

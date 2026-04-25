@@ -170,7 +170,10 @@ export default function Home() {
                     {t('home.todayCard.label', { defaultValue: 'Today' })}
                   </p>
                   <p className="mt-1 text-lg font-semibold">
-                    {t('home.todayCard.title', { defaultValue: 'Your learning queue' })}
+                    {t('home.todayCard.title', { defaultValue: 'A typical day' })}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground" lang="zh-CN">
+                    {t('home.todayCard.subtitle', { defaultValue: '示例 · Example session — your real queue appears after sign-in' })}
                   </p>
                 </div>
                 <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[hsl(var(--accent-memory))]/10 text-[hsl(var(--accent-memory))]">
@@ -178,7 +181,7 @@ export default function Home() {
                 </span>
               </div>
 
-              <ul className="mt-5 space-y-3">
+              <ul className="mt-5 space-y-3" aria-label="Example daily learning queue">
                 <li className="flex items-center justify-between rounded-md border border-border/80 bg-background px-3 py-2.5">
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-memory))]/10 text-[hsl(var(--accent-memory))]">

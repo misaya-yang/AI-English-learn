@@ -6,3 +6,10 @@ dist/
 functional-report*.json
 .codex-skill-build/
 codex-skill-build/
+.playwright-mcp/
+/home-desktop.png
+/login-desktop.png
+/login-mobile.png
+/register-mobile.png
+/pricing-mobile.png
+/wotd-mobile.png
