@@ -31,6 +31,8 @@ import { speakEnglishText } from '@/services/tts';
 import { isStubbornWord } from '@/services/fsrs';
 import { buildReviewSession, type ReviewSessionItem } from '@/features/learning/reviewQueue';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
+import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
+import { getDueCoachReviews } from '@/services/coachReviewQueue';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -301,9 +303,18 @@ export default function ReviewPage() {
 
   if (isComplete) {
     const accuracy = totalReviewed > 0 ? Math.round(((sessionStats.good + sessionStats.easy) / totalReviewed) * 100) : 0;
+    const coachReviewsSnapshot = getDueCoachReviews();
 
     return (
       <LearningShellFrame>
+        <SessionRecapCard
+          input={{
+            kind: 'review',
+            stats: sessionStats,
+            language,
+            coachReviews: { dueCount: coachReviewsSnapshot.length },
+          }}
+        />
         <LearningCompletionState
           icon={Check}
           eyebrow="Review complete"

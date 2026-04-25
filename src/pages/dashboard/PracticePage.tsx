@@ -48,6 +48,9 @@ import { speakEnglishText } from '@/services/tts';
 import { addMistake } from '@/services/mistakeCollector';
 import { buildPracticeMistakeRecord } from '@/services/practiceMistakes';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
+import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
+import { getDueCoachReviews } from '@/services/coachReviewQueue';
+import { useTranslation } from 'react-i18next';
 import { buildListeningQueue, buildPracticeQuestions } from '@/features/practice/runtime';
 
 const practiceModes = [
@@ -90,6 +93,8 @@ export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
   const { dailyWords, dueWords, progress, streak, addStudySession, completeMissionTask, reviewWord } = useUserData();
+  const { i18n } = useTranslation();
+  const practiceLanguage = i18n.language;
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -1258,9 +1263,19 @@ export default function PracticePage() {
   if (isComplete) {
     const safeTotal = Math.max(totalQuestions, 1);
     const accuracy = Math.round((score / safeTotal) * 100);
+    const incorrect = Math.max(0, totalQuestions - score);
+    const coachReviewsSnapshot = getDueCoachReviews();
 
     return renderPageShell(
       <>
+        <SessionRecapCard
+          input={{
+            kind: 'practice',
+            stats: { total: totalQuestions, correct: score, incorrect },
+            language: practiceLanguage,
+            coachReviews: { dueCount: coachReviewsSnapshot.length },
+          }}
+        />
         <LearningCompletionState
           icon={Trophy}
           eyebrow="Session summary"
