@@ -917,3 +917,184 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
   OPS-03 (production smoke script). OPS-01 still blocked on
   payment secrets.
 
+---
+
+## 2026-04-25 12:22 - OPS-02 (Supabase release checklist)
+
+- Changed:
+  - `docs/ops/SUPABASE_RELEASE_CHECKLIST.md` (new): full backend
+    release runbook covering migrations, edge functions, secrets,
+    auth redirect URLs, RLS verification, production smoke, and
+    rollback. Each section pairs the planning checklist with the
+    exact CLI invocations (`supabase db push --linked`,
+    `supabase functions deploy`, `supabase secrets set`,
+    `supabase functions logs --since 5m`,
+    `supabase db remote sql` with the RLS audit query) so the next
+    release does not require re-deriving them.
+
+- Notable callouts in the doc:
+  - Touching `supabase/functions/_shared/coaching-policy.ts`
+    requires redeploying ai-chat + grading + memory-* together
+    because the byte-identical contract (QA-02 guard) only pays
+    off if both copies ship as one unit.
+  - Billing migrations and edge functions stay fail-closed: the
+    expected production smoke for `billing-create-checkout` when
+    STRIPE_* secrets are absent is HTTP/2 503, not a 200 with a
+    mock URL.
+  - Auth redirect URL changes have an explicit "add then ship then
+    remove ≥24h later" sequence so a domain swap never breaks
+    in-flight magic-link sessions.
+  - Secret rotation is rotate-only — set the new value, watch
+    logs, then revoke at the provider — never delete-then-add.
+  - Rollback for migrations is "write a follow-up reverting
+    migration", not "edit or drop the original" — keeps the audit
+    trail intact.
+
+- Verified:
+  - `npx vitest run` (full) → 39 files, 487/487 (no code change).
+
+- Deploy: doc-only.
+
+- Risks: none.
+
+- Next: OPS-03.
+
+---
+
+## 2026-04-25 12:23 - OPS-03 (No-browser production smoke)
+
+- Changed:
+  - `scripts/prod-smoke.mjs` (new): fast HTTP-only smoke. Defaults
+    to the production URL so `npm run smoke:prod` works on a fresh
+    clone with no env. Checks:
+    1. GET <BASE_URL>/login → 200
+    2. GET <BASE_URL>/    → 200
+    3. GET <SUPABASE_URL>/auth/v1/health → 200
+    4. POST ai-chat — without $JWT expects 401; with $JWT expects
+       200 + non-empty body, no "unauthorized" sentinel.
+    5. POST billing-create-checkout — without $JWT expects 401;
+       with $JWT and no provider secrets expects 503 (fail-closed);
+       with $JWT and a real provider URL detected in the response
+       passes; any 2xx without a recognised provider URL emits a
+       WARN so the operator inspects.
+  - Uses global fetch (Node 18+); no extra deps. 15s per-check
+    timeout via AbortController. ANSI-coloured output. Exit 0 on
+    all-green or warn-only, exit 1 on any fail. Env knobs:
+    `BASE_URL`, `VITE_SUPABASE_URL`/`SUPABASE_URL`,
+    `VITE_SUPABASE_ANON_KEY`/`SUPABASE_ANON_KEY`, `JWT`,
+    `SMOKE_TIMEOUT_MS`.
+  - `package.json`: add `"smoke:prod": "node scripts/prod-smoke.mjs"`.
+
+- Verified:
+  - `npm run smoke:prod` against live prod → 5 passed · 0 warned ·
+    0 failed.
+  - `npx vitest run` (full) → 39 files, 487/487 (no behavioural
+    change).
+
+- Deploy: pure addition.
+
+- Risks: the smoke can drift if billing-create-checkout starts
+  returning a different success shape — keep the "real provider URL
+  detected" regex in sync with whatever the function emits.
+
+- Next: LEARN-05.
+
+---
+
+## 2026-04-25 12:30 - LEARN-05 (End-of-session recap)
+
+- Changed:
+  - `src/features/learning/sessionRecap.ts` (new): pure
+    `buildSessionRecap({ kind, stats, language?, examType?,
+    coachReviews? })`. Two stats shapes — review (again/hard/good/
+    easy) and practice (total/correct/incorrect) — go through
+    dedicated builders that produce
+    `{kind, improved, needsReview, encouragement, nextAction}`.
+    Encouragement scales with accuracy and always references the
+    actual count (no empty praise). Next-step routing prioritises
+    coach reviews when `getDueCoachReviews` has items, then
+    reinforcement Practice / Socratic chat for sessions with
+    friction, then exam prep for IELTS-bound learners on a clean
+    session, and finally Today as a neutral fallback.
+  - `src/features/learning/sessionRecap.test.ts`: 13 cases covering
+    empty review / mixed-score routing / accuracy-based encouragement
+    upgrade and downgrade / coach-queue override / IELTS exam
+    routing / Chinese phrasing / empty practice / mistakes routing
+    to chat / coach-queue override on clean practice / exam routing
+    on clean practice / neutral fallback / accuracy scaling.
+  - `src/features/learning/components/SessionRecapCard.tsx` (new):
+    React card rendering the recap with bilingual heading,
+    encouragement paragraph, improved/needsReview chips, and a
+    primary CTA button that Link-routes to the recommended href.
+  - `src/pages/dashboard/ReviewPage.tsx`: insert
+    `<SessionRecapCard />` at the top of the `isComplete` branch,
+    fed by `sessionStats` and a fresh `getDueCoachReviews()`
+    snapshot. Existing `LearningCompletionState` block remains for
+    the metric strip and retry CTA.
+  - `src/pages/dashboard/PracticePage.tsx`: same wiring on the
+    `isComplete` branch with `{total, correct, incorrect}` stats
+    and `practiceLanguage` from `useTranslation`.
+
+- Verified:
+  - `npx vitest run src/features/learning/sessionRecap.test.ts` →
+    13/13.
+  - `npx vitest run` (full) → 40 files, 500/500 (was 487).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; sessionRecap (30 KB),
+    SessionRecapCard (18 KB) transform cleanly.
+
+- Deploy: pure frontend change.
+
+- Risks:
+  - The recap is only rendered when `isComplete` flips. A learner
+    who exits mid-session never sees it; a future loop can add a
+    "leaving early" recap inside the existing exit confirm dialog.
+
+- Next: UI-01.
+
+---
+
+## 2026-04-25 12:34 - UI-01 (Route metadata registry)
+
+- Changed:
+  - `src/features/learning/routeRegistry.ts` (new): single source
+    of truth for every dashboard route's path, bilingual label,
+    icon, nav group, mobile priority, page title, and search
+    aliases. Exposes `getAllDashboardRoutes`, `getDashboardRoute`,
+    `getDashboardRouteByPath`, `getMobileNavRoutes(limit)`,
+    `getRoutesByGroup`, `searchDashboardRoutes`.
+  - `src/features/learning/routeRegistry.test.ts`: 10 cases
+    including a "App.tsx parity" check that parses all
+    `/dashboard/*` `<Route>` lines via regex and asserts each path
+    has a registry entry — catches a future page added to App.tsx
+    without a registry entry.
+  - `src/components/BottomNavBar.tsx`: drop the local NAV_ITEMS
+    array, read `getMobileNavRoutes(4)`, bilingualize via
+    `useTranslation`. "More" label flips to "更多" on zh-*.
+
+- Type fix: registry's icon type started as `ComponentType<{
+  className?: string }>` but consumers pass `strokeWidth`. Widened
+  to `ComponentType<SVGProps<SVGSVGElement> & { className?: string;
+  size?: number | string }>`.
+
+- Verified:
+  - `npx vitest run src/features/learning/routeRegistry.test.ts` →
+    10/10.
+  - `npx vitest run` (full) → 41 files, 510/510 (was 500).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; routeRegistry (31 KB), BottomNavBar
+    (14 KB) transform cleanly.
+
+- Deploy: pure frontend change.
+
+- Risks:
+  - DashboardLayout's primaryNav / toolNav memos still hold their
+    own lists. The contract is in place; full migration is a
+    deliberately separate loop because the sidebar uses additional
+    metadata (badge counts, learningNav grouping) worth lifting
+    carefully.
+
+- Next: backlog candidates remaining: UI-02 (learning-cockpit
+  shell), UI-04 (auth + conversion polish), QA-01 (split chat
+  runtime). OPS-01 still blocked on payment secrets.
+
