@@ -1385,3 +1385,101 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
   - Once accepted: optionally migrate dashboard surfaces away from
     `.glass`/`.glow-*` to match. Deferred until user signs off on
     the public-surface direction.
+
+---
+
+## 2026-04-25 20:02 — three-agent team: closing the backlog
+
+- Mode: PM + Dev-A + Dev-B in parallel, then Test agent.
+- PM (`a9e24b9...`): wrote `docs/ops/SMOKE_COVERAGE.md`,
+  `docs/claude/COACH_AUDIT_2026-04-25.md`,
+  `docs/claude/QA_02_DRIFT_GUARD_SPEC.md`. Confirmed
+  `docs/ops/SUPABASE_RELEASE_CHECKLIST.md` already meets OPS-02.
+  Backlog updated for COACH-01..04 → done.
+- Dev-A (`aa4f929...`): LEARN-02..05 + LEARN-01.
+  - `src/services/learningEvents.ts` strict typed API,
+    `src/lib/localDb.ts` DB_VERSION 5→6 with `learning_events`
+    store, `syncQueue.ts` registers `path_progress_events`.
+  - `supabase/migrations/20260425200000_learning_events.sql`.
+  - `src/features/learning/missionSourceSignal.ts` (+ test, 7
+    cases). Wired into `TodayPage.tsx` cockpit.
+  - `PracticePage.tsx` and `ReviewPage.tsx` emit
+    `practice_correct/practice_wrong/review_completed/
+    session_started/session_ended` events.
+  - `src/pages/dashboard/ReviewPage.test.tsx` (2 cases) confirms
+    empty due+coach renders the Reinforce-in-Practice CTA, no
+    filler cards.
+  - `learningEvents.strict.test.ts` (5/5).
+- Dev-B (`a71d2d6...`): UI-03 + QA-02 + QA-03 + OPS-03.
+  - `src/features/coach/MissionCards.tsx` +
+    `missionCardSelector.ts` (10 selector tests).
+    Rendered in `ChatPage.tsx` welcome state above
+    `<ChatWelcome>` only when `messages.length === 0`. COACH
+    dispatcher untouched.
+  - `coachingPolicy.drift.test.ts` reads both policy files as
+    Buffer and asserts byte-identity.
+  - `aiGateway.ts` restructured 4 fallback emissions to
+    structured-event API with `redactMessage()` (strips bearer
+    tokens / JWTs).
+  - `observability.safety.test.ts` scans real emission
+    fixtures for forbidden keys (key/token/secret/password/
+    authorization/bearer).
+  - `scripts/prod-smoke.mjs` adds `/pricing` 200 + fail-closed
+    body sniff (warn-not-fail because SPA), `/word-of-the-day`
+    200. Credentialless posture preserved.
+  - Self-flagged: did not add `syncQueue.ts` `op_failed` emission
+    because that file was Dev-A's lane in the brief. Follow-up
+    needed if observability completeness is required.
+
+- Verified:
+  - `npm run build` → tsc + vite clean.
+  - `npm test -- --run` → **60 files / 638 tests passed**
+    (+29 from 609).
+  - Vite preview at 127.0.0.1:4173, Playwright smoke:
+    - `/` desktop → "A typical day · 示例 · Example session — your
+      real queue appears after sign-in" label confirmed.
+      Today preview reads as illustrative, not pseudo-live.
+    - `/` mobile → no horizontal overflow.
+    - `/login` desktop → side rail now bilingual: en+zh
+      headline, en+zh body, en+zh quote, three bullets each
+      with en + zh suffix.
+    - `/pricing` mobile → fail-closed banner first.
+    - Console: only favicon 404. Zero JS errors.
+
+- Backlog statuses updated → done with
+  `Last verified: 2026-04-25 — see harness_progress.md`:
+  - LEARN-01..05
+  - UIR-01..05
+  - UI-03, QA-01, QA-02, QA-03, OPS-03
+
+- Still open:
+  - **OPS-01** — blocked on real Stripe/Alipay secrets. No code
+    work possible until provider credentials land.
+  - **OPS-02** — done in earlier session, doc already at
+    `docs/ops/SUPABASE_RELEASE_CHECKLIST.md`. Backlog can be
+    promoted to done by the user when they next audit.
+  - syncQueue `op_failed` emission — small follow-up, not a
+    blocker for backlog completion.
+
+- Deploy:
+  - Pure frontend except for the new Supabase migration
+    `20260425200000_learning_events.sql` (needs `supabase db
+    push --linked`).
+  - No new edge functions; no provider deploys needed.
+  - Vercel auto-deploys frontend from main on push.
+
+- Risks:
+  - LEARN-01 mission cockpit signal logic and LEARN-05 recap
+    only have unit-test coverage; their visual surfaces require
+    a logged-in dashboard, so this loop did not Playwright-smoke
+    them. Demo login flow is available; user can verify on
+    `/dashboard/today` and end-of-session screens during
+    acceptance.
+  - The Playwright MCP run only covered public + auth surfaces
+    (matches the UI Modernization Brief verification table).
+  - `learning_events` IDB store will trigger an upgrade-on-next-
+    open for existing users. The upgrade path was tested via
+    fake-indexeddb but real-device upgrades should be watched
+    after deploy.
+
+- Not pushed.

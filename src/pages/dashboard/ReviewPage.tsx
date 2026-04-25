@@ -31,6 +31,7 @@ import { speakEnglishText } from '@/services/tts';
 import { isStubbornWord } from '@/services/fsrs';
 import { buildReviewSession, type ReviewSessionItem } from '@/features/learning/reviewQueue';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
+import { recordEvent } from '@/services/learningEvents';
 import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
@@ -187,7 +188,12 @@ export default function ReviewPage() {
   useEffect(() => {
     if (!isComplete) return;
     void getDueCoachReviews(userId).then((items) => setDueCoachReviewCount(items.length));
-  }, [isComplete, userId]);
+    // LEARN-05 — emit session_ended on completion.
+    void recordEvent(userId, {
+      kind: 'session_ended',
+      payload: { surface: 'review', total: totalReviewed },
+    });
+  }, [isComplete, userId, totalReviewed]);
   const reviewTaskTarget =
     Number(
       dailyMission?.tasks.find((task) => task.id === 'task_review_today')?.meta?.target,
@@ -222,6 +228,11 @@ export default function ReviewPage() {
         rating,
       }),
     );
+    // LEARN-02 — strict review_completed event for path-progress derivation.
+    void recordEvent(userId, {
+      kind: 'review_completed',
+      payload: { wordId: currentItem.wordId, rating },
+    });
     if (totalReviewed + 1 >= reviewTaskTarget) {
       completeMissionTask('task_review_today');
     }

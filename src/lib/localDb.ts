@@ -143,12 +143,37 @@ export interface VocabDailyDB extends DBSchema {
       'by_user_due': [string, string]; // [user_id, due_at]
     };
   };
+  learning_events: {
+    key: [string, string]; // [user_id, id]
+    value: LearningEventRecord;
+    indexes: {
+      'by_user_kind': [string, string]; // [user_id, kind]
+      'by_user_created': [string, string]; // [user_id, created_at]
+    };
+  };
+}
+
+// LearningEventRecord (LEARN-02) — strict typed evidence event log used by
+// the LearningPath / Today / Practice surfaces. Kept separate from the
+// freeform `events` analytics store so the contract stays narrow.
+export interface LearningEventRecord {
+  id: string;
+  user_id: string;
+  kind:
+    | 'review_completed'
+    | 'practice_correct'
+    | 'practice_wrong'
+    | 'mistake_resolved'
+    | 'session_started'
+    | 'session_ended';
+  payload?: Record<string, unknown>;
+  created_at: string;
 }
 
 // ─── Database singleton ───────────────────────────────────────────────────────
 
 const DB_NAME    = 'vocabdaily';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 let _dbPromise: Promise<IDBPDatabase<VocabDailyDB>> | null = null;
 
@@ -260,6 +285,23 @@ function getDb(): Promise<IDBPDatabase<VocabDailyDB>> {
           keyPath: ['user_id', 'id'],
         });
         reviews.createIndex('by_user_due', ['user_id', 'due_at']);
+      }
+
+      // ── learning_events (LEARN-02 strict typed log) ───────────────────
+      if (!db.objectStoreNames.contains('learning_events')) {
+        const le = db.createObjectStore('learning_events', {
+          keyPath: ['user_id', 'id'],
+        });
+        le.createIndex('by_user_kind', ['user_id', 'kind']);
+        le.createIndex('by_user_created', ['user_id', 'created_at']);
+      } else {
+        const le = transaction.objectStore('learning_events');
+        if (!le.indexNames.contains('by_user_kind')) {
+          le.createIndex('by_user_kind', ['user_id', 'kind']);
+        }
+        if (!le.indexNames.contains('by_user_created')) {
+          le.createIndex('by_user_created', ['user_id', 'created_at']);
+        }
       }
     },
 
@@ -690,6 +732,50 @@ export async function deleteCoachReviewsForUser(userId: string): Promise<void> {
     await tx.done;
   } catch (err) {
     console.warn('[localDb] deleteCoachReviewsForUser failed:', err);
+  }
+}
+
+// ─── Learning events (LEARN-02 strict typed log) ─────────────────────────────
+
+export async function putLearningEvent(record: LearningEventRecord): Promise<void> {
+  try {
+    const db = await getDb();
+    await db.put('learning_events', record);
+  } catch (err) {
+    console.warn('[localDb] putLearningEvent failed:', err);
+  }
+}
+
+export async function getLearningEventsForUser(
+  userId: string,
+  filter?: { kind?: LearningEventRecord['kind']; since?: string },
+): Promise<LearningEventRecord[]> {
+  try {
+    const db = await getDb();
+    const range = IDBKeyRange.bound([userId, ''], [userId, '￿']);
+    const rows = await db.getAllFromIndex('learning_events', 'by_user_created', range);
+    return rows
+      .filter((row) => (filter?.kind ? row.kind === filter.kind : true))
+      .filter((row) => (filter?.since ? row.created_at >= filter.since : true))
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+  } catch {
+    return [];
+  }
+}
+
+export async function clearLearningEventsForUser(userId: string): Promise<void> {
+  try {
+    const db = await getDb();
+    const tx = db.transaction('learning_events', 'readwrite');
+    const range = IDBKeyRange.bound([userId, ''], [userId, '￿']);
+    let cursor = await tx.store.openCursor(range);
+    while (cursor) {
+      await cursor.delete();
+      cursor = await cursor.continue();
+    }
+    await tx.done;
+  } catch (err) {
+    console.warn('[localDb] clearLearningEventsForUser failed:', err);
   }
 }
 

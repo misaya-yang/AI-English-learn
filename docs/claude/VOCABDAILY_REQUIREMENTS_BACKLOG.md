@@ -45,7 +45,9 @@ Acceptance:
 
 ### OPS-03 Production Smoke Script
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -123,7 +125,9 @@ Acceptance:
 
 ### LEARN-01 Today Mission Cockpit
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -139,7 +143,9 @@ Acceptance:
 
 ### LEARN-02 Evidence Event Model
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -150,7 +156,9 @@ Acceptance:
 
 ### LEARN-03 Practice Writes Mistakes
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -161,7 +169,9 @@ Acceptance:
 
 ### LEARN-04 Review Is Due-Only
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -172,7 +182,9 @@ Acceptance:
 
 ### LEARN-05 End-Of-Session Recap
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -191,7 +203,9 @@ Acceptance:
 
 ### UIR-01 Visual Direction And Tokens Reset
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Problem:
 
@@ -212,7 +226,9 @@ Verification:
 
 ### UIR-02 Homepage Learning-First Redesign
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Problem:
 
@@ -234,7 +250,9 @@ Verification:
 
 ### UIR-03 Auth Shell Calm Learning Redesign
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Problem:
 
@@ -255,7 +273,9 @@ Verification:
 
 ### UIR-04 Pricing And Word Of The Day Learning Surface
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Problem:
 
@@ -276,7 +296,9 @@ Verification:
 
 ### UIR-05 Loading And Route Perception
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Problem:
 
@@ -327,7 +349,9 @@ Acceptance:
 
 ### UI-03 Coach Mission Cards
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -354,7 +378,9 @@ Acceptance:
 
 ### QA-01 Split Chat Runtime
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -364,7 +390,9 @@ Acceptance:
 
 ### QA-02 Coach Policy Drift Guard
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 
@@ -373,7 +401,9 @@ Acceptance:
 
 ### QA-03 Observability Hooks
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see harness_progress.md
 
 Acceptance:
 

@@ -1,6 +1,18 @@
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from '@/lib/supabase';
 import { emitStructuredEvent } from '@/lib/observability';
 
+// Pull a short, safe-to-log message out of any error. Strips bearer
+// tokens, JWT-looking blobs, and caps length so we cannot accidentally
+// dump prompts or session data into the structured-event ring.
+const redactMessage = (error: unknown): string => {
+  const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  if (!raw) return '';
+  const stripped = raw
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]')
+    .replace(/eyJ[A-Za-z0-9._-]{20,}/g, '[redacted-jwt]');
+  return stripped.length > 160 ? `${stripped.slice(0, 160)}…` : stripped;
+};
+
 interface InvokeOptions {
   signal?: AbortSignal;
 }
@@ -153,13 +165,11 @@ export const invokeEdgeFunction = async <T>(
       // not included so we never log auth tokens, prompts, or secrets.
       try {
         emitStructuredEvent({
-          category: 'ai',
-          name: 'gateway.failure',
+          category: 'ai_gateway',
+          name: 'fallback',
           payload: {
             fn: name,
             status: error instanceof EdgeFunctionError ? error.status : undefined,
-            code: error instanceof EdgeFunctionError ? error.code : undefined,
-            requestId: error instanceof EdgeFunctionError ? error.requestId : undefined,
             mode: 'rest',
             kind:
               error instanceof AuthRequiredError
@@ -167,6 +177,7 @@ export const invokeEdgeFunction = async <T>(
                 : error instanceof EdgeFunctionError
                   ? 'edge_error'
                   : 'aborted',
+            message_redacted: redactMessage(error),
           },
         });
       } catch {
@@ -177,9 +188,14 @@ export const invokeEdgeFunction = async <T>(
 
     try {
       emitStructuredEvent({
-        category: 'ai',
-        name: 'gateway.failure',
-        payload: { fn: name, mode: 'rest', kind: 'network' },
+        category: 'ai_gateway',
+        name: 'fallback',
+        payload: {
+          fn: name,
+          mode: 'rest',
+          kind: 'network',
+          message_redacted: redactMessage(error),
+        },
       });
     } catch {
       /* never throw from telemetry */
@@ -319,13 +335,11 @@ export const invokeEdgeFunctionStream = async <T>(
     ) {
       try {
         emitStructuredEvent({
-          category: 'ai',
-          name: 'gateway.failure',
+          category: 'ai_gateway',
+          name: 'fallback',
           payload: {
             fn: name,
             status: error instanceof EdgeFunctionError ? error.status : undefined,
-            code: error instanceof EdgeFunctionError ? error.code : undefined,
-            requestId: error instanceof EdgeFunctionError ? error.requestId : undefined,
             mode: 'stream',
             kind:
               error instanceof AuthRequiredError
@@ -333,6 +347,7 @@ export const invokeEdgeFunctionStream = async <T>(
                 : error instanceof EdgeFunctionError
                   ? 'edge_error'
                   : 'aborted',
+            message_redacted: redactMessage(error),
           },
         });
       } catch {
@@ -343,9 +358,14 @@ export const invokeEdgeFunctionStream = async <T>(
 
     try {
       emitStructuredEvent({
-        category: 'ai',
-        name: 'gateway.failure',
-        payload: { fn: name, mode: 'stream', kind: 'network' },
+        category: 'ai_gateway',
+        name: 'fallback',
+        payload: {
+          fn: name,
+          mode: 'stream',
+          kind: 'network',
+          message_redacted: redactMessage(error),
+        },
       });
     } catch {
       /* never throw from telemetry */

@@ -57,6 +57,7 @@ import {
 } from '@/services/todayWorkbenchPersistence';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
+import { deriveMissionSourceSignal } from '@/features/learning/missionSourceSignal';
 import { useTranslation } from 'react-i18next';
 import type { UserProgress } from '@/data/localStorage';
 
@@ -669,6 +670,14 @@ export default function TodayPage() {
 
   const todayXP = learnedWords.size * 5;
 
+  // LEARN-01 — single-label "source signal" for the hero metric strip.
+  const sourceSignal = deriveMissionSourceSignal({
+    reason: missionCard?.primaryAction.reason,
+    learnerMode: learnerModel?.mode || null,
+    burnoutRisk: learnerModel?.burnoutRisk,
+    examType: learningProfile.target,
+  });
+
   return (
     <LearningCockpitShell
       language={language}
@@ -697,6 +706,11 @@ export default function TodayPage() {
         },
       }}
       metrics={[
+        {
+          label: language.startsWith('zh') ? '信号来源' : 'Source signal',
+          value: language.startsWith('zh') ? sourceSignal.label.zh : sourceSignal.label.en,
+          accent: sourceSignal.signal === 'streak recovery' ? 'warm' : 'emerald',
+        },
         {
           label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
           value: `${missionCard?.estimatedMinutes || learningProfile.dailyMinutes} min`,

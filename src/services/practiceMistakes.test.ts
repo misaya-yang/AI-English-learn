@@ -5,6 +5,8 @@ import {
   buildPracticeMistakeRecord,
   type PracticeAttemptInput,
 } from './practiceMistakes';
+import { recordEvent, getEvents } from './learningEvents';
+import { clearLearningEventsForUser } from '@/lib/localDb';
 
 const USER = 'test-user-practice-mistakes';
 
@@ -105,6 +107,40 @@ describe('mistakeCollector + practice integration', () => {
     const record = buildPracticeMistakeRecord(baseInput({ isCorrect: true, userAnswer: 'aberration' }));
     if (record) await addMistake(USER, record);
     expect((await getMistakes(USER)).length).toBe(0);
+  });
+
+  it('LEARN-03 — emits practice_correct + practice_wrong events for each branch', async () => {
+    const eventUser = 'practice-mistakes-events-user';
+    await clearLearningEventsForUser(eventUser);
+
+    // Mirror the PracticePage call path: a correct outcome fires
+    // practice_correct, a wrong outcome fires practice_wrong (alongside
+    // the mistake being captured into the mistake collector).
+    await recordEvent(eventUser, {
+      kind: 'practice_correct',
+      payload: { wordId: 'w-correct', mode: 'quiz' },
+    });
+
+    const wrongInput = baseInput({
+      mode: 'quiz',
+      isCorrect: false,
+      word: { id: 'w-wrong', word: 'aberration' },
+    });
+    const mistake = buildPracticeMistakeRecord(wrongInput)!;
+    await addMistake(eventUser, mistake);
+    await recordEvent(eventUser, {
+      kind: 'practice_wrong',
+      payload: { wordId: 'w-wrong', mode: 'quiz' },
+    });
+
+    const events = await getEvents(eventUser);
+    const kinds = events.map((event) => event.kind).sort();
+    expect(kinds).toEqual(['practice_correct', 'practice_wrong']);
+
+    const wrongEvent = events.find((event) => event.kind === 'practice_wrong')!;
+    expect(wrongEvent.payload).toMatchObject({ wordId: 'w-wrong', mode: 'quiz' });
+
+    await clearLearningEventsForUser(eventUser);
   });
 
   it('persists multiple wrong attempts and respects the source filter', async () => {

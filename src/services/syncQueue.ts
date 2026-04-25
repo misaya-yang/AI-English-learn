@@ -25,6 +25,7 @@ const UPSERT_CONFLICT_COLUMNS: Record<string, string> = {
   user_word_progress: 'user_id,word_ref',
   review_logs: 'id',
   learning_events: 'id',
+  path_progress_events: 'id',
   learning_missions: 'id',
   user_learning_profiles: 'user_id',
   review_log_daily_summaries: 'user_id,summary_date',

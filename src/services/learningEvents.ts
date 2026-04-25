@@ -4,6 +4,9 @@ import {
   addEvent as addEventToLocalDb,
   getEventsForUser,
   pruneEvents,
+  putLearningEvent,
+  getLearningEventsForUser,
+  type LearningEventRecord as StrictLearningEventRecord,
 } from '@/lib/localDb';
 import type { LearningEventName } from '@/types/examContent';
 import { buildIdempotencyKey, syncQueue } from '@/services/syncQueue';
@@ -275,3 +278,127 @@ export const getHeatmapData = async (
 
   return result;
 };
+
+// ── LEARN-02 strict typed event model ───────────────────────────────────────
+//
+// The freeform `recordLearningEvent` above is the analytics layer (free
+// `event_name` strings, used by chat/quiz/etc telemetry). The model below
+// is the strict, narrow contract that LearningPath / Today / mission
+// surfaces depend on. Pure consumer of the IDB `learning_events` store
+// added in DB v6 — sync target is the `path_progress_events` table so we
+// don't collide with the analytics writers above.
+
+export type LearningEventKind = StrictLearningEventRecord['kind'];
+
+export interface LearningEvent {
+  id: string;
+  user_id: string;
+  kind: LearningEventKind;
+  payload?: Record<string, unknown>;
+  created_at: string;
+}
+
+const newEventId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `evt_${crypto.randomUUID()}`;
+  }
+  return `evt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+};
+
+export interface RecordEventInput {
+  kind: LearningEventKind;
+  payload?: Record<string, unknown>;
+  /** Override `created_at` — used by tests. Defaults to now(). */
+  createdAt?: string;
+}
+
+export async function recordEvent(
+  userId: string,
+  input: RecordEventInput,
+): Promise<LearningEvent> {
+  const event: LearningEvent = {
+    id: newEventId(),
+    user_id: userId,
+    kind: input.kind,
+    payload: input.payload || {},
+    created_at: input.createdAt || new Date().toISOString(),
+  };
+
+  await putLearningEvent(event as StrictLearningEventRecord);
+
+  try {
+    await syncQueue.enqueue({
+      table: 'path_progress_events',
+      operation: 'upsert',
+      payload: {
+        id: event.id,
+        user_id: event.user_id,
+        kind: event.kind,
+        payload: event.payload,
+        created_at: event.created_at,
+      },
+      idempotency_key: buildIdempotencyKey('path_progress_events', { id: event.id }),
+    });
+  } catch (err) {
+    // Sync queue failure should never block the local write.
+    console.warn('[learningEvents] enqueue failed:', err);
+  }
+
+  return event;
+}
+
+export async function getEvents(
+  userId: string,
+  filter?: { kind?: LearningEventKind; since?: string },
+): Promise<LearningEvent[]> {
+  const rows = await getLearningEventsForUser(userId, filter);
+  return rows.map((row) => ({
+    id: row.id,
+    user_id: row.user_id,
+    kind: row.kind,
+    payload: row.payload,
+    created_at: row.created_at,
+  }));
+}
+
+export interface PathProgressDerived {
+  reviewsCompleted: number;
+  practiceCorrect: number;
+  practiceWrong: number;
+  mistakesResolved: number;
+  sessions: number;
+}
+
+export function derivePathProgress(events: readonly LearningEvent[]): PathProgressDerived {
+  const result: PathProgressDerived = {
+    reviewsCompleted: 0,
+    practiceCorrect: 0,
+    practiceWrong: 0,
+    mistakesResolved: 0,
+    sessions: 0,
+  };
+
+  for (const event of events) {
+    switch (event.kind) {
+      case 'review_completed':
+        result.reviewsCompleted += 1;
+        break;
+      case 'practice_correct':
+        result.practiceCorrect += 1;
+        break;
+      case 'practice_wrong':
+        result.practiceWrong += 1;
+        break;
+      case 'mistake_resolved':
+        result.mistakesResolved += 1;
+        break;
+      case 'session_ended':
+        result.sessions += 1;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return result;
+}

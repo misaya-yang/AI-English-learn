@@ -118,6 +118,43 @@ await runCheck('AI chat edge function reachable / fail-closed', async () => {
   };
 });
 
+await runCheck('Frontend /pricing responds 200', async () => {
+  const res = await fetchWithTimeout(`${BASE_URL}/pricing`, { method: 'GET' });
+  if (res.status !== 200) {
+    return { ok: false, evidence: `GET ${BASE_URL}/pricing → ${res.status}` };
+  }
+  // Best-effort body sniff for the fail-closed copy. The page is a
+  // client-rendered SPA, so the strings may not be present in the
+  // initial HTML; treat absence as a warn rather than a hard fail.
+  const body = await res.text().catch(() => '');
+  const failClosedHints = [
+    'not yet open',
+    'fail-closed',
+    '503',
+    'checkout pending',
+    '暂未开放',
+    '尚未开放',
+    'not available',
+  ];
+  const hit = failClosedHints.find((needle) => body.toLowerCase().includes(needle.toLowerCase()));
+  if (hit) {
+    return { ok: true, evidence: `GET ${BASE_URL}/pricing → 200 (fail-closed copy hint: "${hit}")` };
+  }
+  return {
+    warn: true,
+    ok: true,
+    evidence: `GET ${BASE_URL}/pricing → 200 (no fail-closed copy in initial HTML; SPA render likely)`,
+  };
+});
+
+await runCheck('Frontend /word-of-the-day responds 200', async () => {
+  const res = await fetchWithTimeout(`${BASE_URL}/word-of-the-day`, { method: 'GET' });
+  return {
+    ok: res.status === 200,
+    evidence: `GET ${BASE_URL}/word-of-the-day → ${res.status}`,
+  };
+});
+
 await runCheck('Billing checkout fail-closed without provider secrets', async () => {
   const headers = {
     'Content-Type': 'application/json',

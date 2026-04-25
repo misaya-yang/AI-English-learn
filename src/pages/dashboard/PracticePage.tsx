@@ -43,7 +43,7 @@ import { toast } from 'sonner';
 import type { AiFeedback } from '@/types/examContent';
 import { getContentItemsByUnit, getContentUnits, getQuotaSnapshot, saveAiFeedbackRecord, saveItemAttempt } from '@/data/examContent';
 import { consumeExamFeatureQuota, createAttempt, gradeIeltsWriting } from '@/services/aiExamCoach';
-import { recordLearningEvent } from '@/services/learningEvents';
+import { recordLearningEvent, recordEvent } from '@/services/learningEvents';
 import { speakEnglishText } from '@/services/tts';
 import { addMistake } from '@/services/mistakeCollector';
 import { buildPracticeMistakeRecord } from '@/services/practiceMistakes';
@@ -316,6 +316,10 @@ export default function PracticePage() {
       }
     }
     setHasStarted(true);
+    void recordEvent(userId, {
+      kind: 'session_started',
+      payload: { surface: 'practice', mode: selectedMode || focusedModeId },
+    });
   };
 
   const handleAnswer = () => {
@@ -402,6 +406,13 @@ export default function PracticePage() {
         mode: selectedMode || 'quiz',
       }),
     );
+    // LEARN-02 strict typed evidence — used by LearningPath progress
+    // derivation. Two writes (analytics + strict) by design — see the
+    // comment block in services/learningEvents.ts.
+    void recordEvent(userId, {
+      kind: isCorrect ? 'practice_correct' : 'practice_wrong',
+      payload: { wordId: currentQuestion.word.id, word: currentQuestion.word.word, mode: selectedMode || 'quiz' },
+    });
   };
 
   const handleNext = () => {
@@ -571,6 +582,10 @@ export default function PracticePage() {
         mode: 'listening',
       }),
     );
+    void recordEvent(userId, {
+      kind: isCorrect ? 'practice_correct' : 'practice_wrong',
+      payload: { wordId: currentWord.id, word: currentWord.word, mode: 'listening' },
+    });
   };
 
   const handleListeningNext = () => {
@@ -1253,7 +1268,13 @@ export default function PracticePage() {
   useEffect(() => {
     if (!isComplete) return;
     void getDueCoachReviews(userId).then((items) => setDueCoachReviewCount(items.length));
-  }, [isComplete, userId]);
+    // LEARN-05 — emit session_ended once per completion. The effect runs
+    // exactly when isComplete flips true.
+    void recordEvent(userId, {
+      kind: 'session_ended',
+      payload: { surface: 'practice', mode: selectedMode, score, total: totalQuestions },
+    });
+  }, [isComplete, userId, selectedMode, score, totalQuestions]);
 
   if (isComplete) {
     const safeTotal = Math.max(totalQuestions, 1);

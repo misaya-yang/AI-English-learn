@@ -51,6 +51,8 @@ import { ChatHistorySidebar } from '@/features/chat/components/ChatHistorySideba
 import { ChatMemoryBanner } from '@/features/chat/components/ChatMemoryBanner';
 import { ChatMessageBubble } from '@/features/chat/components/ChatMessageBubble';
 import { ChatWelcome, buildRecommendations } from '@/features/chat/components/ChatWelcome';
+import { MissionCards } from '@/features/coach/MissionCards';
+import { selectMissionCards } from '@/features/coach/missionCardSelector';
 import { QuizArtifactCard } from '@/features/chat/components/QuizArtifactCard';
 import type { ChatModeOption, QuickPromptOption } from '@/features/chat/types';
 import {
@@ -300,6 +302,26 @@ export default function ChatPage() {
       learningProfile.target?.toLowerCase().includes('toefl') ||
       learningProfile.tracks?.includes('exam_boost'),
   }), [dueWords.length, dailyMission, learningProfile.level, learningProfile.target, learningProfile.tracks, language]);
+
+  const missionCards = useMemo(
+    () =>
+      selectMissionCards({
+        level: learningProfile.level,
+        dueCount: dueWords.length,
+        weaknessTags: chatWeakTags,
+        hasExamGoal:
+          (learningProfile.target?.toLowerCase().includes('ielts') ?? false) ||
+          (learningProfile.target?.toLowerCase().includes('toefl') ?? false) ||
+          (learningProfile.tracks?.includes('exam_boost') ?? false),
+      }),
+    [
+      learningProfile.level,
+      learningProfile.target,
+      learningProfile.tracks,
+      dueWords.length,
+      chatWeakTags,
+    ],
+  );
 
   const loadingStages = useMemo(
     () =>
@@ -1351,14 +1373,20 @@ export default function ChatPage() {
         <ScrollArea className="flex-1 min-h-0 px-4 md:px-6 lg:px-8" ref={messagesScrollAreaRef}>
           <div className={cn(contentWidthClass, 'mx-auto')}>
             {messages.length === 0 ? (
-              <ChatWelcome
-                title={t('chat.welcomeTitle')}
-                description={t('chat.welcomeDesc')}
-                prompts={quickPrompts}
-                onPromptClick={handleQuickPrompt}
-                recommendations={recommendations}
-                language={language}
-              />
+              <div className="space-y-4 py-4">
+                <MissionCards
+                  selected={missionCards}
+                  onLaunch={(prompt) => setInput(prompt)}
+                />
+                <ChatWelcome
+                  title={t('chat.welcomeTitle')}
+                  description={t('chat.welcomeDesc')}
+                  prompts={quickPrompts}
+                  onPromptClick={handleQuickPrompt}
+                  recommendations={recommendations}
+                  language={language}
+                />
+              </div>
             ) : (
               <div className="py-4 space-y-2">
                 {hiddenMessageCount > 0 && (
