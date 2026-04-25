@@ -116,7 +116,7 @@ const faqs = [
 ];
 
 export default function PricingPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const location = useLocation();
 
   const [isYearly, setIsYearly] = useState(false);
@@ -134,11 +134,17 @@ export default function PricingPage() {
   useEffect(() => {
     let cancelled = false;
     const loadPlan = async () => {
+      if (!isAuthenticated || !user?.id) {
+        setCurrentPlan('free');
+        setSubscriptionStatus('inactive');
+        return;
+      }
+
       try {
         // The user could already be Pro via a manual grant in the DB —
         // entitlement lookup tells the UI which plan badge to show. This
         // never starts a checkout.
-        const entitlement = await getEntitlement(isAuthenticated ? 'me' : 'guest');
+        const entitlement = await getEntitlement(user.id);
         if (cancelled) return;
         setCurrentPlan(entitlement.plan);
 
@@ -159,7 +165,7 @@ export default function PricingPage() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
     const query = new URLSearchParams(location.search);

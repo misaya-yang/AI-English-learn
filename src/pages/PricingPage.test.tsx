@@ -156,4 +156,17 @@ describe('PricingPage — fail-closed pro checkout', () => {
     expect(await screen.findByText(/Current plan/i)).toBeInTheDocument();
     expect(screen.getByText('当前方案')).toBeInTheDocument();
   });
+
+  it('does not query entitlement APIs for an unauthenticated guest', async () => {
+    render(
+      <MemoryRouter>
+        <PricingPage />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(getEntitlementMock).not.toHaveBeenCalled();
+      expect(getSubscriptionEntitlementMock).not.toHaveBeenCalled();
+    });
+  });
 });
