@@ -56,6 +56,7 @@ import {
   buildChatLearnerProfile,
   deriveChatWeakTags,
 } from '@/features/chat/utils/learnerContext';
+import { buildSocraticRecoveryPrompt } from '@/features/coach/socraticRecovery';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 // Dynamic quick prompts based on learning stage
@@ -1084,6 +1085,44 @@ export default function ChatPage() {
           } catch {
             // Feedback record persistence is non-blocking for quiz progression.
           }
+
+          // Socratic recovery: send a structured follow-up so the coach
+          // diagnoses before teaching. The COACHING_POLICY's no-answer-dump
+          // rule already exists; this gives the model the wrong-answer
+          // signal it needs to fire it on this turn (and to emit the
+          // matching retry_with_hint coachingAction). Skip during a quiz
+          // sequence — the next prefetched item already covers retry, and
+          // double-firing would make the run feel chatty.
+          const inSequence = Boolean(quizSequenceRef.current);
+          if (!inSequence) {
+            const recovery = buildSocraticRecoveryPrompt({
+              question: artifact.payload.stem,
+              userAnswer: selected,
+              correctAnswer: artifact.payload.answerKey,
+              skill: artifact.payload.skills?.[0] || artifact.payload.tags?.[0],
+              targetWord: artifact.payload.targetWord,
+              language,
+            });
+            if (recovery) {
+              void sendMessage(recovery.visible, {
+                surface: 'chat',
+                goalContext,
+                weakTags: chatWeakTags,
+                learnerProfile: getChatLearnerProfile(),
+                mode: chatMode === 'quiz' ? 'study' : chatMode,
+                responseStyle: 'coach',
+                searchMode: 'off',
+                trigger: 'retry',
+                apiContentOverride: recovery.api,
+                featureFlags: {
+                  enableQuizArtifacts: false,
+                  enableStudyArtifacts: false,
+                  forceQuiz: false,
+                  allowAutoQuiz: false,
+                },
+              });
+            }
+          }
         }
       }
       const sequence = quizSequenceRef.current;
@@ -1162,14 +1201,18 @@ export default function ChatPage() {
       advanceQuizRun,
       chatMode,
       chatUserId,
+      chatWeakTags,
       clearQuizRun,
       completeMissionTask,
       currentSessionId,
       findQuizArtifact,
+      getChatLearnerProfile,
+      goalContext,
       language,
       goToNextQuizQuestion,
       quizRunState?.runId,
       requestQuizBatch,
+      sendMessage,
       syncQuizSequence,
       submitQuizAttempt,
     ],
