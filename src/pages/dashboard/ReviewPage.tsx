@@ -26,68 +26,18 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { wordsDatabase, type WordData } from '@/data/words';
-import type { UserProgress } from '@/data/localStorage';
+import { wordsDatabase } from '@/data/words';
 import { speakEnglishText } from '@/services/tts';
 import { isStubbornWord } from '@/services/fsrs';
-import { ensureFSRS } from '@/services/fsrsMigration';
-import type { FSRSState } from '@/types/core';
+import { buildReviewSession, type ReviewSessionItem } from '@/features/learning/reviewQueue';
 import { cn } from '@/lib/utils';
 
-interface ReviewItem {
-  wordId: string;
-  word: WordData;
-  reviewCount: number;
-  fsrs: FSRSState;
-}
+type ReviewItem = ReviewSessionItem;
 
 interface ReviewCardProps {
   item: ReviewItem;
   isRevealed: boolean;
   onReveal: () => void;
-}
-
-const FALLBACK_REVIEW_COUNT = 10;
-
-function buildReviewItems(dueWords: UserProgress[], dailyWords: WordData[]): ReviewItem[] {
-  const wordsById = new Map<string, WordData>();
-  [...dailyWords, ...wordsDatabase].forEach((word) => {
-    if (!wordsById.has(word.id)) {
-      wordsById.set(word.id, word);
-    }
-  });
-
-  const dueItems = dueWords
-    .map((dueWord) => {
-      const word = wordsById.get(dueWord.wordId);
-      if (!word) return null;
-      return {
-        wordId: dueWord.wordId,
-        word,
-        reviewCount: dueWord.reviewCount,
-        fsrs: ensureFSRS(dueWord as UserProgress & { fsrs?: FSRSState }),
-      } as ReviewItem;
-    })
-    .filter((item): item is ReviewItem => item !== null);
-
-  if (dueItems.length > 0) {
-    return dueItems;
-  }
-
-  return dailyWords.slice(0, Math.min(FALLBACK_REVIEW_COUNT, dailyWords.length)).map((word) => ({
-    wordId: word.id,
-    word,
-    reviewCount: 0,
-    fsrs: {
-      stability: 0,
-      difficulty: 0,
-      retrievability: 0,
-      lapses: 0,
-      state: 'new',
-      dueAt: new Date().toISOString(),
-      lastReviewAt: null,
-    },
-  }));
 }
 
 function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
@@ -216,7 +166,14 @@ export default function ReviewPage() {
   const [sessionQueue, setSessionQueue] = useState<ReviewItem[] | null>(null);
 
   const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
-  const reviewItems = sessionQueue ?? buildReviewItems(dueWords, dailyWords);
+  const reviewItems = sessionQueue ?? buildReviewSession({
+    dueWords,
+    // dailyWords is included so a "due" entry from today's bundle still
+    // resolves a WordData. The full wordsDatabase covers the rest. Neither
+    // contributes a card on its own — buildReviewSession refuses to
+    // fall back to fillers (LEARN-04).
+    wordCatalog: [...dailyWords, ...wordsDatabase],
+  });
   const isComplete = reviewItems.length > 0 && currentIndex >= reviewItems.length;
   const reviewTaskTarget =
     Number(
@@ -295,25 +252,29 @@ export default function ReviewPage() {
   };
 
   if (reviewItems.length === 0) {
+    const isZh = language.startsWith('zh');
     return (
       <LearningShellFrame>
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <LearningEmptyState
             icon={Check}
-            eyebrow="Review queue"
-            title="今天没有待处理复习"
-            description="当前没有到期复习卡。"
+            eyebrow="FSRS review queue"
+            title={isZh ? '当前没有到期 FSRS 复习' : 'No FSRS-due cards right now'}
+            description={
+              isZh
+                ? '记忆曲线说今天不需要再回头看这些词。建议去 Practice 做一次轻量巩固，把今天学的内容固化下来；如果有教练复习也会显示在右侧。'
+                : 'Your memory curve says these cards don\'t need another touch today. Use Practice to reinforce what you just learned. Coach-scheduled reviews (if any) appear on the right.'
+            }
             metrics={[
-              { label: 'Due reviews', value: 0, accent: 'emerald' },
-              { label: 'Fallback set', value: Math.min(FALLBACK_REVIEW_COUNT, dailyWords.length) },
+              { label: isZh ? '到期 FSRS 卡' : 'Due FSRS cards', value: 0, accent: 'emerald' },
             ]}
             actions={
               <>
                 <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
-                  <Link to="/dashboard/today">回到 Today</Link>
+                  <Link to="/dashboard/today">{isZh ? '回到 Today' : 'Back to Today'}</Link>
                 </Button>
                 <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
-                  <Link to="/dashboard/practice">去做练习</Link>
+                  <Link to="/dashboard/practice">{isZh ? '做巩固练习' : 'Reinforce in Practice'}</Link>
                 </Button>
               </>
             }
@@ -360,15 +321,20 @@ export default function ReviewPage() {
   return (
     <LearningShellFrame>
       <LearningHeroPanel
-        eyebrow="Review round"
+        eyebrow={language.startsWith('zh') ? 'FSRS 复习回合' : 'FSRS review round'}
         title="先回忆，再揭晓答案。把复习做成一个完整回合。"
+        description={
+          language.startsWith('zh')
+            ? '本回合只展示由 FSRS 调度的到期卡。教练安排的复习显示在右侧的 Coach reviews 列表中，互不混合。'
+            : 'This round only shows cards FSRS schedules as due. Coach-scheduled reviews live in the right-hand Coach reviews list and are kept separate.'
+        }
         progress={Math.round(reviewedProgress)}
-        progressLabel="Round progress"
+        progressLabel={language.startsWith('zh') ? '回合进度' : 'Round progress'}
         metrics={[
-          { label: 'Remaining', value: remainingCount, accent: 'emerald' },
-          { label: 'Mission target', value: reviewTaskTarget },
-          { label: 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
-          ...(isCurrentCardStubborn ? [{ label: 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
+          { label: language.startsWith('zh') ? '剩余 FSRS 卡' : 'FSRS remaining', value: remainingCount, accent: 'emerald' },
+          { label: language.startsWith('zh') ? '任务目标' : 'Mission target', value: reviewTaskTarget },
+          { label: language.startsWith('zh') ? '当前卡片' : 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
+          ...(isCurrentCardStubborn ? [{ label: language.startsWith('zh') ? '强化路径' : 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
         ]}
       />
 
