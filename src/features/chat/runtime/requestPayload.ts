@@ -1,33 +1,16 @@
 import type { ChatEdgeResponse, ChatMode, SendMessageOptions } from '@/types/chatAgent';
 import { invokeEdgeFunction, invokeEdgeFunctionStream } from '@/services/aiGateway';
 import { shouldAllowAutoQuizForInput, shouldDisableAutoSearch, shouldSuppressQuizForInput, isSimpleGreetingInput } from '@/features/chat/runtime/fastPath';
+import {
+  COACHING_POLICY_VERSION,
+  buildCoachSystemPrompt,
+  normalizeLearningContext,
+  type LearnerContext,
+} from '@/features/coach/coachingPolicy';
 
-export const SYSTEM_PROMPT = `You are an expert English tutor specializing in helping Chinese-speaking learners. Your responses should be:
-
-1. Clear and educational
-2. Include both English and Chinese explanations when helpful
-3. Provide examples and context
-4. Be encouraging and supportive
-
-When explaining vocabulary:
-- Provide clear definitions
-- Give example sentences
-- Explain usage contexts
-- Note common collocations
-- Highlight differences between similar words
-
-When correcting grammar:
-- Explain the rule clearly
-- Show the correct form
-- Provide examples
-- Explain why it's wrong
-
-For simple greetings (for example: "hi", "hello", "你好"):
-- Reply in 1-2 short sentences
-- Do not use long sections, bullet lists, or study plans
-- Ask at most one short follow-up question
-
-Keep responses concise but comprehensive. Use markdown formatting for clarity.`;
+// Legacy fallback kept for any caller still importing this symbol directly.
+// Prefer buildCoachSystemPrompt() from @/features/coach/coachingPolicy.
+export const SYSTEM_PROMPT = buildCoachSystemPrompt({}, { surface: 'chat', mode: 'chat' });
 
 const MAX_TOKENS_BY_MODE: Record<ChatMode, number> = {
   chat: 800,
@@ -51,6 +34,10 @@ export interface ChatAssistantRequestContext {
   surface: NonNullable<SendMessageOptions['surface']>;
   goalContext?: string;
   weakTags?: string[];
+  // Full learner-model snapshot. When provided, it feeds the shared
+  // COACHING_POLICY so the system prompt cites the learner's level, target,
+  // due backlog, burnout risk, etc.
+  learnerProfile?: Partial<LearnerContext>;
   mode: ChatMode;
   responseStyle: NonNullable<SendMessageOptions['responseStyle']>;
   searchMode: NonNullable<SendMessageOptions['searchMode']>;
@@ -108,6 +95,23 @@ export const buildChatRequestPayload = (args: {
   const conciseResponseRequested = context.responseStyle === 'concise';
   const useLightweightGreetingPath = (isSimpleGreetingTurn || conciseResponseRequested) && !isQuizTurn;
 
+  // Normalize learner-model fields up front. The returned `learnerContext`
+  // is what the COACHING_POLICY uses to reference level, target, due
+  // backlog, weakness tags, etc. The canonical field name is `weaknessTags`;
+  // we still carry `weakTags` in the payload for back-compat with older
+  // Edge Function revisions.
+  const learnerContext = normalizeLearningContext({
+    ...(context.learnerProfile || {}),
+    weakTags: context.weakTags,
+    weaknessTags: (context.learnerProfile as LearnerContext | undefined)?.weaknessTags,
+  });
+
+  const coachSystemPrompt = buildCoachSystemPrompt(learnerContext, {
+    surface: context.surface,
+    mode: context.mode,
+    goalContext: context.goalContext,
+  });
+
   return {
     effectiveQuizRun,
     isQuizTurn,
@@ -115,7 +119,8 @@ export const buildChatRequestPayload = (args: {
     payload: {
       sessionId: context.sessionId,
       messages: context.apiMessages,
-      systemPrompt: SYSTEM_PROMPT,
+      systemPrompt: coachSystemPrompt,
+      coachingPolicyVersion: COACHING_POLICY_VERSION,
       surface: context.surface,
       goalContext: context.goalContext,
       weakTags: context.weakTags,
@@ -126,7 +131,21 @@ export const buildChatRequestPayload = (args: {
         currentMode: context.mode,
         surface: context.surface,
         goalContext: context.goalContext,
+        // Canonical field. Keep `weakTags` too so an older Edge Function
+        // revision does not silently drop the data.
+        weaknessTags: learnerContext.weaknessTags,
         weakTags: context.weakTags,
+        level: learnerContext.level,
+        target: learnerContext.target,
+        examType: learnerContext.examType,
+        dailyMinutes: learnerContext.dailyMinutes,
+        dueCount: learnerContext.dueCount,
+        learnerMode: learnerContext.learnerMode,
+        burnoutRisk: learnerContext.burnoutRisk,
+        stubbornTopics: learnerContext.stubbornTopics,
+        recommendedDailyReview: learnerContext.recommendedDailyReview,
+        predictedRetention30d: learnerContext.predictedRetention30d,
+        recentErrors: learnerContext.recentErrors,
       },
       toolContext: isQuizTurn
         ? {

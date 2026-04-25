@@ -22,10 +22,17 @@ import {
   type ChatEnvelope,
   type ChatMode,
 } from '../_shared/response-schema.ts';
+import {
+  COACHING_POLICY_VERSION,
+  buildCoachSystemPrompt,
+  normalizeLearningContext,
+  parseCoachingActions,
+  type CoachingAction,
+} from '../_shared/coaching-policy.ts';
 
-const DEFAULT_SYSTEM_PROMPT = `You are an expert English tutor for Chinese-speaking learners.
-Return practical, concise guidance with bilingual clarity when helpful.
-Focus on vocabulary usage, grammar correction, collocations, and example-driven coaching.`;
+// Legacy fallback; new requests should carry the client-computed policy prompt.
+// Kept so pre-policy callers still get sensible behaviour.
+const DEFAULT_SYSTEM_PROMPT = buildCoachSystemPrompt({}, { surface: 'chat', mode: 'chat' });
 
 const MAX_INCOMING_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 960;
@@ -51,21 +58,24 @@ const toWeakTags = (value: unknown): string[] => {
 
 const buildPedagogicalSystemContext = (args: {
   surface: 'chat' | 'today' | 'exam' | 'practice';
+  mode: ChatMode;
   goalContext?: string;
+  learningContext: Record<string, unknown>;
   weakTags: string[];
 }): string => {
-  const parts = [`Current product surface: ${args.surface}.`];
-
-  if (args.goalContext) {
-    parts.push(`Learner goal context: ${args.goalContext}`);
-  }
-
-  if (args.weakTags.length > 0) {
-    parts.push(`Current weak tags: ${args.weakTags.join(', ')}.`);
-  }
-
-  parts.push('Prioritize the most useful next learning action instead of generic advice.');
-  return parts.join(' ');
+  // The shared COACHING_POLICY is the single source of truth for teaching
+  // behaviour. We normalise the learner context (which merges legacy
+  // `weakTags` with canonical `weaknessTags`) and hand it to the policy.
+  const rawLearner = {
+    ...args.learningContext,
+    weakTags: args.weakTags,
+  };
+  const learner = normalizeLearningContext(rawLearner);
+  return buildCoachSystemPrompt(learner, {
+    surface: args.surface,
+    mode: args.mode,
+    goalContext: args.goalContext,
+  });
 };
 
 const clipText = (value: string, limit: number): string => {
@@ -291,17 +301,34 @@ Deno.serve(async (req) => {
         ? body.goalContext.trim()
         : undefined;
     const weakTags = toWeakTags(body.weakTags);
-    const mergedLearningContext = {
-      ...(body.learningContext && typeof body.learningContext === 'object'
+    const rawLearningContext =
+      body.learningContext && typeof body.learningContext === 'object'
         ? (body.learningContext as Record<string, unknown>)
-        : {}),
+        : {};
+    // Normalise once so we can reuse the same canonical shape for both the
+    // coaching prompt and the memory persistence layer. This also resolves
+    // the legacy `weakTags` vs canonical `weaknessTags` split: either field
+    // the client sent lands as `weaknessTags` here.
+    const normalizedLearner = normalizeLearningContext({
+      ...rawLearningContext,
+      weakTags,
+    });
+    const mergedLearningContext = {
+      ...rawLearningContext,
       surface,
       goalContext,
       weakTags,
+      // Canonical field — memory-engine reads this.
+      weaknessTags: normalizedLearner.weaknessTags || [],
+      level: normalizedLearner.level,
+      target: normalizedLearner.target,
+      examType: normalizedLearner.examType,
     };
     const pedagogicalSystemContext = buildPedagogicalSystemContext({
       surface,
+      mode,
       goalContext,
+      learningContext: mergedLearningContext,
       weakTags,
     });
 
@@ -596,15 +623,29 @@ Deno.serve(async (req) => {
               const finalArtifacts = ensureWebSourcesArtifact([], toolRouting.sources);
               const memoryUsed = toMemoryUsed(memories);
 
-              const finalPayload: ChatEnvelope & { provider: 'edge' } = {
+              // Best-effort coaching_actions extraction from the streamed
+              // markdown: if the model included a trailing JSON block per
+              // the COACHING_POLICY contract, parse it; otherwise leave
+              // undefined. Missing actions are fine — the client degrades
+              // gracefully.
+              const streamedParsed = extractFirstJsonObject<unknown>(finalContent);
+              const streamedCoachingActions: CoachingAction[] = parseCoachingActions(streamedParsed);
+
+              const finalPayload: ChatEnvelope & {
+                provider: 'edge';
+                coachingActions?: CoachingAction[];
+              } = {
                 content: finalContent,
                 provider: 'edge',
                 artifacts: finalArtifacts.length > 0 ? finalArtifacts : undefined,
+                coachingActions:
+                  streamedCoachingActions.length > 0 ? streamedCoachingActions : undefined,
                 agentMeta: {
                   triggerReason: 'stream_text',
                   confidence: 0.82,
                   schemaVersion: 'chat_v2_stream',
                   latencyMs,
+                  coachingPolicyVersion: COACHING_POLICY_VERSION,
                 },
                 renderState: {
                   stage: 'streaming',
@@ -764,11 +805,18 @@ Deno.serve(async (req) => {
     const artifactsWithSources = ensureWebSourcesArtifact(payload.artifacts || [], payload.sources);
     const finalArtifacts = ensureCanvasSummaryArtifact(mode, artifactsWithSources, payload.content, payload.canvasSessionMeta);
 
-    const finalPayload: ChatEnvelope = {
+    const coachingActions: CoachingAction[] = parseCoachingActions(parsed);
+
+    const finalPayload: ChatEnvelope & { coachingActions?: CoachingAction[] } = {
       ...payload,
       artifacts: finalArtifacts.length > 0 ? finalArtifacts : undefined,
+      coachingActions: coachingActions.length > 0 ? coachingActions : undefined,
       provider: 'edge',
-    } as ChatEnvelope & { provider: 'edge' };
+      agentMeta: {
+        ...(payload.agentMeta || {}),
+        coachingPolicyVersion: COACHING_POLICY_VERSION,
+      },
+    } as ChatEnvelope & { provider: 'edge'; coachingActions?: CoachingAction[] };
 
     if (contextBuild.compactedSummary && sessionId) {
       await persistContextSnapshot({

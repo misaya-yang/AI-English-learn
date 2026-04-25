@@ -766,6 +766,7 @@ export function useSupabaseChat() {
       surface,
       goalContext,
       weakTags,
+      learnerProfile: options.learnerProfile,
       mode,
       responseStyle,
       searchMode,

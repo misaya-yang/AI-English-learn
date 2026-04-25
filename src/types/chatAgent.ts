@@ -1,3 +1,6 @@
+import type { CoachingAction, LearnerContext } from '@/features/coach/coachingPolicy';
+export type { CoachingAction, LearnerContext } from '@/features/coach/coachingPolicy';
+
 export type ChatMode = 'chat' | 'study' | 'quiz' | 'canvas';
 
 export type SearchMode = 'off' | 'auto' | 'force';
@@ -184,12 +187,14 @@ export interface AgentMeta {
   confidence?: number;
   schemaVersion?: string;
   latencyMs?: number;
+  coachingPolicyVersion?: string;
 }
 
 export interface ChatEdgeResponse {
   content: string;
   provider?: 'edge' | 'fallback';
   artifacts?: ChatArtifact[];
+  coachingActions?: CoachingAction[];
   agentMeta?: AgentMeta;
   renderState?: ChatRenderState;
   perfMeta?: {
@@ -214,6 +219,11 @@ export interface SendMessageOptions {
   surface?: TutorSurface;
   goalContext?: string;
   weakTags?: string[];
+  // Optional richer learner-model snapshot. When provided, the COACHING_POLICY
+  // references these fields in the system prompt (level/target/due backlog/
+  // burnout risk/recent errors/etc). Backward compatible with callers that
+  // only set `weakTags`.
+  learnerProfile?: Partial<LearnerContext>;
   mode?: ChatMode;
   searchMode?: SearchMode;
   responseStyle?: 'concise' | 'coach';

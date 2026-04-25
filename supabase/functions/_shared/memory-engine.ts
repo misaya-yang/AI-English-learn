@@ -545,9 +545,17 @@ const collectStableMemoryItems = (
     });
   }
 
-  const weaknessTags = Array.isArray(learningContext.weaknessTags)
-    ? learningContext.weaknessTags.filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
-    : [];
+  // Canonical field is `weaknessTags` (see COACHING_POLICY). Older clients
+  // still ship `weakTags` — accept either so weakness memories do not get
+  // silently dropped during rollout.
+  const weaknessTagCandidates = Array.isArray(learningContext.weaknessTags)
+    ? learningContext.weaknessTags
+    : Array.isArray(learningContext.weakTags)
+      ? learningContext.weakTags
+      : [];
+  const weaknessTags = weaknessTagCandidates.filter(
+    (tag): tag is string => typeof tag === 'string' && tag.trim().length > 0,
+  );
 
   weaknessTags.slice(0, 6).forEach((tag) => {
     items.push({
