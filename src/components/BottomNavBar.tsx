@@ -1,29 +1,21 @@
 import { Link, useLocation } from 'react-router-dom';
-import { CalendarDays, Brain, MessageCircleMore, WandSparkles, MoreHorizontal } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-
-interface BottomNavItem {
-  path: string;
-  label: string;
-  labelZh: string;
-  icon: typeof CalendarDays;
-}
-
-const NAV_ITEMS: BottomNavItem[] = [
-  { path: '/dashboard/today', label: 'Today', labelZh: '今日', icon: CalendarDays },
-  { path: '/dashboard/review', label: 'Review', labelZh: '复习', icon: Brain },
-  { path: '/dashboard/chat', label: 'Chat', labelZh: '对话', icon: MessageCircleMore },
-  { path: '/dashboard/practice', label: 'Practice', labelZh: '练习', icon: WandSparkles },
-];
+import { getMobileNavRoutes } from '@/features/learning/routeRegistry';
 
 interface BottomNavBarProps {
   isLearningMode: boolean;
   onMoreClick: () => void;
 }
 
+const NAV_ITEMS = getMobileNavRoutes(4);
+
 export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps) {
   const location = useLocation();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
 
   return (
     <nav
@@ -37,6 +29,8 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
     >
       {NAV_ITEMS.map((item) => {
         const active = location.pathname.startsWith(item.path);
+        const Icon = item.icon;
+        const label = isZh ? item.label.zh : item.label.en;
         return (
           <Link
             key={item.path}
@@ -53,7 +47,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
             )}
           >
             <div className="relative">
-              <item.icon className="h-5 w-5" strokeWidth={active ? 2.2 : 1.8} />
+              <Icon className="h-5 w-5" strokeWidth={active ? 2.2 : 1.8} />
               {active && (
                 <motion.div
                   layoutId="bottomnav-indicator"
@@ -65,7 +59,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
                 />
               )}
             </div>
-            <span className="text-[10px] font-semibold">{item.label}</span>
+            <span className="text-[10px] font-semibold">{label}</span>
           </Link>
         );
       })}
@@ -81,7 +75,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
         )}
       >
         <MoreHorizontal className="h-5 w-5" strokeWidth={1.8} />
-        <span className="text-[10px] font-semibold">More</span>
+        <span className="text-[10px] font-semibold">{isZh ? '更多' : 'More'}</span>
       </button>
     </nav>
   );
