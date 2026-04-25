@@ -1186,3 +1186,103 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
     runtime) remain. OPS-01 still blocked on payment secrets.
     Stopping at sustainable boundary per session brief.
 
+---
+
+## 2026-04-25 13:42 - PARALLEL DELIVERY (UI-04 + QA-01)
+
+- Mode: parallel delivery squad. Three subagents dispatched in
+  isolated git worktrees:
+  - **Agent A (UI-04 auth + conversion polish)** —
+    `worktree-agent-a61dd3bf01448218c`, commit `d193a46`.
+  - **Agent B (QA-01 split chat runtime)** —
+    `worktree-agent-a70f73f5946e91292`, commit `09fb873`.
+  - **Agent C (verification audit)** — read-only, no commits;
+    delivered a coverage-gap report.
+
+- Integration:
+  - Both worktrees forked from the pre-session base `cf6df46` so
+    their diffs were computed against an old main. The parent
+    agent integrated each commit onto current main with the
+    appropriate strategy:
+  - **UI-04 → cherry-pick clean (`b22dfd6`)**: Agent A's scope
+    (`src/pages/{LandingPage,PricingPage}.tsx`, `src/pages/auth/*`,
+    new `src/features/marketing/*`) had zero overlap with the
+    session's COACH/LEARN/UI work. Cherry-pick applied without
+    conflicts. 13 files, +1612 / -794. Adds `AuthShell`,
+    `BrandMark`, `pricingAvailability` (defaults to false until
+    `VITE_BILLING_ENABLED` is set), `PricingPage.test.tsx` locking
+    the fail-closed contract.
+  - **QA-01 → partial integration (`fe8c600`)**: Agent B rewrote
+    ChatPage.tsx (1641→1130) on its baseline, but on current main
+    ChatPage owns the COACH-01 learner-context derivation, the
+    COACH-02 chip dispatcher, and the COACH-04 Socratic recovery
+    dispatch. A blanket cherry-pick would have silently dropped
+    those features, so the parent agent took **only the additive
+    files** (21 new modules + tests) via
+    `git checkout 09fb873 -- <file>` for each. The agent's
+    rewritten ChatPage.tsx was deliberately left on the worktree
+    branch.
+  - The new `requestPayload.test.ts` regression test was patched
+    to reflect current main's payload shape (added
+    `coachingPolicyVersion` to the top-level keys, the canonical
+    `weaknessTags` field plus all learner-model fields, and made
+    the system-prompt assertion compare against
+    `buildCoachSystemPrompt(...)` directly so the test stays in
+    sync with the COACHING_POLICY source of truth instead of the
+    legacy `SYSTEM_PROMPT` export).
+
+- Final test count: **53 files, 609/609 tests** (was 522 — +87
+  from this round: +22 from UI-04 / +65 from QA-01 helpers and
+  the regression test).
+
+- Verified end-to-end:
+  - `npm test -- --run` → 53 files, 609/609 ✅
+  - `npm run build` → tsc + vite clean ✅
+  - `npm run smoke:prod` → 5 passed · 0 warned · 0 failed ✅
+  - Local Vite dev probe: GET 200 on `/`, `/login`, `/register`,
+    `/pricing`, `/magic-link`, `/onboarding`. All modified
+    modules (PricingPage, auth pages, AuthShell,
+    pricingAvailability, quizSequenceState,
+    ThinkingStatusCard, …) transform cleanly under the dev
+    server.
+
+- Deploy:
+  - Pure frontend changes. Vercel auto-deploy from main ships
+    everything when push happens.
+  - No Edge Function changes; the AI gateway, coaching policy,
+    and billing functions are unchanged in this round.
+
+- Risks:
+  - **QA-01 not fully delivered**: the agent's ChatPage rewrite
+    was dropped to preserve the COACH-01/02/04 features. The 21
+    new helper modules sit alongside the existing inline code in
+    ChatPage; a follow-up loop should wire them in surgically
+    (replacing inline `getQuickPrompts` with the imported helper,
+    swapping the inline `ThinkingStatusCard` with the extracted
+    component, etc.) without touching the COACH hooks. Until
+    then, ChatPage is unchanged in size.
+  - **UI-04 pricing default**: `pricingAvailability` defaults to
+    `false`. When real Stripe/Alipay secrets land, the deploy
+    must set `VITE_BILLING_ENABLED=true` (or rename the flag) for
+    the live checkout branch to render. Documented in the
+    Pricing page comments and the new test file.
+  - **Worktrees retained**: the two agent worktrees still exist
+    under `.claude/worktrees/`. They are gitignored
+    (`.claude/` is in the global gitignore from the harness)
+    and harmless, but a `git worktree prune` is a safe followup.
+
+- Commits:
+  - `b22dfd6 feat(ui): polish auth and conversion surfaces (UI-04)`
+  - `fe8c600 refactor(chat): split runtime modules (QA-01, partial integration)`
+
+- Backlog:
+  - **OPS-01 payment secrets** — still blocked on real
+    Stripe/Alipay credentials. No production action this round.
+  - **QA-01 ChatPage wire-in** — follow-up: import the new
+    helpers into ChatPage in-place. Adds no new behaviour, just
+    reduces ChatPage line count.
+  - All other unblocked items from the original backlog are
+    complete.
+
+- Not pushed.
+
