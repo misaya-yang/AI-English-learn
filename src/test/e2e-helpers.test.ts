@@ -110,8 +110,8 @@ describe('i18n translations', () => {
     const zhRes = i18n.getResourceBundle('zh', 'translation');
     expect(enRes).toBeDefined();
     expect(zhRes).toBeDefined();
-    expect(enRes?.common?.appName).toBe('VocabDaily AI');
-    expect(zhRes?.common?.appName).toBe('VocabDaily AI');
+    expect(enRes?.common?.appName).toBe('VocabDaily');
+    expect(zhRes?.common?.appName).toBe('VocabDaily');
   });
 
   it('both locales have nav and dashboard keys', async () => {

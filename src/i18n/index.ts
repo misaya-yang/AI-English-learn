@@ -4,8 +4,8 @@ import { initReactI18next } from 'react-i18next';
 // English translations
 const en = {
   common: {
-    appName: 'VocabDaily AI',
-    tagline: 'AI-powered vocabulary learning',
+    appName: 'VocabDaily',
+    tagline: 'Vocabulary review that sticks',
     startLearning: 'Start Learning',
     signIn: 'Sign In',
     signUp: 'Sign Up',
@@ -456,8 +456,8 @@ const en = {
 // Chinese translations
 const zh = {
   common: {
-    appName: 'VocabDaily AI',
-    tagline: 'AI 智能单词学习',
+    appName: 'VocabDaily',
+    tagline: '稳步记住英语单词',
     startLearning: '开始学习',
     signIn: '登录',
     signUp: '注册',

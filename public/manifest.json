@@ -1,7 +1,7 @@
 {
-  "name": "VocabDaily AI",
+  "name": "VocabDaily",
   "short_name": "VocabDaily",
-  "description": "AI-native English learning platform with spaced repetition",
+  "description": "English learning workbench with spaced repetition",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
