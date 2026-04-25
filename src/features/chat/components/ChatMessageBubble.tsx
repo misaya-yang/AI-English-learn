@@ -7,7 +7,9 @@ import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { ChatArtifactRenderer } from '@/features/chat/components/ChatArtifactRenderer';
+import { CoachActionPanel } from '@/features/chat/components/CoachActionPanel';
 import type { AttemptedQuizMapEntry, ChatMessageView } from '@/features/chat/types';
+import type { CoachingAction } from '@/features/coach/coachingPolicy';
 import type { ChatArtifact, ChatMode } from '@/types/chatAgent';
 
 interface ChatMessageBubbleProps {
@@ -22,6 +24,7 @@ interface ChatMessageBubbleProps {
   onAddReviewCard: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
   onGenerateLesson: (artifact: Extract<ChatArtifact, { type: 'quiz' }>) => void;
   onUseCanvasSummary: (summary: string) => void;
+  onCoachAction?: (sendPrompt: string, action: CoachingAction) => void;
 }
 
 export function ChatMessageBubble({
@@ -36,6 +39,7 @@ export function ChatMessageBubble({
   onAddReviewCard,
   onGenerateLesson,
   onUseCanvasSummary,
+  onCoachAction,
 }: ChatMessageBubbleProps) {
   const isUser = message.role === 'user';
   const quizArtifacts =
@@ -129,6 +133,14 @@ export function ChatMessageBubble({
           onUseCanvasSummary={onUseCanvasSummary}
           language={language}
         />
+
+        {!isUser && !isStreaming && message.coachingActions && message.coachingActions.length > 0 && onCoachAction && (
+          <CoachActionPanel
+            actions={message.coachingActions}
+            language={language}
+            onRunAction={onCoachAction}
+          />
+        )}
 
         {!isUser && !isStreaming && (
           <div className="mt-1.5 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">

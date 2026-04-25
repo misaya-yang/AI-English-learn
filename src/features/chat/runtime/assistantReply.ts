@@ -267,6 +267,14 @@ export async function requestAssistantReplyPipeline(args: AssistantReplyPipeline
       content: fullContent,
       createdAt: Date.now(),
       artifacts: artifacts.length > 0 ? artifacts : undefined,
+      // Surface the coaching actions so ChatMessageBubble can render the
+      // post-reply "Next step" chips. The actions are also persisted into
+      // the coach review queue below — this field is purely the in-memory
+      // copy used to draw the chip strip for the current turn.
+      coachingActions:
+        Array.isArray(result.coachingActions) && result.coachingActions.length > 0
+          ? result.coachingActions
+          : undefined,
     };
 
     await appendAssistantMessage(context.sessionId, assistantMessage);

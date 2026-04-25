@@ -682,6 +682,33 @@ export default function ChatPage() {
     });
   }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, getChatLearnerProfile, goalContext, searchMode, sendMessage, syncQuizSequence]);
 
+  // Triggered when the learner taps a chip in the post-reply CoachActionPanel.
+  // We send the action's prompt back as a new chat turn so the coach can
+  // execute the suggested retry/micro_task/reflection. schedule_review
+  // actions never reach here — they reduce to a "saved" badge in the panel.
+  const handleCoachAction = useCallback(
+    (sendPrompt: string, _action: import('@/features/coach/coachingPolicy').CoachingAction) => {
+      const text = sendPrompt.trim();
+      if (!text) return;
+      void sendMessage(text, {
+        surface: 'chat',
+        goalContext,
+        weakTags: chatWeakTags,
+        learnerProfile: getChatLearnerProfile(),
+        mode: chatMode,
+        responseStyle: 'coach',
+        searchMode,
+        trigger: 'quick_prompt',
+        featureFlags: {
+          enableQuizArtifacts: true,
+          enableStudyArtifacts: true,
+          allowAutoQuiz: chatMode !== 'chat',
+        },
+      });
+    },
+    [chatMode, chatWeakTags, getChatLearnerProfile, goalContext, searchMode, sendMessage],
+  );
+
   const handleManualQuiz = useCallback(() => {
     const text =
       language.startsWith('zh')
@@ -1450,6 +1477,7 @@ export default function ChatPage() {
                           onAddReviewCard={addReviewCardFromQuiz}
                           onGenerateLesson={generateLessonFromQuiz}
                           onUseCanvasSummary={handleUseCanvasSummary}
+                          onCoachAction={handleCoachAction}
                         />
                       </div>
                     );

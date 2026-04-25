@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import type { ChatArtifact, ChatMode } from '@/types/chatAgent';
+import type { CoachingAction } from '@/features/coach/coachingPolicy';
 
 export interface QuickPromptOption {
   icon: ComponentType<{ className?: string }>;
@@ -20,6 +21,7 @@ export interface ChatMessageView {
   content: string;
   createdAt: number;
   artifacts?: ChatArtifact[];
+  coachingActions?: CoachingAction[];
 }
 
 export interface AttemptedQuizMapEntry {
