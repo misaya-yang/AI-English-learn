@@ -661,3 +661,259 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
     UI-02 (learning-cockpit shell), QA-02 (coach policy drift guard),
     UI-04 (auth + conversion polish).
 
+---
+
+## 2026-04-25 12:05 - COACH-04 (Socratic error recovery)
+
+- Changed:
+  - `src/features/coach/socraticRecovery.ts` (new): pure
+    `buildSocraticRecoveryPrompt({ question, userAnswer, correctAnswer?,
+    skill?, targetWord?, language? })` returns null when there is no
+    question text to anchor on, otherwise a `{visible, api}` pair.
+    `visible` is a short bilingual user message that appears in the
+    chat history; `api` is a longer structured prompt fed to the
+    model via `apiContentOverride` carrying the question, the wrong
+    choice, and a 4-step Socratic instruction (one question, one
+    hint, invite a retry, emit retry_with_hint in coaching_actions).
+    Crucially, `correctAnswer` is accepted but never serialised — the
+    model has to decide how much to reveal.
+  - `src/features/coach/socraticRecovery.test.ts`: 8 cases —
+    null-on-missing-question, question/answer round-trip, EN + ZH
+    instruction phrasing, retry_with_hint reference, no-answer-leak
+    guarantee, empty-answer fallback, skill/word tagging, length
+    truncation.
+  - `src/pages/dashboard/ChatPage.tsx`: in `handleQuizSubmit`, after
+    a wrong answer is captured, build the recovery prompt from the
+    quiz artifact (stem + selected + answerKey + first skill/tag +
+    targetWord) and fire `sendMessage(visible, { ..., trigger:
+    'retry', apiContentOverride: api })`. Skips firing during a quiz
+    sequence run — the next pre-fetched quiz already serves as a
+    retry there. Updated the `useCallback` deps accordingly.
+
+- Verified:
+  - `npx vitest run src/features/coach/socraticRecovery.test.ts` →
+    8/8.
+  - `npx vitest run` (full) → 36 files, 453/453 (was 445).
+  - `npm run build` → tsc + vite clean (ChatPage chunk 136 KB).
+  - Vite dev smoke: GET / 200; socraticRecovery (9 KB), ChatPage
+    (237 KB) transform cleanly.
+
+- Deploy:
+  - Pure frontend change. The Edge Function already supports
+    `apiContentOverride` — no edge changes required.
+
+- Risks:
+  - The recovery prompt uses `trigger: 'retry'` and a friendly
+    visible string, so the chat history still reads naturally. If
+    we later disable `apiContentOverride` for any reason, the
+    visible string alone won't carry enough signal — keep both
+    coupled.
+  - The model occasionally reveals the answer despite the
+    instruction. The `coachingActions` parser still extracts a
+    `retry_with_hint` even when the visible reply leaks, so the
+    review queue stays correct; tighten the policy wording in a
+    future loop if leakage continues.
+
+- Next: QA-02 (drift guard hardening), then LEARN-04
+  (review-page-due-only) and LEARN-02 (evidence event model).
+
+---
+
+## 2026-04-25 12:07 - QA-02 (Coach policy drift guard, hardened)
+
+- Changed:
+  - `src/features/coach/coachingPolicy.test.ts`: the byte-identical
+    drift guard already existed but emitted a generic vitest diff on
+    failure. Tighten it so a future drift produces a useful,
+    well-located error and add two sibling assertions covering the
+    most common drift modes:
+    1. Diagnostic message names both file paths and prints the
+       first 5 divergent lines side-by-side
+       ("L42:\n  client: …\n  edge:   …").
+    2. New assertion ensures both files declare
+       `COACHING_POLICY_VERSION` with the same string literal AND
+       that the literal matches the imported runtime export so a
+       refactor that swaps the constant for a derived value still
+       trips the guard.
+    3. Two new assertions extract the `CoachingActionType` and
+       `CoachingErrorType` union declarations from each file via
+       regex (whitespace-normalised) and compare them. Catches a
+       rename of one type member on one side without the other.
+
+- Verified:
+  - `npx vitest run src/features/coach/coachingPolicy.test.ts` →
+    34/34 (was 31; +3 drift-guard cases).
+  - `npx vitest run` (full) → 36 files, 456/456.
+  - `npm run build` → tsc + vite clean.
+
+- Deploy: pure frontend change.
+
+- Risks: regex extraction is brittle to unusual formatting (e.g.
+  inserted JSDoc tags). The byte-identical guard catches whatever
+  the regex misses; the regex assertions just give a faster signal.
+
+- Next: LEARN-04, LEARN-02.
+
+---
+
+## 2026-04-25 12:10 - LEARN-04 (Review page is FSRS-due only)
+
+- Changed:
+  - `src/features/learning/reviewQueue.ts` (new): pure
+    `buildReviewSession({ dueWords, wordCatalog })` returns only the
+    cards FSRS schedules as due. `wordCatalog` is a lookup table for
+    attaching `WordData` to a due id; never spliced into the session
+    as filler. Drops malformed entries and dedups the catalog so a
+    duplicated id never shifts the card order.
+  - `src/features/learning/reviewQueue.test.ts`: 8 cases — empty
+    input, no-fallback contract, catalog attachment, missing-catalog
+    drop, order preservation, FSRS state propagation, malformed-entry
+    tolerance, catalog dedup.
+  - `src/pages/dashboard/ReviewPage.tsx`:
+    * Replace `buildReviewItems` with `buildReviewSession`. dailyWords
+      + wordsDatabase still feed the catalog so a "due today" entry
+      resolves a `WordData`, but no fallback list is appended.
+    * Empty state reads as a real milestone now: "No FSRS-due cards
+      right now — your memory curve says these don't need another
+      touch today." The Reinforce-in-Practice CTA replaces the
+      misleading "Fallback set" metric. The CoachReviewRail still
+      renders alongside.
+    * Active hero gets a `FSRS review round` eyebrow + a one-line
+      description that names the separation explicitly. Metric
+      labels switch to "FSRS remaining" so the source of each card
+      is obvious. Bilingual via `i18n.language`.
+
+- Verified:
+  - `npx vitest run src/features/learning/reviewQueue.test.ts` →
+    8/8.
+  - `npx vitest run` (full) → 37 files, 464/464 (was 456).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; ReviewPage (108 KB), reviewQueue
+    (4.6 KB) transform cleanly.
+
+- Deploy: pure frontend change.
+
+- Risks:
+  - Learners with zero FSRS due cards used to see a 10-card filler
+    session; they now see an empty state. This is the intended
+    behaviour but might feel like a regression on first launch —
+    the empty state explicitly recommends Practice and shows coach
+    reviews, so the surface is not actually empty.
+
+- Next: LEARN-02.
+
+---
+
+## 2026-04-25 12:15 - LEARN-02 (Typed evidence-event model + writers)
+
+- Changed:
+  - `src/services/evidenceEvents.ts` (new): EvidenceEvent
+    discriminated union with 7 narrow variants
+    (vocab.{learned,hard,bookmarked}, practice.{correct,incorrect},
+    review.rated, lesson.completed). `createEvidenceEvent` validates
+    userId + attaches createdAt; `recordEvidence` routes through the
+    existing `recordLearningEvent` so the same sync queue + Supabase
+    upsert handles persistence under the `evidence.<type>` event
+    name. `deriveLessonCompletion(events, requirement)` checks
+    vocabLearnedCount (distinct words), practiceCorrectCount,
+    reviewSuccessCount (only good/easy count), or a manual override;
+    accepts both the typed in-memory shape and persisted
+    `LearningEventRecord` rows so callers don't have to reshape.
+  - `src/services/evidenceEvents.test.ts`: 14 cases — createdAt
+    attachment + override, missing-userId guard, empty requirement,
+    manual override, vocab distinct counting (no double-count on
+    retries), practice-correct path, review-success rating filter,
+    partial-progress reporting, persisted-row interop, lesson.completed
+    hard-yes + lesson-id mismatch, persisted review.rated rating
+    field, mixed sources.
+  - Wiring (each is in addition to existing analytics events so
+    historical dashboards keep working):
+    * PracticePage.handleAnswer / handleListeningCheck → emit
+      practice.{correct,incorrect} with wordId + mode.
+    * TodayPage.handleMarkStatus → emit vocab.learned / vocab.hard
+      with the active book id when known.
+    * ReviewPage.handleRate → emit review.rated with the rating.
+
+- Type fix during development: the original `isVocabLearned`
+  predicate narrowed the filtered event to `VocabEvidenceEvent`,
+  which collapsed the `LearningEventRecord` branch to `never`.
+  Changed the predicate to return plain boolean and extracted a
+  small `extractWordId(event)` helper so both shapes contribute
+  correctly.
+
+- Verified:
+  - `npx vitest run src/services/evidenceEvents.test.ts` → 14/14.
+  - `npx vitest run` (full) → 38 files, 478/478 (was 464).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; evidenceEvents (19 KB) transforms
+    cleanly.
+
+- Deploy: pure frontend change. The new event names land in the
+  existing `learning_events` Supabase table; no migration required.
+
+- Risks:
+  - Dual-write means each meaningful action now writes 2 rows to
+    `learning_events` (the legacy analytics name + the new
+    `evidence.<type>` row). Acceptable for v1; collapse once the
+    legacy consumers migrate.
+  - `LearningPath` does not yet read derived completion from the
+    new events. The helper is in place; a future loop can wire
+    `deriveLessonCompletion` into the LearningPath progress UI.
+
+- Next: QA-03 (observability hooks).
+
+---
+
+## 2026-04-25 12:18 - QA-03 (Structured observability + redaction)
+
+- Changed:
+  - `src/lib/observability.ts` (new): tiny secret-aware structured
+    logger.
+    * `sanitizePayload` redacts any field whose key matches
+      /token|secret|password|api[_-]?key|auth|cookie|session[_-]?id/i,
+      recursively descends into nested objects + arrays, and
+      truncates string values >240 chars.
+    * `emitStructuredEvent({category, name, payload})` returns the
+      normalised event ({category, name, ts, payload}), pushes to a
+      50-entry ring buffer, and console.info's a single line in DEV.
+    * `getRecentStructuredEvents` / `clearStructuredEventBuffer`
+      exposed for tests and a future debug surface.
+  - `src/lib/observability.test.ts`: 9 cases covering redaction,
+    nested recursion, value truncation, normalised event shape, ring
+    buffer ordering and cap.
+  - Wiring (each emit is wrapped in try/catch so telemetry never
+    breaks the durable write):
+    * coachReviewQueue.addCoachReviewItems →
+      'coach.review_queue.write' with `{ count, skills, totalAfter }`.
+    * coachReviewQueue.markCoachReviewCompleted →
+      'coach.review_queue.complete' with `{ id, skill }`.
+    * aiGateway.invokeEdgeFunction + invokeEdgeFunctionStream →
+      'ai.gateway.failure' on every catch path with
+      `{ fn, status, code, requestId, mode: 'rest'|'stream',
+        kind: 'auth_required'|'edge_error'|'aborted'|'network' }`.
+      Body content + headers are intentionally excluded.
+
+- Verified:
+  - `npx vitest run src/lib/observability.test.ts` → 9/9.
+  - `npx vitest run` (full) → 39 files, 487/487 (was 478).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; observability (7.7 KB) transforms
+    cleanly.
+
+- Deploy: pure frontend change.
+
+- Risks:
+  - Events live in an in-memory ring buffer only. To ship them to a
+    backend (Supabase / Sentry), add a sink in a follow-up loop
+    rather than touching every emit site.
+  - The redaction key list is heuristic. If a future field is
+    sensitive but uses an unusual name (e.g. `bearer`), update the
+    regex.
+
+- Next: backlog candidates remaining: UI-01 (route metadata
+  registry), UI-02 (learning-cockpit shell), UI-04 (auth +
+  conversion polish), LEARN-05 (end-of-session recap), QA-01
+  (split chat runtime), OPS-02 (Supabase release checklist),
+  OPS-03 (production smoke script). OPS-01 still blocked on
+  payment secrets.
+
