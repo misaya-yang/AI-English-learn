@@ -35,6 +35,18 @@ describe('AuthShell', () => {
     expect(screen.getByText('继续你今天的学习计划。')).toBeInTheDocument();
   });
 
+  it('renders localized bilingual side-rail reassurance copy', () => {
+    renderShell({
+      title: 'Welcome back',
+      titleZh: '欢迎回来',
+      children: <span>panel</span>,
+    });
+
+    expect(screen.getByText('A calmer way to practice English every day.')).toBeInTheDocument();
+    expect(screen.getByText('把每天的复习、练习、教练反馈整合到一个学习工作台。')).toBeInTheDocument();
+    expect(screen.getByText('基于 FSRS 的间隔重复')).toBeInTheDocument();
+  });
+
   it('always renders the bilingual back-to-home affordance', () => {
     renderShell({
       title: 'Sign in',
