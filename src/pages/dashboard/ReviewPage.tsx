@@ -32,6 +32,7 @@ import { isStubbornWord } from '@/services/fsrs';
 import { buildReviewSession, type ReviewSessionItem } from '@/features/learning/reviewQueue';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
+import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -342,25 +343,26 @@ export default function ReviewPage() {
   }
 
   return (
-    <LearningShellFrame>
-      <LearningHeroPanel
-        eyebrow={language.startsWith('zh') ? 'FSRS 复习回合' : 'FSRS review round'}
-        title="先回忆，再揭晓答案。把复习做成一个完整回合。"
-        description={
-          language.startsWith('zh')
-            ? '本回合只展示由 FSRS 调度的到期卡。教练安排的复习显示在右侧的 Coach reviews 列表中，互不混合。'
-            : 'This round only shows cards FSRS schedules as due. Coach-scheduled reviews live in the right-hand Coach reviews list and are kept separate.'
-        }
-        progress={Math.round(reviewedProgress)}
-        progressLabel={language.startsWith('zh') ? '回合进度' : 'Round progress'}
-        metrics={[
-          { label: language.startsWith('zh') ? '剩余 FSRS 卡' : 'FSRS remaining', value: remainingCount, accent: 'emerald' },
-          { label: language.startsWith('zh') ? '任务目标' : 'Mission target', value: reviewTaskTarget },
-          { label: language.startsWith('zh') ? '当前卡片' : 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
-          ...(isCurrentCardStubborn ? [{ label: language.startsWith('zh') ? '强化路径' : 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
-        ]}
-      />
-
+    <LearningCockpitShell
+      language={language}
+      eyebrow={language.startsWith('zh') ? 'FSRS 复习回合' : 'FSRS review round'}
+      progress={Math.round(reviewedProgress)}
+      progressLabel={language.startsWith('zh') ? '回合进度' : 'Round progress'}
+      mission={{
+        title: language.startsWith('zh')
+          ? '先回忆，再揭晓答案。把复习做成一个完整回合。'
+          : 'Recall first, then reveal. Treat this round as one full pass.',
+        description: language.startsWith('zh')
+          ? '本回合只展示由 FSRS 调度的到期卡。教练安排的复习显示在右侧的 Coach reviews 列表中，互不混合。'
+          : 'This round only shows cards FSRS schedules as due. Coach-scheduled reviews live in the right-hand Coach reviews list and are kept separate.',
+      }}
+      metrics={[
+        { label: language.startsWith('zh') ? '剩余 FSRS 卡' : 'FSRS remaining', value: remainingCount, accent: 'emerald' },
+        { label: language.startsWith('zh') ? '任务目标' : 'Mission target', value: reviewTaskTarget },
+        { label: language.startsWith('zh') ? '当前卡片' : 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
+        ...(isCurrentCardStubborn ? [{ label: language.startsWith('zh') ? '强化路径' : 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
+      ]}
+    >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <LearningWorkspaceSurface
@@ -539,6 +541,6 @@ export default function ReviewPage() {
           ) : null}
         </div>
       </div>
-    </LearningShellFrame>
+    </LearningCockpitShell>
   );
 }

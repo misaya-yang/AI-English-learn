@@ -56,7 +56,7 @@ import {
   type DayKey,
 } from '@/services/todayWorkbenchPersistence';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
-import { MissionWhyBadge } from '@/features/learning/components/MissionWhyBadge';
+import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { useTranslation } from 'react-i18next';
 import type { UserProgress } from '@/data/localStorage';
 
@@ -670,58 +670,50 @@ export default function TodayPage() {
   const todayXP = learnedWords.size * 5;
 
   return (
-    <LearningShellFrame>
+    <LearningCockpitShell
+      language={language}
+      eyebrow={`${language.startsWith('zh') ? '今日任务' : 'Today mission'} · ${new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}`}
+      progress={missionProgress}
+      progressLabel={language.startsWith('zh') ? '任务进度' : 'Mission progress'}
+      mission={{
+        title: (language.startsWith('zh') ? missionCard?.headlineZh : missionCard?.headline)
+          || (language.startsWith('zh') ? '先做最该做的一步' : 'Pick the highest-impact next step'),
+        description: (language.startsWith('zh') ? missionCard?.supportZh : missionCard?.support) || undefined,
+        estimatedMinutes: missionCard?.estimatedMinutes || learningProfile.dailyMinutes,
+        primaryAction: {
+          label: (language.startsWith('zh') ? missionCard?.primaryAction.ctaZh : missionCard?.primaryAction.cta)
+            || (language.startsWith('zh') ? '继续今日任务' : 'Continue today'),
+          href: missionCard?.primaryAction.href || '/dashboard/today',
+        },
+        secondaryActions: (missionCard?.secondaryActions || []).slice(0, 2).map((action) => ({
+          label: language.startsWith('zh') ? action.ctaZh : action.cta,
+          href: action.href,
+          variant: 'outline' as const,
+        })),
+        why: {
+          reason: missionCard?.primaryAction.reason,
+          learnerMode: learnerModel?.mode || null,
+          burnoutRisk: learnerModel?.burnoutRisk,
+        },
+      }}
+      metrics={[
+        {
+          label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
+          value: `${missionCard?.estimatedMinutes || learningProfile.dailyMinutes} min`,
+        },
+        {
+          label: language.startsWith('zh') ? '今日剩余' : 'Words left',
+          value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
+          accent: 'emerald',
+        },
+        {
+          label: language.startsWith('zh') ? '到期复习' : 'Due reviews',
+          value: dueWords.length,
+          accent: dueWords.length > 0 ? 'warm' : 'default',
+        },
+      ]}
+    >
       <ConfettiCelebration active={showConfetti} />
-
-      <MissionWhyBadge
-        reason={missionCard?.primaryAction.reason}
-        learnerMode={learnerModel?.mode || null}
-        burnoutRisk={learnerModel?.burnoutRisk}
-        language={language}
-      />
-
-      <LearningHeroPanel
-        eyebrow={`Today mission · ${new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}`}
-        title={(language.startsWith('zh') ? missionCard?.headlineZh : missionCard?.headline) || (language.startsWith('zh') ? '先做最该做的一步' : 'Pick the highest-impact next step')}
-        description={(language.startsWith('zh') ? missionCard?.supportZh : missionCard?.support) || undefined}
-        progress={missionProgress}
-        progressLabel={language.startsWith('zh') ? '任务进度' : 'Mission progress'}
-        metrics={[
-          {
-            label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
-            value: `${missionCard?.estimatedMinutes || learningProfile.dailyMinutes} min`,
-          },
-          {
-            label: language.startsWith('zh') ? '今日剩余' : 'Words left',
-            value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
-            accent: 'emerald',
-          },
-          {
-            label: language.startsWith('zh') ? '到期复习' : 'Due reviews',
-            value: dueWords.length,
-            accent: dueWords.length > 0 ? 'warm' : 'default',
-          },
-        ]}
-        actions={
-          <>
-            <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
-              <Link to={missionCard?.primaryAction.href || '/dashboard/today'}>
-                {(language.startsWith('zh') ? missionCard?.primaryAction.ctaZh : missionCard?.primaryAction.cta) || (language.startsWith('zh') ? '继续今日任务' : 'Continue today')}
-              </Link>
-            </Button>
-            {(missionCard?.secondaryActions || []).slice(0, 2).map((action) => (
-              <Button
-                key={action.id}
-                variant="outline"
-                className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-                asChild
-              >
-                <Link to={action.href}>{language.startsWith('zh') ? action.ctaZh : action.cta}</Link>
-              </Button>
-            ))}
-          </>
-        }
-      />
 
       {/* Streak & XP indicators */}
       <div className="flex items-center gap-3 flex-wrap">
@@ -1097,6 +1089,6 @@ export default function TodayPage() {
           ) : null}
         </div>
       </div>
-    </LearningShellFrame>
+    </LearningCockpitShell>
   );
 }

@@ -23,6 +23,7 @@ import {
   setLearningPathActivePath,
   toggleLearningPathLesson,
 } from '@/services/learningPathProgress';
+import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 
 const DIFFICULTY_COLORS = {
   beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -98,18 +99,46 @@ export default function LearningPathPage() {
   }, [completedLessonSet, selectedPath]);
 
   if (!selectedPath) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-        <motion.div {...motionPresets.fadeIn}>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {isZh ? '学习路径' : 'Learning Paths'}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {isZh ? '选择一条路径，系统化提升你的英语能力' : 'Choose a path to systematically improve your English'}
-          </p>
-        </motion.div>
+    // Pick the path with the highest existing progress (first non-zero).
+    // Falls back to the first path so the primary CTA always lands somewhere.
+    const recommendedPath =
+      learningPaths.find((path) => (pathProgressMap.get(path.id) || 0) > 0) ||
+      learningPaths[0];
+    const recommendedTitle = isZh ? recommendedPath?.titleZh : recommendedPath?.title;
 
-        <div className="grid gap-4">
+    return (
+      <div className="mx-auto max-w-3xl p-4 sm:p-6">
+        <LearningCockpitShell
+          language={i18n.language}
+          eyebrow={isZh ? '学习路径' : 'Learning Paths'}
+          mission={{
+            title: isZh ? '挑一条路径，让今天的努力沿着一个方向累积。' : 'Pick a path so today\'s effort stacks toward one outcome.',
+            description: isZh
+              ? '选择一条路径，系统化提升你的英语能力。每条路径都把词汇、语法和练习串成可追踪的进度。'
+              : 'Choose a path to systematically improve your English. Each one stitches vocabulary, grammar, and practice into trackable progress.',
+            primaryAction: recommendedPath
+              ? {
+                  label: isZh ? `继续：${recommendedTitle}` : `Continue: ${recommendedTitle}`,
+                  onClick: () => handleSelectPath(recommendedPath.id),
+                }
+              : undefined,
+            secondaryActions: [
+              { label: isZh ? '回到 Today' : 'Back to Today', href: '/dashboard/today', variant: 'outline' },
+            ],
+          }}
+          metrics={[
+            {
+              label: isZh ? '可选路径' : 'Available paths',
+              value: learningPaths.length,
+              accent: 'emerald',
+            },
+            {
+              label: isZh ? '已开启' : 'In progress',
+              value: learningPaths.filter((path) => (pathProgressMap.get(path.id) || 0) > 0).length,
+            },
+          ]}
+        >
+          <div className="grid gap-4">
           {learningPaths.map((path, index) => {
             const percent = pathProgressMap.get(path.id) || 0;
             const lessonIds = getLessonIds(path);
@@ -148,7 +177,8 @@ export default function LearningPathPage() {
               </motion.div>
             );
           })}
-        </div>
+          </div>
+        </LearningCockpitShell>
       </div>
     );
   }

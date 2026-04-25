@@ -4,9 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
-type AccentTone = 'default' | 'emerald' | 'warm';
+export type AccentTone = 'default' | 'emerald' | 'warm';
 
-interface MetricItem {
+export interface MetricItem {
   label: string;
   value: ReactNode;
   hint?: string;

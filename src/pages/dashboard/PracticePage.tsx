@@ -49,6 +49,7 @@ import { addMistake } from '@/services/mistakeCollector';
 import { buildPracticeMistakeRecord } from '@/services/practiceMistakes';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
+import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
 import { useTranslation } from 'react-i18next';
 import { buildListeningQueue, buildPracticeQuestions } from '@/features/practice/runtime';
@@ -701,14 +702,41 @@ export default function PracticePage() {
         ? 100
         : null;
 
-  const renderPageShell = (mainContent: ReactNode) => (
-    <LearningShellFrame>
-      <LearningHeroPanel
+  const renderPageShell = (mainContent: ReactNode) => {
+    const primaryAction = !selectedMode
+      ? { label: 'Review this mode', onClick: () => pickMode(focusedModeId) }
+      : !hasStarted
+        ? { label: 'Start practice', onClick: startFocusedMode }
+        : null;
+    const secondaryActions: Array<{ label: string; onClick?: () => void; href?: string; variant?: 'outline' }> = [];
+    if (selectedMode && !hasStarted && (selectedMode === 'quiz' || selectedMode === 'fill_blank')) {
+      secondaryActions.push({
+        label: timedMode ? '⏱️ 60s 限时 ON' : '60s 限时',
+        onClick: () => setTimedMode((prev) => !prev),
+        variant: 'outline',
+      });
+    }
+    if (selectedMode) {
+      secondaryActions.push({
+        label: 'Change mode',
+        onClick: exitToPicker,
+        variant: 'outline',
+      });
+    }
+
+    return (
+      <LearningCockpitShell
+        language={practiceLanguage}
         eyebrow="Practice mode"
-        title={pageTitle}
-        description={pageDescription}
         progress={heroProgress}
         progressLabel="Session progress"
+        mission={{
+          title: pageTitle,
+          description: pageDescription,
+          estimatedMinutes: !hasStarted ? focusedBlueprint.estimatedMinutes : undefined,
+          primaryAction: primaryAction ?? undefined,
+          secondaryActions,
+        }}
         metrics={[
           { label: 'Recommended', value: focusedMode.nameZh, accent: 'emerald' },
           ...(hasStarted && timedMode ? [{ label: '⏱️ Time', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
@@ -720,54 +748,15 @@ export default function PracticePage() {
             { label: 'Score', value: `${score}/${totalQuestions}` },
           ]),
         ]}
-        actions={
-          <>
-            {!selectedMode ? (
-              <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={() => pickMode(focusedModeId)}>
-                Review this mode
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : !hasStarted ? (
-              <>
-                <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={startFocusedMode}>
-                  Start practice
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-                {(selectedMode === 'quiz' || selectedMode === 'fill_blank') && (
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'rounded-full border-white/10 text-white transition-colors',
-                      timedMode ? 'border-amber-500/40 bg-amber-500/10 text-amber-300' : 'bg-white/[0.03] hover:bg-white/[0.08] hover:text-white',
-                    )}
-                    onClick={() => setTimedMode((prev) => !prev)}
-                  >
-                    <Clock3 className="mr-2 h-4 w-4" />
-                    {timedMode ? '⏱️ 60s 限时' : '限时模式'}
-                  </Button>
-                )}
-              </>
-            ) : null}
-            {selectedMode ? (
-              <Button
-                variant="outline"
-                className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-                onClick={exitToPicker}
-              >
-                Change mode
-              </Button>
-            ) : null}
-          </>
-        }
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_300px] xl:items-start">
-        <div className="min-w-0">{renderModeSelector()}</div>
-        <div className="min-w-0">{mainContent}</div>
-        <div className="min-w-0">{renderInsightRail()}</div>
-      </div>
-    </LearningShellFrame>
-  );
+      >
+        <div className="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_300px] xl:items-start">
+          <div className="min-w-0">{renderModeSelector()}</div>
+          <div className="min-w-0">{mainContent}</div>
+          <div className="min-w-0">{renderInsightRail()}</div>
+        </div>
+      </LearningCockpitShell>
+    );
+  };
 
   const renderFactStrip = (items: { label: string; value: ReactNode; hint: string; accent?: 'default' | 'emerald' | 'warm' }[]) => (
     <LearningMetricStrip items={items.map((item) => ({ label: item.label, value: item.value, hint: item.hint, accent: item.accent }))} />
