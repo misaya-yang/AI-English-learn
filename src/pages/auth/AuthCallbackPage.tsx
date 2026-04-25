@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AuthShell } from '@/features/marketing/AuthShell';
 
 export default function AuthCallbackPage() {
   const [isProcessing, setIsProcessing] = useState(true);
@@ -71,11 +72,17 @@ export default function AuthCallbackPage() {
 
   if (isProcessing) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600 mb-4" />
-        <h1 className="text-xl font-semibold">Completing sign in...</h1>
-        <p className="text-muted-foreground">正在完成登入...</p>
-      </div>
+      <AuthShell title="Completing sign in" titleZh="正在完成登录">
+        <div className="flex flex-col items-center justify-center py-6 text-center">
+          <Loader2 className="mb-4 h-10 w-10 animate-spin text-emerald-500" aria-hidden="true" />
+          <p className="text-sm text-slate-700 dark:text-white/80">
+            Almost there — verifying your session.
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+            正在验证你的登录信息……
+          </p>
+        </div>
+      </AuthShell>
     );
   }
 

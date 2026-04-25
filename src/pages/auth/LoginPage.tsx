@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Eye, EyeOff, Loader2, ArrowLeft, Sparkles, Mail } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Sparkles, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
 import { resetPassword } from '@/lib/supabase-auth';
+import { AuthShell } from '@/features/marketing/AuthShell';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -125,185 +126,219 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[#020303] p-4 overflow-hidden">
-      {/* Background glow effects */}
-      <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[600px] w-[800px] rounded-full bg-emerald-500/[0.07] blur-[140px]" />
-      <div className="pointer-events-none absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
-      {/* Subtle grid */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--grid-line-color))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--grid-line-color))_1px,transparent_1px)] bg-[size:32px_32px]" />
-
-      <div className="relative w-full max-w-[420px]">
-        {/* Logo */}
-        <Link to="/" className="group flex items-center justify-center gap-3 mb-10">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-400 transition-all group-hover:bg-emerald-500/20 group-hover:shadow-glow-emerald">
-            <BookOpen className="h-5 w-5" />
+    <>
+      <AuthShell
+        title="Welcome back"
+        titleZh="欢迎回来"
+        subtitle="Sign in to continue your daily learning."
+        subtitleZh="登录后继续你今天的学习节奏。"
+        footer={
+          <>
+            <span className="opacity-80">Don't have an account yet?</span>{' '}
+            <Link
+              to={`/register${location.search}`}
+              className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              Create one
+            </Link>
+            <span className="mx-1.5 text-slate-400 dark:text-white/30">·</span>
+            <Link
+              to={`/register${location.search}`}
+              className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+              lang="zh-CN"
+            >
+              注册新账号
+            </Link>
+          </>
+        }
+      >
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          <div className="space-y-2">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-slate-700 dark:text-white/70"
+            >
+              <span>Email</span>
+              <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">
+                电子邮箱
+              </span>
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              required
+              className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+            />
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-white tracking-tight">VocabDaily AI</h1>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500">Learning Cockpit</p>
-          </div>
-        </Link>
 
-        {/* Card */}
-        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-8 shadow-glass backdrop-blur-xl">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-white">登录</h2>
-            <p className="mt-2 text-sm text-white/50">欢迎回来！请输入您的账号信息</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-white/70">电子邮箱</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-slate-700 dark:text-white/70"
+              >
+                <span>Password</span>
+                <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">
+                  密码
+                </span>
+              </Label>
+              <button
+                type="button"
+                onClick={() => { setResetEmail(email); setShowForgotPassword(true); }}
+                className="text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                Forgot password? <span lang="zh-CN">忘记密码？</span>
+              </button>
+            </div>
+            <div className="relative">
               <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 required
-                className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/25 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20"
+                className="h-12 rounded-2xl border-slate-200 bg-white pr-12 text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
               />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium text-white/70">密码</Label>
-                <button
-                  type="button"
-                  onClick={() => { setResetEmail(email); setShowForgotPassword(true); }}
-                  className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                >
-                  忘记密码？
-                </button>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/25 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 pr-12"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl text-white/40 hover:text-white hover:bg-white/[0.06]"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full h-12 rounded-2xl bg-emerald-500 text-sm font-semibold text-black transition-all hover:bg-emerald-400 hover:shadow-glow-emerald"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  登录中...
-                </>
-              ) : (
-                '登录'
-              )}
-            </Button>
-          </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="bg-white/[0.08]" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-transparent px-3 text-white/30">或</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-1 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-white/40 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
 
           <Button
-            variant="outline"
-            className="w-full h-12 rounded-2xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
-            onClick={handleDemoLogin}
+            type="submit"
+            className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-semibold text-white shadow-glow-emerald transition-all hover:bg-emerald-500 hover:shadow-glow-emerald-lg disabled:opacity-60 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
             disabled={isLoading}
           >
-            <Sparkles className="mr-2 h-4 w-4 text-emerald-400" />
-            使用演示账号
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              <>
+                Sign in <span className="ml-2 opacity-70" lang="zh-CN">登录</span>
+              </>
+            )}
           </Button>
+        </form>
 
-          <p className="mt-6 text-sm text-center text-white/40">
-            还没有账号？{' '}
-            <Link to={`/register${location.search}`} className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-              立即注册
-            </Link>
-          </p>
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="bg-slate-200 dark:bg-white/[0.08]" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-3 text-slate-400 dark:bg-transparent dark:text-white/30">
+              or <span lang="zh-CN">或</span>
+            </span>
+          </div>
         </div>
 
-        {/* Back to home */}
-        <div className="text-center mt-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            返回首页
-          </Link>
-        </div>
-      </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-900 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08] dark:hover:text-white"
+          onClick={handleDemoLogin}
+          disabled={isLoading}
+        >
+          <Sparkles className="mr-2 h-4 w-4 text-emerald-500" />
+          <span>Try the demo</span>
+          <span className="ml-2 text-slate-500 dark:text-white/50" lang="zh-CN">
+            体验演示账号
+          </span>
+        </Button>
+      </AuthShell>
 
-      {/* Forgot Password Overlay */}
+      {/* Forgot Password Overlay — kept lightweight; reuses same focus model. */}
       {showForgotPassword && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-[400px] rounded-3xl border border-white/[0.08] bg-[#0a0a0a] p-8 shadow-2xl">
-            <h3 className="text-xl font-semibold text-white text-center">重置密码</h3>
-            <p className="mt-2 text-sm text-white/50 text-center">
-              输入您的邮箱，我们将发送重置密码链接
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm dark:bg-black/70"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-password-title"
+        >
+          <div className="w-full max-w-[400px] rounded-3xl border border-slate-200/60 bg-white p-8 shadow-2xl dark:border-white/[0.08] dark:bg-[#0a0a0a]">
+            <h3
+              id="reset-password-title"
+              className="text-center text-xl font-semibold tracking-tight text-slate-900 dark:text-white"
+            >
+              Reset password
+            </h3>
+            <p className="mt-1 text-center text-sm text-emerald-600 dark:text-emerald-400" lang="zh-CN">
+              重置密码
             </p>
-            <form onSubmit={handleResetPassword} className="mt-6 space-y-4">
+            <p className="mt-3 text-center text-sm text-slate-600 dark:text-white/50">
+              We'll email you a secure reset link.
+              <br />
+              <span lang="zh-CN" className="text-xs text-slate-500 dark:text-white/40">
+                我们会向你的邮箱发送重置链接。
+              </span>
+            </p>
+            <form onSubmit={handleResetPassword} className="mt-6 space-y-4" noValidate>
               <div className="space-y-2">
-                <Label htmlFor="reset-email" className="text-sm font-medium text-white/70">电子邮箱</Label>
+                <Label
+                  htmlFor="reset-email"
+                  className="text-sm font-medium text-slate-700 dark:text-white/70"
+                >
+                  Email <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">电子邮箱</span>
+                </Label>
                 <Input
                   id="reset-email"
                   type="email"
+                  autoComplete="email"
                   placeholder="your@email.com"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   disabled={isResetting}
                   required
                   autoFocus
-                  className="h-12 rounded-2xl border-white/10 bg-white/[0.04] text-white placeholder:text-white/25 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20"
+                  className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full h-12 rounded-2xl bg-emerald-500 text-sm font-semibold text-black hover:bg-emerald-400"
+                className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-semibold text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
                 disabled={isResetting}
               >
                 {isResetting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    发送中...
+                    Sending...
                   </>
                 ) : (
                   <>
                     <Mail className="mr-2 h-4 w-4" />
-                    发送重置链接
+                    Send reset link
                   </>
                 )}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                className="w-full h-10 rounded-2xl text-white/50 hover:text-white hover:bg-white/[0.06]"
+                className="h-10 w-full rounded-2xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/[0.06] dark:hover:text-white"
                 onClick={() => setShowForgotPassword(false)}
               >
-                返回登录
+                Back to sign in
               </Button>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

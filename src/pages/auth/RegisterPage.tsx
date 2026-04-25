@@ -4,13 +4,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { BookOpen, Eye, EyeOff, Loader2, Check } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
+import { AuthShell } from '@/features/marketing/AuthShell';
+import { cn } from '@/lib/utils';
 
 const specialCharacterRegex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
+
+interface PasswordCheck {
+  label: string;
+  labelZh: string;
+  passes: boolean;
+}
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -44,6 +51,14 @@ export default function RegisterPage() {
   const allChecksPass = passwordValidation.isValid;
   const passwordsMatch = formData.password === formData.confirmPassword;
 
+  const passwordChecks: PasswordCheck[] = [
+    { label: 'At least 8 characters', labelZh: '至少 8 个字符', passes: formData.password.length >= 8 },
+    { label: 'One uppercase letter', labelZh: '包含大写字母', passes: /[A-Z]/.test(formData.password) },
+    { label: 'One lowercase letter', labelZh: '包含小写字母', passes: /[a-z]/.test(formData.password) },
+    { label: 'One number', labelZh: '包含数字', passes: /[0-9]/.test(formData.password) },
+    { label: 'One special character', labelZh: '包含特殊字符', passes: specialCharacterRegex.test(formData.password) },
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,7 +83,7 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
-    
+
     try {
       const { success, error } = await register(formData.email, formData.password, formData.displayName);
       if (success) {
@@ -86,203 +101,204 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950 p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-            <BookOpen className="h-6 w-6 text-white" />
-          </div>
-          <div className="text-center">
-            <h1 className="font-bold text-xl">VocabDaily AI</h1>
-            <p className="text-xs text-muted-foreground">智能单词学习平台</p>
-          </div>
-        </Link>
-
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">创建账号</CardTitle>
-            <CardDescription className="text-center">
-              开始您的单词学习之旅
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="displayName">显示名称</Label>
-                <Input
-                  id="displayName"
-                  name="displayName"
-                  type="text"
-                  placeholder="您的名字"
-                  value={formData.displayName}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">电子邮箱</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">密码</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-
-                {/* Password Requirements */}
-                <div className="space-y-1 mt-2">
-                  <div className="flex items-center gap-2 text-xs">
-                    <Check
-                      className={`h-3 w-3 ${
-                        formData.password.length >= 8 ? 'text-green-500' : 'text-muted-foreground'
-                      }`}
-                    />
-                    <span className={formData.password.length >= 8 ? 'text-green-600' : 'text-muted-foreground'}>
-                      至少8个字符
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <Check
-                      className={`h-3 w-3 ${
-                        /[A-Z]/.test(formData.password) ? 'text-green-500' : 'text-muted-foreground'
-                      }`}
-                    />
-                    <span className={/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
-                      包含大写字母
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <Check
-                      className={`h-3 w-3 ${
-                        /[a-z]/.test(formData.password) ? 'text-green-500' : 'text-muted-foreground'
-                      }`}
-                    />
-                    <span className={/[a-z]/.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
-                      包含小写字母
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <Check
-                      className={`h-3 w-3 ${
-                        /[0-9]/.test(formData.password) ? 'text-green-500' : 'text-muted-foreground'
-                      }`}
-                    />
-                    <span className={/[0-9]/.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
-                      包含数字
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <Check
-                      className={`h-3 w-3 ${
-                        specialCharacterRegex.test(formData.password) ? 'text-green-500' : 'text-muted-foreground'
-                      }`}
-                    />
-                    <span className={specialCharacterRegex.test(formData.password) ? 'text-green-600' : 'text-muted-foreground'}>
-                      包含特殊字符
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">确认密码</Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  required
-                />
-                {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                  <p className="text-xs text-red-500">密码不一致</p>
-                )}
-              </div>
-
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={agreeTerms}
-                  onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
-                />
-                <Label htmlFor="terms" className="text-sm font-normal leading-tight">
-                  我同意{' '}
-                  <Link to="#" className="text-emerald-600 hover:text-emerald-700">
-                    服务条款
-                  </Link>{' '}
-                  和{' '}
-                  <Link to="#" className="text-emerald-600 hover:text-emerald-700">
-                    隐私政策
-                  </Link>
-                </Label>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:text-white"
-                disabled={isLoading || !allChecksPass || !agreeTerms || !passwordsMatch}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    创建中...
-                  </>
-                ) : (
-                  '创建账号'
-                )}
-              </Button>
-            </form>
-
-            <p className="text-sm text-center text-muted-foreground">
-              已有账号？{' '}
-              <Link to={`/login${location.search}`} className="text-emerald-600 hover:text-emerald-700 font-medium">
-                立即登录
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Back to home */}
-        <div className="text-center mt-6">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← 返回首页
+    <AuthShell
+      title="Create your account"
+      titleZh="创建账号"
+      subtitle="Free to start. Build a daily English habit in minutes."
+      subtitleZh="免费开始，几分钟就能养成每天学英语的习惯。"
+      footer={
+        <>
+          <span className="opacity-80">Already have an account?</span>{' '}
+          <Link
+            to={`/login${location.search}`}
+            className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+          >
+            Sign in
           </Link>
+          <span className="mx-1.5 text-slate-400 dark:text-white/30">·</span>
+          <Link
+            to={`/login${location.search}`}
+            className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            lang="zh-CN"
+          >
+            立即登录
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <div className="space-y-2">
+          <Label
+            htmlFor="displayName"
+            className="text-sm font-medium text-slate-700 dark:text-white/70"
+          >
+            Display name <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">显示名称</span>
+          </Label>
+          <Input
+            id="displayName"
+            name="displayName"
+            type="text"
+            autoComplete="name"
+            placeholder="What should we call you?"
+            value={formData.displayName}
+            onChange={handleChange}
+            disabled={isLoading}
+            required
+            className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+          />
         </div>
-      </div>
-    </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="email"
+            className="text-sm font-medium text-slate-700 dark:text-white/70"
+          >
+            Email <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">电子邮箱</span>
+          </Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="your@email.com"
+            value={formData.email}
+            onChange={handleChange}
+            disabled={isLoading}
+            required
+            className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="password"
+            className="text-sm font-medium text-slate-700 dark:text-white/70"
+          >
+            Password <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">密码</span>
+          </Label>
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={isLoading}
+              required
+              className="h-12 rounded-2xl border-slate-200 bg-white pr-12 text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute right-1 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-white/40 dark:hover:bg-white/[0.06] dark:hover:text-white"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+
+          <ul className="mt-2 space-y-1.5">
+            {passwordChecks.map((check) => (
+              <li
+                key={check.label}
+                className={cn(
+                  'flex items-center gap-2 text-xs transition-colors',
+                  check.passes
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-slate-500 dark:text-white/40',
+                )}
+              >
+                <Check
+                  className={cn(
+                    'h-3 w-3 flex-shrink-0 transition-colors',
+                    check.passes ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-300 dark:text-white/20',
+                  )}
+                />
+                <span>{check.label}</span>
+                <span className="text-slate-400 dark:text-white/30" aria-hidden="true">·</span>
+                <span lang="zh-CN">{check.labelZh}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="confirmPassword"
+            className="text-sm font-medium text-slate-700 dark:text-white/70"
+          >
+            Confirm password <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">确认密码</span>
+          </Label>
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            placeholder="••••••••"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            disabled={isLoading}
+            required
+            className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+          />
+          {formData.confirmPassword && !passwordsMatch && (
+            <p className="text-xs text-rose-500" role="alert">
+              Passwords don't match · <span lang="zh-CN">两次输入的密码不一致</span>
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-start gap-2">
+          <Checkbox
+            id="terms"
+            checked={agreeTerms}
+            onCheckedChange={(checked) => setAgreeTerms(checked === true)}
+            className="mt-0.5"
+          />
+          <Label
+            htmlFor="terms"
+            className="text-xs leading-relaxed font-normal text-slate-600 dark:text-white/60"
+          >
+            I agree to the{' '}
+            <Link
+              to="#"
+              className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link
+              to="#"
+              className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-slate-400 dark:text-white/30"> · </span>
+            <span lang="zh-CN">同意服务条款与隐私政策</span>
+          </Label>
+        </div>
+
+        <Button
+          type="submit"
+          className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-semibold text-white shadow-glow-emerald transition-all hover:bg-emerald-500 hover:shadow-glow-emerald-lg disabled:opacity-60 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+          disabled={isLoading || !allChecksPass || !agreeTerms || !passwordsMatch}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating account...
+            </>
+          ) : (
+            <>
+              Create account <span className="ml-2 opacity-70" lang="zh-CN">创建账号</span>
+            </>
+          )}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }

@@ -2,22 +2,22 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
-import { 
-  BookOpen, 
-  ChevronRight, 
-  ChevronLeft, 
-  GraduationCap, 
-  Target, 
+import {
+  BookOpen,
+  ChevronRight,
+  ChevronLeft,
+  GraduationCap,
+  Target,
   Sparkles,
   Check,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buildAuthRedirect, resolveAuthRedirect } from '@/lib/authRedirect';
 import { PlacementTest } from '@/components/PlacementTest';
+import { AuthShell } from '@/features/marketing/AuthShell';
 import type { CEFRLevel, Topic, LearningStyle } from '@/types';
 import { toast } from 'sonner';
 
@@ -50,6 +50,13 @@ const learningStyles: { id: LearningStyle; label: string; labelZh: string; descr
   { id: 'reading', label: 'Reading/Writing', labelZh: '读写型', description: 'Learn best by reading and taking notes' },
 ];
 
+const stepCopy: Record<number, { en: string; zh: string }> = {
+  1: { en: 'Tell us your level', zh: '告诉我们你的英语水平' },
+  2: { en: 'Set a daily goal', zh: '设定每日目标' },
+  3: { en: 'Pick what you care about', zh: '选择你感兴趣的主题' },
+  4: { en: 'How do you learn best?', zh: '你最喜欢的学习方式' },
+};
+
 export default function OnboardingPage() {
   const { updateUserProfile, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -58,7 +65,7 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPlacementTest, setShowPlacementTest] = useState(false);
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
-  
+
   const [preferences, setPreferences] = useState({
     cefrLevel: 'B1' as CEFRLevel,
     dailyGoal: 10,
@@ -72,6 +79,7 @@ export default function OnboardingPage() {
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
+  const currentCopy = stepCopy[step];
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -138,30 +146,39 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                <GraduationCap className="h-8 w-8 text-emerald-600" />
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <GraduationCap className="h-7 w-7" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">What's your English level?</h2>
-              <p className="text-muted-foreground">选择您的英语程度</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                What's your English level?
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+                选择你目前的英语水平
+              </p>
             </div>
 
             <Button
+              type="button"
               variant="outline"
-              className="w-full h-auto py-4 border-dashed border-2"
+              className="h-auto w-full border-2 border-dashed border-slate-200 bg-white py-4 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:border-emerald-500/30 dark:hover:bg-emerald-500/[0.05]"
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
-                <p className="font-medium">参加分级测试</p>
-                <p className="text-xs text-muted-foreground mt-1">10 道题自动判断您的等级</p>
+                <p className="font-medium">Take a 10-question placement test</p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+                  10 道题自动判断你的等级
+                </p>
               </div>
             </Button>
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-slate-200 dark:border-white/10" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">或手动选择</span>
+                <span className="bg-white px-3 text-slate-400 dark:bg-transparent dark:text-white/30">
+                  or pick manually · <span lang="zh-CN">手动选择</span>
+                </span>
               </div>
             </div>
 
@@ -169,31 +186,35 @@ export default function OnboardingPage() {
               {cefrLevels.map((level) => (
                 <button
                   key={level.level}
+                  type="button"
                   onClick={() => setPreferences((prev) => ({ ...prev, cefrLevel: level.level }))}
                   className={cn(
-                    'flex items-center gap-4 p-4 rounded-lg border-2 transition-all text-left',
+                    'flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all',
                     preferences.cefrLevel === level.level
-                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                      : 'border-border hover:border-emerald-200'
+                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
+                      : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
                   )}
+                  aria-pressed={preferences.cefrLevel === level.level}
                 >
                   <div
                     className={cn(
-                      'w-12 h-12 rounded-full flex items-center justify-center font-bold',
+                      'flex h-12 w-12 items-center justify-center rounded-xl text-base font-bold',
                       preferences.cefrLevel === level.level
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-muted'
+                        : 'bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-white/70',
                     )}
                   >
                     {level.level}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{level.label}</p>
-                    <p className="text-sm text-muted-foreground">{level.description}</p>
-                    <p className="text-xs text-muted-foreground">{level.descriptionZh}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-slate-900 dark:text-white">{level.label}</p>
+                    <p className="text-sm text-slate-600 dark:text-white/60">{level.description}</p>
+                    <p className="text-xs text-slate-500 dark:text-white/40" lang="zh-CN">
+                      {level.descriptionZh}
+                    </p>
                   </div>
                   {preferences.cefrLevel === level.level && (
-                    <Check className="h-5 w-5 text-emerald-500" />
+                    <Check className="h-5 w-5 text-emerald-500" aria-hidden="true" />
                   )}
                 </button>
               ))}
@@ -205,19 +226,25 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Target className="h-8 w-8 text-emerald-600" />
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <Target className="h-7 w-7" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">Set your daily goal</h2>
-              <p className="text-muted-foreground">设定每日学习目标</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Set your daily goal
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+                设定每日学习目标
+              </p>
             </div>
 
             <div className="space-y-6">
               <div className="text-center">
-                <span className="text-5xl font-bold text-emerald-600">
+                <span className="text-5xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                   {preferences.dailyGoal}
                 </span>
-                <p className="text-muted-foreground mt-2">words per day / 单词/天</p>
+                <p className="mt-2 text-sm text-slate-600 dark:text-white/60">
+                  words per day · <span lang="zh-CN">单词 / 天</span>
+                </p>
               </div>
 
               <Slider
@@ -229,9 +256,10 @@ export default function OnboardingPage() {
                 max={50}
                 step={5}
                 className="w-full"
+                aria-label="Daily word goal"
               />
 
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="flex justify-between text-xs text-slate-500 dark:text-white/40">
                 <span>5</span>
                 <span>15</span>
                 <span>25</span>
@@ -239,12 +267,13 @@ export default function OnboardingPage() {
                 <span>50</span>
               </div>
 
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm">
-                  <strong>Recommended:</strong> 10-15 words per day for optimal retention
+              <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
+                <p className="text-sm text-slate-700 dark:text-white/80">
+                  <strong className="text-emerald-700 dark:text-emerald-300">Recommended:</strong>{' '}
+                  10–15 words per day for optimal retention.
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  建议：每天 10-15 个单词以达到最佳记忆效果
+                <p className="mt-1 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+                  建议：每天 10–15 个新词以获得最佳记忆效果。
                 </p>
               </div>
             </div>
@@ -255,34 +284,44 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="h-8 w-8 text-emerald-600" />
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <Sparkles className="h-7 w-7" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">What topics interest you?</h2>
-              <p className="text-muted-foreground">选择您感兴趣的主题</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                What topics interest you?
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+                选择你感兴趣的主题
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {topics.map((topic) => (
                 <button
                   key={topic.id}
+                  type="button"
                   onClick={() => toggleTopic(topic.id)}
                   className={cn(
-                    'p-4 rounded-lg border-2 transition-all text-left',
+                    'rounded-2xl border-2 p-4 text-left transition-all',
                     preferences.preferredTopics.includes(topic.id)
-                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                      : 'border-border hover:border-emerald-200'
+                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
+                      : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
                   )}
+                  aria-pressed={preferences.preferredTopics.includes(topic.id)}
                 >
-                  <div className="text-2xl mb-2">{topic.icon}</div>
-                  <p className="font-medium text-sm">{topic.label}</p>
-                  <p className="text-xs text-muted-foreground">{topic.labelZh}</p>
+                  <div className="text-2xl" aria-hidden="true">{topic.icon}</div>
+                  <p className="mt-2 text-sm font-medium text-slate-900 dark:text-white">
+                    {topic.label}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+                    {topic.labelZh}
+                  </p>
                 </button>
               ))}
             </div>
 
-            <p className="text-xs text-center text-muted-foreground">
-              Select at least 2 topics / 请选择至少 2 个主题
+            <p className="text-center text-xs text-slate-500 dark:text-white/50">
+              Pick at least 2 · <span lang="zh-CN">至少选择 2 个</span>
             </p>
           </div>
         );
@@ -291,41 +330,49 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="h-8 w-8 text-emerald-600" />
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <BookOpen className="h-7 w-7" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">How do you learn best?</h2>
-              <p className="text-muted-foreground">您最适合哪种学习方式？</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                How do you learn best?
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+                你最喜欢的学习方式？
+              </p>
             </div>
 
             <div className="space-y-3">
               {learningStyles.map((style) => (
                 <button
                   key={style.id}
+                  type="button"
                   onClick={() => setPreferences((prev) => ({ ...prev, learningStyle: style.id }))}
                   className={cn(
-                    'w-full flex items-center gap-4 p-4 rounded-lg border-2 transition-all text-left',
+                    'flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all',
                     preferences.learningStyle === style.id
-                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                      : 'border-border hover:border-emerald-200'
+                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
+                      : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
                   )}
+                  aria-pressed={preferences.learningStyle === style.id}
                 >
                   <div
                     className={cn(
-                      'w-10 h-10 rounded-full flex items-center justify-center',
+                      'flex h-10 w-10 items-center justify-center rounded-xl',
                       preferences.learningStyle === style.id
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-muted'
+                        : 'bg-slate-100 text-slate-500 dark:bg-white/[0.06] dark:text-white/40',
                     )}
                   >
                     {preferences.learningStyle === style.id && <Check className="h-5 w-5" />}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-slate-900 dark:text-white">
                       {style.label}{' '}
-                      <span className="text-muted-foreground font-normal">({style.labelZh})</span>
+                      <span className="font-normal text-slate-500 dark:text-white/50" lang="zh-CN">
+                        ({style.labelZh})
+                      </span>
                     </p>
-                    <p className="text-sm text-muted-foreground">{style.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-white/60">{style.description}</p>
                   </div>
                 </button>
               ))}
@@ -339,59 +386,66 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950 p-4">
-      <div className="w-full max-w-lg">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">
-                Step {step} of {totalSteps}
-              </span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} className="h-2" />
-          </CardHeader>
+    <AuthShell
+      title={currentCopy.en}
+      titleZh={currentCopy.zh}
+      size="wide"
+    >
+      <div className="space-y-6">
+        <div>
+          <div className="mb-2 flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-white/50">
+              Step {step} of {totalSteps}
+            </span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <Progress value={progress} className="h-1.5" />
+        </div>
 
-          <CardContent>{renderStep()}</CardContent>
+        {renderStep()}
 
-          <CardFooter className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={step === 1 || isLoading}
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleBack}
+            disabled={step === 1 || isLoading}
+            className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08]"
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
 
-            <Button
-              onClick={handleNext}
-              disabled={
-                isLoading ||
-                (step === 3 && preferences.preferredTopics.length < 2)
-              }
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : step === totalSteps ? (
-                <>
-                  Get Started
-                  <Check className="h-4 w-4 ml-2" />
-                </>
-              ) : (
-                <>
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
+          <Button
+            type="button"
+            onClick={handleNext}
+            disabled={
+              isLoading ||
+              (step === 3 && preferences.preferredTopics.length < 2)
+            }
+            className="rounded-2xl bg-emerald-600 text-white shadow-glow-emerald transition-all hover:bg-emerald-500 hover:shadow-glow-emerald-lg dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : step === totalSteps ? (
+              <>
+                Get started
+                <Check className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Next
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

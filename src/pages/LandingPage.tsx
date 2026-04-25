@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  BookOpen,
   Brain,
   ChartNoAxesCombined,
   CheckCircle2,
@@ -25,6 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
 import { cn } from '@/lib/utils';
+import { BrandMark } from '@/features/marketing/BrandMark';
 
 const outcomeCards = [
   {
@@ -127,15 +127,12 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="fixed inset-x-0 top-0 z-50 border-b bg-background/92 backdrop-blur supports-[backdrop-filter]:bg-background/68">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm">
-              <BookOpen className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold">VocabDaily</p>
-              <p className="text-xs text-muted-foreground">A focused English learning system</p>
-            </div>
-          </Link>
+          <div className="flex items-center gap-3">
+            <BrandMark />
+            <span className="hidden text-xs text-muted-foreground sm:inline-block">
+              A focused English learning system
+            </span>
+          </div>
 
           <nav className="hidden items-center gap-6 md:flex">
             <a href="#outcomes" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Outcomes</a>
