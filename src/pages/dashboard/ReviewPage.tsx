@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { CoachReviewRail } from '@/features/coach/CoachReviewRail';
 import {
   LearningCompletionState,
   LearningEmptyState,
@@ -206,6 +208,8 @@ const ratingMeta = {
 
 export default function ReviewPage() {
   const { dailyWords, reviewWord, dueWords, dailyMission, completeMissionTask } = useUserData();
+  const { i18n } = useTranslation();
+  const language = i18n.language;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [sessionStats, setSessionStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 });
@@ -293,26 +297,31 @@ export default function ReviewPage() {
   if (reviewItems.length === 0) {
     return (
       <LearningShellFrame>
-        <LearningEmptyState
-          icon={Check}
-          eyebrow="Review queue"
-          title="今天没有待处理复习"
-          description="当前没有到期复习卡。"
-          metrics={[
-            { label: 'Due reviews', value: 0, accent: 'emerald' },
-            { label: 'Fallback set', value: Math.min(FALLBACK_REVIEW_COUNT, dailyWords.length) },
-          ]}
-          actions={
-            <>
-              <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
-                <Link to="/dashboard/today">回到 Today</Link>
-              </Button>
-              <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
-                <Link to="/dashboard/practice">去做练习</Link>
-              </Button>
-            </>
-          }
-        />
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <LearningEmptyState
+            icon={Check}
+            eyebrow="Review queue"
+            title="今天没有待处理复习"
+            description="当前没有到期复习卡。"
+            metrics={[
+              { label: 'Due reviews', value: 0, accent: 'emerald' },
+              { label: 'Fallback set', value: Math.min(FALLBACK_REVIEW_COUNT, dailyWords.length) },
+            ]}
+            actions={
+              <>
+                <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
+                  <Link to="/dashboard/today">回到 Today</Link>
+                </Button>
+                <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
+                  <Link to="/dashboard/practice">去做练习</Link>
+                </Button>
+              </>
+            }
+          />
+          <div className="space-y-6">
+            <CoachReviewRail language={language} />
+          </div>
+        </div>
       </LearningShellFrame>
     );
   }
@@ -411,6 +420,8 @@ export default function ReviewPage() {
         </div>
 
         <div className="space-y-6">
+          <CoachReviewRail language={language} />
+
           <LearningRailSection title="Session stats">
             <LearningMetricStrip
               items={[
