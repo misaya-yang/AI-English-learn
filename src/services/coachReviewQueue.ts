@@ -9,6 +9,7 @@
 // Items are keyed by their FNV-1a id from the policy module: replays of the
 // same action overwrite (refresh dueAt + prompt) instead of duplicating.
 
+import { emitStructuredEvent } from '@/lib/observability';
 import type { ReviewQueueItem } from '@/features/coach/coachingPolicy';
 
 const STORAGE_KEY = 'vocabdaily_coach_reviews';
@@ -137,6 +138,25 @@ export function addCoachReviewItems(items: ReviewQueueItem[]): void {
   }
 
   saveAll(trimmed);
+  try {
+    emitStructuredEvent({
+      category: 'coach',
+      name: 'review_queue.write',
+      payload: {
+        count: items.length,
+        skills: Array.from(
+          new Set(
+            items
+              .map((item) => (typeof item?.skill === 'string' ? item.skill : ''))
+              .filter(Boolean),
+          ),
+        ),
+        totalAfter: trimmed.length,
+      },
+    });
+  } catch {
+    // Telemetry must never break the durable write.
+  }
 }
 
 export function markCoachReviewCompleted(id: string, opts: { now?: Date } = {}): void {
@@ -146,6 +166,15 @@ export function markCoachReviewCompleted(id: string, opts: { now?: Date } = {}):
   const completedAt = (opts.now ?? new Date()).toISOString();
   all[idx] = { ...all[idx], completedAt };
   saveAll(all);
+  try {
+    emitStructuredEvent({
+      category: 'coach',
+      name: 'review_queue.complete',
+      payload: { id, skill: all[idx].skill },
+    });
+  } catch {
+    // see above
+  }
 }
 
 export function clearCoachReviewQueue(): void {

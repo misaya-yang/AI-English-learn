@@ -1,4 +1,5 @@
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from '@/lib/supabase';
+import { emitStructuredEvent } from '@/lib/observability';
 
 interface InvokeOptions {
   signal?: AbortSignal;
@@ -148,7 +149,40 @@ export const invokeEdgeFunction = async <T>(
       error instanceof AuthRequiredError ||
       (error instanceof Error && error.name === 'AbortError')
     ) {
+      // Surface only safe metadata. Body and headers are intentionally
+      // not included so we never log auth tokens, prompts, or secrets.
+      try {
+        emitStructuredEvent({
+          category: 'ai',
+          name: 'gateway.failure',
+          payload: {
+            fn: name,
+            status: error instanceof EdgeFunctionError ? error.status : undefined,
+            code: error instanceof EdgeFunctionError ? error.code : undefined,
+            requestId: error instanceof EdgeFunctionError ? error.requestId : undefined,
+            mode: 'rest',
+            kind:
+              error instanceof AuthRequiredError
+                ? 'auth_required'
+                : error instanceof EdgeFunctionError
+                  ? 'edge_error'
+                  : 'aborted',
+          },
+        });
+      } catch {
+        /* never throw from telemetry */
+      }
       throw error;
+    }
+
+    try {
+      emitStructuredEvent({
+        category: 'ai',
+        name: 'gateway.failure',
+        payload: { fn: name, mode: 'rest', kind: 'network' },
+      });
+    } catch {
+      /* never throw from telemetry */
     }
 
     throw new EdgeFunctionError(
@@ -283,7 +317,38 @@ export const invokeEdgeFunctionStream = async <T>(
       error instanceof AuthRequiredError ||
       (error instanceof Error && error.name === 'AbortError')
     ) {
+      try {
+        emitStructuredEvent({
+          category: 'ai',
+          name: 'gateway.failure',
+          payload: {
+            fn: name,
+            status: error instanceof EdgeFunctionError ? error.status : undefined,
+            code: error instanceof EdgeFunctionError ? error.code : undefined,
+            requestId: error instanceof EdgeFunctionError ? error.requestId : undefined,
+            mode: 'stream',
+            kind:
+              error instanceof AuthRequiredError
+                ? 'auth_required'
+                : error instanceof EdgeFunctionError
+                  ? 'edge_error'
+                  : 'aborted',
+          },
+        });
+      } catch {
+        /* never throw from telemetry */
+      }
       throw error;
+    }
+
+    try {
+      emitStructuredEvent({
+        category: 'ai',
+        name: 'gateway.failure',
+        payload: { fn: name, mode: 'stream', kind: 'network' },
+      });
+    } catch {
+      /* never throw from telemetry */
     }
 
     throw new EdgeFunctionError(
