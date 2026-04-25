@@ -355,3 +355,309 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
     Review/Practice loop so `getDueCoachReviews()` items appear
     visually distinct from FSRS-due cards.
 
+---
+
+## 2026-04-25 11:38 - COACH-02 (Surface coachingActions in chat UI)
+
+- Changed:
+  - `src/features/chat/utils/coachActions.ts` (new): pure
+    `buildCoachActionPanelData(actions)` selector. Filters /
+    deduplicates / caps interactive actions to 3, splits
+    `schedule_review` actions out into a `scheduledReviewCount` plus a
+    deduped `scheduledReviewSkills` list, and returns FNV-1a stable
+    React keys so re-renders don't reshuffle. Marks
+    `celebrate_effort` as non-interactive (no sendPrompt).
+  - `src/features/chat/utils/coachActions.test.ts`: 11 cases — empty
+    / null / malformed input, type filtering, schedule_review
+    counting + skill dedupe, cap-at-3 ordering, celebrate
+    non-interactivity, blank-prompt handling, stable keys, duration
+    formatting (25s / 1 min / 1.5 min / 2.5 min variants).
+  - `src/features/chat/components/CoachActionPanel.tsx` (new):
+    animated chip strip rendered below the assistant message. Header
+    shows "Coach: next step" + a "Saved review" badge when
+    `scheduledReviewCount > 0`; chips are primary (retry / micro_task)
+    or soft (socratic / reflection / celebrate / saved review);
+    icon + label + duration pill + truncated prompt hint. Bilingual
+    via the `language` prop.
+  - `src/features/chat/components/ChatMessageBubble.tsx`: render the
+    panel for finished assistant messages whose `coachingActions` is
+    populated and an `onCoachAction` callback is provided. Streaming
+    bubbles intentionally skip it.
+  - `src/features/chat/runtime/assistantReply.ts`: attach
+    `result.coachingActions` to the in-memory `assistantMessage` so
+    the bubble can read them without a second fetch. Remote message
+    rows still serialize only `content + artifacts`; the chips are
+    intentionally ephemeral (the schedulable subset is already in the
+    durable coach review queue).
+  - `src/features/chat/state/types.ts` + `src/features/chat/types.ts`:
+    add optional `coachingActions` on `ChatMessage` /
+    `ChatMessageView` with a comment explaining the contract.
+  - `src/pages/dashboard/ChatPage.tsx`: `handleCoachAction(prompt,
+    action)` re-uses the chat send pipeline so chip taps land with
+    the same learner context as a manual input. Wired to the
+    persistent ChatMessageBubble; the streaming bubble is unchanged.
+
+- Verified:
+  - `npx vitest run src/features/chat/utils/coachActions.test.ts` →
+    11/11.
+  - `npx vitest run` (full) → 30 files, 390/390 (was 379).
+  - `npm run build` → tsc + vite clean (ChatPage chunk 127.8 KB,
+    +5 KB).
+  - Vite dev smoke: GET / 200; CoachActionPanel.tsx (20 KB),
+    ChatMessageBubble.tsx (29 KB), coachActions.ts (14 KB) all
+    transformed cleanly.
+
+- Deploy:
+  - Pure frontend change. Vercel auto-deploy is sufficient.
+  - No Edge Function changes; the action JSON envelope is already
+    being parsed server-side by Round 2's policy work.
+
+- Risks:
+  - The chips are not persisted to Supabase. After a refresh, the
+    panel is gone for prior turns — only the latest streaming reply
+    keeps it. The schedulable subset still lives in the coach review
+    queue (Round 3 work) so durability is intact for what matters.
+  - The action's `prompt` is sent verbatim to the chat composer when
+    a chip is tapped. Long prompts could clutter the user message
+    bubble; truncate at the bubble level if it becomes a problem.
+
+- Next:
+  - COACH-03: surface `getDueCoachReviews()` items in the Review /
+    Practice loop with a dedicated section so the queue is reachable
+    outside the chat surface.
+
+---
+
+## 2026-04-25 11:44 - COACH-03 (Coach review queue → Review page)
+
+- Changed:
+  - `src/features/coach/reviewRailLogic.ts` (new): pure helpers —
+    `partitionCoachReviews(items, { now, upcomingLimit })` splits a
+    queue snapshot into (`due`, `upcoming`) buckets sorted oldest /
+    soonest first, drops invalid `dueAt` strings, caps upcoming at 5
+    by default; `classifyDueness(dueAtIso, { now })` buckets a single
+    item into `overdue` / `now` / `soon` / `later`;
+    `formatCoachReviewDueLabel(...)` renders bilingual "Overdue 5h" /
+    "Due now" / "Due in 3d" / fallback short-date labels.
+  - `src/features/coach/reviewRailLogic.test.ts`: 13 cases for
+    partition shape + drop-invalid + sort, classifyDueness boundary
+    cases (±30 min, 24h, 7d), label variants in EN and ZH, the
+    >7-day fallback to a short date.
+  - `src/features/coach/CoachReviewRail.tsx` (new): React component
+    reading `getCoachReviews()`; refreshes once a minute so labels
+    rotate while the page sits open; renders nothing when both due
+    and upcoming buckets are empty so it never appears as a stub.
+    Tap-to-complete fires `markCoachReviewCompleted(id)` and
+    re-pulls the queue locally.
+  - `src/pages/dashboard/ReviewPage.tsx`: wire the rail into the
+    right column of the active review session, and also surface it
+    in the empty-state branch via a 1+rail grid so coach work stays
+    reachable when there are no FSRS-due cards.
+
+- Filename note: helper module is `reviewRailLogic.ts` (not
+  `coachReviewRail.ts`) to avoid colliding with the React component
+  file `CoachReviewRail.tsx` on macOS's case-insensitive filesystem.
+  The first build surfaced TS2305/TS1261 immediately.
+
+- Verified:
+  - `npx vitest run src/features/coach/reviewRailLogic.test.ts` →
+    13/13.
+  - `npx vitest run` (full) → 31 files, 403/403 (was 390).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; CoachReviewRail.tsx (32 KB) and
+    ReviewPage.tsx (108 KB) transformed cleanly.
+
+- Deploy:
+  - Pure frontend change. Vercel auto-deploy is sufficient.
+  - No Edge Function or Supabase migration changes.
+
+- Risks:
+  - The queue itself still lives in localStorage — coach reviews do
+    not roam across devices. Acceptable as v1; promotion to Supabase
+    is a future story.
+  - `getCoachReviews()` is read once on mount and once per minute via
+    the tick interval. If the policy starts emitting many actions
+    per turn, tighten the tick to 30s or hook into the storage event
+    instead of a timer.
+
+- Next:
+  - LEARN-01: rebuild the Today hero so the learner sees "what /
+    why / how long / next" at a glance, with refresh-stable
+    learned/hard/bookmark state.
+
+---
+
+## 2026-04-25 11:51 - LEARN-01 (Today mission cockpit)
+
+- Changed:
+  - `src/services/todayWorkbenchPersistence.ts` (new): per-(user,
+    day) localStorage layer for the workbench's hard / bookmark
+    sets. Day key is the local calendar date so the workbench rolls
+    over at midnight along with the daily mission. Single JSON blob
+    per day, capped at 200 ids; corrupt or unavailable storage
+    degrades silently to empty sets.
+  - `src/services/todayWorkbenchPersistence.test.ts`: 12 cases —
+    round-trip, dedup, toggle, per-day isolation, robustness against
+    bad input and corrupt JSON, dayKeyFor formatting.
+  - `src/features/learning/missionWhyChip.ts` (new): pure mapping
+    from `primaryAction.reason` (recovery_mode / exam_boost /
+    due_words / today_words / weakness_drill / practice_gap) to a
+    bilingual chip label + variant tag + short subtitle. Forces
+    `recovery` framing whenever the FSRS learner-model mode is
+    `recovery` or burnoutRisk ≥ 0.75; promotes `sprint` to exam-boost
+    framing unless recovery is also active.
+  - `src/features/learning/missionWhyChip.test.ts`: 7 cases covering
+    all known reasons, fallback for unknown / empty / nullish,
+    recovery override from learnerMode + burnoutRisk, sprint
+    promotion that respects an active recovery state.
+  - `src/features/learning/components/MissionWhyBadge.tsx` (new):
+    React badge with variant-tinted styling, icon, and bilingual
+    label + subtitle. Stacks vertical on mobile, inline ≥sm.
+  - `src/pages/dashboard/TodayPage.tsx`: render the why-badge above
+    the hero, pass `support`/`supportZh` as the hero `description`
+    so the learner sees the why-paragraph under the title. Eyebrow
+    date, hero CTAs, and metric labels are now bilingual via
+    `i18n.language`. `Words left` / `Estimated time` / `Due reviews`
+    flip language; due-reviews chip flips to `warm` accent when
+    backlog is non-empty. Persistence: seed `hardWords` and
+    `bookmarkedWords` from `loadTodayFlags(dayKey)` and write
+    through on every tap; hydrate `learnedWords` from the durable
+    `wordProgress` store (any word in today's daily list whose
+    `lastReviewed` falls on the current local day, or whose status
+    reached `mastered`).
+
+- Verified:
+  - `npx vitest run` on the two new files → 17/17.
+  - `npx vitest run` (full) → 33 files, 420/420 (was 403).
+  - `npm run build` → tsc + vite clean (TodayPage chunk 47 KB).
+  - Vite dev smoke: GET / 200; TodayPage (202 KB), MissionWhyBadge
+    (12 KB), todayWorkbenchPersistence (13 KB) all transform cleanly.
+
+- Deploy:
+  - Pure frontend change. Vercel auto-deploy is sufficient.
+
+- Risks:
+  - Optimistic in-session adds to `learnedWords` are preserved across
+    re-hydration so a fresh tap is not visually undone before the
+    durable write roundtrips. If the durable write fails permanently
+    the UI will show "learned" while the backend disagrees — a
+    future loop should reconcile via the sync queue's failure path.
+
+- Next:
+  - LEARN-03: route Practice answers into the shared mistake
+    collector so the AI coach (already wired to read it) can cite
+    real recent errors.
+
+---
+
+## 2026-04-25 11:55 - LEARN-03 (Practice writes mistakes + FSRS)
+
+- Changed:
+  - `src/services/practiceMistakes.ts` (new): pure
+    `buildPracticeMistakeRecord({ word, isCorrect, userAnswer,
+    correctAnswer, mode })` returns the MistakeEntry-shaped record
+    (or null for correct attempts / unknown words). Maps PracticeMode
+    → MistakeSource (quiz / listening → practice; pronunciation →
+    pronunciation; roleplay → roleplay; writing / reading / grammar
+    → practice with their own free-form categories) and computes
+    severity from prefix similarity so a typo registers low and a
+    wildly wrong answer registers high.
+  - `src/services/practiceMistakes.test.ts`: 12 cases — null on
+    correct, null on missing word, mode → source / category mapping
+    for all known modes plus unknown-mode fallback, severity
+    buckets, blank-correct fallback, addMistake/getMistakes
+    round-trip, no-write on correct, source-filter integration with
+    multiple wrong attempts.
+  - `src/pages/dashboard/PracticePage.tsx`: pull `reviewWord` from
+    UserDataContext, import `addMistake` + `buildPracticeMistakeRecord`.
+    `handleAnswer` now bumps FSRS to `good` on correct answers; on
+    wrong answers it writes the MistakeEntry, then bumps FSRS to
+    `again` so the missed word resurfaces in the next review session.
+    `handleListeningCheck` gets the same treatment with mode set to
+    `listening`. All side-effects are wrapped in try/catch — a
+    localStorage hiccup or sync failure never blocks the drill UI.
+
+- Verified:
+  - `npx vitest run src/services/practiceMistakes.test.ts` → 12/12.
+  - `npx vitest run` (full) → 34 files, 432/432 (was 420).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; PracticePage (240 KB) and
+    practiceMistakes (8.7 KB) transform cleanly.
+
+- Deploy:
+  - Pure frontend change. Vercel auto-deploy is sufficient.
+
+- Risks:
+  - The mistake collector is still a localStorage layer; a learner
+    who clears storage loses the trail. The collector itself is
+    capped, so the localStorage budget is bounded.
+  - Calling `reviewWord('again')` on every wrong practice answer
+    will compress the FSRS interval aggressively. If learners report
+    review queue inflation, ease this to `hard` for typos and
+    reserve `again` for higher-severity errors.
+
+- Next:
+  - UI-03: replace the chat welcome's flat recommendation row with
+    rich mission cards that explain *why* each prompt is being
+    recommended.
+
+---
+
+## 2026-04-25 11:59 - UI-03 (Coach mission cards on chat welcome)
+
+- Changed:
+  - `src/features/chat/utils/missionRecommendations.ts` (new): pure
+    selector. Inputs are `dueCount` / `incompleteTasks` / `level` /
+    `examType` / `hasExamGoal` — outputs up to 3
+    `MissionRecommendation` cards with bilingual title + reason +
+    estimatedMinutes + variant tag (`recovery` / `review` / `today`
+    / `sprint` / `practice` / `default`) + the prompt to fire on
+    tap. dueCount ≥ 12 promotes the variant to `recovery`.
+  - `src/features/chat/utils/missionRecommendations.test.ts`: 13
+    cases covering empty-context fallback, review-pressure variants
+    by backlog size, daily-mission task surfacing in order, IELTS
+    sprint promotion (via examType and hasExamGoal), level-tip
+    fill-in, 3-card cap, unknown task name skip, blank/none examType
+    filter, NaN dueCount defensiveness.
+  - `src/features/chat/components/MissionRecommendationCards.tsx`
+    (new): React grid (1 col on mobile / 2 on sm / 3 on lg) of
+    variant-tinted cards with heading badge, duration pill, icon,
+    reason text, and a "Start with coach" CTA. Bilingual via the
+    `language` prop.
+  - `src/features/chat/components/ChatWelcome.tsx`: drop the legacy
+    AIRecommendation row, render `MissionRecommendationCards`
+    instead. Re-export `buildRecommendations` as
+    `buildMissionRecommendations` so the existing ChatPage import
+    keeps working.
+  - `src/pages/dashboard/ChatPage.tsx`: extend the recommendation
+    context with `examType` + `hasExamGoal` derived from
+    `learningProfile`, pass `language` through to ChatWelcome so the
+    cards localise.
+
+- Verified:
+  - `npx vitest run
+    src/features/chat/utils/missionRecommendations.test.ts` → 13/13.
+  - `npx vitest run` (full) → 35 files, 445/445 (was 432).
+  - `npm run build` → tsc + vite clean.
+  - Vite dev smoke: GET / 200; MissionRecommendationCards (23 KB),
+    ChatWelcome (12 KB), missionRecommendations (27 KB) all
+    transformed cleanly.
+
+- Deploy:
+  - Pure frontend change. Vercel auto-deploy is sufficient.
+
+- Risks:
+  - Mission cards launch the prompt as a normal `quick_prompt` send.
+    A learner clicking multiple cards in rapid succession will queue
+    multiple chat turns; the existing send pipeline already serializes
+    via `isLoading`, so this is bounded.
+  - Variant-color choices are intentionally bold so the why is
+    obvious; if the welcome screen ever moves into a brand-tinted
+    theme, the variant palette will need a once-over.
+
+- Next:
+  - Backlog candidates: COACH-04 (Socratic error recovery),
+    LEARN-02 (evidence event model), LEARN-04 (Review is due-only),
+    UI-02 (learning-cockpit shell), QA-02 (coach policy drift guard),
+    UI-04 (auth + conversion polish).
+
