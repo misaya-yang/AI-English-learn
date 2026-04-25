@@ -45,6 +45,8 @@ import { getContentItemsByUnit, getContentUnits, getQuotaSnapshot, saveAiFeedbac
 import { consumeExamFeatureQuota, createAttempt, gradeIeltsWriting } from '@/services/aiExamCoach';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { speakEnglishText } from '@/services/tts';
+import { addMistake } from '@/services/mistakeCollector';
+import { buildPracticeMistakeRecord } from '@/services/practiceMistakes';
 import { buildListeningQueue, buildPracticeQuestions } from '@/features/practice/runtime';
 
 const practiceModes = [
@@ -86,7 +88,7 @@ const darkSelectContentClass = 'border-white/10 bg-[#101010] text-white';
 export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, dueWords, progress, streak, addStudySession, completeMissionTask } = useUserData();
+  const { dailyWords, dueWords, progress, streak, addStudySession, completeMissionTask, reviewWord } = useUserData();
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -323,6 +325,13 @@ export default function PracticePage() {
       setScore((prev) => prev + 1);
       const comboBonus = newCombo >= 5 ? ' 🔥 Combo x5!' : newCombo >= 3 ? ' ⚡ Combo x3!' : '';
       toast.success(`Correct! +10 XP${comboBonus}`);
+      // Bump per-word progress through FSRS so a correct answer is reflected
+      // in the durable progress store, not just the session score.
+      try {
+        reviewWord(currentQuestion.word.id, 'good');
+      } catch {
+        // reviewWord guards itself; never let a sync hiccup fail the turn.
+      }
     } else {
       setCombo(0);
       setAnswerAnim('incorrect');
@@ -333,6 +342,30 @@ export default function PracticePage() {
         question: currentQuestion.question,
         correctAnswer: currentQuestion.correctAnswer,
       }]);
+      // Persist into the shared mistake collector so the AI coach can pick
+      // it up via getChatLearnerProfile() on the next chat turn (COACH-01)
+      // and the Mistakes book stays in sync.
+      const mistakeRecord = buildPracticeMistakeRecord({
+        word: currentQuestion.word,
+        isCorrect: false,
+        userAnswer: selectedAnswer,
+        correctAnswer: currentQuestion.correctAnswer,
+        mode: selectedMode || 'quiz',
+      });
+      if (mistakeRecord) {
+        try {
+          addMistake(mistakeRecord);
+        } catch {
+          // localStorage failure is silent — never block the user's drill.
+        }
+      }
+      // Schedule the missed word for an earlier FSRS revisit so the next
+      // review session surfaces it again.
+      try {
+        reviewWord(currentQuestion.word.id, 'again');
+      } catch {
+        // see above
+      }
     }
 
     // Clear animation after delay
@@ -472,8 +505,32 @@ export default function PracticePage() {
     if (isCorrect) {
       setScore((prev) => prev + 1);
       toast.success('Correct! +10 XP');
+      try {
+        reviewWord(currentWord.id, 'good');
+      } catch {
+        // see comment in handleAnswer
+      }
     } else {
       toast.error(`Not quite. Correct answer: ${currentWord.word}`);
+      const mistakeRecord = buildPracticeMistakeRecord({
+        word: currentWord,
+        isCorrect: false,
+        userAnswer: listeningInput.trim(),
+        correctAnswer: currentWord.word,
+        mode: 'listening',
+      });
+      if (mistakeRecord) {
+        try {
+          addMistake(mistakeRecord);
+        } catch {
+          // see comment in handleAnswer
+        }
+      }
+      try {
+        reviewWord(currentWord.id, 'again');
+      } catch {
+        // see comment in handleAnswer
+      }
     }
 
     void recordLearningEvent({
