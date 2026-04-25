@@ -197,3 +197,83 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
     `SendMessageOptions.learnerProfile` from the dashboard hooks (today's
     page, exam page) so the coach actually receives it.
 
+---
+
+## 2026-04-25 11:15 - P1-LEARN-1 (Persist coachingActions into a real review queue)
+
+- Changed:
+  - New `src/services/coachReviewQueue.ts`: localStorage-backed queue keyed
+    by the FNV-1a id from the policy module. Items are deduped on id, so
+    a replayed action refreshes `dueAt`/`prompt` instead of doubling up.
+    Queue is capped at 500 entries (drops completed first, then oldest
+    open) so a runaway model emission can't blow out localStorage. Public
+    surface: `addCoachReviewItems`, `getCoachReviews({ includeCompleted })`,
+    `getDueCoachReviews({ now })`, `markCoachReviewCompleted`,
+    `clearCoachReviewQueue`. Storage failures (private mode, SSR,
+    QuotaExceeded) degrade silently — never throw.
+  - New `src/services/coachingActionRouter.ts`: thin dispatch layer.
+    `applyCoachingActions(actions, { userInputRef, now })` calls the
+    policy's `toReviewQueueItems` to filter `schedule_review` and
+    `retry_with_hint` actions into review items, then writes them via
+    `addCoachReviewItems`. Returns `{ reviewItems, persisted }` for
+    telemetry / UI affordance hooks.
+  - `src/features/chat/runtime/assistantReply.ts`: after the assistant
+    message is appended, call `applyCoachingActions(result.coachingActions,
+    { userInputRef: assistantMessage.id })`. Wrapped in try/catch — a
+    storage hiccup must not fail the chat turn. On success, fires a
+    `chat_coaching_actions_persisted` experiment event with surface, mode,
+    persistedCount, and the skill list.
+  - 19 new tests across the two services:
+    * Queue: persistence, dedupe-on-id, dueAt refresh, due-only filter,
+      completed-skipping, malformed-storage recovery, empty input no-op,
+      cap, insertion order, defensive guard when localStorage throws,
+      `Date.now()` default for the due check.
+    * Router: persists schedule_review and retry_with_hint, ignores
+      celebrate_effort / ask_socratic_question / micro_task /
+      reflection_prompt, returns the typed reviewItems, idempotent on
+      replay, no-op for undefined / empty actions, drops actions that
+      lack the skill needed to schedule.
+
+- Verified:
+  - `npx vitest run src/services/coachReviewQueue.test.ts
+    src/services/coachingActionRouter.test.ts` → 19/19 passed.
+  - Full vitest suite: 28 files, 365/365 tests (346 prior + 19 new), all
+    green.
+  - `npm run build` → tsc + vite build clean.
+  - Browser smoke: vite dev server on `127.0.0.1:4173` returned 200 for
+    `/`, force-imported the two new services + the updated assistantReply
+    pipeline (router 3 KB, queue 13.7 KB, assistantReply 38.3 KB
+    transformed). No errors in dev log.
+
+- Deploy:
+  - Pure frontend change. Vercel auto-deploy is sufficient.
+  - No Edge Function or Supabase changes required this round.
+  - Storage layer is localStorage; no migrations.
+
+- Risks:
+  - Review queue lives in localStorage, so it does not roam across
+    devices. Until we promote to Supabase, a learner who clears their
+    browser storage loses scheduled reviews. Acceptable as a v1 — the
+    Edge Function still persists weakness memories independently, and the
+    AI coach will re-derive scheduling on subsequent turns.
+  - The router fires AFTER the assistant message is durably appended, so
+    a network hiccup between "reply rendered" and "review persisted" is
+    possible. Idempotency on FNV-1a id makes a manual retry safe; the
+    AI's next turn will typically re-issue the same action anyway.
+  - Cap of 500 is deliberately generous. If a user accumulates that many
+    open reviews, they have a much bigger problem than a clamp — the
+    coach should already be in recovery mode (covered by the policy in
+    Round 2).
+
+- Next:
+  - P1 Learning Loop #12: surface the persisted review queue in the UI
+    so the user sees "you scheduled X reviews" affordance after a chat
+    turn, and the daily plan can pull due items from
+    `getDueCoachReviews()`. Quickest impact: show count under the chat
+    composer or in the Today hero.
+  - P1 Learning Loop #13: feed `learnerProfile` from the today/exam
+    dashboards into `SendMessageOptions` so the policy's learner-model
+    section is no longer empty in production. Right now the Edge
+    Function still falls back to the empty-context branch of the policy
+    because no caller supplies the snapshot.
+

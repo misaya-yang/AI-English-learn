@@ -2,6 +2,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { EdgeFunctionError } from '@/services/aiGateway';
 import { normalizeArtifacts } from '@/services/chatArtifacts';
 import { recordLearningEvent } from '@/services/learningEvents';
+import { applyCoachingActions } from '@/services/coachingActionRouter';
 import {
   buildChatRequestPayload,
   invokeChatRequest,
@@ -269,6 +270,30 @@ export async function requestAssistantReplyPipeline(args: AssistantReplyPipeline
     };
 
     await appendAssistantMessage(context.sessionId, assistantMessage);
+
+    // Persist any schedulable coaching actions into the coach review queue
+    // BEFORE we finish the turn. The router is idempotent on userInputRef +
+    // action shape, so a retry of the same turn won't double-add. Failures
+    // here must not bubble — the user already has their reply.
+    try {
+      const summary = applyCoachingActions(result.coachingActions, {
+        userInputRef: assistantMessage.id,
+      });
+      if (summary.persisted > 0) {
+        void trackExperimentEvent('chat_coaching_actions_persisted', {
+          sessionId: context.sessionId,
+          messageId: assistantMessage.id,
+          surface: context.surface,
+          mode: context.mode,
+          persistedCount: summary.persisted,
+          skills: summary.reviewItems.map((item) => item.skill),
+        });
+      }
+    } catch (routerError) {
+      // Best-effort persistence; don't fail the turn for a localStorage hiccup.
+      console.error('[assistantReply] applyCoachingActions failed', routerError);
+    }
+
     if (context.quizRun?.runId) {
       const firstQuizArtifact = artifacts.find(
         (artifact): artifact is Extract<ChatArtifact, { type: 'quiz' }> => artifact.type === 'quiz',
