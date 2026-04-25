@@ -47,6 +47,7 @@ import { recordLearningEvent } from '@/services/learningEvents';
 import { speakEnglishText } from '@/services/tts';
 import { addMistake } from '@/services/mistakeCollector';
 import { buildPracticeMistakeRecord } from '@/services/practiceMistakes';
+import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { buildListeningQueue, buildPracticeQuestions } from '@/features/practice/runtime';
 
 const practiceModes = [
@@ -382,6 +383,18 @@ export default function PracticePage() {
         combo: isCorrect ? combo + 1 : 0,
       },
     });
+    // Typed evidence event in addition to the analytics-style event above.
+    // The two writes serve different consumers: analytics keeps its
+    // historical event names, derivation reads the strict
+    // `evidence.practice.*` rows.
+    void recordEvidence(
+      createEvidenceEvent({
+        type: isCorrect ? 'practice.correct' : 'practice.incorrect',
+        userId,
+        wordId: currentQuestion.word.id,
+        mode: selectedMode || 'quiz',
+      }),
+    );
   };
 
   const handleNext = () => {
@@ -543,6 +556,14 @@ export default function PracticePage() {
         questionIndex: currentQuestionIndex + 1,
       },
     });
+    void recordEvidence(
+      createEvidenceEvent({
+        type: isCorrect ? 'practice.correct' : 'practice.incorrect',
+        userId,
+        wordId: currentWord.id,
+        mode: 'listening',
+      }),
+    );
   };
 
   const handleListeningNext = () => {

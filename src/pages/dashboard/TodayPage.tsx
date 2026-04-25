@@ -55,6 +55,7 @@ import {
   toggleTodayBookmark,
   type DayKey,
 } from '@/services/todayWorkbenchPersistence';
+import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { MissionWhyBadge } from '@/features/learning/components/MissionWhyBadge';
 import { useTranslation } from 'react-i18next';
 import type { UserProgress } from '@/data/localStorage';
@@ -514,6 +515,14 @@ export default function TodayPage() {
           status: 'learned',
         },
       });
+      void recordEvidence(
+        createEvidenceEvent({
+          type: 'vocab.learned',
+          userId,
+          wordId: currentWord.id,
+          bookId: activeBook?.id,
+        }),
+      );
 
       if (learnedWords.size + 1 >= words.length) {
         completeMissionTask('task_vocab_today');
@@ -541,6 +550,14 @@ export default function TodayPage() {
           status: 'hard',
         },
       });
+      void recordEvidence(
+        createEvidenceEvent({
+          type: 'vocab.hard',
+          userId,
+          wordId: currentWord.id,
+          bookId: activeBook?.id,
+        }),
+      );
       toast.info(`已标记 "${currentWord.word}" 为较难，将加入复习列表`, {
         icon: <Brain className="h-4 w-4 text-amber-500" />,
       });

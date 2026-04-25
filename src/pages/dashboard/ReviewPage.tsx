@@ -30,6 +30,8 @@ import { wordsDatabase } from '@/data/words';
 import { speakEnglishText } from '@/services/tts';
 import { isStubbornWord } from '@/services/fsrs';
 import { buildReviewSession, type ReviewSessionItem } from '@/features/learning/reviewQueue';
+import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 type ReviewItem = ReviewSessionItem;
@@ -157,6 +159,8 @@ const ratingMeta = {
 } as const;
 
 export default function ReviewPage() {
+  const { user } = useAuth();
+  const userId = user?.id || 'guest';
   const { dailyWords, reviewWord, dueWords, dailyMission, completeMissionTask } = useUserData();
   const { i18n } = useTranslation();
   const language = i18n.language;
@@ -201,6 +205,14 @@ export default function ReviewPage() {
     }));
 
     reviewWord(currentItem.wordId, rating);
+    void recordEvidence(
+      createEvidenceEvent({
+        type: 'review.rated',
+        userId,
+        wordId: currentItem.wordId,
+        rating,
+      }),
+    );
     if (totalReviewed + 1 >= reviewTaskTarget) {
       completeMissionTask('task_review_today');
     }
