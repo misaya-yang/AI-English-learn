@@ -373,13 +373,75 @@ describe('shared policy source sync', () => {
   // used by the client and the Deno Edge Function respectively. Both must
   // carry the same rules; if they drift, the AI coach will act differently
   // depending on who called it.
+  const repoRoot = resolve(__dirname, '..', '..', '..');
+  const CLIENT_PATH = 'src/features/coach/coachingPolicy.ts';
+  const EDGE_PATH = 'supabase/functions/_shared/coaching-policy.ts';
+
+  const loadBoth = () => ({
+    client: readFileSync(resolve(repoRoot, CLIENT_PATH), 'utf8'),
+    edge: readFileSync(resolve(repoRoot, EDGE_PATH), 'utf8'),
+  });
+
+  const findFirstDivergences = (a: string, b: string, max = 5): string[] => {
+    const aLines = a.split('\n');
+    const bLines = b.split('\n');
+    const out: string[] = [];
+    const limit = Math.max(aLines.length, bLines.length);
+    for (let i = 0; i < limit && out.length < max; i += 1) {
+      const left = aLines[i];
+      const right = bLines[i];
+      if (left !== right) {
+        out.push(`L${i + 1}:\n  client: ${left ?? '<eof>'}\n  edge:   ${right ?? '<eof>'}`);
+      }
+    }
+    return out;
+  };
+
   it('keeps src/ and supabase/functions/_shared/ copies byte-identical', () => {
-    const repoRoot = resolve(__dirname, '..', '..', '..');
-    const client = readFileSync(resolve(repoRoot, 'src/features/coach/coachingPolicy.ts'), 'utf8');
-    const edge = readFileSync(
-      resolve(repoRoot, 'supabase/functions/_shared/coaching-policy.ts'),
-      'utf8',
+    const { client, edge } = loadBoth();
+    if (client === edge) {
+      expect(edge).toBe(client);
+      return;
+    }
+    const diffs = findFirstDivergences(client, edge).join('\n---\n');
+    throw new Error(
+      `Coach policy drift detected.\n` +
+        `  client: ${CLIENT_PATH}\n` +
+        `  edge:   ${EDGE_PATH}\n` +
+        `Both files must stay byte-identical (the policy module has no imports so it can compile in both Vite and Deno).\n` +
+        `First divergent lines (max 5):\n${diffs}`,
     );
-    expect(edge).toBe(client);
+  });
+
+  it('exports the same COACHING_POLICY_VERSION on both sides', () => {
+    const { client, edge } = loadBoth();
+    const versionRe = /COACHING_POLICY_VERSION\s*=\s*'([^']+)'/;
+    const clientMatch = client.match(versionRe);
+    const edgeMatch = edge.match(versionRe);
+    expect(clientMatch?.[1], 'client must export COACHING_POLICY_VERSION as a string literal').toBeTruthy();
+    expect(edgeMatch?.[1], 'edge must export COACHING_POLICY_VERSION as a string literal').toBeTruthy();
+    expect(clientMatch?.[1]).toBe(edgeMatch?.[1]);
+    // Sanity-check the runtime export matches the file literal so a future
+    // refactor that swaps the constant for a function/derived value still
+    // gets caught.
+    expect(COACHING_POLICY_VERSION).toBe(clientMatch?.[1]);
+  });
+
+  it('declares the same CoachingActionType union in both copies', () => {
+    const { client, edge } = loadBoth();
+    const re = /export type CoachingActionType\s*=\s*([\s\S]*?);/;
+    const clientUnion = client.match(re)?.[1]?.replace(/\s+/g, ' ').trim();
+    const edgeUnion = edge.match(re)?.[1]?.replace(/\s+/g, ' ').trim();
+    expect(clientUnion, 'client must declare CoachingActionType').toBeTruthy();
+    expect(edgeUnion, 'edge must declare CoachingActionType').toBeTruthy();
+    expect(edgeUnion).toBe(clientUnion);
+  });
+
+  it('declares the same CoachingErrorType union in both copies', () => {
+    const { client, edge } = loadBoth();
+    const re = /export type CoachingErrorType\s*=\s*([\s\S]*?);/;
+    const clientUnion = client.match(re)?.[1]?.replace(/\s+/g, ' ').trim();
+    const edgeUnion = edge.match(re)?.[1]?.replace(/\s+/g, ' ').trim();
+    expect(edgeUnion).toBe(clientUnion);
   });
 });
