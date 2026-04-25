@@ -146,15 +146,15 @@ export default function LandingPage() {
               {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
             {isAuthenticated ? (
-              <Button className="rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+              <Button className="rounded-md bg-primary hover:bg-primary/90" asChild>
                 <Link to={continuePath}>Continue learning</Link>
               </Button>
             ) : (
               <>
-                <Button variant="ghost" className="rounded-2xl" asChild>
+                <Button variant="ghost" className="rounded-lg" asChild>
                   <Link to="/login">Sign in</Link>
                 </Button>
-                <Button className="rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+                <Button className="rounded-md bg-primary hover:bg-primary/90" asChild>
                   <Link to="/register">Start free</Link>
                 </Button>
               </>
@@ -179,19 +179,19 @@ export default function LandingPage() {
               <a href="#membership" className="block text-sm text-muted-foreground">Membership</a>
               <Link to="/word-of-the-day" className="block text-sm text-muted-foreground">Word of the Day</Link>
               <Separator />
-              <Button variant="outline" className="w-full rounded-2xl" onClick={handleThemeToggle}>
+              <Button variant="outline" className="w-full rounded-lg" onClick={handleThemeToggle}>
                 {resolvedTheme === 'dark' ? 'Switch to light' : 'Switch to dark'}
               </Button>
               {isAuthenticated ? (
-                <Button className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+                <Button className="w-full rounded-md bg-primary hover:bg-primary/90" asChild>
                   <Link to={continuePath}>Continue learning</Link>
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline" className="w-full rounded-2xl" asChild>
+                  <Button variant="outline" className="w-full rounded-lg" asChild>
                     <Link to="/login">Sign in</Link>
                   </Button>
-                  <Button className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+                  <Button className="w-full rounded-md bg-primary hover:bg-primary/90" asChild>
                     <Link to="/register">Start free</Link>
                   </Button>
                 </>
@@ -219,13 +219,13 @@ export default function LandingPage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button size="lg" className="rounded-2xl bg-emerald-600 px-6 hover:bg-emerald-700" asChild>
+                <Button size="lg" className="rounded-md bg-primary px-5 hover:bg-primary/90" asChild>
                   <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
                     {isAuthenticated ? 'Continue today plan' : 'Start free'}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="rounded-2xl px-6" asChild>
+                <Button size="lg" variant="outline" className="rounded-lg px-6" asChild>
                   <Link to="/pricing">See Pro difference</Link>
                 </Button>
               </div>
@@ -236,7 +236,7 @@ export default function LandingPage() {
                   { label: 'Target feedback loop', value: '< 8 sec' },
                   { label: 'Learning surfaces', value: 'Today / Review / Practice / Coach / Exam' },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-2xl border bg-card px-4 py-4">
+                  <div key={item.label} className="rounded-lg border bg-card px-4 py-4">
                     <p className="text-xl font-semibold text-emerald-600">{item.value}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{item.label}</p>
                   </div>
@@ -257,11 +257,11 @@ export default function LandingPage() {
                       <p className="text-sm font-semibold text-emerald-600">Today mission</p>
                       <h2 className="mt-1 text-2xl font-semibold">Clear 8 due cards, then learn 6 transport words</h2>
                     </div>
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-emerald-500/12 text-emerald-600">
                       <Target className="h-7 w-7" />
                     </div>
                   </div>
-                  <div className="rounded-2xl border bg-background/70 px-4 py-4">
+                  <div className="rounded-lg border bg-background/70 px-4 py-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium">Mission progress</span>
                       <span className="text-muted-foreground">2 / 3 done</span>
@@ -271,12 +271,12 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border bg-background/80 p-4">
+                    <div className="rounded-lg border bg-background/80 p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Weak spot</p>
                       <p className="mt-2 text-lg font-semibold">Collocations + tense control</p>
                       <p className="mt-1 text-sm text-muted-foreground">Next action: 3-question coach quiz</p>
                     </div>
-                    <div className="rounded-2xl border bg-background/80 p-4">
+                    <div className="rounded-lg border bg-background/80 p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Exam boost</p>
                       <p className="mt-2 text-lg font-semibold">Band 6.0 writing focus</p>
                       <p className="mt-1 text-sm text-muted-foreground">Coherence and lexical precision are the biggest gap</p>
@@ -287,7 +287,7 @@ export default function LandingPage() {
 
               <div className="grid gap-4 sm:grid-cols-3">
                 {feedbackSamples.map((item) => (
-                  <Card key={item.label} className="rounded-2xl">
+                  <Card key={item.label} className="rounded-lg">
                     <CardContent className="p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{item.label}</p>
                       <p className="mt-2 text-sm font-semibold">{item.title}</p>
@@ -320,7 +320,7 @@ export default function LandingPage() {
                 >
                   <Card className="h-full rounded-[28px] border-border/70 bg-card">
                     <CardContent className="p-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-500/12 text-emerald-600">
                         <item.icon className="h-6 w-6" />
                       </div>
                       <h3 className="mt-5 text-xl font-semibold">{item.title}</h3>
@@ -351,7 +351,7 @@ export default function LandingPage() {
                 {workflow.map((item) => (
                   <Card key={item.step} className="rounded-[28px] border-border/70">
                     <CardContent className="flex gap-4 p-5 lg:p-6">
-                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-sm font-semibold text-white">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-sm font-semibold text-white">
                         {item.step}
                       </div>
                       <div>
@@ -400,8 +400,8 @@ export default function LandingPage() {
                     </div>
                     <Button
                       className={cn(
-                        'mt-6 w-full rounded-2xl',
-                        plan.name === 'Pro' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+                        'mt-6 w-full rounded-lg',
+                        plan.name === 'Pro' ? 'bg-primary hover:bg-primary/90' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                       )}
                       asChild
                     >
@@ -418,7 +418,7 @@ export default function LandingPage() {
 
         <section className="px-4 pb-20 pt-4 lg:px-6 lg:pb-28">
           <div className="mx-auto max-w-5xl rounded-[36px] border bg-gradient-to-br from-card via-card to-emerald-500/5 px-6 py-8 text-center lg:px-10 lg:py-12">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-500/12 text-emerald-600">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-emerald-500/12 text-emerald-600">
               <Zap className="h-8 w-8" />
             </div>
             <h2 className="mt-5 text-3xl font-semibold tracking-tight lg:text-4xl">
@@ -428,13 +428,13 @@ export default function LandingPage() {
               从今天的一步开始：先清任务、再补弱项、再让 AI 给你结构化反馈。学习过程应该稳定、透明、可持续。
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" className="rounded-2xl bg-emerald-600 px-6 hover:bg-emerald-700" asChild>
+              <Button size="lg" className="rounded-md bg-primary px-5 hover:bg-primary/90" asChild>
                 <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
                   {isAuthenticated ? 'Continue learning' : 'Start learning free'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-2xl px-6" asChild>
+              <Button size="lg" variant="outline" className="rounded-lg px-6" asChild>
                 <Link to="/pricing">Compare plans</Link>
               </Button>
             </div>

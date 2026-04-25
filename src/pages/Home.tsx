@@ -1,599 +1,357 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { ArrowRight, BookOpen, Brain, Check, CirclePlay, Menu, Sparkles, Target, CalendarDays, MessageCircleMore, WandSparkles, X, Route, Bot, User } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, Calendar, Menu, MessageSquare, Target, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Spotlight } from '@/components/ui/spotlight';
-import { CardContainer, CardBody, CardItem } from '@/components/ui/3d-card';
 
-const chatMessages = [
-  { role: 'user' as const, text: 'How do I use "nevertheless" naturally?' },
-  { role: 'ai' as const, text: '"Nevertheless" signals contrast despite expectations. Try: "The exam was tough; nevertheless, she passed with flying colors." It\'s more formal than "but" — perfect for IELTS writing.' },
-  { role: 'user' as const, text: 'Can you give me a practice sentence?' },
-  { role: 'ai' as const, text: 'Fill in: "The weather was terrible. ___, we decided to go hiking." Great — you\'re building academic register!' },
+const sampleWords = [
+  {
+    word: 'nevertheless',
+    pos: 'adv.',
+    example: 'The exam was tough; nevertheless, she passed with flying colors.',
+  },
+  {
+    word: 'mitigate',
+    pos: 'v.',
+    example: 'Small daily habits mitigate the stress of exam season.',
+  },
+  {
+    word: 'compelling',
+    pos: 'adj.',
+    example: 'A compelling argument needs evidence, not adjectives.',
+  },
 ];
-
-function AIChatDemo() {
-  const [visibleCount, setVisibleCount] = useState(0);
-
-  useEffect(() => {
-    if (visibleCount >= chatMessages.length) return;
-    const delay = visibleCount === 0 ? 800 : 1600;
-    const timer = setTimeout(() => setVisibleCount((c) => c + 1), delay);
-    return () => clearTimeout(timer);
-  }, [visibleCount]);
-
-  // Loop the animation
-  useEffect(() => {
-    if (visibleCount < chatMessages.length) return;
-    const timer = setTimeout(() => setVisibleCount(0), 4000);
-    return () => clearTimeout(timer);
-  }, [visibleCount]);
-
-  return (
-    <div className="relative w-full max-w-md mx-auto">
-      <div className="rounded-2xl border border-black/5 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] backdrop-blur-xl shadow-card dark:shadow-glass p-4 sm:p-5 space-y-3">
-        <div className="flex items-center gap-2 pb-2 border-b border-black/5 dark:border-white/[0.06]">
-          <div className="flex size-6 items-center justify-center rounded-lg bg-emerald-500/10">
-            <Bot className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <span className="text-xs font-semibold text-slate-500 dark:text-neutral-400">AI Coach</span>
-          <span className="ml-auto flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-        </div>
-        <div className="space-y-2.5 min-h-[180px] sm:min-h-[200px]">
-          <AnimatePresence mode="wait">
-            {chatMessages.slice(0, visibleCount).map((msg, i) => (
-              <motion.div
-                key={`${visibleCount}-${i}`}
-                initial={{ opacity: 0, y: 12, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.35, ease: [0, 0, 0, 1] }}
-                className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {msg.role === 'ai' && (
-                  <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                    <Bot className="size-3 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                )}
-                <div
-                  className={`rounded-xl px-3 py-2 text-xs leading-relaxed max-w-[85%] ${
-                    msg.role === 'user'
-                      ? 'bg-emerald-600 dark:bg-emerald-500 text-white'
-                      : 'bg-black/[0.03] dark:bg-white/[0.05] text-slate-700 dark:text-neutral-300'
-                  }`}
-                >
-                  {msg.text}
-                </div>
-                {msg.role === 'user' && (
-                  <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-white/10">
-                    <User className="size-3 text-slate-600 dark:text-neutral-400" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          {visibleCount < chatMessages.length && visibleCount > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex gap-2 items-center"
-            >
-              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                <Bot className="size-3 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div className="flex gap-1 px-3 py-2">
-                {[0, 1, 2].map((dot) => (
-                  <motion.span
-                    key={dot}
-                    className="size-1.5 rounded-full bg-emerald-500/50"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: dot * 0.2 }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Home() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const continuePath = isAuthenticated ? '/dashboard/today' : buildAuthRedirect('/dashboard/today');
   const primaryCtaPath = isAuthenticated ? continuePath : '/register';
-  const upgradePath = '/pricing';
 
-  const { scrollYProgress } = useScroll();
-  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '40%']);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
-  const bgScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.2]);
-  const bgOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Close mobile menu on Escape key or scroll
   useEffect(() => {
     if (!mobileMenuOpen) return;
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileMenuOpen(false); };
-    const handleScroll = () => setMobileMenuOpen(false);
-    window.addEventListener('keydown', handleEsc);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('keydown', handleEsc);
-      window.removeEventListener('scroll', handleScroll);
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
     };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, [mobileMenuOpen]);
 
-  const fadeUpVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.16, 1, 0.3, 1] as const } },
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
-  };
-
   return (
-    <div className="noise-bg bg-grid min-h-screen bg-slate-50 dark:bg-black font-sans tracking-tight text-slate-900 dark:text-white selection:bg-emerald-500/30">
-      {/* 1. Floating Pill Navbar */}
-      <div className="fixed inset-x-0 top-6 z-50 flex justify-center px-6 pointer-events-none">
-        <header
-          className={cn(
-            'pointer-events-auto flex h-14 w-full max-w-4xl items-center justify-between rounded-full border px-4 transition-all duration-500',
-            isScrolled
-              ? 'border-white/[0.08] bg-black/60 shadow-glass backdrop-blur-3xl'
-              : 'border-transparent bg-transparent'
-          )}
-        >
-          <Link to="/" className="group flex items-center gap-2.5 pl-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 ring-1 ring-emerald-500/20 transition-all group-hover:bg-emerald-500/20 group-hover:shadow-[0_0_15px_hsl(var(--primary)/0.3)]">
-              <BookOpen className="size-4" />
-            </div>
-            <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">VocabDaily</span>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Top nav — quiet, paper-warm */}
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <BookOpen className="h-4 w-4" />
+            </span>
+            <span className="text-sm font-semibold tracking-tight">VocabDaily</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8">
-            {['Outcomes', 'Workflow', 'Membership'].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="text-xs font-semibold uppercase tracking-widest text-neutral-400 transition-colors hover:text-white"
-              >
-                {t(`home.nav.${item.toLowerCase()}`, { defaultValue: item })}
-              </a>
-            ))}
+          <nav className="hidden items-center gap-7 md:flex">
+            <a href="#workflow" className="text-sm text-muted-foreground hover:text-foreground">
+              {t('home.nav.workflow', { defaultValue: 'How it works' })}
+            </a>
+            <Link to="/word-of-the-day" className="text-sm text-muted-foreground hover:text-foreground">
+              {t('home.nav.wordOfTheDay', { defaultValue: 'Word of the day' })}
+            </Link>
+            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
+              {t('home.nav.membership', { defaultValue: 'Pricing' })}
+            </Link>
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-3">
-            <div className="hidden sm:flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            <div className="hidden items-center gap-1 sm:flex">
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
-
-            <Link
-              to="/word-of-the-day"
-              className="hidden text-xs font-semibold text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors sm:block"
-            >
-              {t('home.nav.wordOfTheDay', { defaultValue: 'Word of the Day' })}
-            </Link>
             <Button
               asChild
               size="sm"
-              className="hidden sm:inline-flex h-9 rounded-full bg-black text-white dark:bg-white px-5 text-xs font-bold dark:text-black transition-all hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)] ml-2"
+              className="hidden h-9 rounded-md px-4 text-sm font-medium shadow-sm sm:inline-flex"
             >
-              <Link to={continuePath}>{t('home.nav.continueLearning', { defaultValue: 'Continue' })}</Link>
+              <Link to={continuePath}>
+                {isAuthenticated
+                  ? t('home.nav.continueLearning', { defaultValue: 'Continue' })
+                  : t('home.nav.signIn', { defaultValue: 'Sign in' })}
+              </Link>
             </Button>
-            {/* Mobile menu toggle */}
             <button
               type="button"
-              className="md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-black/10 dark:border-white/10 text-slate-700 dark:text-white transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground md:hidden"
+              onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
-        </header>
-        {/* Mobile dropdown menu */}
+        </div>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="pointer-events-auto mt-2 w-full max-w-4xl rounded-2xl border border-black/10 dark:border-white/10 bg-white/95 dark:bg-black/90 backdrop-blur-2xl p-4 shadow-lg"
-          >
-            <div className="flex flex-col gap-2">
-              {['Outcomes', 'Workflow', 'Membership'].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-white/80 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-                >
-                  {t(`home.nav.${item.toLowerCase()}`, { defaultValue: item })}
-                </a>
-              ))}
-              <div className="my-1 h-px bg-black/5 dark:bg-white/10" />
-              <Link
-                to="/word-of-the-day"
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-white/80 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                {t('home.nav.wordOfTheDay', { defaultValue: 'Word of the Day' })}
+          <div className="border-t border-border bg-card md:hidden">
+            <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
+              <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+                {t('home.nav.workflow', { defaultValue: 'How it works' })}
+              </a>
+              <Link to="/word-of-the-day" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+                {t('home.nav.wordOfTheDay', { defaultValue: 'Word of the day' })}
+              </Link>
+              <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+                {t('home.nav.membership', { defaultValue: 'Pricing' })}
               </Link>
               <Link
                 to={continuePath}
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-emerald-500"
+                className="mt-1 rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground"
               >
-                {t('home.nav.continueLearning', { defaultValue: 'Continue' })}
+                {isAuthenticated
+                  ? t('home.nav.continueLearning', { defaultValue: 'Continue' })
+                  : t('home.nav.signIn', { defaultValue: 'Sign in' })}
               </Link>
             </div>
-          </motion.div>
+          </div>
         )}
-      </div>
+      </header>
 
       <main>
-        {/* 2. Full-viewport Hero */}
-        <section className="relative flex min-h-screen items-center justify-center overflow-hidden pb-16 pt-28 sm:pb-32 lg:pb-40 lg:pt-40">
-          <Spotlight
-            className="-top-40 left-0 md:left-60 md:-top-20"
-            fill="hsl(161 84% 40% / 0.4)"
-          />
-          <motion.div style={{ scale: bgScale, opacity: bgOpacity, y: heroY }} className="absolute inset-0 -z-10 pointer-events-none">
-            <img src="/hero_bg_light.png" alt="" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 opacity-80 dark:opacity-0 mask-radial-fade" />
-            <img src="/hero_bg_dark.png" alt="" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 opacity-0 dark:opacity-70 mask-radial-fade" />
-            <div className="absolute inset-0 bg-slate-50/30 dark:bg-black/40 backdrop-blur-[2px] mask-radial-fade" />
-          </motion.div>
-
-          <div className="mx-auto flex max-w-[90rem] flex-col items-center px-6 lg:px-8">
-            <motion.div
-              style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
-              className="flex flex-col items-center text-center"
-            >
-              <motion.div variants={fadeUpVariants} className="mb-8 hidden sm:flex">
-                <div className="rounded-full border border-black/10 dark:border-white/10 bg-white/50 dark:bg-white/5 px-4 py-1.5 text-sm font-semibold text-slate-700 dark:text-neutral-300 backdrop-blur-md shadow-sm transition-all hover:bg-white dark:hover:bg-white/10 hover:-translate-y-0.5 cursor-pointer flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  {t('home.hero.badge', { defaultValue: '✨ VocabDaily 2.0 is now live' })}
-                  <span className="ml-1 text-slate-400 dark:text-neutral-500">-&gt;</span>
-                </div>
-              </motion.div>
-
-              <motion.h1
-                variants={fadeUpVariants}
-                className="mx-auto max-w-4xl text-[2rem] font-semibold leading-[1.15] tracking-tight text-slate-900 dark:text-white sm:text-[3rem] md:text-[5.5rem] lg:text-[6rem]"
-              >
-                <span className="bg-gradient-to-b from-slate-900 to-slate-500 dark:from-white dark:to-white/50 bg-clip-text text-transparent pb-1">Stop juggling AI tools.</span>
-                <br className="hidden md:block" />
-                <span className="bg-gradient-to-r from-emerald-500 to-teal-400 dark:from-emerald-300 dark:to-teal-200 bg-clip-text text-transparent pb-1 pr-2 sm:ml-0 md:ml-3">
-                  Start learning.
-                </span>
-              </motion.h1>
-
-              <motion.p
-                variants={fadeUpVariants}
-                className="mt-8 max-w-2xl text-lg font-normal leading-relaxed text-slate-500 dark:text-neutral-400 sm:text-xl"
-              >
-                {t('home.hero.subtitleZh', { defaultValue: '沿着一条清晰的学习工作流稳定推进，别被零散的工具分散注意力。' })}
-              </motion.p>
-
-              <motion.div variants={fadeUpVariants} className="mt-14 flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
-                <Button
-                  asChild
-                  size="lg"
-                  className="h-14 rounded-full bg-white px-10 text-lg font-bold text-black shadow-[0_0_40px_rgba(255,255,255,0.1),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all hover:scale-105 hover:bg-neutral-200"
-                >
-                  <Link to={primaryCtaPath}>
-                    {t('home.hero.cta.primary', { defaultValue: 'Start Free' })}
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="lg"
-                  className="h-14 rounded-full border border-white/5 bg-white/[0.02] px-8 text-lg font-medium text-neutral-300 hover:bg-white/[0.08] hover:border-white/10 transition-colors backdrop-blur-md"
-                >
-                  <Link to="/word-of-the-day">
-                    <CirclePlay className="mr-2 size-5 text-neutral-400" />
-                    {t('home.hero.cta.secondary', { defaultValue: 'Try It Free' })}
-                  </Link>
-                </Button>
-                <div className="mt-4 sm:mt-0 sm:ml-4 text-xs font-medium text-neutral-500 uppercase tracking-widest hidden lg:block">
-                  No credit card required.
-                </div>
-              </motion.div>
-
-              {/* AI Chat Demo Animation */}
-              <motion.div
-                variants={fadeUpVariants}
-                className="mt-16 w-full max-w-lg"
-              >
-                <AIChatDemo />
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
-
-
-        {/* 3. Outcomes First - Vercel Style Grid */}
-        <section id="outcomes" className="relative border-t border-black/5 dark:border-white/5 px-6 py-16 md:py-24 lg:py-32 lg:px-8">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--grid-line-color))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--grid-line-color))_1px,transparent_1px)] bg-[size:24px_24px]" />
-          <div className="mx-auto max-w-7xl relative z-10">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="text-center"
-            >
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-500">
-                Outcomes First
+        {/* Hero — first viewport with concrete workflow preview */}
+        <section className="border-b border-border/70">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:py-20">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent-memory))]" />
+                {t('home.hero.eyebrow', { defaultValue: 'A daily learning workbench for English' })}
               </span>
-              <h2 className="mt-6 text-[2rem] font-bold leading-[1.1] tracking-tighter sm:text-[3rem] md:text-[4.5rem] lg:text-[5.5rem]">
-                One cockpit. Real results.
-              </h2>
-            </motion.div>
+              <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
+                {t('home.hero.title', { defaultValue: "Practice English you'll actually remember." })}
+              </h1>
+              <p className="mt-3 text-base text-muted-foreground sm:text-lg" lang="zh-CN">
+                {t('home.hero.titleZh', { defaultValue: '每天 15 分钟，把词汇、写作、口语整合到一个学习节奏里。' })}
+              </p>
+              <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                {t('home.hero.body', {
+                  defaultValue:
+                    "Each day VocabDaily shows what's due to review, what to learn next, and gives you AI-coached feedback on the writing and speaking you actually practice.",
+                })}
+              </p>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-            >
-              {[
-                {
-                  icon: Target,
-                  title: t('home.outcomes.cards.nextAction.title', { defaultValue: 'Clear next action' }),
-                  detail: t('home.outcomes.cards.nextAction.titleZh', { defaultValue: '知道该做什么' }),
-                },
-                {
-                  icon: Brain,
-                  title: t('home.outcomes.cards.weakSpot.title', { defaultValue: 'Turn weak spots into drills' }),
-                  detail: t('home.outcomes.cards.weakSpot.titleZh', { defaultValue: '短板变成肌肉' }),
-                },
-                {
-                  icon: Sparkles,
-                  title: t('home.outcomes.cards.feedback.title', { defaultValue: 'Fast, structured feedback' }),
-                  detail: t('home.outcomes.cards.feedback.titleZh', { defaultValue: '结构化的反馈' }),
-                },
-                {
-                  icon: Route,
-                  title: t('home.outcomes.cards.path.title', { defaultValue: 'Personalized learning path' }),
-                  detail: t('home.outcomes.cards.path.titleZh', { defaultValue: 'AI 定制你的专属路线' }),
-                },
-              ].map((card, i) => (
-                <motion.div
-                  key={i}
-                  variants={fadeUpVariants}
-                  className="group relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/[0.04] bg-black/[0.02] dark:bg-white/[0.01] p-10 lg:p-14 transition-all duration-500 hover:bg-black/[0.04] dark:hover:bg-white/[0.03] hover:-translate-y-1"
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button asChild size="lg" className="h-11 rounded-md px-5 text-sm font-medium shadow-sm">
+                  <Link to={primaryCtaPath}>
+                    {t('home.hero.cta.primary', { defaultValue: "Start today's session" })}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Link
+                  to="#workflow"
+                  className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
                 >
-                  <div className="absolute top-8 right-8 text-xs font-mono text-black/10 dark:text-white/[0.1] font-bold tracking-widest group-hover:text-black/20 dark:group-hover:text-white/[0.2] transition-colors">{`0${i + 1}`}</div>
-                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/[0.1] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.05),transparent_50%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
-                  
-                  <div className="relative z-10">
-                    <div className="mb-10 flex size-12 items-center justify-center rounded-xl bg-white dark:bg-black/50 border border-black/5 dark:border-white/[0.05] shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.05)] transition-all duration-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 group-hover:border-emerald-200 dark:group-hover:border-emerald-500/20 dark:group-hover:shadow-[inset_0_1px_hsl(var(--primary)/0.3)] group-hover:scale-110 origin-left">
-                      <card.icon className="size-5 text-slate-500 dark:text-neutral-500 transition-colors duration-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]" strokeWidth={2} />
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white drop-shadow-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-50 transition-colors">{card.title}</h3>
-                      <p className="text-sm font-medium leading-relaxed text-slate-500 dark:text-neutral-500 group-hover:text-slate-600 dark:group-hover:text-neutral-400 transition-colors">{card.detail}</p>
+                  {t('home.hero.cta.secondary', { defaultValue: 'See how it works' })}
+                </Link>
+              </div>
+
+              <p className="mt-3 text-xs text-muted-foreground">
+                {t('home.hero.footnote', { defaultValue: 'Free to start · No credit card required · 免费开始' })}
+              </p>
+            </div>
+
+            {/* Today preview card */}
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {t('home.todayCard.label', { defaultValue: 'Today' })}
+                  </p>
+                  <p className="mt-1 text-lg font-semibold">
+                    {t('home.todayCard.title', { defaultValue: 'Your learning queue' })}
+                  </p>
+                </div>
+                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[hsl(var(--accent-memory))]/10 text-[hsl(var(--accent-memory))]">
+                  <Calendar className="h-4 w-4" />
+                </span>
+              </div>
+
+              <ul className="mt-5 space-y-3">
+                <li className="flex items-center justify-between rounded-md border border-border/80 bg-background px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-memory))]/10 text-[hsl(var(--accent-memory))]">
+                      <Brain className="h-3.5 w-3.5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium">12 due reviews</p>
+                      <p className="text-xs text-muted-foreground" lang="zh-CN">到期复习</p>
                     </div>
                   </div>
-                </motion.div>
+                  <span className="text-xs font-medium text-muted-foreground">~6 min</span>
+                </li>
+                <li className="flex items-center justify-between rounded-md border border-border/80 bg-background px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-practice))]/10 text-[hsl(var(--accent-practice))]">
+                      <BookOpen className="h-3.5 w-3.5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium">5 new words</p>
+                      <p className="text-xs text-muted-foreground" lang="zh-CN">新词学习</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground">~5 min</span>
+                </li>
+                <li className="flex items-center justify-between rounded-md border border-border/80 bg-background px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-coach))]/10 text-[hsl(var(--accent-coach))]">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium">1 coach mission</p>
+                      <p className="text-xs text-muted-foreground" lang="zh-CN">教练任务</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground">~4 min</span>
+                </li>
+              </ul>
+
+              <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+                <p className="text-xs text-muted-foreground">
+                  {t('home.todayCard.summary', { defaultValue: 'Estimated 15 min · 预计 15 分钟' })}
+                </p>
+                <Link
+                  to={primaryCtaPath}
+                  className="text-xs font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  {t('home.todayCard.cta', { defaultValue: 'Begin →' })}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Sample word strip */}
+          <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {t('home.examples.label', { defaultValue: 'A few words you might learn this week' })}
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {sampleWords.map((w) => (
+                <div key={w.word} className="rounded-lg border border-border bg-card p-4">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-base font-semibold tracking-tight">{w.word}</span>
+                    <span className="text-xs text-muted-foreground">{w.pos}</span>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">"{w.example}"</p>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
-        {/* 4. Workflow – Bento Grid */}
-        <section id="workflow" className="relative border-t border-black/5 dark:border-white/5 px-6 py-16 md:py-24 lg:py-32 lg:px-8">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[600px] rounded-full bg-emerald-500/[0.06] blur-[140px]" />
-          <div className="mx-auto max-w-7xl relative z-10">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="text-center"
-            >
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-500">
-                Workflow
-              </span>
-              <h2 className="mt-6 text-[2rem] font-bold leading-[1.1] tracking-tighter sm:text-[3rem] md:text-[4.5rem] lg:text-[5.5rem]">
-                A daily cockpit, not just flashcards.
-              </h2>
-              <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-400">
-                {t('home.workflow.subtitle', { defaultValue: '每天登录后，清晰知道该做什么、做完后拿到什么。' })}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="mt-20 grid auto-rows-[250px] gap-4 sm:grid-cols-2 lg:grid-cols-4"
-            >
+        {/* How it works */}
+        <section id="workflow" className="border-b border-border/70 bg-card/30">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              {t('home.workflow.title', { defaultValue: 'How VocabDaily works' })}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base" lang="zh-CN">
+              {t('home.workflow.subtitle', { defaultValue: '三步把零散学习变成稳定节奏。' })}
+            </p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
                 {
-                  icon: CalendarDays,
-                  title: t('home.workflow.steps.today.title', { defaultValue: 'Today Mission' }),
-                  description: t('home.workflow.steps.today.desc', { defaultValue: '每天一个清晰的任务面板。系统根据你的水平、到期复习和弱项自动排优先级。' }),
-                  accent: 'from-emerald-500/10 to-transparent',
-                  span: 'sm:col-span-2 lg:col-span-2 lg:row-span-2',
-                },
-                {
-                  icon: Brain,
-                  title: t('home.workflow.steps.review.title', { defaultValue: 'Spaced Review' }),
-                  description: t('home.workflow.steps.review.desc', { defaultValue: '到期复习卡自动浮出。先回忆，再打分。间隔算法帮你用最少的重复量维持记忆。' }),
-                  accent: 'from-cyan-500/10 to-transparent',
-                  span: 'sm:col-span-1 lg:col-span-1 lg:row-span-1',
-                },
-                {
-                  icon: WandSparkles,
-                  title: t('home.workflow.steps.practice.title', { defaultValue: 'Targeted Practice' }),
-                  description: t('home.workflow.steps.practice.desc', { defaultValue: '选择题、填空、听辨、写作——根据弱项自动推荐最该做的练习模式。' }),
-                  accent: 'from-violet-500/10 to-transparent',
-                  span: 'sm:col-span-1 lg:col-span-1 lg:row-span-1',
-                },
-                {
-                  icon: MessageCircleMore,
-                  title: t('home.workflow.steps.coach.title', { defaultValue: 'AI Coach' }),
-                  description: t('home.workflow.steps.coach.desc', { defaultValue: '带上下文的引导对话。不是通用聊天——AI 记住你的词书、弱项和学习历史。' }),
-                  accent: 'from-amber-500/10 to-transparent',
-                  span: 'sm:col-span-2 lg:col-span-2 lg:row-span-1',
+                  icon: Calendar,
+                  accent: 'var(--accent-memory)',
+                  title: t('home.workflow.steps.review.title', { defaultValue: 'Review what is due' }),
+                  body: t('home.workflow.steps.review.body', {
+                    defaultValue: 'FSRS-based spaced repetition tells you which words to retest today, no guessing.',
+                  }),
                 },
                 {
                   icon: Target,
-                  title: t('home.workflow.steps.exam.title', { defaultValue: 'Exam Prep' }),
-                  description: t('home.workflow.steps.exam.desc', { defaultValue: 'IELTS 冲分工作台。结构化写作评分、仿真题和个性化冲分路线。' }),
-                  accent: 'from-rose-500/10 to-transparent',
-                  span: 'sm:col-span-1 lg:col-span-1 lg:row-span-1',
+                  accent: 'var(--accent-practice)',
+                  title: t('home.workflow.steps.practice.title', { defaultValue: 'Practice with prompts' }),
+                  body: t('home.workflow.steps.practice.body', {
+                    defaultValue: 'Targeted drills, listening, writing tasks tied to the words you just studied.',
+                  }),
                 },
                 {
-                  icon: Sparkles,
-                  title: t('home.workflow.steps.analytics.title', { defaultValue: 'Real Analytics' }),
-                  description: t('home.workflow.steps.analytics.desc', { defaultValue: '不是随机生成的好看图表。真实的学习数据——你到底在进步还是在原地踏步。' }),
-                  accent: 'from-emerald-500/10 to-transparent',
-                  span: 'sm:col-span-1 lg:col-span-1 lg:row-span-1',
+                  icon: MessageSquare,
+                  accent: 'var(--accent-coach)',
+                  title: t('home.workflow.steps.coach.title', { defaultValue: 'Get coach feedback' }),
+                  body: t('home.workflow.steps.coach.body', {
+                    defaultValue: 'AI coach reviews your answers, schedules retries, and converts mistakes into review cards.',
+                  }),
                 },
               ].map((step, i) => (
-                <motion.div variants={fadeUpVariants} key={i} className={step.span}>
-                  <CardContainer containerClassName="h-full w-full" className="h-full w-full">
-                    <CardBody
-                      className="h-full w-full group relative overflow-visible rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.01] p-8 glass transition-all duration-500 hover:glass-strong hover:border-black/10 dark:hover:border-white/[0.15] hover:shadow-glass-hover"
-                    >
-                      <CardItem translateZ="-20" className={cn('pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100 rounded-2xl', step.accent)} />
-                      <CardItem translateZ="-10" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/[0.15] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                      
-                      <CardItem translateZ="50" className="relative z-10 w-full">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-black/10 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-slate-500 dark:text-white/50 transition-all duration-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 dark:group-hover:shadow-[0_0_15px_hsl(var(--primary)/0.2)]">
-                          <step.icon className="h-5 w-5" strokeWidth={1.5} />
-                        </div>
-                      </CardItem>
-                      <CardItem as="h3" translateZ="30" className="relative z-10 w-full mt-6 text-lg font-bold tracking-tight text-slate-900 dark:text-white drop-shadow-sm transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-50">
-                        {step.title}
-                      </CardItem>
-                      <CardItem as="p" translateZ="20" className="relative z-10 w-full mt-3 text-sm leading-relaxed text-slate-500 dark:text-neutral-400">
-                        {step.description}
-                      </CardItem>
-                    </CardBody>
-                  </CardContainer>
-                </motion.div>
+                <div key={i} className="rounded-xl border border-border bg-card p-5">
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-md"
+                    style={{
+                      backgroundColor: `hsl(${step.accent} / 0.1)`,
+                      color: `hsl(${step.accent})`,
+                    }}
+                  >
+                    <step.icon className="h-4 w-4" />
+                  </span>
+                  <h3 className="mt-4 text-base font-semibold">{step.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
-        {/* 5. Minimal Membership */}
-        <section id="membership" className="relative border-t border-black/5 dark:border-white/5 px-6 py-16 md:py-24 lg:py-32 lg:px-8">
-          <div className="absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 bg-emerald-500/5 blur-[120px]" />
-          <div className="mx-auto max-w-5xl relative z-10">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="grid gap-8 md:grid-cols-2"
-            >
-              <motion.div variants={fadeUpVariants} className="flex flex-col rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/5 dark:bg-black/50 p-10 glass transition-all hover:glass-strong hover-lift group">
-                <span className="text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-neutral-400">Free</span>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-6xl font-bold tracking-tighter text-slate-900 dark:text-white">$0</span>
-                </div>
-                <p className="mt-4 text-sm text-slate-500 dark:text-neutral-500">Perfect for getting started and maintaining a daily habit.</p>
-                <div className="mt-12 flex flex-1 flex-col gap-6">
-                  {['Daily mission', 'Core quiz', 'Smart review queue'].map((feat, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <Check className="size-5 text-slate-400 dark:text-neutral-600" />
-                      <span className="text-base font-medium text-slate-700 dark:text-neutral-300">{feat}</span>
-                    </div>
-                  ))}
-                </div>
-                <Button asChild variant="outline" className="mt-12 h-14 w-full rounded-xl border border-black/10 dark:border-white/10 bg-transparent text-lg font-semibold text-slate-900 dark:text-white transition-all hover:bg-black/5 dark:hover:bg-white/5">
-                  <Link to={primaryCtaPath}>Get Started Free</Link>
-                </Button>
-              </motion.div>
-
-              <motion.div variants={fadeUpVariants} className="relative flex flex-col rounded-2xl border-conic bg-white dark:bg-black p-10 shadow-glow-emerald-lg hover-lift group overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/[0.05] dark:from-emerald-500/[0.08] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.15),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
-                <div className="absolute -top-3 left-10 z-20 rounded-full border border-emerald-500/30 dark:border-emerald-500/50 bg-white dark:bg-black px-4 py-1 text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 shadow-sm dark:shadow-[0_0_20px_hsl(var(--primary)/0.5)]">
-                  Most Popular
-                </div>
-                <div className="relative z-10 flex flex-col flex-1">
-                  <span className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">Pro Power</span>
-                <div className="mt-6 flex items-baseline gap-2">
-                  <span className="text-7xl font-extrabold tracking-tighter text-slate-900 dark:text-white drop-shadow-sm">$9</span>
-                  <span className="text-xl font-medium text-slate-500 dark:text-neutral-500">.99 / mo</span>
-                </div>
-                <p className="mt-6 text-sm text-slate-600 dark:text-neutral-400 leading-relaxed max-w-sm">Unlock the full power of AI. Deep feedback, unlimited writing tests, and custom learning paths.</p>
-                <div className="mt-12 flex flex-1 flex-col gap-6">
-                  {['Deep AI feedback', 'Writing coach workflows', 'Full IELTS cockpit', 'Priority generation'].map((feat, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <Check className="size-5 text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-base font-medium text-slate-900 dark:text-white">{feat}</span>
-                    </div>
-                  ))}
-                </div>
-                <Button asChild className="mt-12 h-14 w-full rounded-xl bg-black dark:bg-white text-lg font-bold text-white dark:text-black shadow-[0_4px_14px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.1),inset_0_2px_4px_rgba(255,255,255,0.8)] transition-all hover:scale-105 hover:bg-slate-800 dark:hover:bg-neutral-200 relative z-10">
-                  <Link to={upgradePath}>Upgrade to Pro</Link>
-                </Button>
-                </div>
-              </motion.div>
-            </motion.div>
+        {/* Fact strip */}
+        <section className="border-b border-border/70">
+          <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <p>
+              <span className="font-medium text-foreground">FSRS-based spaced repetition</span>
+              <span className="mx-2 text-border">·</span>
+              <span>Coach-graded retries</span>
+              <span className="mx-2 text-border">·</span>
+              <span>Mistake-aware practice</span>
+            </p>
+            <p className="text-xs" lang="zh-CN">
+              {t('home.facts.zh', { defaultValue: '间隔记忆 · 教练评分 · 错题驱动练习' })}
+            </p>
           </div>
         </section>
 
-        {/* 6. Deep Dark Footer CTA */}
-        <section className="border-t border-black/5 dark:border-white/5 py-16 md:py-24 lg:py-32 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-center px-6"
-          >
-            <h2 className="max-w-3xl text-[2rem] font-bold leading-tight tracking-tighter text-slate-900 dark:text-white sm:text-[3rem] md:text-[4.5rem]">
-              Ready to master English with clarity?
-            </h2>
-            <Button asChild className="mt-10 h-14 rounded-full border border-emerald-600/50 dark:border-emerald-400/50 bg-emerald-600 dark:bg-emerald-500 px-10 text-lg font-bold text-white shadow-[0_0_30px_hsl(var(--primary)/0.2)] dark:shadow-[0_0_40px_hsl(var(--primary)/0.4),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-all hover:scale-105 hover:bg-emerald-500 dark:hover:bg-emerald-400 dark:hover:shadow-[0_0_60px_hsl(var(--primary)/0.6)]">
+        {/* Closing CTA */}
+        <section>
+          <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-20">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                {t('home.footer.cta.title', { defaultValue: 'Build a daily English habit you can keep.' })}
+              </h2>
+              <p className="mt-1.5 text-sm text-muted-foreground" lang="zh-CN">
+                {t('home.footer.cta.titleZh', { defaultValue: '从今天开始，用一个清晰的工作流学英语。' })}
+              </p>
+            </div>
+            <Button asChild size="lg" className="h-11 rounded-md px-5 text-sm font-medium shadow-sm">
               <Link to={primaryCtaPath}>
-                {t('home.footer.cta.guest', { defaultValue: 'Start Free' })} <ArrowRight className="ml-2 size-5" />
+                {t('home.footer.cta.guest', { defaultValue: "Start today's session" })}
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-          </motion.div>
+          </div>
         </section>
       </main>
+
+      <footer className="border-t border-border bg-card/30">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
+          <div className="flex items-center gap-2">
+            <span className={cn('flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary')}>
+              <BookOpen className="h-3 w-3" />
+            </span>
+            <span className="font-medium text-foreground">VocabDaily</span>
+          </div>
+          <p>© 2026 VocabDaily. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

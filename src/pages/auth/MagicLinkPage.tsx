@@ -53,7 +53,7 @@ export default function MagicLinkPage() {
         }
       >
         <div className="flex flex-col items-center text-center">
-          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
           <p className="text-sm text-slate-700 dark:text-white/80">
@@ -68,7 +68,7 @@ export default function MagicLinkPage() {
             <Link to="/login">
               <Button
                 variant="outline"
-                className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-900 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08]"
+                className="h-11 w-full rounded-md"
               >
                 Back to sign in
               </Button>
@@ -119,14 +119,14 @@ export default function MagicLinkPage() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
-              className="h-12 rounded-2xl border-slate-200 bg-white pl-11 text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+              className="h-11 rounded-md pl-11"
             />
           </div>
         </div>
 
         <Button
           type="submit"
-          className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-semibold text-white shadow-glow-emerald transition-all hover:bg-emerald-500 hover:shadow-glow-emerald-lg disabled:opacity-60 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+          className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
           disabled={isLoading || !email}
         >
           {isLoading ? (

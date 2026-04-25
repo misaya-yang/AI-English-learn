@@ -172,7 +172,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
-              className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+              className="h-11 rounded-md"
             />
           </div>
 
@@ -205,14 +205,14 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 required
-                className="h-12 rounded-2xl border-slate-200 bg-white pr-12 text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+                className="h-11 rounded-md pr-12"
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-1 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-white/40 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -222,7 +222,7 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-semibold text-white shadow-glow-emerald transition-all hover:bg-emerald-500 hover:shadow-glow-emerald-lg disabled:opacity-60 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+            className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -240,10 +240,10 @@ export default function LoginPage() {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <Separator className="bg-slate-200 dark:bg-white/[0.08]" />
+            <Separator />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-3 text-slate-400 dark:bg-transparent dark:text-white/30">
+            <span className="bg-card px-3 text-muted-foreground">
               or <span lang="zh-CN">或</span>
             </span>
           </div>
@@ -252,11 +252,11 @@ export default function LoginPage() {
         <Button
           type="button"
           variant="outline"
-          className="h-12 w-full rounded-2xl border-slate-200 bg-white text-slate-900 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08] dark:hover:text-white"
+          className="h-11 w-full rounded-md"
           onClick={handleDemoLogin}
           disabled={isLoading}
         >
-          <Sparkles className="mr-2 h-4 w-4 text-emerald-500" />
+          <Sparkles className="mr-2 h-4 w-4 text-primary" />
           <span>Try the demo</span>
           <span className="ml-2 text-slate-500 dark:text-white/50" lang="zh-CN">
             体验演示账号
@@ -267,25 +267,25 @@ export default function LoginPage() {
       {/* Forgot Password Overlay — kept lightweight; reuses same focus model. */}
       {showForgotPassword && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm dark:bg-black/70"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="reset-password-title"
         >
-          <div className="w-full max-w-[400px] rounded-3xl border border-slate-200/60 bg-white p-8 shadow-2xl dark:border-white/[0.08] dark:bg-[#0a0a0a]">
+          <div className="w-full max-w-[400px] rounded-xl border border-border bg-card p-7 shadow-lg">
             <h3
               id="reset-password-title"
-              className="text-center text-xl font-semibold tracking-tight text-slate-900 dark:text-white"
+              className="text-center text-lg font-semibold tracking-tight text-foreground"
             >
               Reset password
             </h3>
-            <p className="mt-1 text-center text-sm text-emerald-600 dark:text-emerald-400" lang="zh-CN">
+            <p className="mt-1 text-center text-sm text-[hsl(var(--accent-memory))]" lang="zh-CN">
               重置密码
             </p>
-            <p className="mt-3 text-center text-sm text-slate-600 dark:text-white/50">
+            <p className="mt-3 text-center text-sm text-muted-foreground">
               We'll email you a secure reset link.
               <br />
-              <span lang="zh-CN" className="text-xs text-slate-500 dark:text-white/40">
+              <span lang="zh-CN" className="text-xs text-muted-foreground/80">
                 我们会向你的邮箱发送重置链接。
               </span>
             </p>
@@ -307,12 +307,12 @@ export default function LoginPage() {
                   disabled={isResetting}
                   required
                   autoFocus
-                  className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+                  className="h-11 rounded-md"
                 />
               </div>
               <Button
                 type="submit"
-                className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-semibold text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+                className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 disabled={isResetting}
               >
                 {isResetting ? (
@@ -330,7 +330,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="ghost"
-                className="h-10 w-full rounded-2xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                className="h-10 w-full rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => setShowForgotPassword(false)}
               >
                 Back to sign in

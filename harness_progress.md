@@ -1286,3 +1286,102 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
 
 - Not pushed.
 
+
+---
+
+## 2026-04-25 18:55 — UIR-01..05 visual reset (Modern Learning Workbench)
+
+- Loop: PHASE=UIR. Picked all five UIR-* tasks and shipped as one
+  coherent vertical slice — the design tokens flow into every public
+  surface, so splitting them across loops would have produced a
+  visibly inconsistent product mid-flight.
+
+- Changed:
+  - `src/index.css` — paper-warm light tokens, `--radius: 0.625rem`,
+    semantic accent vars (`--accent-practice/coach/exam/memory/
+    error`), `.noise-bg`/`.bg-grid`/`.glass`/`.glow-*`/`.border-conic`
+    neutralized rather than removed (downstream pages still reference
+    them; opacity/alpha reduced to near-invisible).
+  - `src/pages/Home.tsx` — full rewrite. Light hero with brand row,
+    bilingual headline, "Today" preview card showing 12 due / 5 new
+    / 1 coach mission, three real-looking vocab examples, "How it
+    works" 3-step section, fact strip, footer. No grid overlay, no
+    glass nav, no oversized pills, 8–10px radii.
+  - `src/pages/LandingPage.tsx` — cosmetic pass: radii reduced,
+    emerald CTAs → token-driven primary. Structural layout
+    unchanged.
+  - `src/features/marketing/AuthShell.tsx` — light two-column shell
+    (brand+reassurance left on lg, form right; mobile stacks form
+    first). Dropped ambient blur globes and grid overlay.
+  - `src/features/marketing/BrandMark.tsx` — softened bezel, removed
+    glow shadow.
+  - `src/pages/auth/{LoginPage,RegisterPage,MagicLinkPage,
+    OnboardingPage,AuthCallbackPage}.tsx` — token-driven primary
+    buttons (no more dark:bg-emerald-500 dark:text-black overrides),
+    `rounded-md` inputs, no shadow-glow-emerald. Onboarding's
+    selected-choice ring kept on sage-green by intent (semantic
+    `--accent-memory`).
+  - `src/pages/PricingPage.tsx` — paper bg, `rounded-xl` plan cards,
+    featured plan distinguished by `ring-2 ring-[hsl(var(--accent-coach))]`
+    instead of emerald glow. `pricingAvailability` fail-closed
+    branches untouched.
+  - `src/pages/WordOfTheDayPage.tsx` — daily-study artifact layout,
+    paper background, `rounded-xl` surfaces, light sticky header.
+    Data fetching unchanged.
+  - `src/components/DashboardSkeleton.tsx` — public route fallback
+    quieted: small primary-tinted logo + slim shimmer bar on
+    `bg-background`. No more dark loading splash.
+  - `src/features/marketing/AuthShell.test.tsx` — switched to
+    `getAllByLabelText` because BrandMark now legitimately renders
+    twice (mobile-inline + desktop-aside) under JSDOM (no media
+    queries).
+
+- Verified:
+  - `npx vitest run src/features/marketing/AuthShell.test.tsx` →
+    5/5 ✅
+  - `npm run build` → tsc + vite clean (3.69s).
+  - Vite preview at 127.0.0.1:4173, Playwright smoke:
+    - `/` desktop 1280×820 → light hero, "TODAY" queue card visible
+      with 12 due / 5 new / 1 coach mission, three vocab examples,
+      no grid overlay, no glow.
+    - `/` mobile 375×812 → no horizontal overflow, hero copy intact.
+    - `/login` desktop → two-column with brand-quote left, form
+      right; flat panel.
+    - `/login` mobile → form-first stack, primary CTA above the
+      fold.
+    - `/register` mobile → password-strength meter visible, form
+      fits 375px width without overflow.
+    - `/pricing` mobile → "Pro checkout is not yet open · Pro 订阅
+      暂未开放" fail-closed banner visible at top, plan card
+      `rounded-xl`, no glow.
+    - `/word-of-the-day` mobile → word card with phonetic, audio
+      button, share button, definition tab visible. Paper bg.
+  - Console: only error is favicon 404 (pre-existing). Zero JS
+    errors on any route.
+
+- Deploy: pure frontend; Vercel ships everything on push.
+
+- Risks:
+  - LandingPage was a cosmetic pass, not a structural rewrite.
+    Acceptable — UIR-02 explicitly targets Home; LandingPage now
+    reads consistently with the new tokens but its hero structure
+    could be tightened in a follow-up.
+  - `.glass` / `.noise-bg` / `.glow-*` utility classes still exist
+    (deliberately neutralized). Dashboard surfaces that depend on
+    them keep working but inherit the quieter look. A future
+    cleanup loop can audit and delete unused references.
+  - i18n keys added in Home use inline `defaultValue` so en/zh
+    fallbacks always render. `src/i18n/index.ts` was not touched;
+    `npm run check:i18n` still passes against the existing key set.
+
+- Test posture: full vitest run pre-fix had AuthShell duplicate-
+  brand failure (1/609). After the test update: 53 files, 609/609
+  pass. `npm run build` clean.
+
+- Next:
+  - User acceptance pass on the Playwright screenshots (home-desktop,
+    login-mobile, login-desktop, register-mobile, pricing-mobile,
+    wotd-mobile saved under repo root via MCP).
+  - Once accepted: optionally migrate dashboard surfaces away from
+    `.glass`/`.glow-*` to match. Deferred until user signs off on
+    the public-surface direction.

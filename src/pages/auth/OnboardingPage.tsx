@@ -146,8 +146,8 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <GraduationCap className="h-7 w-7" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <GraduationCap className="h-6 w-6" />
               </div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 What's your English level?
@@ -189,7 +189,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => setPreferences((prev) => ({ ...prev, cefrLevel: level.level }))}
                   className={cn(
-                    'flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all',
+                    'flex items-center gap-4 rounded-lg border-2 p-4 text-left transition-all',
                     preferences.cefrLevel === level.level
                       ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
                       : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
@@ -226,7 +226,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <Target className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
                 <span>50</span>
               </div>
 
-              <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
+              <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
                 <p className="text-sm text-slate-700 dark:text-white/80">
                   <strong className="text-emerald-700 dark:text-emerald-300">Recommended:</strong>{' '}
                   10–15 words per day for optimal retention.
@@ -284,7 +284,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <Sparkles className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -302,7 +302,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => toggleTopic(topic.id)}
                   className={cn(
-                    'rounded-2xl border-2 p-4 text-left transition-all',
+                    'rounded-lg border-2 p-4 text-left transition-all',
                     preferences.preferredTopics.includes(topic.id)
                       ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
                       : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <BookOpen className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -348,7 +348,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => setPreferences((prev) => ({ ...prev, learningStyle: style.id }))}
                   className={cn(
-                    'flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all',
+                    'flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-all',
                     preferences.learningStyle === style.id
                       ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
                       : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
@@ -412,7 +412,7 @@ export default function OnboardingPage() {
             variant="outline"
             onClick={handleBack}
             disabled={step === 1 || isLoading}
-            className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08]"
+            className="rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08]"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back
@@ -425,7 +425,7 @@ export default function OnboardingPage() {
               isLoading ||
               (step === 3 && preferences.preferredTopics.length < 2)
             }
-            className="rounded-2xl bg-emerald-600 text-white shadow-glow-emerald transition-all hover:bg-emerald-500 hover:shadow-glow-emerald-lg dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+            className="rounded-md bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
             {isLoading ? (
               <>

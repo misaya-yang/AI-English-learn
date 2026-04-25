@@ -32,16 +32,15 @@ export function BrandMark({
   );
 
   const taglineClass = cn(
-    'text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500',
+    'text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground',
   );
 
   const inner = (
     <>
       <span
         className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-600 transition-all',
-          'dark:text-emerald-400',
-          'group-hover:bg-emerald-500/20 group-hover:shadow-[0_0_14px_hsl(var(--primary)/0.3)]',
+          'flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors',
+          'group-hover:bg-primary/15',
         )}
         aria-hidden="true"
       >

@@ -144,7 +144,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             disabled={isLoading}
             required
-            className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+            className="h-11 rounded-md"
           />
         </div>
 
@@ -165,7 +165,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             disabled={isLoading}
             required
-            className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+            className="h-11 rounded-md"
           />
         </div>
 
@@ -187,14 +187,14 @@ export default function RegisterPage() {
               onChange={handleChange}
               disabled={isLoading}
               required
-              className="h-12 rounded-2xl border-slate-200 bg-white pr-12 text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+              className="h-11 rounded-md pr-12"
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              className="absolute right-1 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-white/40 dark:hover:bg-white/[0.06] dark:hover:text-white"
+              className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -243,7 +243,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             disabled={isLoading}
             required
-            className="h-12 rounded-2xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/25"
+            className="h-11 rounded-md"
           />
           {formData.confirmPassword && !passwordsMatch && (
             <p className="text-xs text-rose-500" role="alert">
@@ -284,7 +284,7 @@ export default function RegisterPage() {
 
         <Button
           type="submit"
-          className="h-12 w-full rounded-2xl bg-emerald-600 text-sm font-semibold text-white shadow-glow-emerald transition-all hover:bg-emerald-500 hover:shadow-glow-emerald-lg disabled:opacity-60 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+          className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
           disabled={isLoading || !allChecksPass || !agreeTerms || !passwordsMatch}
         >
           {isLoading ? (

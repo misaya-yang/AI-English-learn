@@ -111,7 +111,7 @@ export default function WordOfTheDayPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-xl border-border bg-card">
         <CardContent className="p-6 md:p-8">
           {/* Word Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -251,19 +251,19 @@ export default function WordOfTheDayPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-background/80 backdrop-blur">
-        <div className="container mx-auto px-4 py-4">
+      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-white" />
-              </div>
-              <span className="font-bold">VocabDaily AI</span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <BookOpen className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-semibold tracking-tight">VocabDaily</span>
             </Link>
             <Link to="/register">
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
+              <Button className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
                 Start Learning
               </Button>
             </Link>
@@ -289,14 +289,14 @@ export default function WordOfTheDayPage() {
         <div className="mt-8 flex flex-col items-center gap-4">
           <div className="flex flex-wrap justify-center gap-3">
             <Link to="/register">
-              <Button size="lg" variant="outline" className="rounded-xl">
-                <BookmarkPlus className="h-5 w-5 mr-2" />
+              <Button size="lg" variant="outline" className="h-11 rounded-md">
+                <BookmarkPlus className="h-4 w-4 mr-2" />
                 Add to My Word Bank
               </Button>
             </Link>
             <Link to="/register">
-              <Button size="lg" className="rounded-xl bg-emerald-600 hover:bg-emerald-700">
-                <Sparkles className="h-5 w-5 mr-2" />
+              <Button size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
+                <Sparkles className="h-4 w-4 mr-2" />
                 Start Free Journey
               </Button>
             </Link>
@@ -315,9 +315,9 @@ export default function WordOfTheDayPage() {
           
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {paginatedWords.map((item) => (
-              <Card 
-                key={item.date} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
+              <Card
+                key={item.date}
+                className="cursor-pointer rounded-lg border-border bg-card transition-shadow hover:shadow-sm"
                 onClick={() => handlePreviousWordClick(item.date, item.word)}
               >
                 <CardContent className="p-4">
@@ -370,17 +370,17 @@ export default function WordOfTheDayPage() {
       </Dialog>
 
       {/* Footer */}
-      <footer className="border-t bg-white/80 dark:bg-background/80 backdrop-blur mt-12">
+      <footer className="mt-12 border-t border-border bg-card/30">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center justify-between gap-3 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded flex items-center justify-center">
-                <BookOpen className="h-3 w-3 text-white" />
-              </div>
-              <span className="font-medium">VocabDaily AI</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <BookOpen className="h-3 w-3" />
+              </span>
+              <span className="text-sm font-medium">VocabDaily</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2024 VocabDaily AI. All rights reserved.
+            <p className="text-xs text-muted-foreground">
+              © 2026 VocabDaily. All rights reserved.
             </p>
           </div>
         </div>

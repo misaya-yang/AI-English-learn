@@ -174,15 +174,15 @@ export default function PricingPage() {
   }, [location.search]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020303] dark:text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header reuses the shared brand mark so Pricing matches Home / Auth. */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-md dark:border-white/[0.06] dark:bg-[#020303]/85">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <BrandMark />
           <div className="flex items-center gap-2 sm:gap-4">
             {isAuthenticated ? (
               <Link to="/dashboard/today">
-                <Button className="h-9 rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white hover:bg-emerald-500 sm:text-sm dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400">
+                <Button className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
                   Go to dashboard
                 </Button>
               </Link>
@@ -190,12 +190,12 @@ export default function PricingPage() {
               <>
                 <Link
                   to="/login"
-                  className="hidden text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-white/60 dark:hover:text-white sm:inline-block"
+                  className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
                 >
                   Sign in
                 </Link>
                 <Link to="/register">
-                  <Button className="h-9 rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white hover:bg-emerald-500 sm:text-sm dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400">
+                  <Button className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
                     Get started
                   </Button>
                 </Link>
@@ -317,14 +317,14 @@ export default function PricingPage() {
                 <Card
                   data-testid={`pricing-plan-${plan.id}`}
                   className={cn(
-                    'relative h-full overflow-hidden rounded-2xl border',
+                    'relative h-full overflow-hidden rounded-xl border bg-card',
                     plan.highlighted
-                      ? 'border-emerald-500/60 shadow-glow-emerald dark:border-emerald-500/40'
-                      : 'border-slate-200 dark:border-white/10',
+                      ? 'border-transparent ring-2 ring-[hsl(var(--accent-coach))]'
+                      : 'border-border',
                   )}
                 >
                   {plan.highlighted && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm dark:bg-emerald-500 dark:text-black">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[hsl(var(--accent-coach))] px-3 py-1 text-xs font-medium text-white shadow-sm">
                       Most popular · 最受欢迎
                     </Badge>
                   )}
@@ -386,7 +386,7 @@ export default function PricingPage() {
                       {plan.id === 'free' ? (
                         <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
                           <Button
-                            className="h-12 w-full rounded-2xl border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]"
+                            className="h-11 w-full rounded-md"
                             variant="outline"
                           >
                             {plan.cta}
@@ -426,7 +426,7 @@ export default function PricingPage() {
                         // behind this branch so we can lift it back in once
                         // VITE_BILLING_ENABLED=true is set on the deploy.
                         <Button
-                          className="h-12 w-full rounded-2xl bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+                          className="h-11 w-full rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                           onClick={() =>
                             toast.info('Checkout will start when payment provider is configured.')
                           }
@@ -489,7 +489,7 @@ export default function PricingPage() {
           <Link to="/register">
             <Button
               size="lg"
-              className="mt-5 rounded-full bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+              className="mt-5 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
             >
               <Sparkles className="mr-2 h-5 w-5" />
               Start free

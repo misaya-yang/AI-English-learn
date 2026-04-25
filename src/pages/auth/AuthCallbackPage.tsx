@@ -74,11 +74,11 @@ export default function AuthCallbackPage() {
     return (
       <AuthShell title="Completing sign in" titleZh="正在完成登录">
         <div className="flex flex-col items-center justify-center py-6 text-center">
-          <Loader2 className="mb-4 h-10 w-10 animate-spin text-emerald-500" aria-hidden="true" />
-          <p className="text-sm text-slate-700 dark:text-white/80">
+          <Loader2 className="mb-4 h-9 w-9 animate-spin text-primary" aria-hidden="true" />
+          <p className="text-sm text-foreground">
             Almost there — verifying your session.
           </p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+          <p className="mt-1 text-xs text-muted-foreground" lang="zh-CN">
             正在验证你的登录信息……
           </p>
         </div>

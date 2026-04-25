@@ -47,9 +47,11 @@ describe('AuthShell', () => {
     expect(screen.getByText('Back to home')).toBeInTheDocument();
     expect(screen.getByText('返回首页')).toBeInTheDocument();
     // Also exposes the brand mark with an accessible name.
+    // BrandMark renders twice (mobile inline + desktop aside); both share the
+    // same accessible label, so use getAllByLabelText.
     expect(
-      screen.getByLabelText('VocabDaily — back to home'),
-    ).toBeInTheDocument();
+      screen.getAllByLabelText('VocabDaily — back to home').length,
+    ).toBeGreaterThan(0);
   });
 
   it('renders the children panel content (forms, success states, etc.)', () => {

@@ -21,19 +21,10 @@ interface AuthShellProps {
 }
 
 /**
- * AuthShell — the shared visual frame for every auth & onboarding surface.
+ * AuthShell — Modern Learning Workbench auth surface.
  *
- * Goals:
- *   - One brand, one typography scale across Login / Register / MagicLink /
- *     AuthCallback / Onboarding.
- *   - Bilingual labels (en + zh) baked into the API so individual screens
- *     can't drift.
- *   - Mobile-first: 375px width, no horizontal scroll, primary CTA above the
- *     fold (the panel is `min-h` rather than `h-screen`-locked).
- *   - Light + dark via existing CSS variables — no extra heavy deps.
- *
- * This is intentionally lighter than `LearningCockpitShell`: no layout slots,
- * no nested providers, no router state. Auth surfaces stay quick to render.
+ * Light, paper-warm two-column layout on lg+, single column on mobile.
+ * No glass / glow / grid overlays — calm, learner-friendly.
  */
 export function AuthShell({
   title,
@@ -48,86 +39,86 @@ export function AuthShell({
   const widthClass = size === 'wide' ? 'max-w-xl' : 'max-w-[420px]';
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-slate-50 dark:bg-[#020303]">
-      {/* Ambient glow + grid — purely decorative, never blocks pointer events. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[480px] w-[700px] rounded-full bg-emerald-500/[0.06] blur-[140px] dark:bg-emerald-500/[0.08]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-0 bottom-0 h-[320px] w-[320px] rounded-full bg-emerald-500/[0.04] blur-[120px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--grid-line-color))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--grid-line-color))_1px,transparent_1px)] bg-[size:32px_32px] opacity-60 dark:opacity-100"
-      />
+    <div className="min-h-screen bg-background text-foreground">
+      <main className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16 lg:py-20">
+        {/* Form column — first on mobile per direction. */}
+        <div className="order-1 flex justify-center lg:order-2 lg:justify-start">
+          <div className={cn('w-full', widthClass)}>
+            <div className="mb-6 flex justify-center lg:hidden">
+              <BrandMark />
+            </div>
 
-      <main className="relative flex min-h-screen flex-col items-center justify-center px-4 py-10 sm:py-16">
-        <div className={cn('w-full', widthClass)}>
-          <div className="mb-8 flex justify-center sm:mb-10">
-            <BrandMark />
-          </div>
+            <div className="mb-5 text-center lg:text-left">
+              <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                {title}
+              </h1>
+              <p
+                className="mt-1 text-sm text-[hsl(var(--accent-memory))]"
+                lang="zh-CN"
+              >
+                {titleZh}
+              </p>
+              {(subtitle || subtitleZh) && (
+                <div className="mt-2 space-y-0.5">
+                  {subtitle && (
+                    <p className="text-sm text-muted-foreground">{subtitle}</p>
+                  )}
+                  {subtitleZh && (
+                    <p className="text-xs text-muted-foreground/80" lang="zh-CN">
+                      {subtitleZh}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
-          {/* Title block — always bilingual. */}
-          <div className="mb-6 text-center sm:mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-[1.6rem]">
-              {title}
-            </h1>
-            <p
-              className="mt-1.5 text-sm text-emerald-600 dark:text-emerald-400"
-              lang="zh-CN"
+            <section
+              className={cn(
+                'rounded-xl border border-border bg-card p-6 shadow-sm sm:p-7',
+                panelClassName,
+              )}
             >
-              {titleZh}
-            </p>
-            {(subtitle || subtitleZh) && (
-              <div className="mt-3 space-y-1">
-                {subtitle && (
-                  <p className="text-sm text-slate-600 dark:text-white/60">
-                    {subtitle}
-                  </p>
-                )}
-                {subtitleZh && (
-                  <p
-                    className="text-xs text-slate-500 dark:text-white/40"
-                    lang="zh-CN"
-                  >
-                    {subtitleZh}
-                  </p>
-                )}
+              {children}
+            </section>
+
+            {footer && (
+              <div className="mt-5 text-center text-sm text-muted-foreground lg:text-left">
+                {footer}
               </div>
             )}
-          </div>
 
-          <section
-            className={cn(
-              'rounded-3xl border border-slate-200/70 bg-white/95 p-6 shadow-card backdrop-blur-md',
-              'sm:p-8',
-              'dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-glass',
-              panelClassName,
-            )}
-          >
-            {children}
-          </section>
-
-          {footer && (
-            <div className="mt-6 text-center text-sm text-slate-500 dark:text-white/40">
-              {footer}
+            <div className="mt-6 text-center lg:text-left">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ArrowLeft className="h-3 w-3" aria-hidden="true" />
+                <span>Back to home</span>
+                <span className="text-muted-foreground/60">·</span>
+                <span lang="zh-CN">返回首页</span>
+              </Link>
             </div>
-          )}
-
-          <div className="mt-8 text-center">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-white/40 dark:hover:text-white/80"
-            >
-              <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-              <span>Back to home</span>
-              <span className="text-slate-400 dark:text-white/30">·</span>
-              <span lang="zh-CN">返回首页</span>
-            </Link>
           </div>
         </div>
+
+        {/* Brand / reassurance column — hidden on mobile, primary on lg. */}
+        <aside className="order-2 hidden flex-col justify-center lg:order-1 lg:flex">
+          <BrandMark />
+          <h2 className="mt-8 max-w-md text-2xl font-semibold tracking-tight text-foreground">
+            A calmer way to practice English every day.
+          </h2>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground" lang="zh-CN">
+            把每天的复习、练习、教练反馈整合到一个学习工作台。
+          </p>
+          <blockquote className="mt-8 max-w-md border-l-2 border-[hsl(var(--accent-memory))]/60 pl-4 text-sm leading-relaxed text-muted-foreground">
+            "Learning sticks when you come back at the right moment, not when you grind harder."
+          </blockquote>
+          <ul className="mt-8 space-y-2 text-xs text-muted-foreground">
+            <li>· FSRS-based spaced repetition</li>
+            <li>· Coach-graded writing &amp; speaking retries</li>
+            <li>· Mistake-aware daily missions</li>
+          </ul>
+        </aside>
       </main>
     </div>
   );
