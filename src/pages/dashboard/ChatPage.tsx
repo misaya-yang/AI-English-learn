@@ -34,12 +34,15 @@ import { useSupabaseChat } from '@/hooks/useSupabaseChat';
 import { useTranslation } from 'react-i18next';
 import type { ChatArtifact, ChatMode } from '@/types/chatAgent';
 import { useUserData } from '@/contexts/UserDataContext';
+import type { UserProgress } from '@/data/localStorage';
 import type { WordData } from '@/data/words';
 import { generateMicroLessonFromErrors } from '@/services/aiExamCoach';
 import { useAuth } from '@/contexts/AuthContext';
 import type { FeedbackIssue } from '@/types/examContent';
 import { saveAiFeedbackRecord } from '@/data/examContent';
 import { deleteMemoryItems, rememberMemoryItems } from '@/services/memoryCenter';
+import { computeLearnerModel } from '@/services/learnerModel';
+import { getMistakes } from '@/services/mistakeCollector';
 import { buildQuizSequencePrompt, parseRequestedQuizCount } from '@/features/chat/quizSequence';
 import { ChatComposer } from '@/features/chat/components/ChatComposer';
 import { ChatHistorySidebar } from '@/features/chat/components/ChatHistorySidebar';
@@ -48,7 +51,11 @@ import { ChatMessageBubble } from '@/features/chat/components/ChatMessageBubble'
 import { ChatWelcome, buildRecommendations } from '@/features/chat/components/ChatWelcome';
 import { QuizArtifactCard } from '@/features/chat/components/QuizArtifactCard';
 import type { ChatModeOption, QuickPromptOption } from '@/features/chat/types';
-import { buildChatGoalContext, deriveChatWeakTags } from '@/features/chat/utils/learnerContext';
+import {
+  buildChatGoalContext,
+  buildChatLearnerProfile,
+  deriveChatWeakTags,
+} from '@/features/chat/utils/learnerContext';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 // Dynamic quick prompts based on learning stage
@@ -233,11 +240,14 @@ export default function ChatPage() {
   const chatUserId = user?.id || 'guest';
   const {
     activeBook,
+    activeBookSummary,
     addCustomWord,
     completeMissionTask,
     dailyMission,
     dueWords,
     learningProfile,
+    progress,
+    streak,
   } = useUserData();
   const {
     sessions,
@@ -373,6 +383,29 @@ export default function ChatPage() {
       }),
     [activeBook?.name, dailyMission, dueWords.length, learningProfile],
   );
+
+  // Recompute the learner-model snapshot whenever progress/streak/goal
+  // changes. The mistake list is read fresh inside `getChatLearnerProfile`
+  // because the mistake collector writes during practice flows and we want
+  // the next chat turn to see the most recent errors.
+  const chatLearnerModelSnapshot = useMemo(() => {
+    if (!progress || progress.length === 0) return null;
+    return computeLearnerModel(
+      chatUserId,
+      progress as UserProgress[],
+      streak.current,
+      activeBookSummary.dailyGoal,
+    );
+  }, [activeBookSummary.dailyGoal, chatUserId, progress, streak.current]);
+
+  const getChatLearnerProfile = useCallback(() => {
+    return buildChatLearnerProfile({
+      learningProfile,
+      weakTags: chatWeakTags,
+      learnerModel: chatLearnerModelSnapshot,
+      recentMistakes: getMistakes({ eliminated: false }),
+    });
+  }, [chatLearnerModelSnapshot, chatWeakTags, learningProfile]);
 
   const recommendations = useMemo(() => buildRecommendations({
     dueCount: dueWords.length,
@@ -597,6 +630,7 @@ export default function ChatPage() {
       surface: 'chat',
       goalContext,
       weakTags: chatWeakTags,
+      learnerProfile: getChatLearnerProfile(),
       mode: shouldStartQuizSequence ? 'quiz' : chatMode,
       responseStyle: shouldStartQuizSequence ? 'coach' : 'coach',
       searchMode: shouldStartQuizSequence ? 'off' : searchMode,
@@ -619,7 +653,7 @@ export default function ChatPage() {
         forceQuiz: shouldStartQuizSequence || undefined,
       },
     });
-  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, input, isLoading, language, quizRunState, searchMode, sendMessage, startQuizRun, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, getChatLearnerProfile, goalContext, input, isLoading, language, quizRunState, searchMode, sendMessage, startQuizRun, syncQuizSequence]);
 
   // Handle quick prompt
   const handleQuickPrompt = useCallback((text: string) => {
@@ -635,6 +669,7 @@ export default function ChatPage() {
       surface: 'chat',
       goalContext,
       weakTags: chatWeakTags,
+      learnerProfile: getChatLearnerProfile(),
       mode: chatMode,
       responseStyle: 'coach',
       searchMode,
@@ -645,7 +680,7 @@ export default function ChatPage() {
         allowAutoQuiz: chatMode === 'study' || chatMode === 'quiz',
       },
     });
-  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, searchMode, sendMessage, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, getChatLearnerProfile, goalContext, searchMode, sendMessage, syncQuizSequence]);
 
   const handleManualQuiz = useCallback(() => {
     const text =
@@ -664,6 +699,7 @@ export default function ChatPage() {
       surface: 'chat',
       goalContext,
       weakTags: chatWeakTags,
+      learnerProfile: getChatLearnerProfile(),
       mode: chatMode,
       responseStyle: 'coach',
       searchMode,
@@ -676,7 +712,7 @@ export default function ChatPage() {
         allowAutoQuiz: true,
       },
     });
-  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, language, searchMode, sendMessage, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, getChatLearnerProfile, goalContext, language, searchMode, sendMessage, syncQuizSequence]);
 
   const handleForceWebSearch = useCallback(() => {
     const text = input.trim();
@@ -699,6 +735,7 @@ export default function ChatPage() {
       surface: 'chat',
       goalContext,
       weakTags: chatWeakTags,
+      learnerProfile: getChatLearnerProfile(),
       mode: chatMode,
       responseStyle: 'coach',
       searchMode: 'force',
@@ -710,7 +747,7 @@ export default function ChatPage() {
         forceWebSearch: true,
       },
     });
-  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, goalContext, input, isLoading, sendMessage, syncQuizSequence]);
+  }, [chatMode, chatWeakTags, clearQuizRun, currentSessionId, getChatLearnerProfile, goalContext, input, isLoading, sendMessage, syncQuizSequence]);
 
   const handleUseCanvasSummary = useCallback((summary: string) => {
     setInput(summary);
@@ -903,6 +940,7 @@ export default function ChatPage() {
           surface: 'chat',
           goalContext,
           weakTags: chatWeakTags,
+          learnerProfile: getChatLearnerProfile(),
           mode: 'quiz',
           responseStyle: 'coach',
           searchMode: 'off',
@@ -929,7 +967,7 @@ export default function ChatPage() {
         quizBatchRequestingRef.current = false;
       }
     },
-    [chatWeakTags, goalContext, language, quizRunState?.runId, sendMessage],
+    [chatWeakTags, getChatLearnerProfile, goalContext, language, quizRunState?.runId, sendMessage],
   );
 
   const handleQuizSubmit = useCallback(
