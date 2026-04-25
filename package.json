@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e:smoke": "node scripts/e2e-smoke.mjs"
+    "test:e2e:smoke": "node scripts/e2e-smoke.mjs",
+    "smoke:prod": "node scripts/prod-smoke.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
