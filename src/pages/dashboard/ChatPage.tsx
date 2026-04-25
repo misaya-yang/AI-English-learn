@@ -412,7 +412,16 @@ export default function ChatPage() {
     incompleteTasks: dailyMission?.tasks.filter((task) => !task.done).map((task) => task.type) || [],
     level: learningProfile.level,
     language,
-  }), [dueWords.length, dailyMission, learningProfile.level, language]);
+    examType:
+      learningProfile.target?.toLowerCase().includes('ielts') ? 'IELTS' :
+      learningProfile.target?.toLowerCase().includes('toefl') ? 'TOEFL' :
+      learningProfile.target?.toLowerCase().includes('cet') ? 'CET' :
+      null,
+    hasExamGoal:
+      learningProfile.target?.toLowerCase().includes('ielts') ||
+      learningProfile.target?.toLowerCase().includes('toefl') ||
+      learningProfile.tracks?.includes('exam_boost'),
+  }), [dueWords.length, dailyMission, learningProfile.level, learningProfile.target, learningProfile.tracks, language]);
 
   const loadingStages = useMemo(
     () =>
@@ -1428,6 +1437,7 @@ export default function ChatPage() {
                 prompts={quickPrompts}
                 onPromptClick={handleQuickPrompt}
                 recommendations={recommendations}
+                language={language}
               />
             ) : (
               <div className="py-4 space-y-2">
