@@ -61,7 +61,9 @@ Acceptance:
 
 ### COACH-01 Feed Real Learner Context Into Chat
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see `docs/claude/COACH_AUDIT_2026-04-25.md`.
 
 Problem:
 
@@ -76,7 +78,9 @@ Acceptance:
 
 ### COACH-02 Surface Coaching Actions In Chat UI
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see `docs/claude/COACH_AUDIT_2026-04-25.md`.
 
 Acceptance:
 
@@ -87,7 +91,9 @@ Acceptance:
 
 ### COACH-03 Review Queue Integration
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see `docs/claude/COACH_AUDIT_2026-04-25.md`.
 
 Problem:
 
@@ -102,7 +108,9 @@ Acceptance:
 
 ### COACH-04 Socratic Error Recovery
 
-Status: todo
+Status: done
+
+Last verified: 2026-04-25 — see `docs/claude/COACH_AUDIT_2026-04-25.md`.
 
 Acceptance:
 
@@ -176,11 +184,125 @@ Acceptance:
 - Recap can include coach actions.
 - Tests cover recap generation inputs.
 
+## P1.5 Product UI Visual Reset
+
+> Source of truth: `docs/claude/UI_MODERNIZATION_BRIEF.md`.
+> These tasks supersede the older "make pages consistent" UI work. The goal is no longer just consistency; the goal is to remove the black-grid / emerald-glow / glassmorphism AI-template look and establish a learning-first product language.
+
+### UIR-01 Visual Direction And Tokens Reset
+
+Status: todo
+
+Problem:
+
+The current UI relies too heavily on black backgrounds, emerald highlights, grid overlays, glass surfaces, glow shadows, and very large radii. This makes VocabDaily feel like a generic AI SaaS template instead of an English learning system.
+
+Acceptance:
+
+- `src/index.css` and Tailwind tokens support a light-first "Modern Learning Workbench" direction.
+- Public surfaces no longer depend on `noise-bg`, heavy grid overlays, glow shadows, or glass panels as the default identity.
+- Radius, shadow, and surface rules are reduced and documented in code or comments where helpful.
+- Semantic accent roles exist for memory/review, practice, coach, exam, error, and neutral states.
+- Existing dashboard pages still compile and remain usable.
+
+Verification:
+
+- `npm run build`
+- Browser smoke `/`, `/login`, `/register`, `/pricing`, `/word-of-the-day` at mobile and desktop widths.
+
+### UIR-02 Homepage Learning-First Redesign
+
+Status: todo
+
+Problem:
+
+The current homepage first viewport reads as "AI SaaS landing page" before it reads as "English learning product".
+
+Acceptance:
+
+- `src/pages/Home.tsx` first viewport shows a concrete learning workflow: today's mission, word/review/practice examples, and clear next action.
+- Remove or substantially reduce black grid, spotlight, glass nav, clipped chat demo, oversized pill CTAs, and abstract AI pitch copy.
+- Homepage copy is concrete: what the learner does, why it matters, and what improves.
+- Mobile 375px first viewport feels complete; key content is not clipped behind sticky navigation.
+- CTA labels fit without oversized rounded pills.
+
+Verification:
+
+- `npm run build`
+- Browser smoke `/` at mobile and desktop.
+- Check menu open state on mobile.
+
+### UIR-03 Auth Shell Calm Learning Redesign
+
+Status: todo
+
+Problem:
+
+Login and register currently share the same dark grid / glass-card treatment as the marketing page. This looks polished but cold and generic.
+
+Acceptance:
+
+- `src/features/marketing/AuthShell.tsx`, login, register, magic-link, auth callback, and onboarding use a calm light-first learning account surface.
+- Remove ambient glow, decorative grid, and glass panel defaults from auth.
+- Forms keep clear labels, visible focus, accessible password controls, loading states, and bilingual clarity.
+- Demo login remains available but does not visually dominate the form.
+- Mobile 375px has no horizontal overflow and primary action remains easy to reach.
+
+Verification:
+
+- `npm run build`
+- Browser smoke `/login`, `/register`, `/magic-link`, `/onboarding` at mobile and desktop.
+
+### UIR-04 Pricing And Word Of The Day Learning Surface
+
+Status: todo
+
+Problem:
+
+Pricing still reads like SaaS plan comparison, and Word of the Day still feels like a generic dark card page. Both should support the learning product language.
+
+Acceptance:
+
+- `src/pages/PricingPage.tsx` keeps fail-closed billing honesty but reads like a learning membership page.
+- Pricing does not imply checkout is live when provider secrets are missing.
+- `src/pages/WordOfTheDayPage.tsx` becomes a daily study artifact: word, pronunciation, definition, example, usage, save/start action, previous words.
+- Both pages use the new surface, radius, color, and typography direction from `UI_MODERNIZATION_BRIEF.md`.
+- Footer dates/copy are consistent with the current product year.
+
+Verification:
+
+- `npm run build`
+- Browser smoke `/pricing` and `/word-of-the-day` at mobile and desktop.
+
+### UIR-05 Loading And Route Perception
+
+Status: todo
+
+Problem:
+
+Public routes can pause on a dark loading splash long enough to shape the user's first impression. The loading state reinforces the heavy black/green aesthetic and makes the product feel slow.
+
+Acceptance:
+
+- Public route fallback/loading UI uses the new light-first design language.
+- Loading states are brief, quiet, and do not look like a product page.
+- If route loading takes longer than expected, the state communicates progress without dramatic animation.
+- No business logic or lazy-loading retry semantics are weakened.
+
+Verification:
+
+- `npm run build`
+- Browser smoke hard refresh on `/`, `/login`, `/pricing`, `/word-of-the-day`.
+
 ## P2. Product UI Modernization
 
 ### UI-01 Route Metadata Registry
 
-Status: todo
+Status: done
+
+Note:
+
+Implemented in a previous harness loop. Keep this item done unless a regression is proven.
 
 Acceptance:
 
@@ -190,7 +312,11 @@ Acceptance:
 
 ### UI-02 Learning Cockpit Shell
 
-Status: todo
+Status: done
+
+Note:
+
+Implemented in a previous harness loop. Future work should modernize its visual treatment only through UIR/dashboard-specific tasks.
 
 Acceptance:
 
@@ -212,7 +338,11 @@ Acceptance:
 
 ### UI-04 Auth And Conversion Polish
 
-Status: todo
+Status: done
+
+Note:
+
+The earlier consistency pass is complete. The new UIR tasks above intentionally revisit auth/conversion from a stronger visual direction.
 
 Acceptance:
 
@@ -257,4 +387,3 @@ When all non-blocked P0/P1/P2 items are done, verified, committed, and documente
 ```text
 VOCABDAILY_ENTERPRISE_READY
 ```
-
