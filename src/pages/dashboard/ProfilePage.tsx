@@ -153,7 +153,7 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Profile</h1>
+          <h1 className="text-2xl font-bold">个人资料</h1>
           <p className="text-muted-foreground">个人资料 • Manage your account</p>
         </div>
         <Button
@@ -279,7 +279,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
-              Learning Level
+              学习等级
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -325,7 +325,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
-              Daily Goal
+              每日目标
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -348,8 +348,8 @@ export default function ProfilePage() {
                   <span className="font-bold text-blue-600">{profile?.dailyGoal || 10}</span>
                 </div>
                 <div>
-                  <p className="font-medium">Words per Day</p>
-                  <p className="text-sm text-muted-foreground">Daily learning target</p>
+                  <p className="font-medium">每日词量</p>
+                  <p className="text-sm text-muted-foreground">每日学习目标</p>
                 </div>
               </div>
             )}
@@ -360,7 +360,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
-              Preferred Topics
+              感兴趣的话题
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -397,7 +397,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5" />
-              Learning Style
+              学习风格
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -441,7 +441,7 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Learning Statistics
+            学习统计
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -449,22 +449,22 @@ export default function ProfilePage() {
             <div className="text-center p-4 bg-muted rounded-lg">
               <Flame className="h-6 w-6 text-orange-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{streak.current}</p>
-              <p className="text-sm text-muted-foreground">Current Streak</p>
+              <p className="text-sm text-muted-foreground">当前连续</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <Star className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{streak.longest}</p>
-              <p className="text-sm text-muted-foreground">Longest Streak</p>
+              <p className="text-sm text-muted-foreground">最长连续</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <BookOpen className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{stats.totalWords}</p>
-              <p className="text-sm text-muted-foreground">Total Words</p>
+              <p className="text-sm text-muted-foreground">累计词汇</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <Target className="h-6 w-6 text-blue-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{stats.masteredWords}</p>
-              <p className="text-sm text-muted-foreground">Mastered</p>
+              <p className="text-sm text-muted-foreground">已掌握</p>
             </div>
           </div>
         </CardContent>

@@ -168,6 +168,7 @@ export default function ReviewPage() {
   const { dailyWords, reviewWord, dueWords, dailyMission, completeMissionTask } = useUserData();
   const { i18n } = useTranslation();
   const language = i18n.language;
+  const isZh = language.startsWith('zh');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [sessionStats, setSessionStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 });
@@ -284,13 +285,12 @@ export default function ReviewPage() {
   };
 
   if (reviewItems.length === 0) {
-    const isZh = language.startsWith('zh');
     return (
       <LearningShellFrame>
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <LearningEmptyState
             icon={Check}
-            eyebrow="FSRS review queue"
+            eyebrow={isZh ? 'FSRS 复习队列' : 'FSRS review queue'}
             title={isZh ? '当前没有到期 FSRS 复习' : 'No FSRS-due cards right now'}
             description={
               isZh
@@ -334,19 +334,19 @@ export default function ReviewPage() {
         />
         <LearningCompletionState
           icon={Check}
-          eyebrow="Review complete"
+          eyebrow={isZh ? '复习完成' : 'Review complete'}
           title="本轮复习已经完成"
           description="这一轮已经结束。"
           metrics={[
-            { label: 'Reviewed', value: totalReviewed, accent: 'emerald' },
-            { label: 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
-            { label: 'Again / Hard', value: `${sessionStats.again} / ${sessionStats.hard}`, accent: 'warm' },
+            { label: isZh ? '已复习' : 'Reviewed', value: totalReviewed, accent: 'emerald' },
+            { label: isZh ? '正确率' : 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
+            { label: isZh ? '遗忘 / 较难' : 'Again / Hard', value: `${sessionStats.again} / ${sessionStats.hard}`, accent: 'warm' },
           ]}
           actions={
             <>
               <Button variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted" onClick={handleRestart}>
                 <RotateCcw className="mr-2 h-4 w-4" />
-                Review again
+                {isZh ? '再次复习' : 'Review again'}
               </Button>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                 <Link to="/dashboard/practice">继续做 Practice</Link>
@@ -416,7 +416,7 @@ export default function ReviewPage() {
                 <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <p className="text-sm leading-6 text-muted-foreground">先回忆，再揭晓。</p>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={handleReveal}>
-                    Reveal answer
+                    {isZh ? '揭示答案' : 'Reveal answer'}
                     <kbd className="ml-2 rounded border border-primary-foreground/20 bg-primary-foreground/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold">
                       Space
                     </kbd>
@@ -433,9 +433,9 @@ export default function ReviewPage() {
           <LearningRailSection title="本次统计">
             <LearningMetricStrip
               items={[
-                { label: 'Again', value: sessionStats.again, accent: 'warm' },
-                { label: 'Hard', value: sessionStats.hard, accent: 'warm' },
-                { label: 'Good', value: sessionStats.good, accent: 'emerald' },
+                { label: isZh ? '遗忘' : 'Again', value: sessionStats.again, accent: 'warm' },
+                { label: isZh ? '较难' : 'Hard', value: sessionStats.hard, accent: 'warm' },
+                { label: isZh ? '良好' : 'Good', value: sessionStats.good, accent: 'emerald' },
               ]}
               className="border-t-0 pt-0"
             />
@@ -451,26 +451,26 @@ export default function ReviewPage() {
             </div>
           </LearningRailSection>
 
-          <LearningRailSection title="Rating guide">
+          <LearningRailSection title={isZh ? '评分指南' : 'Rating guide'}>
             <div className="space-y-3">
               <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
                 <div className="flex items-center gap-2 text-destructive">
                   <X className="h-4 w-4" />
-                  <p className="text-sm font-semibold">Again</p>
+                  <p className="text-sm font-semibold">{isZh ? '遗忘' : 'Again'}</p>
                 </div>
                   <p className="mt-2 text-sm text-muted-foreground">马上重见</p>
                 </div>
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
                 <div className="flex items-center gap-2 text-amber-600">
                   <Zap className="h-4 w-4" />
-                  <p className="text-sm font-semibold">Hard</p>
+                  <p className="text-sm font-semibold">{isZh ? '较难' : 'Hard'}</p>
                 </div>
                   <p className="mt-2 text-sm text-muted-foreground">短间隔复现</p>
                 </div>
               <div className="rounded-xl border border-green-500/30 bg-green-50 p-4">
                 <div className="flex items-center gap-2 text-green-700">
                   <Check className="h-4 w-4" />
-                  <p className="text-sm font-semibold">Good / Easy</p>
+                  <p className="text-sm font-semibold">{isZh ? '良好 / 简单' : 'Good / Easy'}</p>
                 </div>
                   <p className="mt-2 text-sm text-muted-foreground">拉长间隔</p>
                 </div>
@@ -478,7 +478,7 @@ export default function ReviewPage() {
                 <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
                   <div className="flex items-center gap-2 text-amber-600">
                     <Zap className="h-4 w-4" />
-                    <p className="text-sm font-semibold">Reinforcement path</p>
+                    <p className="text-sm font-semibold">{isZh ? '强化路径' : 'Reinforcement path'}</p>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
                     这张卡已经遗忘 {currentItem?.fsrs.lapses || 0} 次，系统会把它放进更短的强化复习回路。
@@ -489,7 +489,7 @@ export default function ReviewPage() {
           </LearningRailSection>
 
           {currentItem ? (
-            <LearningRailSection title="Current card">
+            <LearningRailSection title={isZh ? '当前卡片' : 'Current card'}>
               <div className="rounded-xl border border-border bg-card p-4 space-y-4">
                 <div className="flex items-center gap-2 text-foreground">
                   <Clock3 className="h-4 w-4 text-green-600" />
@@ -539,7 +539,7 @@ export default function ReviewPage() {
 
           {/* AI Mnemonic hint */}
           {currentItem && isRevealed && (currentItem.word.memoryTip || currentItem.word.etymology) ? (
-            <LearningRailSection title="Memory cue">
+            <LearningRailSection title={isZh ? '记忆线索' : 'Memory cue'}>
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}

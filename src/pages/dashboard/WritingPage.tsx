@@ -32,7 +32,7 @@ export default function WritingPage() {
   const [isGrading, setIsGrading] = useState(false);
   const [gradeResult, setGradeResult] = useState<WritingGradeResult | null>(null);
 
-  const currentType = WRITING_TYPES.find((t) => t.id === writingType)!;
+  const currentType = WRITING_TYPES.find((t) => t.id === writingType) ?? WRITING_TYPES[0];
   const wordCount = countWords(content);
 
   const handleGrade = useCallback(async () => {
@@ -125,7 +125,7 @@ export default function WritingPage() {
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  {isZh ? '提交批改' : 'Submit for Grading'}
+                  {isZh ? '提交评分' : 'Submit for Grading'}
                 </>
               )}
             </Button>
@@ -146,7 +146,7 @@ export default function WritingPage() {
                     <p className="text-sm text-muted-foreground">/ 100</p>
                     {gradeResult.bandScore !== null && (
                       <Badge className="mt-2">
-                        IELTS Band {gradeResult.bandScore}
+                        {isZh ? 'IELTS 分段' : 'IELTS Band'} {gradeResult.bandScore}
                       </Badge>
                     )}
                     <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground">

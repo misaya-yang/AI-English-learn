@@ -97,16 +97,16 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="text-2xl font-bold">设置</h1>
         <p className="text-muted-foreground">设定 • Customize your learning experience</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="learning">Learning</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="general">通用</TabsTrigger>
+          <TabsTrigger value="notifications">通知</TabsTrigger>
+          <TabsTrigger value="learning">学习</TabsTrigger>
+          <TabsTrigger value="account">账号</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -115,9 +115,9 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Appearance
+                外观
               </CardTitle>
-              <CardDescription>Customize the look and feel of the app</CardDescription>
+              <CardDescription>自定义应用外观</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -306,14 +306,14 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Volume2 className="h-5 w-5" />
-                Audio & Pronunciation
+                音频与发音
               </CardTitle>
-              <CardDescription>Configure audio playback settings</CardDescription>
+              <CardDescription>配置音频播放设置</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Text-to-Speech</Label>
+                  <Label>文字转语音</Label>
                   <p className="text-sm text-muted-foreground">文字转语音</p>
                 </div>
                 <Switch
@@ -326,7 +326,7 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Auto-play Audio</Label>
+                  <Label>自动播放音频</Label>
                   <p className="text-sm text-muted-foreground">自动播放音档</p>
                 </div>
                 <Switch
@@ -339,7 +339,7 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>TTS Voice</Label>
+                  <Label>TTS 语音</Label>
                   <p className="text-sm text-muted-foreground">语音选择</p>
                 </div>
                 <Select
@@ -371,9 +371,9 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Account Information
+                账号信息
               </CardTitle>
-              <CardDescription>Manage your account details</CardDescription>
+              <CardDescription>管理你的账号详情</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
@@ -400,14 +400,14 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600">
                 <AlertTriangle className="h-5 w-5" />
-                Danger Zone
+                危险操作
               </CardTitle>
               <CardDescription>Be careful with these actions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-red-600">Clear All Data</Label>
+                  <Label className="text-red-600">清除所有数据</Label>
                   <p className="text-sm text-muted-foreground">
                     Delete all your learning progress and settings
                   </p>
@@ -437,7 +437,7 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-red-600">Log Out</Label>
+                  <Label className="text-red-600">退出登录</Label>
                   <p className="text-sm text-muted-foreground">
                     Sign out of your account
                   </p>

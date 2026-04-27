@@ -397,6 +397,7 @@ export default function TodayPage() {
   } = useUserData();
   const { i18n } = useTranslation();
   const language = i18n.language;
+  const isZh = language.startsWith('zh');
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   // Persistence keys derived from (userId, today). The day rolls over at
@@ -617,6 +618,23 @@ export default function TodayPage() {
     }
   };
 
+  // Keyboard shortcuts: Space flips the current card; ArrowLeft/ArrowRight navigate cards.
+  // handleFlip is defined in this component scope and takes a wordId parameter,
+  // so we wrap it with the current word's id here.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (currentWord) handleFlip(currentWord.id);
+      }
+      if (e.code === 'ArrowLeft') { e.preventDefault(); handlePrevious(); }
+      if (e.code === 'ArrowRight') { e.preventDefault(); handleNext(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [currentWord, handleFlip, handlePrevious, handleNext]);
+
   const missionDone = dailyMission?.tasks.filter((task) => task.done).length || 0;
   const missionTotal = dailyMission?.tasks.length || 0;
   const missionProgress = missionTotal > 0 ? Math.round((missionDone / missionTotal) * 100) : 0;
@@ -626,7 +644,7 @@ export default function TodayPage() {
       <LearningShellFrame>
         <LearningEmptyState
           icon={Sparkles}
-          eyebrow="Today mission"
+          eyebrow={isZh ? '今日任务' : 'Today mission'}
           title="先确定今天的学习入口"
           description={
             activeBook
@@ -634,8 +652,8 @@ export default function TodayPage() {
               : '你还没有激活词书。先选词书或导入 deck，再开始今天的任务链路。'
           }
           metrics={[
-            { label: 'Due reviews', value: dueWords.length, hint: '先知道是否有旧账要清。' },
-            { label: 'Daily target', value: activeBookSummary.dailyGoal, hint: '让今天的学习规模保持可完成。' },
+            { label: isZh ? '到期复习' : 'Due reviews', value: dueWords.length, hint: '先知道是否有旧账要清。' },
+            { label: isZh ? '今日目标' : 'Daily target', value: activeBookSummary.dailyGoal, hint: '让今天的学习规模保持可完成。' },
             { label: 'Target', value: learningProfile.target, hint: '主任务会围绕这个目标排优先级。' },
           ]}
           actions={
@@ -736,7 +754,7 @@ export default function TodayPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <LearningWorkspaceSurface
-            eyebrow="Vocabulary workspace"
+            eyebrow={isZh ? '词汇工作区' : 'Vocabulary workspace'}
             title={currentWord ? `${currentWord.word} · 当前主练单词` : 'Vocabulary workspace'}
           >
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
@@ -771,9 +789,9 @@ export default function TodayPage() {
 
                 <LearningMetricStrip
                   items={[
-                    { label: 'Learned', value: learnedWords.size, accent: 'emerald' },
-                    { label: 'Hard', value: hardWords.size, accent: 'warm' },
-                    { label: 'Saved', value: bookmarkedWords.size },
+                    { label: isZh ? '已学会' : 'Learned', value: learnedWords.size, accent: 'emerald' },
+                    { label: isZh ? '较难' : 'Hard', value: hardWords.size, accent: 'warm' },
+                    { label: isZh ? '已收藏' : 'Saved', value: bookmarkedWords.size },
                   ]}
                 />
               </div>
@@ -874,13 +892,13 @@ export default function TodayPage() {
           {learnedWords.size === words.length && words.length > 0 ? (
             <LearningCompletionState
               icon={Check}
-              eyebrow="Today complete"
+              eyebrow={isZh ? '今日完成' : 'Today complete'}
               title="今天的新词任务已完成"
               description={`今天的 ${words.length} 个单词已经完成。`}
               metrics={[
-                { label: 'Words completed', value: words.length, accent: 'emerald' },
-                { label: 'Hard words', value: hardWords.size, accent: 'warm' },
-                { label: 'Mission progress', value: `${missionProgress}%` },
+                { label: isZh ? '已学词数' : 'Words completed', value: words.length, accent: 'emerald' },
+                { label: isZh ? '较难词' : 'Hard words', value: hardWords.size, accent: 'warm' },
+                { label: isZh ? '任务完成度' : 'Mission progress', value: `${missionProgress}%` },
               ]}
               actions={
                 <>
@@ -897,7 +915,7 @@ export default function TodayPage() {
         </div>
 
         <div className="space-y-6">
-          <LearningRailSection title="Learning context">
+          <LearningRailSection title={isZh ? '学习背景' : 'Learning context'}>
             <div className="space-y-3">
               <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">当前词书</p>
@@ -1031,7 +1049,7 @@ export default function TodayPage() {
             </div>
           </LearningRailSection>
 
-          <LearningRailSection title="Weakness map">
+          <LearningRailSection title={isZh ? '弱项地图' : 'Weakness map'}>
             <div className="space-y-3">
               {weaknesses.length > 0 ? (
                 weaknesses.map((weakness) => (
@@ -1078,7 +1096,7 @@ export default function TodayPage() {
           </LearningRailSection>
 
           {activityPoints.length > 0 ? (
-            <LearningRailSection title="7-day spark">
+            <LearningRailSection title={isZh ? '7日活跃度' : '7-day spark'}>
               <div className="flex items-end gap-2">
                 {activityPoints.map((point) => {
                   const barHeight = Math.max(22, Math.min(88, point.words * 6 + point.xp * 0.35));

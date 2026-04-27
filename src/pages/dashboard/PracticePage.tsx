@@ -96,6 +96,7 @@ export default function PracticePage() {
   const { dailyWords, dueWords, progress, streak, addStudySession, completeMissionTask, reviewWord } = useUserData();
   const { i18n } = useTranslation();
   const practiceLanguage = i18n.language;
+  const isZh = practiceLanguage === 'zh';
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -674,7 +675,7 @@ export default function PracticePage() {
 
   const renderInsightRail = () => (
     <div className="space-y-6">
-      <LearningRailSection title="Session">
+      <LearningRailSection title={isZh ? '课程进度' : 'Session'}>
         <LearningMetricStrip
           items={[
             { label: 'Due', value: dueWords.length, accent: dueWords.length > 0 ? 'warm' : 'default' },
@@ -696,7 +697,7 @@ export default function PracticePage() {
           <div className="rounded-xl border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
             <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
               <Zap className="h-4 w-4" />
-              <p className="text-sm font-semibold">Advanced feedback quota</p>
+              <p className="text-sm font-semibold">{isZh ? 'AI 高级反馈额度' : 'Advanced feedback quota'}</p>
             </div>
             <p className="mt-3 text-2xl font-semibold text-foreground">
               {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
@@ -732,9 +733,9 @@ export default function PracticePage() {
 
   const renderPageShell = (mainContent: ReactNode) => {
     const primaryAction = !selectedMode
-      ? { label: 'Review this mode', onClick: () => pickMode(focusedModeId) }
+      ? { label: isZh ? '查看此模式' : 'Review this mode', onClick: () => pickMode(focusedModeId) }
       : !hasStarted
-        ? { label: 'Start practice', onClick: startFocusedMode }
+        ? { label: isZh ? '开始练习' : 'Start practice', onClick: startFocusedMode }
         : null;
     const secondaryActions: Array<{ label: string; onClick?: () => void; href?: string; variant?: 'outline' }> = [];
     if (selectedMode && !hasStarted && (selectedMode === 'quiz' || selectedMode === 'fill_blank')) {
@@ -746,7 +747,7 @@ export default function PracticePage() {
     }
     if (selectedMode) {
       secondaryActions.push({
-        label: 'Change mode',
+        label: isZh ? '切换模式' : 'Change mode',
         onClick: exitToPicker,
         variant: 'outline',
       });
@@ -817,7 +818,7 @@ export default function PracticePage() {
 
           <div className="border-t border-border pt-5">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => pickMode(focusedModeId)}>
-              Review this mode
+              {isZh ? '查看此模式' : 'Review this mode'}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -864,7 +865,7 @@ export default function PracticePage() {
           <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-end">
             <LearningActionCluster>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={startFocusedMode}>
-                Start practice
+                {isZh ? '开始练习' : 'Start practice'}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
               <Button
@@ -872,7 +873,7 @@ export default function PracticePage() {
                 className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                 onClick={exitToPicker}
               >
-                Back to mode picker
+                {isZh ? '返回模式选择' : 'Back to mode picker'}
               </Button>
             </LearningActionCluster>
           </div>
@@ -1196,7 +1197,7 @@ export default function PracticePage() {
               className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
               onClick={exitToPicker}
             >
-              Back to modes
+              {isZh ? '返回模式列表' : 'Back to modes'}
             </Button>
           }
         />,
@@ -1223,7 +1224,7 @@ export default function PracticePage() {
             <div className="space-y-4">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => playAudio(currentWord.word)}>
                 <Headphones className="mr-2 h-5 w-5" />
-                Play word
+                {isZh ? '播放发音' : 'Play word'}
               </Button>
 
               <div className="mx-auto max-w-md">
@@ -1252,7 +1253,7 @@ export default function PracticePage() {
                   onClick={handleListeningCheck}
                   disabled={!listeningInput.trim()}
                 >
-                  Check answer
+                  {isZh ? '检查答案' : 'Check answer'}
                 </Button>
               ) : (
                 <div className="space-y-3">
@@ -1314,7 +1315,7 @@ export default function PracticePage() {
                 Try again
               </Button>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={exitToPicker}>
-                Other modes
+                {isZh ? '其他模式' : 'Other modes'}
               </Button>
             </>
           }
@@ -1433,7 +1434,7 @@ export default function PracticePage() {
         <div className="flex flex-col gap-3 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
           {!showResult ? (
             <Button onClick={handleAnswer} disabled={!selectedAnswer} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
-              Check answer
+              {isZh ? '检查答案' : 'Check answer'}
             </Button>
           ) : (
             <Button onClick={handleNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">

@@ -317,8 +317,8 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Learning Progress</h1>
-          <p className="text-muted-foreground">学习进度 • Track your vocabulary journey</p>
+          <h1 className="text-2xl font-bold">学习进度</h1>
+          <p className="text-muted-foreground">追踪你的词汇学习历程</p>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[150px]">
@@ -385,11 +385,11 @@ export default function AnalyticsPage() {
       {/* Charts */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="words">Words</TabsTrigger>
-          <TabsTrigger value="retention">Retention</TabsTrigger>
-          <TabsTrigger value="insights">AI Insights</TabsTrigger>
-          <TabsTrigger value="badges">Badges</TabsTrigger>
+          <TabsTrigger value="overview">概览</TabsTrigger>
+          <TabsTrigger value="words">词汇</TabsTrigger>
+          <TabsTrigger value="retention">记忆保留</TabsTrigger>
+          <TabsTrigger value="insights">AI 洞察</TabsTrigger>
+          <TabsTrigger value="badges">成就</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -397,7 +397,7 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                {timeRange === 'year' ? 'Annual Activity' : timeRange === 'month' ? 'Monthly Activity' : 'Weekly Activity'}
+                {timeRange === 'year' ? '年度活跃度' : timeRange === 'month' ? '本月活跃度' : '本周活跃度'}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {timeRange === 'year' ? '年度活动' : timeRange === 'month' ? '月度活动' : '本周活动'}
@@ -421,7 +421,7 @@ export default function AnalyticsPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Topic Breakdown</CardTitle>
+                <CardTitle className="text-lg">主题分布</CardTitle>
                 <p className="text-sm text-muted-foreground">主题分布</p>
               </CardHeader>
               <CardContent>
@@ -459,7 +459,7 @@ export default function AnalyticsPage() {
                   </>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    No topic data available yet
+                    暂无主题数据
                   </div>
                 )}
               </CardContent>
@@ -467,7 +467,7 @@ export default function AnalyticsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Study Time</CardTitle>
+                <CardTitle className="text-lg">学习时长</CardTitle>
                 <p className="text-sm text-muted-foreground">学习时间</p>
               </CardHeader>
               <CardContent>
@@ -494,7 +494,7 @@ export default function AnalyticsPage() {
         <TabsContent value="words" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Words Learned Over Time</CardTitle>
+              <CardTitle className="text-lg">词汇积累趋势</CardTitle>
               <p className="text-sm text-muted-foreground">单词学习趋势</p>
             </CardHeader>
             <CardContent>
@@ -519,7 +519,7 @@ export default function AnalyticsPage() {
           {/* Activity Heatmap */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Activity Heatmap</CardTitle>
+              <CardTitle className="text-lg">学习热力图</CardTitle>
               <p className="text-sm text-muted-foreground">活动热图</p>
             </CardHeader>
             <CardContent>
@@ -549,7 +549,7 @@ export default function AnalyticsPage() {
                 ))}
               </div>
               <div className="flex items-center gap-2 mt-4">
-                <span className="text-xs text-muted-foreground">Less</span>
+                <span className="text-xs text-muted-foreground">少</span>
                 <div className="flex gap-1">
                   <div className="w-3 h-3 bg-gray-100 dark:bg-gray-800 rounded-sm" />
                   <div className="w-3 h-3 bg-emerald-200 dark:bg-emerald-900 rounded-sm" />
@@ -557,7 +557,7 @@ export default function AnalyticsPage() {
                   <div className="w-3 h-3 bg-emerald-400 dark:bg-emerald-700 rounded-sm" />
                   <div className="w-3 h-3 bg-emerald-500 dark:bg-emerald-600 rounded-sm" />
                 </div>
-                <span className="text-xs text-muted-foreground">More</span>
+                <span className="text-xs text-muted-foreground">多</span>
               </div>
             </CardContent>
           </Card>

@@ -15,7 +15,6 @@ import {
   Filter,
   Download,
   Volume2,
-  Bookmark,
   Brain,
   Star,
   Tag,
@@ -235,7 +234,7 @@ export default function VocabularyBankPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">My Vocabulary</h1>
+          <h1 className="text-2xl font-bold">我的词汇</h1>
           <p className="text-muted-foreground">
             词书学习中心 • {filteredVocabulary.length} words
           </p>
@@ -325,9 +324,9 @@ export default function VocabularyBankPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-semibold">{book.name}</p>
                     {book.isBuiltIn ? (
-                      <Badge variant="secondary">Built-in</Badge>
+                      <Badge variant="secondary">内置</Badge>
                     ) : (
-                      <Badge variant="outline">Custom</Badge>
+                      <Badge variant="outline">自定义</Badge>
                     )}
                     {isActive && (
                       <Badge className="bg-emerald-600 text-white">
@@ -379,7 +378,7 @@ export default function VocabularyBankPage() {
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
           <SelectTrigger className="w-[160px]">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder="状态" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
@@ -392,7 +391,7 @@ export default function VocabularyBankPage() {
         <Select value={selectedTopic} onValueChange={setSelectedTopic}>
           <SelectTrigger className="w-[160px]">
             <Tag className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Topic" />
+            <SelectValue placeholder="分类" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Topics</SelectItem>
@@ -410,25 +409,25 @@ export default function VocabularyBankPage() {
         <Card>
           <CardContent className="p-4">
             <p className="text-2xl font-bold">{totalWords}</p>
-            <p className="text-sm text-muted-foreground">Total Words</p>
+            <p className="text-sm text-muted-foreground">总词数</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-2xl font-bold text-emerald-600">{masteredCount}</p>
-            <p className="text-sm text-muted-foreground">Mastered</p>
+            <p className="text-sm text-muted-foreground">已掌握</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-2xl font-bold text-yellow-600">{reviewCount}</p>
-            <p className="text-sm text-muted-foreground">In Review</p>
+            <p className="text-sm text-muted-foreground">复习中</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-2xl font-bold text-blue-600">{learningCount}</p>
-            <p className="text-sm text-muted-foreground">Learning</p>
+            <p className="text-sm text-muted-foreground">学习中</p>
           </CardContent>
         </Card>
       </div>
@@ -498,13 +497,13 @@ export default function VocabularyBankPage() {
                   </p>
 
                   <div>
-                    <h4 className="font-semibold mb-2">Definitions</h4>
+                    <h4 className="font-semibold mb-2">释义</h4>
                     <p className="text-sm">{item.word.definition}</p>
                     <p className="text-sm text-muted-foreground">{item.word.definitionZh}</p>
                   </div>
 
                   <div>
-                    <h4 className="font-semibold mb-2">Example</h4>
+                    <h4 className="font-semibold mb-2">例句</h4>
                     <p className="text-sm">{item.word.examples?.[0]?.en}</p>
                     <p className="text-sm text-muted-foreground">{item.word.examples?.[0]?.zh}</p>
                   </div>
@@ -521,13 +520,13 @@ export default function VocabularyBankPage() {
                     {status !== 'mastered' && (
                       <Button variant="outline" className="flex-1" onClick={() => handleMarkAsMastered(item.word.id)}>
                         <Star className="h-4 w-4 mr-2" />
-                        Mark Mastered
+                        标记已掌握
                       </Button>
                     )}
                     {status === 'new' && (
                       <Button variant="outline" className="flex-1" onClick={() => handleMarkAsLearned(item.word.id)}>
                         <Brain className="h-4 w-4 mr-2" />
-                        Start Learning
+                        开始学习
                       </Button>
                     )}
                     {isCustomWord && (
@@ -537,11 +536,6 @@ export default function VocabularyBankPage() {
                         onClick={() => handleDeleteWord(item.word.id)}
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {!isCustomWord && (
-                      <Button variant="outline" size="icon">
-                        <Bookmark className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
@@ -555,8 +549,8 @@ export default function VocabularyBankPage() {
       {filteredVocabulary.length === 0 && (
         <div className="text-center py-12">
           <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No words found</h3>
-          <p className="text-muted-foreground">Try adjusting your search or import a new word book.</p>
+          <h3 className="text-lg font-medium mb-2">未找到词汇</h3>
+          <p className="text-muted-foreground">调整筛选条件或导入新词书。</p>
         </div>
       )}
     </div>
