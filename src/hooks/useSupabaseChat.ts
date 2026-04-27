@@ -104,7 +104,7 @@ function generateTitle(content: string): string {
 export function useSupabaseChat() {
   const userId = getAnonymousUserId();
 
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => sortSessionsByUpdate(loadLocalSessions()));
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(() => {
     return localStorage.getItem(CHAT_CURRENT_SESSION_KEY);
   });

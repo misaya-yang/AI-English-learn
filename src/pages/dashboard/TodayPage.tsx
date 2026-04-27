@@ -1119,6 +1119,30 @@ export default function TodayPage() {
           ) : null}
         </div>
       </div>
+
+      {/* Mobile sticky metric strip — only on small screens, floats above bottom nav */}
+      <div className="sm:hidden fixed bottom-16 inset-x-0 z-40 pointer-events-none">
+        <div className="mx-4 mb-2 flex items-center justify-center gap-1 pointer-events-auto">
+          <div className="flex items-center gap-3 rounded-full border border-border bg-background/90 px-4 py-2 shadow-lg backdrop-blur-md text-xs">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="font-medium text-foreground">{learnedWords.size}</span>
+              <span className="text-muted-foreground">{isZh ? '已学' : 'learned'}</span>
+            </span>
+            <span className="h-3 w-px bg-border" />
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              <span className="font-medium text-foreground">{hardWords.size}</span>
+              <span className="text-muted-foreground">{isZh ? '较难' : 'hard'}</span>
+            </span>
+            <span className="h-3 w-px bg-border" />
+            <span className="flex items-center gap-1.5">
+              <span className="font-medium text-foreground">{words.length - learnedWords.size}</span>
+              <span className="text-muted-foreground">{isZh ? '待学' : 'left'}</span>
+            </span>
+          </div>
+        </div>
+      </div>
     </LearningCockpitShell>
   );
 }
