@@ -439,7 +439,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
 
               {/* Examples */}
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Examples</p>
+                <p className="text-[11px] tracking-wider text-muted-foreground mb-2">Examples</p>
                 <div className="space-y-2">
                   {rule.examples.map((ex, i) => (
                     <div key={i} className="rounded-xl border border-border px-4 py-2.5">
@@ -452,7 +452,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
 
               {/* Common Errors */}
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Common Errors</p>
+                <p className="text-[11px] tracking-wider text-muted-foreground mb-2">Common Errors</p>
                 <ul className="space-y-1.5">
                   {rule.commonErrors.map((err, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -743,7 +743,7 @@ export default function GrammarPage() {
           <div className="rounded-xl border border-border bg-muted px-4 py-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Rule summary</p>
+              <p className="text-[11px] tracking-wider text-muted-foreground">Rule summary</p>
             </div>
             <p className="text-xs leading-5 text-foreground">{activeRule.explanation}</p>
           </div>

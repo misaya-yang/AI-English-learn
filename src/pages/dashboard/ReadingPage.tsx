@@ -382,7 +382,7 @@ export default function ReadingPage() {
     return (
       <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Reading module</p>
+          <p className="text-xs tracking-wider text-muted-foreground mb-1">阅读模块</p>
           <h1 className="text-2xl font-semibold text-foreground">IELTS Academic Reading</h1>
           <p className="mt-1 text-sm text-muted-foreground">Choose a passage or generate a new one with AI</p>
         </div>
@@ -454,7 +454,7 @@ export default function ReadingPage() {
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">{current.topic}</p>
+            <p className="text-xs tracking-wider text-muted-foreground">{current.topic}</p>
             <h1 className="text-xl font-semibold text-foreground">{current.title}</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -477,7 +477,7 @@ export default function ReadingPage() {
           <div className="rounded-xl border border-border bg-card p-6 max-h-[72vh] overflow-y-auto shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Passage</span>
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground">文章</span>
             </div>
             <div className="prose prose-sm max-w-none leading-7">
               {current.passage.split('\n\n').map((para, i) => (
@@ -490,7 +490,7 @@ export default function ReadingPage() {
           <div className="space-y-4 max-h-[72vh] overflow-y-auto pr-1">
             <div className="flex items-center gap-2 mb-2">
               <Target className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground">
                 Questions ({current.questions.length})
               </span>
             </div>
@@ -580,7 +580,7 @@ export default function ReadingPage() {
         className="rounded-xl border border-border bg-card p-6 text-center shadow-sm"
       >
         <Award className="mx-auto mb-2 h-8 w-8 text-amber-500" />
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Your score</p>
+        <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-1">Your score</p>
         <p className={cn('text-5xl font-bold', scoreColor)}>
           {score?.correct}/{score?.total}
         </p>
@@ -639,7 +639,7 @@ export default function ReadingPage() {
 
               {q.location && (
                 <div className="ml-6 rounded-lg border border-border bg-muted px-3 py-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Evidence in passage</p>
+                  <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-0.5">Evidence in passage</p>
                   <p className="text-xs italic text-foreground">"{q.location}"</p>
                 </div>
               )}

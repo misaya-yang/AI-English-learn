@@ -224,6 +224,12 @@ export function useExamPrepRuntime({
     }
 
     setLoadingStage('simulating');
+
+    const timeoutId = setTimeout(() => {
+      setLoadingStage('idle');
+      toast.error('生成超时，请检查网络后重试。');
+    }, 30000);
+
     try {
       const generated = await generateSimulationItem({
         userId,
@@ -231,6 +237,8 @@ export function useExamPrepRuntime({
         bandTarget: selectedTrackBandTarget || '6.5',
         topic: promptTopic,
       });
+
+      clearTimeout(timeoutId);
 
       const nextTaskType: TaskType = generated.itemType === 'writing_task_1' ? 'task1' : 'task2';
       setTaskType(nextTaskType);
@@ -254,10 +262,11 @@ export function useExamPrepRuntime({
       });
 
       toast.success('仿真题已生成，计时已启动。');
+      setLoadingStage('idle');
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error(error);
       toast.error('仿真题生成失败，请稍后重试。');
-    } finally {
       setLoadingStage('idle');
     }
   }, [
@@ -290,6 +299,11 @@ export function useExamPrepRuntime({
     setLoadingStage('grading');
     const priorBand = feedbackHistory[0]?.scores.overallBand || 0;
 
+    const gradeTimeoutId = setTimeout(() => {
+      setLoadingStage('idle');
+      toast.error('生成超时，请检查网络后重试。');
+    }, 30000);
+
     try {
       const attempt = createAttempt({
         userId,
@@ -308,6 +322,8 @@ export function useExamPrepRuntime({
         answer: writingAnswer,
         taskType,
       });
+
+      clearTimeout(gradeTimeoutId);
 
       const latencyMs = Math.max(0, Math.round(performance.now() - startedAt));
       setFeedbackLatencyMs(latencyMs);
@@ -362,10 +378,11 @@ export function useExamPrepRuntime({
       }
 
       toast.success(`评分完成：Overall Band ${enrichedResult.scores.overallBand.toFixed(1)}`);
+      setLoadingStage('idle');
     } catch (error) {
+      clearTimeout(gradeTimeoutId);
       console.error(error);
       toast.error('评分失败，请稍后重试。');
-    } finally {
       setLoadingStage('idle');
     }
   }, [
@@ -397,12 +414,20 @@ export function useExamPrepRuntime({
     }
 
     setLoadingStage('micro');
+
+    const microTimeoutId = setTimeout(() => {
+      setLoadingStage('idle');
+      toast.error('生成超时，请检查网络后重试。');
+    }, 30000);
+
     try {
       const lesson = await generateMicroLessonFromErrors({
         userId,
         errorTags: tags,
         targetLevel: 'B1',
       });
+
+      clearTimeout(microTimeoutId);
 
       setMicroUnit(lesson.unit);
       setDataVersion((prev) => prev + 1);
@@ -417,10 +442,11 @@ export function useExamPrepRuntime({
       await refreshQuota();
 
       toast.success('已生成错因补救微课，并切换到对应单元。');
+      setLoadingStage('idle');
     } catch (error) {
+      clearTimeout(microTimeoutId);
       console.error(error);
       toast.error('补救微课生成失败，请稍后重试。');
-    } finally {
       setLoadingStage('idle');
     }
   }, [feedback, onCatalogChange, onSwitchTrack, onSwitchUnit, refreshQuota, userId]);

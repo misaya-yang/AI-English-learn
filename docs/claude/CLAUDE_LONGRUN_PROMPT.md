@@ -12,6 +12,7 @@ Optional phase filter:
 PHASE=COACH claude --dangerously-skip-permissions < docs/claude/CLAUDE_LONGRUN_PROMPT.md
 PHASE=LEARN claude --dangerously-skip-permissions < docs/claude/CLAUDE_LONGRUN_PROMPT.md
 PHASE=UI claude --dangerously-skip-permissions < docs/claude/CLAUDE_LONGRUN_PROMPT.md
+PHASE=UIR claude --dangerously-skip-permissions < docs/claude/CLAUDE_LONGRUN_PROMPT.md
 PHASE=OPS claude --dangerously-skip-permissions < docs/claude/CLAUDE_LONGRUN_PROMPT.md
 ```
 
@@ -27,6 +28,7 @@ Read these files first and obey them:
 
 ```bash
 sed -n '1,260p' docs/claude/HARNESS_ENGINE_RULES.md
+sed -n '1,260p' docs/claude/UI_MODERNIZATION_BRIEF.md
 sed -n '1,240p' docs/claude/VOCABDAILY_ENTERPRISE_PRD.md
 sed -n '1,320p' docs/claude/VOCABDAILY_REQUIREMENTS_BACKLOG.md
 tail -140 harness_progress.md 2>/dev/null || true
@@ -76,6 +78,7 @@ Phase mapping:
 - `PHASE=COACH`: `COACH-*`
 - `PHASE=LEARN`: `LEARN-*`
 - `PHASE=UI`: `UI-*`
+- `PHASE=UIR`: `UIR-*`
 - `PHASE=QA`: `QA-*`
 
 If no phase is provided, use this order:
@@ -83,8 +86,9 @@ If no phase is provided, use this order:
 1. unblocked P0 Ops
 2. Coach learning loop
 3. Daily learning system
-4. UI modernization
-5. architecture and quality
+4. Product UI visual reset (`UIR-*`)
+5. UI modernization (`UI-*`)
+6. architecture and quality
 
 Skip `blocked` items and record why.
 
@@ -124,6 +128,7 @@ Known blocked item:
 
 Recent useful context:
 
+- Live UI audit on 2026-04-25 found the public UI too dependent on black grid backgrounds, emerald-only accents, glass panels, glow shadows, large radii, and abstract AI SaaS copy. The target direction is documented in `docs/claude/UI_MODERNIZATION_BRIEF.md`.
 - Shared `COACHING_POLICY` exists in `src/features/coach/coachingPolicy.ts` and `supabase/functions/_shared/coaching-policy.ts`.
 - `coachingActions` are parsed from `ai-chat`.
 - `coachReviewQueue` and `coachingActionRouter` exist or may be in-progress. Inspect current worktree before editing.
@@ -174,4 +179,3 @@ When every unblocked backlog task is implemented, verified, committed, and recor
 ```text
 VOCABDAILY_ENTERPRISE_READY
 ```
-

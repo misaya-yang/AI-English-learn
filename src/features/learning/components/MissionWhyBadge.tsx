@@ -73,7 +73,7 @@ export function MissionWhyBadge({
           <Icon className="h-3.5 w-3.5" />
         </span>
         <div className="flex flex-col">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">
+          <span className="text-[10px] font-semibold tracking-wide opacity-70">
             {whyHeading}
           </span>
           <span className="text-sm font-semibold leading-tight">{label}</span>

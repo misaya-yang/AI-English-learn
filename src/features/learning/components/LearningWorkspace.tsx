@@ -101,7 +101,7 @@ export function LearningHeroPanel({
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_300px] lg:items-start z-10">
         <div className="space-y-5">
           {eyebrow ? (
-            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/10">
+            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/10">
               {eyebrow}
             </Badge>
           ) : null}
@@ -119,7 +119,7 @@ export function LearningHeroPanel({
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500 dark:text-white/45">{progressLabel || 'Progress'}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-white/45">{progressLabel || '进度'}</p>
                   <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-emerald-600 dark:text-emerald-300">
                     {progressValueLabel || `${progress}%`}
                   </p>
@@ -146,7 +146,7 @@ export function LearningRailSection({ title, description, children, className }:
   return (
     <section className={cn(learningFrameClassName, 'space-y-4 p-4 sm:p-6', className)}>
       <div className="space-y-1.5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-white/42">{title}</p>
+        <p className="text-[11px] font-medium text-slate-500 dark:text-white/42">{title}</p>
         {description ? <p className="text-sm leading-6 text-slate-600 dark:text-white/58">{description}</p> : null}
       </div>
       <div className="space-y-3">{children}</div>
@@ -167,7 +167,7 @@ export function LearningWorkspaceSurface({
       <div className="border-b border-black/5 dark:border-white/[0.06] px-5 py-5 sm:px-6 lg:px-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            {eyebrow ? <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-white/42">{eyebrow}</p> : null}
+            {eyebrow ? <p className="text-[11px] font-medium text-slate-500 dark:text-white/42">{eyebrow}</p> : null}
             <h2 className="text-2xl font-semibold tracking-[-0.035em] text-slate-900 dark:text-white sm:text-[2rem]">{title}</h2>
             {description ? <p className="max-w-3xl text-sm leading-7 text-slate-600 dark:text-white/58 sm:text-base">{description}</p> : null}
           </div>
@@ -184,7 +184,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
     <div className={cn('grid gap-3 border-t border-black/5 dark:border-white/[0.06] pt-4 sm:grid-cols-2 xl:grid-cols-3', className)}>
       {items.map((item) => (
         <div key={`${item.label}-${String(item.value)}`} className="space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-white/42">{item.label}</p>
+          <p className="text-[11px] font-medium text-slate-500 dark:text-white/42">{item.label}</p>
           <div className={cn('text-2xl font-semibold tracking-[-0.04em]', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
@@ -217,7 +217,7 @@ export function LearningEmptyState({
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[24px] border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
         <Icon className="h-8 w-8" />
       </div>
-      {eyebrow ? <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">{eyebrow}</p> : null}
+      {eyebrow ? <p className="mt-5 text-[11px] font-medium text-white/42">{eyebrow}</p> : null}
       <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-white">{title}</h2>
       <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-white/62">{description}</p>
       {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mx-auto mt-8 max-w-3xl text-left" /> : null}
@@ -246,7 +246,7 @@ export function LearningCompletionState({
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[28px] border border-emerald-500/25 bg-emerald-500/12 text-emerald-600 dark:text-emerald-300">
           <Icon className="h-9 w-9" />
         </div>
-        {eyebrow ? <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-white/42">{eyebrow}</p> : null}
+        {eyebrow ? <p className="mt-6 text-[11px] font-medium text-slate-500 dark:text-white/42">{eyebrow}</p> : null}
         <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">{title}</h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-white/62">{description}</p>
       </div>

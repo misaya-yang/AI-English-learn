@@ -114,7 +114,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       </div>
 
       <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current word</p>
+        <p className="text-xs text-muted-foreground">当前单词</p>
         <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-foreground sm:text-[5rem]">
           {word.word}
         </h2>
@@ -168,8 +168,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Word detail</p>
-            <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">{word.word}</h3>
+            <h3 className="text-3xl font-semibold tracking-[-0.05em] text-foreground">{word.word}</h3>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -194,14 +193,13 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
         <ScrollArea className="mt-6 flex-1 pr-2">
           <div className="space-y-4">
             <section className="rounded-xl border border-border bg-card p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Definition</p>
-              <p className="mt-3 text-base leading-7 text-foreground">{word.definition}</p>
+              <p className="mt-1 text-base leading-7 text-foreground">{word.definition}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
             </section>
 
             {word.examples.length > 0 ? (
               <section className="rounded-xl border border-border bg-card p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Examples</p>
+                <p className="text-xs text-muted-foreground">例句</p>
                 <div className="mt-3 space-y-3">
                   {word.examples.slice(0, 2).map((example, index) => (
                     <div key={`${example.en}-${index}`} className="rounded-lg border border-border bg-muted p-4">
@@ -216,7 +214,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
             <div className="grid gap-4 lg:grid-cols-2">
               {word.collocations.length > 0 ? (
                 <section className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Collocations</p>
+                  <p className="text-xs text-muted-foreground">搭配</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {word.collocations.slice(0, 8).map((collocation) => (
                       <span
@@ -232,8 +230,8 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
               {(word.memoryTip || word.etymology) ? (
                 <section className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Memory cue</p>
-                  <p className="mt-3 text-sm leading-7 text-muted-foreground">{word.memoryTip || word.etymology}</p>
+                  <p className="text-xs text-muted-foreground">助记</p>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.memoryTip || word.etymology}</p>
                 </section>
               ) : null}
             </div>
@@ -305,7 +303,7 @@ const CircularProgress = memo(function CircularProgress({
           {Math.round(value)}%
         </text>
       </svg>
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
     </div>
   );
@@ -744,7 +742,7 @@ export default function TodayPage() {
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-4">
                 <section className={cn(learningFrameClassName, 'p-4')}>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current HUD</p>
+                  <p className="text-xs text-muted-foreground">今日进度</p>
                   <div className="mt-4 flex items-center gap-5">
                     <CircularProgress
                       value={progress}
@@ -902,13 +900,13 @@ export default function TodayPage() {
           <LearningRailSection title="Learning context">
             <div className="space-y-3">
               <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active book</p>
+                <p className="text-xs text-muted-foreground">当前词书</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{activeBook?.name || '未选择词书'}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
               </div>
 
               <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Review pressure</p>
+                <p className="text-xs text-muted-foreground">到期复习</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{dueWords.length} 个到期复习</p>
                 {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-muted-foreground">当前词书接近完成</p> : null}
               </div>
@@ -932,7 +930,7 @@ export default function TodayPage() {
                           {modeInfo.labelZh}
                         </span>
                       </div>
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                      <span className="text-[10px] text-muted-foreground">
                         {modeInfo.label}
                       </span>
                     </div>
@@ -945,13 +943,13 @@ export default function TodayPage() {
                     {/* Daily targets */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="rounded-lg bg-muted px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">新词</p>
+                        <p className="text-[10px] text-muted-foreground">新词</p>
                         <p className="mt-0.5 text-base font-bold text-foreground">
                           {learnerModel.recommendedDailyNew}
                         </p>
                       </div>
                       <div className="rounded-lg bg-muted px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">复习</p>
+                        <p className="text-[10px] text-muted-foreground">复习</p>
                         <p className="mt-0.5 text-base font-bold text-foreground">
                           {learnerModel.recommendedDailyReview}
                         </p>
@@ -962,7 +960,7 @@ export default function TodayPage() {
                     {learnerModel.avgRetrievability > 0 && (
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">记忆保留率</p>
+                          <p className="text-[10px] text-muted-foreground">记忆保留率</p>
                           <p className="text-xs font-semibold text-foreground">
                             {Math.round(learnerModel.avgRetrievability * 100)}%
                           </p>
@@ -983,7 +981,7 @@ export default function TodayPage() {
                     {/* Weak topics */}
                     {learnerModel.weakTopics.length > 0 && (
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">需加强</p>
+                        <p className="text-[10px] text-muted-foreground mb-1.5">需加强</p>
                         <div className="flex flex-wrap gap-1.5">
                           {learnerModel.weakTopics.map((t) => (
                             <span key={t} className="rounded-md bg-destructive/10 px-2 py-0.5 text-[11px] text-destructive">
@@ -996,7 +994,7 @@ export default function TodayPage() {
 
                     {learnerModel.stubbornWordCount > 0 && (
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">强化路径</p>
+                        <p className="text-[10px] text-muted-foreground mb-1.5">强化路径</p>
                         <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2">
                           <div>
                             <p className="text-sm font-semibold text-foreground">
@@ -1020,7 +1018,7 @@ export default function TodayPage() {
 
               {adaptiveDifficulty ? (
                 <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pacing today</p>
+                  <p className="text-xs text-muted-foreground">今日节奏</p>
                   <div className="mt-2 flex items-center justify-between gap-3">
                     <p className="text-lg font-semibold text-foreground">{adaptiveDifficulty.labelZh}</p>
                     <Badge variant="secondary" className="rounded-md">

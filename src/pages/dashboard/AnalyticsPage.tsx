@@ -569,7 +569,7 @@ export default function AnalyticsPage() {
             <div className="grid md:grid-cols-3 gap-4">
               <Card className="col-span-1">
                 <CardContent className="p-5 flex flex-col items-center justify-center h-full gap-2">
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground">Avg. Retrievability</p>
+                  <p className="text-xs tracking-wide text-muted-foreground">Avg. Retrievability</p>
                   <p className="text-[3rem] font-bold text-emerald-500 leading-none">
                     {Math.round(fsrsStats.avgR * 100)}%
                   </p>
@@ -659,7 +659,7 @@ export default function AnalyticsPage() {
                     <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-xs uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">
+                          <p className="text-xs tracking-wide text-green-700">
                             Primary window
                           </p>
                           <p className="mt-2 text-xl font-semibold">
@@ -680,12 +680,12 @@ export default function AnalyticsPage() {
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Days observed</p>
+                        <p className="text-xs tracking-wide text-muted-foreground">Days observed</p>
                         <p className="mt-2 text-2xl font-semibold">{reviewWindowInsight.activeDays}</p>
                         <p className="text-sm text-muted-foreground">最近 30 天里有学习行为的天数</p>
                       </div>
                       <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Backup window</p>
+                        <p className="text-xs tracking-wide text-muted-foreground">Backup window</p>
                         <p className="mt-2 text-lg font-semibold">
                           {reviewWindowInsight.secondary?.label || 'Keep current rhythm'}
                         </p>
@@ -722,7 +722,7 @@ export default function AnalyticsPage() {
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          <span className="text-xs font-semibold tracking-wide text-muted-foreground">
                             #{index + 1}
                           </span>
                           <p className="text-base font-semibold">{item.word}</p>

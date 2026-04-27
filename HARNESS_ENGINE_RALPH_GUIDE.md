@@ -31,15 +31,28 @@ VocabDaily 的 harness-engine 由 7 个层组成：
 
 ### G1. UI 升级
 
-问题：设计语言不统一，部分页面仍像旧式模板；dashboard 有两套 shell；移动端核心学习入口不够突出。
+问题：线上 UI 已经不只是“不统一”，而是过度依赖黑底网格、emerald 单色高光、玻璃面板、发光阴影、超大圆角和抽象 AI SaaS 文案。它看起来像“AI 产品模板套英语学习文案”，而不是一个认真、清晰、有学习节奏感的英语训练工具。
+
+新的视觉方向见：
+
+- `docs/claude/UI_MODERNIZATION_BRIEF.md`
+- `docs/claude/CLAUDE_UI_REDESIGN_PROMPTS.md`
 
 第一阶段动作：
+- 建立 light-first 的 Modern Learning Workbench 视觉语言：纸面/学习桌感、语义色、较小圆角、少阴影、少装饰。
+- 优先重做公开和 auth surface：`Home / Login / Register / Pricing / WordOfTheDay`。
+- 首页第一屏必须展示具体学习工作流，而不是抽象 AI pitch。
+- Auth 页面要像安静可信的学习账号入口，不再用深色网格和玻璃卡片。
+- Pricing 必须保持 fail-closed 诚实表达，不装作支付已可用。
 - 建立单一 dashboard route metadata registry，驱动侧栏、移动底栏、页面标题和搜索入口。
 - 把 `LearningWorkspace` 提升为通用 product shell primitives。
 - 先迁移 `Reading / Listening / Grammar / LearningPath / Leaderboard` 到统一学习 cockpit。
 - 统一 auth/conversion 页面：`Home / Login / Register / Pricing / Onboarding`。
 
 验收：
+- 首页、登录、注册、价格页和每日单词页不再呈现黑/绿/玻璃模板感。
+- 移动端 375px 首屏完整，不被 sticky header 或卡片裁切破坏。
+- 中文和英文文案是共同排版的一等内容，不是灰色附属翻译。
 - 主要学习页视觉语言一致。
 - 移动端 375px 下无文字溢出和入口丢失。
 - Playwright 截图检查 dashboard 核心页。
@@ -166,4 +179,3 @@ done
 # 安全和部署
 /ralph-loop:ralph-loop "$(cat CLAUDE_CODE_RALPH_PROMPT.md) PHASE=OPS" --max-iterations 10
 ```
-

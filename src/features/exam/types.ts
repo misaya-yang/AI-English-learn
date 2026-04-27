@@ -9,7 +9,7 @@ export type LoadingStage =
 
 export type TaskType = 'task1' | 'task2';
 export type PromptDifficulty = 'easy' | 'medium' | 'hard';
-export type WorkspaceView = 'brief' | 'draft' | 'review';
+export type WorkspaceView = 'brief' | 'draft' | 'review' | 'insight';
 export type InsightView = 'weakness' | 'trend' | 'history';
 export type ToolPanel = 'outline' | 'vocab' | 'coach';
 

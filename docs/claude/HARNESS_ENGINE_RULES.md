@@ -49,6 +49,7 @@ Every loop must follow this exact order:
    - Read the bottom of `harness_progress.md`.
    - Pick the highest priority `todo` item that is not blocked.
    - If `PHASE=COACH|LEARN|UI|OPS|QA` is provided, only pick that phase.
+   - If `PHASE=UIR` is provided, only pick `UIR-*` visual reset tasks.
 
 2. `INSPECT`
    - Run targeted `rg`.
@@ -186,6 +187,9 @@ UI:
 - No generic dashboard card piles.
 - Mobile must be checked.
 - Loading, empty, error, and success states matter.
+- Do not rely on black grid backgrounds, glass panels, emerald glow, or giant rounded corners as the default product identity.
+- Public/auth surfaces should follow `docs/claude/UI_MODERNIZATION_BRIEF.md`: light-first, learning-first, semantic color, smaller radius, concrete copy.
+- The UI should read as an English learning product before it reads as an AI product.
 
 Ops:
 
@@ -214,4 +218,3 @@ When all unblocked backlog items are done:
 ```text
 VOCABDAILY_ENTERPRISE_READY
 ```
-

@@ -205,7 +205,7 @@ export default function LeaderboardPage() {
         <div className="rounded-2xl border border-black/5 bg-black/[0.02] p-4 dark:border-white/[0.07] dark:bg-white/[0.03]">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-wider text-slate-400 dark:text-white/36">League Status</p>
+              <p className="text-xs tracking-wide text-muted-foreground">本周状态</p>
               <p className="mt-1 text-sm font-medium text-slate-800 dark:text-white">{movementCopy}</p>
             </div>
             <BadgeLike text={snapshot.promoted ? 'Promotion zone' : snapshot.demoted ? 'Demotion risk' : 'Holding steady'} />
@@ -219,7 +219,7 @@ export default function LeaderboardPage() {
         </div>
 
         <div className="rounded-2xl border border-black/5 bg-black/[0.02] p-4 dark:border-white/[0.07] dark:bg-white/[0.03]">
-          <p className="text-xs uppercase tracking-wider text-slate-400 dark:text-white/36">Friend Pulse</p>
+          <p className="text-xs tracking-wide text-muted-foreground">好友动态</p>
           <div className="mt-3 space-y-2">
             {snapshot.friends.slice(0, 4).map((friend) => (
               <div key={friend.userId} className="flex items-center gap-3 rounded-xl bg-white/70 px-3 py-2 dark:bg-white/[0.04]">
@@ -290,7 +290,7 @@ export default function LeaderboardPage() {
       </div>
 
       <div>
-        <p className="mb-2 px-1 text-[11px] uppercase tracking-wider text-slate-400 dark:text-white/36">Full Ranking</p>
+        <p className="mb-2 px-1 text-[11px] tracking-wide text-muted-foreground">完整排名</p>
         <div className="space-y-1">
           {entries.map((entry) => (
             <LeaderRow key={entry.userId} entry={entry} tab={activeTab} />
@@ -311,7 +311,7 @@ export default function LeaderboardPage() {
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl bg-white/70 px-3 py-2 dark:bg-white/[0.04]">
-      <p className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-white/35">{label}</p>
+      <p className="text-[10px] tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-white">{value}</p>
     </div>
   );

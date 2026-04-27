@@ -43,7 +43,7 @@ export function RouteConsole({
     <motion.aside initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
       <section className="rounded-[24px] border border-border/70 bg-card/90 p-4">
         <div className="space-y-2">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">Route console</p>
+          <p className="text-[11px] tracking-wide text-muted-foreground/80">路线选择</p>
           <h2 className="text-lg font-semibold">选择冲分轨道</h2>
           <p className="text-sm text-muted-foreground">先定 Band 区间和 skill，再决定这轮写作应该站在哪个单元。</p>
         </div>
@@ -93,7 +93,7 @@ export function RouteConsole({
 
       <section className="rounded-[24px] border border-border/70 bg-card/90 p-4">
         <div className="space-y-2">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">Micro units</p>
+          <p className="text-[11px] tracking-wide text-muted-foreground/80">练习单元</p>
           <h2 className="text-lg font-semibold">按单元推进，不要一口气全练</h2>
         </div>
 

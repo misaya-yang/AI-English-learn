@@ -163,7 +163,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
 
         {partition.upcoming.length > 0 && (
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+            <p className="text-[11px] font-semibold tracking-wide text-muted-foreground">
               {upcomingHeading}
             </p>
             {partition.upcoming.map((entry) => {

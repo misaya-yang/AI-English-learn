@@ -32,7 +32,7 @@ export function QuotaRing({
     <div className="rounded-2xl border border-border/70 bg-background/40 p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">{label}</p>
+          <p className="text-[11px] tracking-wide text-muted-foreground/80">{label}</p>
           <p className="mt-1 text-lg font-semibold">
             {remaining}
             <span className="ml-1 text-xs font-normal text-muted-foreground">/ {safeTotal}</span>
@@ -166,7 +166,7 @@ export function WorkspaceLead({
 }) {
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground/80">{eyebrow}</p>
+      <p className="text-[11px] tracking-wide text-muted-foreground/80">{eyebrow}</p>
       <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">{title}</h2>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{body}</p>
     </div>

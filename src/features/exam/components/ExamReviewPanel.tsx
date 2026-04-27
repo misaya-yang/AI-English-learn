@@ -38,7 +38,7 @@ export function ExamReviewPanel({
       <div className="rounded-[22px] border border-border/70 bg-background/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">Latest feedback</p>
+            <p className="text-[11px] tracking-wide text-muted-foreground/80">最新评分结果</p>
             <h3 className="mt-2 text-lg font-semibold">Overall Band {feedback.scores.overallBand.toFixed(1)}</h3>
           </div>
           <div className="flex flex-wrap items-center gap-2">

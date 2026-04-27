@@ -77,7 +77,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
             {word.level} · 第 {item.reviewCount + 1} 次复习
           </Badge>
-          <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Recall first</p>
+          <p className="mt-8 text-[11px] text-muted-foreground">先回忆</p>
           <h2 className="mt-5 text-[3.8rem] font-semibold leading-[0.92] tracking-[-0.065em] text-foreground sm:text-[5.2rem]">
             {word.word}
           </h2>
@@ -102,7 +102,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
         <div className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Answer revealed</p>
+              <p className="text-[11px] text-muted-foreground">答案已揭晓</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">{word.word}</h2>
               <p className="mt-1 font-mono text-sm text-muted-foreground">{word.partOfSpeech} · {word.phonetic}</p>
             </div>
@@ -119,14 +119,14 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           <div className="mt-6 grid flex-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_0.8fr]">
             <div className="space-y-4">
               <section className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Definition</p>
+                <p className="text-[11px] text-muted-foreground">释义</p>
                 <p className="mt-3 text-base leading-7 text-foreground">{word.definition}</p>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
               </section>
 
               {word.examples[0] ? (
                 <section className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Example</p>
+                  <p className="text-[11px] text-muted-foreground">例句</p>
                   <p className="mt-3 text-sm leading-7 text-foreground">{word.examples[0].en}</p>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p>
                 </section>
@@ -134,7 +134,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
             </div>
 
             <section className="rounded-xl border border-border bg-card p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Clues</p>
+              <p className="text-[11px] text-muted-foreground">提示</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.synonyms.slice(0, 5).map((synonym) => (
                   <span key={synonym} className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
@@ -382,7 +382,7 @@ export default function ReviewPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <LearningWorkspaceSurface
-            eyebrow="SRS workspace"
+            eyebrow="FSRS 复习"
             title={isRevealed ? '答案已揭晓，给这次回忆打分' : '先在脑中回忆，再决定是否揭晓'}
             description={isRevealed ? '直接评分，然后继续。' : undefined}
           >
@@ -430,7 +430,7 @@ export default function ReviewPage() {
         <div className="space-y-6">
           <CoachReviewRail language={language} />
 
-          <LearningRailSection title="Session stats">
+          <LearningRailSection title="本次统计">
             <LearningMetricStrip
               items={[
                 { label: 'Again', value: sessionStats.again, accent: 'warm' },
@@ -441,12 +441,12 @@ export default function ReviewPage() {
             />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Completed</p>
+                <p className="text-[11px] text-muted-foreground">已完成</p>
                 <p className="mt-2 text-2xl font-semibold text-foreground">{totalReviewed} / {reviewItems.length}</p>
               </div>
               <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Current stage</p>
-                <p className="mt-2 text-2xl font-semibold text-green-700">{isRevealed ? 'Rate it' : 'Recall first'}</p>
+                <p className="text-[11px] text-muted-foreground">当前阶段</p>
+                <p className="mt-2 text-2xl font-semibold text-green-700">{isRevealed ? '打分' : '先回忆'}</p>
               </div>
             </div>
           </LearningRailSection>
@@ -504,7 +504,7 @@ export default function ReviewPage() {
                 {/* Memory strength bar */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Memory strength</p>
+                    <p className="text-[10px] text-muted-foreground">记忆强度</p>
                     <p className="text-xs font-semibold text-foreground">
                       {Math.round(currentItem.fsrs.retrievability * 100)}%
                     </p>

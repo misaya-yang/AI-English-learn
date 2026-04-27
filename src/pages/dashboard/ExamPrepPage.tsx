@@ -7,7 +7,6 @@ import { ISSUE_LABELS } from '@/features/exam/constants';
 import { HeroSummary } from '@/features/exam/components/HeroSummary';
 import { RouteConsole } from '@/features/exam/components/RouteConsole';
 import { ExamWorkspaceTabs } from '@/features/exam/components/ExamWorkspaceTabs';
-import { InsightRail } from '@/features/exam/components/InsightRail';
 import { useExamDraftPersistence } from '@/features/exam/hooks/useExamDraftPersistence';
 import { useExamPrepRuntime } from '@/features/exam/hooks/useExamPrepRuntime';
 import { useExamQuotaState } from '@/features/exam/hooks/useExamQuotaState';
@@ -214,7 +213,7 @@ export default function ExamPrepPage() {
   const selectedErrorNode = errorGraph.find((node) => node.tag === topWeakTag) || errorGraph[0] || null;
 
   const nextActionLabel = selectedErrorNode
-    ? `优先修复 ${ISSUE_LABELS[selectedErrorNode.tag]}，把弱项从“知道”推进到“会用”。`
+    ? `优先修复 ${ISSUE_LABELS[selectedErrorNode.tag]}，把弱项从"知道"推进到"会用"。`
     : '先完成一次写作评分，建立你的弱项图谱和下一步训练路径。';
 
   const unitObjectives = selectedUnit?.learningObjectives || [];
@@ -222,23 +221,32 @@ export default function ExamPrepPage() {
   const latestNextActions = feedback?.nextActions?.slice(0, 3) || [];
   const activeWordCount = toWordCount(runtime.writingAnswer);
 
-  const workspaceCopy: WorkspaceCopy = {
+  const workspaceCopy: WorkspaceCopy = ({
     brief: {
-      eyebrow: 'Plan the next run',
+      eyebrow: '策略规划',
       title: '先把这次冲分回合排清楚',
       body: '从轨道、题型、话题和时间预算开始。先确定这次要练什么，再进入写作工作台，避免一上来就被所有工具打断。',
     },
     draft: {
-      eyebrow: 'Writing workspace',
+      eyebrow: '写作工作台',
       title: '把草稿写完，再决定是否调用辅助工具',
       body: '编辑器是主舞台。提纲、词汇升级和教练问答全部折叠在下方，需要时再展开，不抢正文注意力。',
     },
     review: {
-      eyebrow: 'Review and recover',
+      eyebrow: '结果复盘',
       title: '先看证据，再决定补救动作',
       body: '评分、错因、改写和下一步行动放在同一层，但只围绕一次反馈展开，避免回顾和新写作混在一起。',
     },
-  }[runtime.workspaceView];
+    insight: {
+      eyebrow: '数据洞察',
+      title: '只看当前需要的那一维数据',
+      body: '弱项图谱、Band 走势、历史回顾分开放置，按需切换，避免一次看完所有指标。',
+    },
+  })[runtime.workspaceView] ?? {
+    eyebrow: '数据洞察',
+    title: '只看当前需要的那一维数据',
+    body: '弱项图谱、Band 走势、历史回顾分开放置，按需切换，避免一次看完所有指标。',
+  };
 
   const handleJumpToVocabulary = useCallback(() => {
     jumpToVocabularyByTag(topWeakTag || 'lexical');
@@ -262,11 +270,11 @@ export default function ExamPrepPage() {
         quotaTotal={quotaTotal}
         onContinueWriting={() => runtime.setWorkspaceView('draft')}
         onStartSimulation={() => void runtime.handleGenerateSimItem()}
-        onShowWeakness={() => runtime.setInsightView('weakness')}
+        onShowWeakness={() => runtime.setWorkspaceView('insight')}
         isBusy={runtime.loadingStage !== 'idle'}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_360px]">
+      <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
         <RouteConsole
           trackSearch={trackSearch}
           onTrackSearchChange={setTrackSearch}
@@ -329,21 +337,10 @@ export default function ExamPrepPage() {
           onBackToBrief={() => runtime.setWorkspaceView('brief')}
           onReturnToDraft={() => runtime.setWorkspaceView('draft')}
           onQuickStart={runtime.handleGenerateSimItem}
-        />
-
-        <InsightRail
-          insightView={runtime.insightView}
-          onInsightViewChange={runtime.setInsightView}
           errorAnalytics={errorAnalytics}
           activeErrorTag={runtime.activeErrorTag}
           onSelectErrorTag={runtime.setActiveErrorTag}
-          onQuickStart={runtime.handleGenerateSimItem}
           selectedErrorNode={selectedErrorNode}
-          feedback={runtime.feedback}
-          isBusy={runtime.loadingStage !== 'idle'}
-          onGenerateMicroLesson={runtime.handleGenerateMicroLesson}
-          onJumpToVocabulary={handleJumpToVocabulary}
-          microUnit={runtime.microUnit}
           feedbackHistory={runtime.feedbackHistory}
           selectedTrackBandTarget={selectedTrack?.bandTarget || null}
           selectedUnitProgress={selectedUnitProgress}
@@ -352,8 +349,9 @@ export default function ExamPrepPage() {
           onRetryFeedback={runtime.handleRetryFeedback}
           onViewError={(tag) => {
             runtime.setActiveErrorTag(tag);
-            runtime.setInsightView('weakness');
+            runtime.setWorkspaceView('insight');
           }}
+          microUnit={runtime.microUnit}
         />
       </div>
 

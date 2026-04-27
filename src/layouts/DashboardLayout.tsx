@@ -456,12 +456,12 @@ export default function DashboardLayout() {
       </div>
 
       <div className="space-y-2">
-        <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Core</p>
+        <p className="px-2 text-xs text-muted-foreground">核心学习</p>
         {primaryNav.map((item) => renderStandardNavItem(item))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tools</p>
+        <p className="px-2 text-xs text-muted-foreground">工具</p>
         {toolNav.map((item) => renderStandardNavItem(item))}
       </div>
 
@@ -496,32 +496,32 @@ export default function DashboardLayout() {
         </div>
         <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Mission</p>
+            <p className="text-[11px] text-muted-foreground">任务</p>
             <p className="mt-1 text-xl font-semibold text-primary">{missionProgress}%</p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Due</p>
+            <p className="text-[11px] text-muted-foreground">到期</p>
             <p className="mt-1 text-xl font-semibold">{dueWords.length}</p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Streak</p>
+            <p className="text-[11px] text-muted-foreground">连续</p>
             <p className="mt-1 text-xl font-semibold">{streak?.current || 0}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Core learning</p>
+        <p className="px-1 text-[11px] text-muted-foreground">核心学习</p>
         {learningNav.map((item) => renderLearningNavItem(item))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Skills</p>
+        <p className="px-1 text-[11px] text-muted-foreground">专项技能</p>
         {skillsNav.map((item) => renderLearningNavItem(item, true))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Tools</p>
+        <p className="px-1 text-[11px] text-muted-foreground">工具</p>
         {learningTools.map((item) => renderLearningNavItem(item, true))}
       </div>
 
@@ -567,24 +567,23 @@ export default function DashboardLayout() {
             </div>
             <div>
               <p className="text-base font-semibold tracking-tight">VocabDaily</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">Learning cockpit</p>
+              <p className="text-[11px] text-primary">学习</p>
             </div>
           </Link>
 
           <div className="mt-5 rounded-xl border bg-card p-4 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Current route</p>
-            <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em]">{activeShell.title}</h2>
+            <h2 className="text-xl font-semibold tracking-[-0.03em]">{activeShell.title}</h2>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Mission</p>
+                <p className="text-[11px] text-muted-foreground">任务</p>
                 <p className="mt-1 text-lg font-semibold text-primary">{missionProgress}%</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Due</p>
+                <p className="text-[11px] text-muted-foreground">到期</p>
                 <p className="mt-1 text-lg font-semibold">{dueWords.length}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Streak</p>
+                <p className="text-[11px] text-muted-foreground">连续</p>
                 <p className="mt-1 text-lg font-semibold">{streak?.current || 0}</p>
               </div>
             </div>
@@ -601,17 +600,17 @@ export default function DashboardLayout() {
           >
             <div className="space-y-6 pb-4">
               <div className="space-y-2">
-                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Core learning</p>
+                <p className="px-1 text-[11px] text-muted-foreground">核心学习</p>
                 {learningNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Skills</p>
+                <p className="px-1 text-[11px] text-muted-foreground">专项技能</p>
                 {skillsNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Tools</p>
+                <p className="px-1 text-[11px] text-muted-foreground">工具</p>
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
@@ -654,7 +653,7 @@ export default function DashboardLayout() {
                   </SheetContent>
                 </Sheet>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
                     <span>{activeShell.title}</span>
                     {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} due</Badge> : null}
                   </div>
@@ -756,7 +755,6 @@ export default function DashboardLayout() {
             <div className="rounded-xl border bg-card px-4 py-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Today</p>
                   <p className="mt-1 text-lg font-semibold">继续今日任务</p>
                 </div>
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
@@ -792,12 +790,12 @@ export default function DashboardLayout() {
             </div>
 
             <div className="space-y-2">
-              <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Core learning</p>
+              <p className="px-2 text-xs text-muted-foreground">核心学习</p>
               {primaryNav.map((item) => renderStandardNavItem(item))}
             </div>
 
             <div className="space-y-2">
-              <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tools</p>
+              <p className="px-2 text-xs text-muted-foreground">工具</p>
               {toolNav.map((item) => renderStandardNavItem(item, true))}
             </div>
           </div>
@@ -862,7 +860,7 @@ export default function DashboardLayout() {
                 </SheetContent>
               </Sheet>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <span>{activeShell.title}</span>
                   {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} due</Badge> : null}
                 </div>

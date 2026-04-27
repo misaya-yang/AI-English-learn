@@ -622,7 +622,7 @@ export default function PracticePage() {
   };
 
   const renderModeSelector = () => (
-    <LearningRailSection title="Mode switcher">
+    <LearningRailSection title="练习模式">
       <nav className="space-y-2" aria-label="Practice modes">
         {practiceModes.map((mode) => {
           const active = focusedModeId === mode.id;
@@ -684,12 +684,12 @@ export default function PracticePage() {
           className="border-t-0 pt-0"
         />
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Focus</p>
+          <p className="text-xs text-muted-foreground">当前模式</p>
           <p className="mt-2 text-lg font-semibold text-foreground">{focusedMode.nameZh}</p>
           <p className="mt-1 text-sm text-muted-foreground">{focusedBlueprint.insight}</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stage</p>
+          <p className="text-xs text-muted-foreground">当前阶段</p>
           <p className="mt-2 text-lg font-semibold text-foreground">{sessionStage}</p>
         </div>
         {selectedMode === 'writing' ? (
@@ -755,7 +755,7 @@ export default function PracticePage() {
     return (
       <LearningCockpitShell
         language={practiceLanguage}
-        eyebrow="Practice mode"
+        eyebrow="练习"
         progress={heroProgress}
         progressLabel="Session progress"
         mission={{
@@ -931,8 +931,8 @@ export default function PracticePage() {
               animate={{ opacity: 1, y: 0 }}
               className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2"
             >
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-600">
-                Round {writingRound - 1} score — revise to improve
+              <p className="text-xs font-semibold text-amber-600">
+                第 {writingRound - 1} 轮得分 · 修改后提交
               </p>
               <div className="flex flex-wrap gap-3">
                 {[
@@ -1029,7 +1029,7 @@ export default function PracticePage() {
                       index === 4 && 'border-border bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]',
                     )}
                   >
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+                    <p className="text-xs text-muted-foreground">{label}</p>
                     <p className="mt-3 text-2xl font-semibold">{value.toFixed(1)}</p>
                     {prevValue !== undefined && delta !== 0 && (
                       <p className={cn('text-[11px] mt-1', delta > 0 ? 'text-green-600' : 'text-destructive')}>
@@ -1059,8 +1059,8 @@ export default function PracticePage() {
                 <div className="rounded-xl border border-green-200 bg-green-50 p-4">
                   <div className="mb-2 flex items-center gap-2">
                     <ThumbsUp className="h-3.5 w-3.5 text-green-600" />
-                    <span className="text-xs font-medium uppercase tracking-widest text-green-600">
-                      Strengths
+                    <span className="text-xs font-medium text-green-600">
+                      优点
                     </span>
                   </div>
                   <ul className="space-y-1">
@@ -1104,7 +1104,7 @@ export default function PracticePage() {
                           'h-3.5 w-3.5 shrink-0',
                           issue.severity === 'high' ? 'text-destructive' : issue.severity === 'medium' ? 'text-amber-500' : 'text-muted-foreground',
                         )} />
-                        <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider', tagColors[issue.tag] ?? 'bg-muted text-muted-foreground')}>
+                        <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-medium', tagColors[issue.tag] ?? 'bg-muted text-muted-foreground')}>
                           {issue.tag.replace('_', ' ')}
                         </span>
                       </div>
@@ -1112,7 +1112,7 @@ export default function PracticePage() {
                       {/* problematic sentence (highlighted) */}
                       {issue.sentence && (
                         <div className="rounded-lg border border-border bg-muted px-3 py-2">
-                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">原句</p>
+                          <p className="text-[11px] text-muted-foreground mb-1">原句</p>
                           <p className="text-sm italic text-foreground leading-relaxed">"{issue.sentence}"</p>
                         </div>
                       )}
@@ -1132,7 +1132,7 @@ export default function PracticePage() {
                       {/* corrected version */}
                       {issue.correction && (
                         <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2">
-                          <p className="text-[11px] uppercase tracking-wider text-green-600 mb-1">建议改为</p>
+                          <p className="text-[11px] text-green-600 mb-1">建议改为</p>
                           <p className="text-sm text-green-600 leading-relaxed italic">"{issue.correction}"</p>
                         </div>
                       )}
@@ -1146,7 +1146,7 @@ export default function PracticePage() {
                 <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 flex gap-3">
                   <Wand2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
                   <div>
-                    <p className="text-[11px] uppercase tracking-wider text-sky-600 mb-1">Band 7+ 示范句</p>
+                    <p className="text-[11px] text-sky-600 mb-1">Band 7+ 示范句</p>
                     <p className="text-sm italic leading-relaxed text-sky-700">"{writingFeedback.improvedSentence}"</p>
                   </div>
                 </div>

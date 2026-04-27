@@ -61,7 +61,7 @@ export function InsightRail({
           <div className="border-b border-border/70 px-4 py-4">
             <div className="flex flex-col gap-3">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">Insight rail</p>
+                <p className="text-[11px] tracking-wide text-muted-foreground/80">数据洞察</p>
                 <h2 className="mt-2 text-lg font-semibold">别一次看完所有数据，只看当前需要的洞察</h2>
               </div>
               <TabsList className="grid w-full grid-cols-3 rounded-full bg-muted/70 p-1">
@@ -87,7 +87,7 @@ export function InsightRail({
               )}
 
               <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
-                <p className="text-sm font-semibold">Next best action</p>
+                <p className="text-sm font-semibold">下一步最优行动</p>
                 {selectedErrorNode ? (
                   <>
                     <div className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.08] p-3">
@@ -121,7 +121,7 @@ export function InsightRail({
 
             <TabsContent value="trend" className="mt-0 space-y-4">
               <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
-                <p className="text-sm font-semibold">Band Trend</p>
+                <p className="text-sm font-semibold">Band 走势</p>
                 <p className="mt-1 text-xs text-muted-foreground">最近 7 次反馈走势</p>
                 <div className="mt-4">
                   <MiniTrendChart history={feedbackHistory} />

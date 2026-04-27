@@ -38,6 +38,12 @@ The user should always know:
 - What should I do next?
 - How is my English actually improving?
 
+UI corollary:
+
+- The product should look like a modern English learning workbench, not an AI SaaS demo.
+- Public and auth pages must not depend on black grids, emerald glow, glass panels, and giant rounded cards as their core identity.
+- The visual language should make learning feel clear, repeatable, and trustworthy.
+
 ## 3. Product Principles
 
 ### 3.1 Learning Evidence Over UI State
@@ -90,6 +96,20 @@ Rules:
 - Client code cannot write billing entitlements.
 - Supabase functions are deployed separately from Vercel.
 - Vercel deploys only the frontend.
+
+### 3.5 Learning-First Visual Language
+
+The UI should support daily learning behavior before it performs brand spectacle.
+
+Rules:
+
+- Start from content hierarchy, not decoration.
+- Prefer light-first, calm surfaces for public and auth pages.
+- Use semantic colors for memory, practice, coach, exam, error, and neutral states.
+- Treat Chinese and English as intentionally composed interface copy.
+- Avoid using glassmorphism, ambient glow, black grids, or excessive roundness as default answers.
+
+Detailed audit and direction live in `docs/claude/UI_MODERNIZATION_BRIEF.md`.
 
 ## 4. Target User Personas
 
@@ -194,4 +214,3 @@ The first mature version must include:
 - Chat page that surfaces coaching actions and next steps.
 - Learning Path that progresses from evidence, not manual checkboxes.
 - Clear production deployment and Supabase release checklist.
-

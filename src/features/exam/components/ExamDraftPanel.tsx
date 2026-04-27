@@ -58,7 +58,7 @@ export function ExamDraftPanel({
       <div className="rounded-[22px] border border-border/70 bg-background/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">Prompt ready</p>
+            <p className="text-[11px] tracking-wide text-muted-foreground/80">题目已就绪</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {taskType === 'task1' ? 'Task 1 目标 >=150 词' : 'Task 2 目标 >=250 词'} · {activeWordCount} words · {autosavedAt ? `自动保存 ${autosavedAt}` : '未保存'}
             </p>

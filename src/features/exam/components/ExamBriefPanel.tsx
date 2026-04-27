@@ -86,7 +86,7 @@ export function ExamBriefPanel({
         <div className="rounded-[22px] border border-border/70 bg-background/40 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">Selected prompt</p>
+              <p className="text-[11px] tracking-wide text-muted-foreground/80">当前题目</p>
               <p className="mt-2 text-base font-semibold">{simItem ? '当前为仿真题模式' : '当前为手动训练模式'}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -120,7 +120,7 @@ export function ExamBriefPanel({
       </div>
 
       <div className="rounded-[22px] border border-border/70 bg-background/35 p-4">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">This round</p>
+        <p className="text-[11px] tracking-wide text-muted-foreground/80">本轮目标</p>
         <p className="mt-2 text-base font-semibold">{selectedUnit?.title || '先从左侧选择一个单元'}</p>
         <p className="mt-1 text-sm text-muted-foreground">{selectedTrackTitle || '系统会按目标 Band 自动关联轨道。'}</p>
         {unitObjectives.length > 0 && (
