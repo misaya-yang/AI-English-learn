@@ -130,15 +130,15 @@ const shellTitleMap: Record<string, { title: string; description: string }> = {
     description: '调整偏好、反馈风格和系统行为。',
   },
   '/dashboard/profile': {
-    title: 'Profile',
+    title: '个人资料',
     description: '查看账号信息和学习身份。',
   },
 };
 
 const learningPrimaryLabelByRoute: Record<(typeof LEARNING_ROUTE_PREFIXES)[number], string> = {
-  '/dashboard/today': 'Open practice',
-  '/dashboard/review': 'Continue review',
-  '/dashboard/practice': 'Back to today',
+  '/dashboard/today': '开始练习',
+  '/dashboard/review': '继续复习',
+  '/dashboard/practice': '返回今日',
 };
 
 export default function DashboardLayout() {
@@ -411,24 +411,24 @@ export default function DashboardLayout() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>My account</DropdownMenuLabel>
+        <DropdownMenuLabel>我的账号</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <Link to="/dashboard/profile">
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            Profile
+            个人资料
           </DropdownMenuItem>
         </Link>
         <Link to="/dashboard/settings">
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            设置
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+          退出登录
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -474,7 +474,7 @@ export default function DashboardLayout() {
         </Button>
         <Button variant="outline" className="w-full justify-start rounded-2xl" onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+          退出登录
         </Button>
       </div>
     </div>
@@ -550,7 +550,7 @@ export default function DashboardLayout() {
         </div>
         <Button variant="outline" className="rounded-xl" onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+          退出登录
         </Button>
       </div>
     </div>
@@ -816,28 +816,28 @@ export default function DashboardLayout() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My account</DropdownMenuLabel>
+                <DropdownMenuLabel>我的账号</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <Link to="/dashboard/profile">
                   <DropdownMenuItem>
                     <User className="mr-2 h-4 w-4" />
-                    Profile
+                    个人资料
                   </DropdownMenuItem>
                 </Link>
                 <Link to="/dashboard/settings">
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    设置
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
                   <LayoutGrid className="mr-2 h-4 w-4" />
-                  {resolvedTheme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+                  {resolvedTheme === 'dark' ? '切换浅色模式' : '切换深色模式'}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => logout()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
+                  退出登录
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
