@@ -654,7 +654,7 @@ export default function TodayPage() {
           metrics={[
             { label: isZh ? '到期复习' : 'Due reviews', value: dueWords.length, hint: '先知道是否有旧账要清。' },
             { label: isZh ? '今日目标' : 'Daily target', value: activeBookSummary.dailyGoal, hint: '让今天的学习规模保持可完成。' },
-            { label: 'Target', value: learningProfile.target, hint: '主任务会围绕这个目标排优先级。' },
+            { label: isZh ? '目标' : 'Target', value: learningProfile.target, hint: '主任务会围绕这个目标排优先级。' },
           ]}
           actions={
             <>

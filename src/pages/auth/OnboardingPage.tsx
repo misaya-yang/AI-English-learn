@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -61,6 +62,8 @@ export default function OnboardingPage() {
   const { updateUserProfile, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language === 'zh';
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showPlacementTest, setShowPlacementTest] = useState(false);
@@ -150,7 +153,7 @@ export default function OnboardingPage() {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                What's your English level?
+                {isZh ? '你的英语水平是？' : "What's your English level?"}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
                 选择你目前的英语水平
@@ -164,7 +167,7 @@ export default function OnboardingPage() {
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
-                <p className="font-medium">Take a 10-question placement test</p>
+                <p className="font-medium">{isZh ? '做 10 道题自动测定等级' : 'Take a 10-question placement test'}</p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
                   10 道题自动判断你的等级
                 </p>
@@ -395,7 +398,7 @@ export default function OnboardingPage() {
         <div>
           <div className="mb-2 flex items-center justify-between text-xs">
             <span className="text-slate-500 dark:text-white/50">
-              Step {step} of {totalSteps}
+              {isZh ? `第 ${step} / ${totalSteps} 步` : `Step ${step} of ${totalSteps}`}
             </span>
             <span className="text-emerald-600 dark:text-emerald-400 font-medium">
               {Math.round(progress)}%
@@ -415,7 +418,7 @@ export default function OnboardingPage() {
             className="rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08]"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Back
+            {isZh ? '上一步' : 'Back'}
           </Button>
 
           <Button
@@ -430,16 +433,16 @@ export default function OnboardingPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {isZh ? '保存中...' : 'Saving...'}
               </>
             ) : step === totalSteps ? (
               <>
-                Get started
+                {isZh ? '开始学习' : 'Get started'}
                 <Check className="ml-2 h-4 w-4" />
               </>
             ) : (
               <>
-                Next
+                {isZh ? '下一步' : 'Next'}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </>
             )}
