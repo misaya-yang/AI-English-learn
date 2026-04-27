@@ -70,26 +70,28 @@ const CHAT_MODE_OPTIONS: ChatModeOption[] = [
   { id: 'canvas', label: 'Canvas', labelZh: '写作', icon: NotebookPen },
 ];
 
-const buildDbSetupGuide = (language: string): string =>
-  language.startsWith('zh')
-    ? [
-        '请不要再复制页面里的旧初始化 SQL。',
-        '请在项目根目录执行：',
-        '1. supabase link --project-ref zjkbktdmwencnouwfrij',
-        '2. supabase db push --linked',
-        '3. supabase functions deploy ai-chat',
-        '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
-        '如需核对 migration，请查看：supabase/migrations/',
-      ].join('\n')
-    : [
-        'Do not copy the legacy bootstrap SQL from the UI.',
-        'From the project root run:',
-        '1. supabase link --project-ref zjkbktdmwencnouwfrij',
-        '2. supabase db push --linked',
-        '3. supabase functions deploy ai-chat',
-        '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
-        'Review migrations in: supabase/migrations/',
-      ].join('\n');
+const buildDbSetupGuide = import.meta.env.DEV
+  ? (language: string): string =>
+      language.startsWith('zh')
+        ? [
+            '请不要再复制页面里的旧初始化 SQL。',
+            '请在项目根目录执行：',
+            '1. supabase link',
+            '2. supabase db push --linked',
+            '3. supabase functions deploy ai-chat',
+            '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
+            '如需核对 migration，请查看：supabase/migrations/',
+          ].join('\n')
+        : [
+            'Do not copy the legacy bootstrap SQL from the UI.',
+            'From the project root run:',
+            '1. supabase link',
+            '2. supabase db push --linked',
+            '3. supabase functions deploy ai-chat',
+            '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
+            'Review migrations in: supabase/migrations/',
+          ].join('\n')
+  : (_language: string): string => 'Contact support at support@vocabdaily.com';
 
 interface QuizSequenceState {
   targetCount: number;
@@ -744,15 +746,18 @@ export default function ChatPage() {
     const date = new Date(timestamp);
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const locale = language?.startsWith('zh') ? 'zh-CN' : 'en-US';
+
     if (diffDays === 0) {
-      return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
     } else if (diffDays === 1) {
-      return '昨天';
+      return language?.startsWith('zh') ? '昨天' : 'Yesterday';
     } else if (diffDays < 7) {
-      return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+      return language?.startsWith('zh')
+        ? ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()]
+        : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
     } else {
-      return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
     }
   };
 

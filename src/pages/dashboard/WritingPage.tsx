@@ -190,7 +190,7 @@ export default function WritingPage() {
                             <Badge variant="outline" className="text-[10px]">{s.type}</Badge>
                           </div>
                           <p className="line-through text-muted-foreground">{s.original}</p>
-                          <p className="text-green-600 dark:text-green-400 mt-1">{s.suggested}</p>
+                          <p className="text-green-700 mt-1">{s.suggested}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {isZh ? s.reasonZh : s.reason}
                           </p>

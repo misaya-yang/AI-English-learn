@@ -377,7 +377,7 @@ const GRAMMAR_RULES: GrammarRule[] = [
 
 const CATEGORY_META: Record<GrammarCategory, { label: string; labelZh: string; color: string }> = {
   articles:     { label: 'Articles',     labelZh: '冠词',     color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
-  tenses:       { label: 'Tenses',       labelZh: '时态',     color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+  tenses:       { label: 'Tenses',       labelZh: '时态',     color: 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))] border-[hsl(var(--accent-practice)/0.2)]' },
   prepositions: { label: 'Prepositions', labelZh: '介词',     color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
   conditionals: { label: 'Conditionals', labelZh: '条件句',   color: 'text-violet-400 bg-violet-500/10 border-violet-500/20' },
   passive:      { label: 'Passive Voice',labelZh: '被动语态', color: 'text-pink-400 bg-pink-500/10 border-pink-500/20' },
@@ -385,7 +385,7 @@ const CATEGORY_META: Record<GrammarCategory, { label: string; labelZh: string; c
 };
 
 const LEVEL_COLORS: Record<string, string> = {
-  B1: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+  B1: 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))] border-[hsl(var(--accent-practice)/0.2)]',
   B2: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
   C1: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
 };
@@ -402,24 +402,24 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
   const catMeta = CATEGORY_META[rule.category];
 
   return (
-    <div className="rounded-2xl border border-black/5 dark:border-white/[0.07] bg-white dark:bg-white/[0.02] overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full px-5 py-4 text-left flex items-center gap-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+        className="w-full px-5 py-4 text-left flex items-center gap-3 hover:bg-muted transition-colors"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className={cn('rounded-full border px-2 py-0.5 text-[10px] font-semibold', catMeta.color)}>
+            <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-semibold', catMeta.color)}>
               {catMeta.labelZh}
             </span>
-            <span className={cn('rounded-full border px-2 py-0.5 text-[10px] font-semibold', LEVEL_COLORS[rule.level])}>
+            <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-semibold', LEVEL_COLORS[rule.level])}>
               {rule.level}
             </span>
           </div>
-          <p className="text-sm font-semibold text-slate-900 dark:text-white">{rule.title}</p>
-          <p className="text-xs text-slate-500 dark:text-white/40">{rule.titleZh}</p>
+          <p className="text-sm font-semibold text-foreground">{rule.title}</p>
+          <p className="text-xs text-muted-foreground">{rule.titleZh}</p>
         </div>
-        <ChevronDown className={cn('h-4 w-4 flex-shrink-0 text-slate-400 dark:text-white/40 transition-transform duration-200', expanded && 'rotate-180')} />
+        <ChevronDown className={cn('h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform duration-200', expanded && 'rotate-180')} />
       </button>
 
       <AnimatePresence>
@@ -430,21 +430,21 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
             exit={{ height: 0 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-black/5 dark:border-white/[0.06] px-5 py-4 space-y-4">
+            <div className="border-t border-border px-5 py-4 space-y-4">
               {/* Explanation */}
-              <div className="rounded-xl bg-slate-50 dark:bg-white/[0.03] p-4 space-y-2">
-                <p className="text-sm leading-6 text-slate-700 dark:text-white/80">{rule.explanation}</p>
-                <p className="text-sm leading-6 text-slate-500 dark:text-white/50">{rule.explanationZh}</p>
+              <div className="rounded-xl bg-muted p-4 space-y-2">
+                <p className="text-sm leading-6 text-foreground">{rule.explanation}</p>
+                <p className="text-sm leading-6 text-muted-foreground">{rule.explanationZh}</p>
               </div>
 
               {/* Examples */}
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-white/36 mb-2">Examples</p>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Examples</p>
                 <div className="space-y-2">
                   {rule.examples.map((ex, i) => (
-                    <div key={i} className="rounded-xl border border-black/5 dark:border-white/[0.06] px-4 py-2.5">
-                      <p className="text-sm text-slate-800 dark:text-white">{ex.en}</p>
-                      <p className="text-xs text-slate-500 dark:text-white/45 mt-0.5">{ex.zh}</p>
+                    <div key={i} className="rounded-xl border border-border px-4 py-2.5">
+                      <p className="text-sm text-foreground">{ex.en}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{ex.zh}</p>
                     </div>
                   ))}
                 </div>
@@ -452,10 +452,10 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
 
               {/* Common Errors */}
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-white/36 mb-2">Common Errors</p>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Common Errors</p>
                 <ul className="space-y-1.5">
                   {rule.commonErrors.map((err, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-slate-500 dark:text-white/50">
+                    <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
                       <span className="mt-0.5 flex-shrink-0 text-amber-400">⚠</span>
                       {err}
                     </li>
@@ -466,7 +466,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
               {/* Practice CTA */}
               <Button
                 onClick={() => onPractice(rule)}
-                className="w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400 font-semibold"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold"
               >
                 <Play className="mr-2 h-3.5 w-3.5" />
                 Practice ({rule.practice.length} questions)
@@ -499,27 +499,27 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
 
   return (
     <div className={cn(
-      'rounded-2xl border p-4 space-y-3 transition-all duration-300',
+      'rounded-xl border p-4 space-y-3 transition-all duration-300',
       !submitted
-        ? 'border-black/5 dark:border-white/[0.07] bg-white dark:bg-white/[0.02]'
+        ? 'border-border bg-card'
         : isCorrect
-          ? 'border-emerald-500/25 bg-emerald-500/[0.05]'
-          : 'border-red-500/25 bg-red-500/[0.05]',
+          ? 'border-primary/40 bg-primary/5'
+          : 'border-destructive/30 bg-destructive/5',
     )}>
       {/* Question number + result indicator */}
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-[11px] font-bold text-slate-600 dark:text-white/60">
+        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
           {index + 1}
         </span>
         <div className="flex-1">
           {/* Sentence with blank */}
-          <p className="text-sm leading-7 text-slate-800 dark:text-white">
+          <p className="text-sm leading-7 text-foreground">
             {parts[0]}
             <span className={cn(
               'inline-block min-w-[80px] rounded-lg border-b-2 px-2 mx-1 text-center',
               !submitted ? 'border-blue-500/50 bg-blue-500/[0.06]' :
-              isCorrect ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' :
-              'border-red-400 bg-red-500/10 text-red-500',
+              isCorrect ? 'border-green-500/30 bg-green-50 text-green-700' :
+              'border-destructive/30 bg-destructive/5 text-destructive',
             )}>
               {userAnswer || (submitted ? '—' : '___')}
             </span>
@@ -528,8 +528,8 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
         </div>
         {submitted && (
           isCorrect
-            ? <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-            : <XCircle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
+            ? <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+            : <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
         )}
       </div>
 
@@ -537,7 +537,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
       {item.hint && !submitted && (
         <div className="ml-8 flex items-center gap-1.5">
           <Lightbulb className="h-3 w-3 text-amber-400" />
-          <p className="text-xs text-amber-500 dark:text-amber-400">{item.hint}</p>
+          <p className="text-xs text-amber-500">{item.hint}</p>
         </div>
       )}
 
@@ -549,7 +549,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
             value={userAnswer}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Fill in the blank…"
-            className="w-full rounded-xl border border-black/10 dark:border-white/[0.1] bg-transparent px-3 py-2 text-sm text-slate-800 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-white/30 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
           />
         </div>
       )}
@@ -558,13 +558,13 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
       {submitted && (
         <div className="ml-8 space-y-1.5">
           {!isCorrect && (
-            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <p className="text-xs font-semibold text-green-700">
               ✓ Correct: <span className="font-bold">{item.answer}</span>
             </p>
           )}
-          <div className="rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2 space-y-1">
-            <p className="text-xs leading-5 text-slate-600 dark:text-white/60">{item.explanation}</p>
-            <p className="text-xs leading-5 text-slate-400 dark:text-white/40">{item.explanationZh}</p>
+          <div className="rounded-xl bg-muted px-3 py-2 space-y-1">
+            <p className="text-xs leading-5 text-foreground">{item.explanation}</p>
+            <p className="text-xs leading-5 text-muted-foreground">{item.explanationZh}</p>
           </div>
         </div>
       )}
@@ -649,8 +649,8 @@ export default function GrammarPage() {
     return (
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Grammar</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-white/50">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Grammar</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Rules, examples, and fill-in-the-blank practice
           </p>
         </div>
@@ -660,10 +660,10 @@ export default function GrammarPage() {
           <button
             onClick={() => setFilterCategory('all')}
             className={cn(
-              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+              'rounded-md border px-3 py-1 text-xs font-medium transition-colors',
               filterCategory === 'all'
-                ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-black'
-                : 'border-black/10 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20',
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border text-muted-foreground hover:bg-muted',
             )}
           >
             All
@@ -673,10 +673,10 @@ export default function GrammarPage() {
               key={cat}
               onClick={() => setFilterCategory(cat as GrammarCategory)}
               className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                'rounded-md border px-3 py-1 text-xs font-medium transition-colors',
                 filterCategory === cat
                   ? meta.color
-                  : 'border-black/10 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-black/20 dark:hover:border-white/20',
+                  : 'border-border text-muted-foreground hover:bg-muted',
               )}
             >
               {meta.labelZh}
@@ -706,7 +706,7 @@ export default function GrammarPage() {
         {/* Back */}
         <button
           onClick={handleBack}
-          className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-white/48 hover:text-slate-800 dark:hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           ← Back to rules
         </button>
@@ -715,22 +715,22 @@ export default function GrammarPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className={cn('rounded-full border px-2.5 py-0.5 text-[11px] font-semibold', catMeta.color)}>
+              <span className={cn('rounded-md border px-2.5 py-0.5 text-[11px] font-semibold', catMeta.color)}>
                 {catMeta.labelZh}
               </span>
-              <span className={cn('rounded-full border px-2.5 py-0.5 text-[11px] font-semibold', LEVEL_COLORS[activeRule.level])}>
+              <span className={cn('rounded-md border px-2.5 py-0.5 text-[11px] font-semibold', LEVEL_COLORS[activeRule.level])}>
                 {activeRule.level}
               </span>
             </div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{activeRule.title}</h2>
-            <p className="text-sm text-slate-500 dark:text-white/45">{activeRule.titleZh}</p>
+            <h2 className="text-lg font-bold text-foreground">{activeRule.title}</h2>
+            <p className="text-sm text-muted-foreground">{activeRule.titleZh}</p>
           </div>
           {submitted && (
             <div className={cn(
-              'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold flex-shrink-0',
-              score / totalQ >= 0.8 ? 'bg-emerald-500/15 text-emerald-500' :
+              'flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold flex-shrink-0',
+              score / totalQ >= 0.8 ? 'bg-green-100 text-green-700' :
               score / totalQ >= 0.5 ? 'bg-amber-500/15 text-amber-500' :
-              'bg-red-500/15 text-red-400',
+              'bg-destructive/10 text-destructive',
             )}>
               <Trophy className="h-4 w-4" />
               {score}/{totalQ}
@@ -740,12 +740,12 @@ export default function GrammarPage() {
 
         {/* Rule quick-reference */}
         {!submitted && (
-          <div className="rounded-xl border border-black/5 dark:border-white/[0.06] bg-slate-50 dark:bg-white/[0.02] px-4 py-3">
+          <div className="rounded-xl border border-border bg-muted px-4 py-3">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <BookOpen className="h-3.5 w-3.5 text-slate-400 dark:text-white/40" />
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-white/40">Rule summary</p>
+              <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Rule summary</p>
             </div>
-            <p className="text-xs leading-5 text-slate-600 dark:text-white/60">{activeRule.explanation}</p>
+            <p className="text-xs leading-5 text-foreground">{activeRule.explanation}</p>
           </div>
         )}
 
@@ -768,7 +768,7 @@ export default function GrammarPage() {
           <Button
             onClick={handleSubmit}
             disabled={!allAnswered}
-            className="w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400 font-semibold disabled:opacity-50"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold disabled:opacity-50"
           >
             Check Answers
           </Button>
@@ -777,14 +777,14 @@ export default function GrammarPage() {
             <Button
               onClick={() => { setAnswers({}); setSubmitted(false); setPhase('practice'); }}
               variant="outline"
-              className="w-full rounded-full border-white/10 dark:bg-white/[0.03] hover:bg-white/[0.06]"
+              className="w-full rounded-md border-border hover:bg-muted"
             >
               <RotateCcw className="mr-2 h-4 w-4" /> Try Again
             </Button>
             <Button
               onClick={handleBack}
               variant="outline"
-              className="w-full rounded-full border-white/10 dark:bg-white/[0.03] hover:bg-white/[0.06]"
+              className="w-full rounded-md border-border hover:bg-muted"
             >
               <Layers className="mr-2 h-4 w-4" /> More Rules
             </Button>

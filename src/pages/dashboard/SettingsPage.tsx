@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +14,17 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import {
   User,
   Bell,
@@ -77,11 +89,9 @@ export default function SettingsPage() {
   };
 
   const handleClearData = () => {
-    if (confirm('Are you sure you want to clear all your data? This cannot be undone.')) {
-      clearAllData();
-      toast.success('All data cleared');
-      window.location.reload();
-    }
+    clearAllData();
+    toast.success('All data cleared');
+    window.location.reload();
   };
 
   return (
@@ -374,6 +384,13 @@ export default function SettingsPage() {
               <div className="grid gap-2">
                 <Label>Display Name</Label>
                 <Input value={user?.displayName || ''} disabled />
+                <p className="text-xs text-muted-foreground mt-1">
+                  To change your name, visit{' '}
+                  <Link to="/dashboard/profile" className="underline underline-offset-2 hover:text-foreground">
+                    Profile settings
+                  </Link>
+                  .
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -395,10 +412,25 @@ export default function SettingsPage() {
                     Delete all your learning progress and settings
                   </p>
                 </div>
-                <Button variant="destructive" onClick={handleClearData}>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear Data
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">Clear All Data</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Clear all learning data?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all your word progress, review history, and settings. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleClearData} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Yes, delete everything
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
 
               <Separator />

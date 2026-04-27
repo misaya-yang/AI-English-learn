@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
+  ChevronLeft,
   ChevronRight,
   CheckCircle2,
   Circle,
@@ -24,6 +26,14 @@ import {
   toggleLearningPathLesson,
 } from '@/services/learningPathProgress';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
+
+const LESSON_TYPE_ROUTE: Record<LessonItem['type'], string> = {
+  vocabulary: '/dashboard/today',
+  grammar: '/dashboard/grammar',
+  practice: '/dashboard/practice',
+  conversation: '/dashboard/chat',
+  review: '/dashboard/review',
+};
 
 const DIFFICULTY_COLORS = {
   beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -55,6 +65,7 @@ const getInitialProgressState = (userId: string) => {
 };
 
 export default function LearningPathPage() {
+  const navigate = useNavigate();
   const { i18n } = useTranslation();
   const { user } = useAuth();
   const isZh = i18n.language === 'zh';
@@ -187,104 +198,132 @@ export default function LearningPathPage() {
   const progressPercent = pathProgressMap.get(selectedPath.id) || 0;
   const doneCount = getLessonIds(selectedPath).filter((lessonId) => completedLessonSet.has(lessonId)).length;
 
+  const pathTitle = isZh ? selectedPath.titleZh : selectedPath.title;
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
-      <motion.div {...motionPresets.fadeIn}>
-        <Button variant="ghost" size="sm" onClick={() => handleSelectPath(null)}>
-          ← {isZh ? '返回路径列表' : 'Back to paths'}
-        </Button>
+    <div className="mx-auto max-w-2xl p-4 sm:p-6">
+      <LearningCockpitShell
+        language={i18n.language}
+        eyebrow={isZh ? '学习路径' : 'Learning Paths'}
+        mission={{
+          title: pathTitle,
+          description: isZh ? selectedPath.descriptionZh : selectedPath.description,
+          secondaryActions: [
+            { label: isZh ? '回到 Today' : 'Back to Today', href: '/dashboard/today', variant: 'outline' },
+          ],
+        }}
+        metrics={[
+          {
+            label: isZh ? '课程进度' : 'Progress',
+            value: `${doneCount}/${totalLessons}`,
+            accent: 'emerald',
+          },
+          {
+            label: isZh ? '完成率' : 'Completion',
+            value: `${progressPercent}%`,
+          },
+        ]}
+      >
+        <div className="space-y-6">
+          <motion.div {...motionPresets.fadeIn}>
+            <Button variant="ghost" size="sm" onClick={() => handleSelectPath(null)}>
+              <ChevronLeft className="h-4 w-4" />
+              {isZh ? '返回路径列表' : 'Back to paths'}
+            </Button>
 
-        <div className="mt-2 flex items-center gap-3">
-          <span className="text-2xl">{selectedPath.icon}</span>
-          <div>
-            <h1 className="text-xl font-bold">
-              {isZh ? selectedPath.titleZh : selectedPath.title}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {isZh ? selectedPath.descriptionZh : selectedPath.description}
-            </p>
-          </div>
-        </div>
+            <div className="mt-3 flex items-center gap-3">
+              <Progress value={progressPercent} className="flex-1" />
+              <span className="text-xs text-muted-foreground">
+                {doneCount}/{totalLessons}
+              </span>
+            </div>
+          </motion.div>
 
-        <div className="mt-3 flex items-center gap-3">
-          <Progress value={progressPercent} className="flex-1" />
-          <span className="text-xs text-muted-foreground">
-            {doneCount}/{totalLessons}
-          </span>
-        </div>
-      </motion.div>
+          <Card className="border-emerald-500/15 bg-emerald-500/[0.04]">
+            <CardContent className="flex items-start gap-3 p-4">
+              <Sparkles className="mt-0.5 h-4 w-4 text-emerald-500" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">
+                  {isZh ? '下一步建议' : 'Suggested next step'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {nextLesson
+                    ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${nextLesson.estimatedMinutes}m`
+                    : isZh
+                      ? '这条路径已经完成，可以切换到下一条更高阶路径。'
+                      : 'This path is complete. You can switch to a more advanced path next.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card className="border-emerald-500/15 bg-emerald-500/[0.04]">
-        <CardContent className="flex items-start gap-3 p-4">
-          <Sparkles className="mt-0.5 h-4 w-4 text-emerald-500" />
-          <div className="space-y-1">
-            <p className="text-sm font-medium">
-              {isZh ? '下一步建议' : 'Suggested next step'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {nextLesson
-                ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${nextLesson.estimatedMinutes}m`
-                : isZh
-                  ? '这条路径已经完成，可以切换到下一条更高阶路径。'
-                  : 'This path is complete. You can switch to a more advanced path next.'}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          {selectedPath.stages.map((stage) => (
+            <div key={stage.id} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold text-primary">
+                  {isZh ? stage.titleZh : stage.title}
+                </h2>
+              </div>
 
-      {selectedPath.stages.map((stage) => (
-        <div key={stage.id} className="space-y-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold text-primary">
-              {isZh ? stage.titleZh : stage.title}
-            </h2>
-          </div>
+              {stage.units.map((unit) => (
+                <Card key={unit.id}>
+                  <CardHeader className="pb-2 pt-3">
+                    <CardTitle className="text-sm">
+                      {isZh ? unit.titleZh : unit.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1.5 pb-3">
+                    {unit.lessons.map((lesson) => {
+                      const done = completedLessonSet.has(lesson.id);
+                      const targetRoute = LESSON_TYPE_ROUTE[lesson.type];
 
-          {stage.units.map((unit) => (
-            <Card key={unit.id}>
-              <CardHeader className="pb-2 pt-3">
-                <CardTitle className="text-sm">
-                  {isZh ? unit.titleZh : unit.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1.5 pb-3">
-                {unit.lessons.map((lesson) => {
-                  const done = completedLessonSet.has(lesson.id);
-
-                  return (
-                    <button
-                      key={lesson.id}
-                      type="button"
-                      onClick={() => handleToggleLesson(lesson.id)}
-                      className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
-                    >
-                      {done ? (
-                        <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
-                      ) : (
-                        <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      )}
-                      <span className="text-sm">{lessonTypeIcon[lesson.type]}</span>
-                      <span className={`flex-1 text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>
-                        {isZh ? lesson.titleZh : lesson.title}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {lesson.estimatedMinutes}m
-                      </span>
-                    </button>
-                  );
-                })}
-              </CardContent>
-            </Card>
+                      return (
+                        <div
+                          key={lesson.id}
+                          className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
+                        >
+                          <button
+                            type="button"
+                            aria-label={done ? (isZh ? '取消完成' : 'Mark incomplete') : (isZh ? '标记完成' : 'Mark complete')}
+                            onClick={() => handleToggleLesson(lesson.id)}
+                            className="shrink-0"
+                          >
+                            {done ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => navigate(targetRoute)}
+                            className="flex flex-1 items-center gap-3 text-left"
+                          >
+                            <span className="text-sm">{lessonTypeIcon[lesson.type]}</span>
+                            <span className={`flex-1 text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>
+                              {isZh ? lesson.titleZh : lesson.title}
+                            </span>
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {lesson.estimatedMinutes}m
+                            </span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ))}
-        </div>
-      ))}
 
-      <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
-        <span>{isZh ? '点击课程即可标记完成或取消完成。' : 'Click any lesson to mark it complete or undo it.'}</span>
-        <Badge variant="secondary">{progressPercent}%</Badge>
-      </div>
+          <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+            <span>{isZh ? '点击课程名称跳转到对应学习内容。' : 'Click a lesson to go to its learning content.'}</span>
+            <Badge variant="secondary">{progressPercent}%</Badge>
+          </div>
+        </div>
+      </LearningCockpitShell>
     </div>
   );
 }

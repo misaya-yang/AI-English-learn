@@ -370,7 +370,7 @@ export default function ReadingPage() {
   // ── Score colour ──────────────────────────────────────────────────────────
 
   const scorePct = score ? score.correct / score.total : 0;
-  const scoreColor = scorePct >= 0.8 ? 'text-emerald-400' : scorePct >= 0.6 ? 'text-amber-400' : 'text-red-400';
+  const scoreColor = scorePct >= 0.8 ? 'text-green-600' : scorePct >= 0.6 ? 'text-amber-600' : 'text-destructive';
 
   // ── TFNG options ──────────────────────────────────────────────────────────
   const tfngOptions: TFNGAnswer[] = ['True', 'False', 'Not Given'];
@@ -382,9 +382,9 @@ export default function ReadingPage() {
     return (
       <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
         <div>
-          <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Reading module</p>
-          <h1 className="text-2xl font-semibold text-white">IELTS Academic Reading</h1>
-          <p className="mt-1 text-sm text-white/50">Choose a passage or generate a new one with AI</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Reading module</p>
+          <h1 className="text-2xl font-semibold text-foreground">IELTS Academic Reading</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Choose a passage or generate a new one with AI</p>
         </div>
 
         <div className="space-y-3">
@@ -392,29 +392,29 @@ export default function ReadingPage() {
             <button
               key={p.id}
               onClick={() => startPassage(p)}
-              className="w-full rounded-3xl border border-white/10 bg-white/[0.03] p-5 text-left transition hover:border-white/20 hover:bg-white/[0.06] active:scale-[0.99]"
+              className="w-full rounded-xl border border-border bg-card p-5 text-left shadow-sm transition hover:border-border hover:bg-muted active:scale-[0.99]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{p.title}</p>
-                  <p className="mt-0.5 text-sm text-white/50">{p.topic}</p>
+                  <p className="font-medium text-foreground truncate">{p.title}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{p.topic}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge variant="outline" className={cn(
-                    'rounded-full border-0 text-[10px] px-2',
-                    p.level === 'C1' ? 'bg-violet-500/20 text-violet-300'
-                    : p.level === 'B2' ? 'bg-blue-500/20 text-blue-300'
-                    : 'bg-emerald-500/20 text-emerald-300',
+                    'rounded-md border-0 text-[10px] px-2',
+                    p.level === 'C1' ? 'bg-violet-500/10 text-violet-700'
+                    : p.level === 'B2' ? 'bg-blue-500/10 text-blue-700'
+                    : 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]',
                   )}>
                     {p.level}
                   </Badge>
-                  <span className="flex items-center gap-1 text-xs text-white/40">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     {p.estimatedMinutes} min
                   </span>
                 </div>
               </div>
-              <div className="mt-3 flex items-center gap-3 text-xs text-white/35">
+              <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{p.questions.length} questions</span>
                 <span>·</span>
                 <span>{p.questions.filter(q => q.type === 'tfng').length} T/F/NG</span>
@@ -430,7 +430,7 @@ export default function ReadingPage() {
         <Button
           onClick={handleGenerateNew}
           disabled={isGenerating}
-          className="w-full rounded-full bg-white/[0.06] border border-white/10 text-white hover:bg-white/[0.1]"
+          className="w-full rounded-md border border-border bg-muted text-foreground hover:bg-muted/80"
           variant="ghost"
         >
           {isGenerating ? (
@@ -454,18 +454,18 @@ export default function ReadingPage() {
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-widest text-white/40">{current.topic}</p>
-            <h1 className="text-xl font-semibold text-white">{current.title}</h1>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">{current.topic}</p>
+            <h1 className="text-xl font-semibold text-foreground">{current.title}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="rounded-full border-white/20 text-white/60 text-xs">
+            <Badge variant="outline" className="rounded-md border-border text-muted-foreground text-xs">
               {current.level}
             </Badge>
             <Button
               size="sm"
               onClick={() => setPhase('select')}
               variant="ghost"
-              className="rounded-full border border-white/10 text-white/50 hover:text-white text-xs"
+              className="rounded-md border border-border text-muted-foreground hover:text-foreground text-xs"
             >
               Change passage
             </Button>
@@ -474,14 +474,14 @@ export default function ReadingPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left: passage */}
-          <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 max-h-[72vh] overflow-y-auto">
+          <div className="rounded-xl border border-border bg-card p-6 max-h-[72vh] overflow-y-auto shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="h-4 w-4 text-sky-400" />
-              <span className="text-xs font-medium uppercase tracking-widest text-sky-400/70">Passage</span>
+              <BookOpen className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Passage</span>
             </div>
-            <div className="prose prose-sm prose-invert max-w-none leading-7">
+            <div className="prose prose-sm max-w-none leading-7">
               {current.passage.split('\n\n').map((para, i) => (
-                <p key={i} className="mb-4 text-white/75 leading-7">{para}</p>
+                <p key={i} className="mb-4 text-foreground leading-7">{para}</p>
               ))}
             </div>
           </div>
@@ -489,16 +489,16 @@ export default function ReadingPage() {
           {/* Right: questions */}
           <div className="space-y-4 max-h-[72vh] overflow-y-auto pr-1">
             <div className="flex items-center gap-2 mb-2">
-              <Target className="h-4 w-4 text-violet-400" />
-              <span className="text-xs font-medium uppercase tracking-widest text-violet-400/70">
+              <Target className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Questions ({current.questions.length})
               </span>
             </div>
 
             {current.questions.map((q) => (
-              <div key={q.id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
-                <p className="text-sm font-medium text-white leading-6">
-                  <span className="text-white/40 mr-2">Q{q.id}.</span>
+              <div key={q.id} className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-sm">
+                <p className="text-sm font-medium text-foreground leading-6">
+                  <span className="text-muted-foreground mr-2">Q{q.id}.</span>
                   {q.question}
                 </p>
 
@@ -510,10 +510,10 @@ export default function ReadingPage() {
                         key={opt}
                         onClick={() => setAnswer(q.id, opt)}
                         className={cn(
-                          'rounded-full border px-4 py-1.5 text-xs font-medium transition',
+                          'rounded-md border px-4 py-1.5 text-xs font-medium transition',
                           answers[q.id] === opt
-                            ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
-                            : 'border-white/15 bg-white/[0.04] text-white/60 hover:border-white/30',
+                            ? 'border-green-500/30 bg-green-50 text-green-700'
+                            : 'border-border bg-muted text-muted-foreground hover:border-border hover:bg-muted/80',
                         )}
                       >
                         {opt}
@@ -530,10 +530,10 @@ export default function ReadingPage() {
                         key={opt}
                         onClick={() => setAnswer(q.id, opt.charAt(0))}
                         className={cn(
-                          'w-full rounded-2xl border px-4 py-2 text-left text-sm transition',
+                          'w-full rounded-lg border px-4 py-2 text-left text-sm transition',
                           answers[q.id] === opt.charAt(0)
-                            ? 'border-emerald-500/40 bg-emerald-500/[0.08] text-white'
-                            : 'border-white/10 bg-white/[0.02] text-white/65 hover:border-white/20',
+                            ? 'border-green-500/30 bg-green-50 text-green-700'
+                            : 'border-border bg-card text-muted-foreground hover:border-border hover:bg-muted',
                         )}
                       >
                         {opt}
@@ -549,7 +549,7 @@ export default function ReadingPage() {
                     value={answers[q.id] ?? ''}
                     onChange={(e) => setAnswer(q.id, e.target.value)}
                     placeholder="Type your answer…"
-                    className="w-full rounded-2xl border border-white/15 bg-white/[0.05] px-4 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-emerald-500/50"
+                    className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                   />
                 )}
               </div>
@@ -557,7 +557,7 @@ export default function ReadingPage() {
 
             <Button
               onClick={handleSubmit}
-              className="w-full rounded-full bg-emerald-500 text-black font-medium hover:bg-emerald-400 mt-2"
+              className="w-full rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 mt-2"
             >
               Submit answers
               <ChevronRight className="ml-1 h-4 w-4" />
@@ -577,15 +577,15 @@ export default function ReadingPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-center"
+        className="rounded-xl border border-border bg-card p-6 text-center shadow-sm"
       >
-        <Award className="mx-auto mb-2 h-8 w-8 text-yellow-400" />
-        <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Your score</p>
+        <Award className="mx-auto mb-2 h-8 w-8 text-amber-500" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Your score</p>
         <p className={cn('text-5xl font-bold', scoreColor)}>
           {score?.correct}/{score?.total}
         </p>
-        <p className="mt-1 text-sm text-white/50">
-          {scorePct >= 0.8 ? '🎉 Excellent reading comprehension!' : scorePct >= 0.6 ? '👍 Good effort — review the answers below' : '📖 Keep practising — check the explanations'}
+        <p className="mt-1 text-sm text-muted-foreground">
+          {scorePct >= 0.8 ? 'Excellent reading comprehension!' : scorePct >= 0.6 ? 'Good effort — review the answers below' : 'Keep practising — check the explanations'}
         </p>
       </motion.div>
 
@@ -607,40 +607,40 @@ export default function ReadingPage() {
             <div
               key={q.id}
               className={cn(
-                'rounded-3xl border p-4 space-y-2',
-                isCorrect ? 'border-emerald-500/20 bg-emerald-500/[0.04]' : 'border-red-500/20 bg-red-500/[0.04]',
+                'rounded-xl border p-4 space-y-2',
+                isCorrect ? 'border-green-500/30 bg-green-50' : 'border-destructive/20 bg-destructive/5',
               )}
             >
               <div className="flex items-start gap-2">
                 {isCorrect
-                  ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                  : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                  ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+                  : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                 }
-                <p className="text-sm font-medium text-white leading-6">
+                <p className="text-sm font-medium text-foreground leading-6">
                   Q{q.id}. {q.question}
                 </p>
               </div>
 
               <div className="pl-6 space-y-1">
-                <p className="text-xs text-white/40">
-                  Your answer: <span className={cn('font-medium', isCorrect ? 'text-emerald-300' : 'text-red-300')}>{answers[q.id] || '(no answer)'}</span>
+                <p className="text-xs text-muted-foreground">
+                  Your answer: <span className={cn('font-medium', isCorrect ? 'text-green-700' : 'text-destructive')}>{answers[q.id] || '(no answer)'}</span>
                 </p>
                 {!isCorrect && (
-                  <p className="text-xs text-white/40">
-                    Correct: <span className="font-medium text-emerald-300">{q.answer}</span>
+                  <p className="text-xs text-muted-foreground">
+                    Correct: <span className="font-medium text-green-700">{q.answer}</span>
                   </p>
                 )}
               </div>
 
               <div className="pl-6 flex gap-2">
-                <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-yellow-400/60" />
-                <p className="text-xs leading-5 text-white/50">{q.explanation}</p>
+                <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                <p className="text-xs leading-5 text-muted-foreground">{q.explanation}</p>
               </div>
 
               {q.location && (
-                <div className="ml-6 rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-wider text-white/30 mb-0.5">Evidence in passage</p>
-                  <p className="text-xs italic text-white/45">"{q.location}"</p>
+                <div className="ml-6 rounded-lg border border-border bg-muted px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Evidence in passage</p>
+                  <p className="text-xs italic text-foreground">"{q.location}"</p>
                 </div>
               )}
             </div>
@@ -652,14 +652,14 @@ export default function ReadingPage() {
       <div className="flex gap-3">
         <Button
           onClick={() => setPhase('select')}
-          className="flex-1 rounded-full bg-emerald-500 text-black hover:bg-emerald-400"
+          className="flex-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
         >
           Choose another passage
         </Button>
         <Button
           onClick={() => startPassage(current)}
           variant="ghost"
-          className="rounded-full border border-white/10 text-white/60 hover:text-white"
+          className="rounded-md border border-border text-muted-foreground hover:text-foreground"
         >
           <RefreshCw className="h-4 w-4" />
         </Button>

@@ -84,17 +84,17 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
-          <Badge className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-white/70 hover:bg-white/[0.04]">
+          <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
             {word.level}
           </Badge>
           {isLearned ? (
-            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
+            <Badge className="rounded-md border border-green-200 bg-green-50 px-3 py-1 text-green-600 hover:bg-green-50">
               <Check className="mr-1 h-3 w-3" />
               已学会
             </Badge>
           ) : null}
           {isHard ? (
-            <Badge className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-300 hover:bg-amber-500/10">
+            <Badge className="rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-600 hover:bg-amber-500/10">
               <Brain className="mr-1 h-3 w-3" />
               需复习
             </Badge>
@@ -103,7 +103,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+          className="rounded-md border border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
           onClick={(event) => {
             event.stopPropagation();
             playAudio(word.word);
@@ -114,25 +114,25 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       </div>
 
       <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">Current word</p>
-        <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-slate-900 dark:text-white sm:text-[5rem]">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current word</p>
+        <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-foreground sm:text-[5rem]">
           {word.word}
         </h2>
         <div className="space-y-2">
-          <p className="text-base font-medium text-slate-600 dark:text-white/72">{word.partOfSpeech}</p>
-          <p className="font-mono text-lg text-slate-400 dark:text-white/48">{word.phonetic}</p>
+          <p className="text-base font-medium text-foreground">{word.partOfSpeech}</p>
+          <p className="font-mono text-lg text-muted-foreground">{word.phonetic}</p>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-center gap-2 text-sm text-white/48">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent-practice))]" />
           点击翻面，查看释义、例句和搭配
         </div>
         <LearningActionCluster className="justify-center">
           <Button
             variant="outline"
-            className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+            className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
             onClick={(event) => {
               event.stopPropagation();
               onMarkStatus('hard');
@@ -143,7 +143,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
             {isHard ? '已标记较难' : '标记较难'}
           </Button>
           <Button
-            className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
             onClick={(event) => {
               event.stopPropagation();
               onMarkStatus('learned');
@@ -168,21 +168,21 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Word detail</p>
-            <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-white">{word.word}</h3>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Word detail</p>
+            <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">{word.word}</h3>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+              className="rounded-md border border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
               onClick={() => playAudio(word.word)}
             >
               <Volume2 className="h-5 w-5" />
             </Button>
             <Button
               variant="outline"
-              className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+              className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
               onClick={onFlip}
             >
               <RotateCcw className="mr-2 h-4 w-4" />
@@ -193,20 +193,20 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
         <ScrollArea className="mt-6 flex-1 pr-2">
           <div className="space-y-4">
-            <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Definition</p>
-              <p className="mt-3 text-base leading-7 text-white">{word.definition}</p>
-              <p className="mt-2 text-sm leading-7 text-white/62">{word.definitionZh}</p>
+            <section className="rounded-xl border border-border bg-card p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Definition</p>
+              <p className="mt-3 text-base leading-7 text-foreground">{word.definition}</p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
             </section>
 
             {word.examples.length > 0 ? (
-              <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Examples</p>
+              <section className="rounded-xl border border-border bg-card p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Examples</p>
                 <div className="mt-3 space-y-3">
                   {word.examples.slice(0, 2).map((example, index) => (
-                    <div key={`${example.en}-${index}`} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                      <p className="text-sm leading-7 text-white">{example.en}</p>
-                      <p className="mt-2 text-sm leading-7 text-white/58">{example.zh}</p>
+                    <div key={`${example.en}-${index}`} className="rounded-lg border border-border bg-muted p-4">
+                      <p className="text-sm leading-7 text-foreground">{example.en}</p>
+                      <p className="mt-2 text-sm leading-7 text-muted-foreground">{example.zh}</p>
                     </div>
                   ))}
                 </div>
@@ -215,13 +215,13 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
             <div className="grid gap-4 lg:grid-cols-2">
               {word.collocations.length > 0 ? (
-                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Collocations</p>
+                <section className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Collocations</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {word.collocations.slice(0, 8).map((collocation) => (
                       <span
                         key={collocation}
-                        className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300"
+                        className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-xs font-medium text-[hsl(var(--accent-practice))]"
                       >
                         {collocation}
                       </span>
@@ -231,9 +231,9 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
               ) : null}
 
               {(word.memoryTip || word.etymology) ? (
-                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Memory cue</p>
-                  <p className="mt-3 text-sm leading-7 text-white/62">{word.memoryTip || word.etymology}</p>
+                <section className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Memory cue</p>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">{word.memoryTip || word.etymology}</p>
                 </section>
               ) : null}
             </div>
@@ -282,13 +282,13 @@ const CircularProgress = memo(function CircularProgress({
         <circle
           cx={center} cy={center} r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
+          stroke="hsl(var(--border))"
           strokeWidth={strokeWidth}
         />
         <circle
           cx={center} cy={center} r={radius}
           fill="none"
-          stroke="#10b981"
+          stroke="hsl(var(--accent-practice))"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -300,13 +300,13 @@ const CircularProgress = memo(function CircularProgress({
           x={center} y={center}
           textAnchor="middle"
           dominantBaseline="middle"
-          style={{ transform: 'rotate(90deg)', transformOrigin: `${center}px ${center}px`, fill: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}
+          style={{ transform: 'rotate(90deg)', transformOrigin: `${center}px ${center}px`, fill: 'hsl(var(--foreground))', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}
         >
           {Math.round(value)}%
         </text>
       </svg>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/42">{label}</p>
-      {sublabel && <p className="text-xs text-white/55">{sublabel}</p>}
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
     </div>
   );
 });
@@ -342,7 +342,7 @@ const StreakFire = memo(function StreakFire({ days }: { days: number }) {
   if (days <= 0) return null;
   return (
     <motion.div
-      className="flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1"
+      className="flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-3 py-1"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -354,7 +354,7 @@ const StreakFire = memo(function StreakFire({ days }: { days: number }) {
       >
         🔥
       </motion.span>
-      <span className="text-xs font-bold text-amber-400">{days} day streak</span>
+      <span className="text-xs font-bold text-amber-600">{days} day streak</span>
     </motion.div>
   );
 });
@@ -363,7 +363,7 @@ const StreakFire = memo(function StreakFire({ days }: { days: number }) {
 const XPCounter = memo(function XPCounter({ value }: { value: number }) {
   return (
     <motion.div
-      className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1"
+      className="flex items-center gap-1.5 rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
@@ -372,7 +372,7 @@ const XPCounter = memo(function XPCounter({ value }: { value: number }) {
         key={value}
         initial={{ y: 8, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="text-xs font-bold text-emerald-400"
+        className="text-xs font-bold text-[hsl(var(--accent-practice))]"
       >
         +{value} XP
       </motion.span>
@@ -643,19 +643,19 @@ export default function TodayPage() {
           actions={
             <>
               {activeBook ? (
-                <Button size="lg" className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={refreshDailyWords}>
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={refreshDailyWords}>
                   <Sparkles className="mr-2 h-5 w-5" />
                   生成今日任务
                 </Button>
               ) : (
-                <Button size="lg" className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                   <Link to="/dashboard/vocabulary">
                     <BookOpen className="mr-2 h-5 w-5" />
                     去选择词书
                   </Link>
                 </Button>
               )}
-              <Button size="lg" variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
+              <Button size="lg" variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
                 <Link to="/dashboard/chat">
                   <MessageCircleMore className="mr-2 h-5 w-5" />
                   让 AI 帮我规划
@@ -744,7 +744,7 @@ export default function TodayPage() {
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-4">
                 <section className={cn(learningFrameClassName, 'p-4')}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">Current HUD</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current HUD</p>
                   <div className="mt-4 flex items-center gap-5">
                     <CircularProgress
                       value={progress}
@@ -752,20 +752,20 @@ export default function TodayPage() {
                       sublabel={`${learnedWords.size} / ${words.length}`}
                     />
                     <div className="space-y-1">
-                      <p className="text-3xl font-semibold tracking-[-0.05em] text-emerald-300">
+                      <p className="text-3xl font-semibold tracking-[-0.05em] text-[hsl(var(--accent-practice))]">
                         {learnedWords.size}
-                        <span className="mx-2 text-white/24">/</span>
-                        <span className="text-white">{words.length}</span>
+                        <span className="mx-2 text-muted-foreground">/</span>
+                        <span className="text-foreground">{words.length}</span>
                       </p>
-                      <p className="text-xs text-white/45">今日已学 / 今日计划</p>
+                      <p className="text-xs text-muted-foreground">今日已学 / 今日计划</p>
                     </div>
                   </div>
                 </section>
 
                 <section className={cn(learningFrameClassName, 'p-4')}>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-white/70">
-                      <Clock3 className="h-4 w-4 text-emerald-300" />
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock3 className="h-4 w-4 text-[hsl(var(--accent-practice))]" />
                       <p className="text-sm font-medium">还需 {Math.max(3, (words.length - learnedWords.size) * 2)} 分钟</p>
                     </div>
                   </div>
@@ -802,14 +802,14 @@ export default function TodayPage() {
                   ) : null}
                 </AnimatePresence>
 
-                <div className="flex flex-col gap-4 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between shadow-glass">
+                <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={handlePrevious}
                       disabled={currentWordIndex === 0}
-                      className="h-11 w-11 rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                      className="h-11 w-11 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </Button>
@@ -818,7 +818,7 @@ export default function TodayPage() {
                       size="icon"
                       onClick={handleNext}
                       disabled={currentWordIndex === words.length - 1}
-                      className="h-11 w-11 rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                      className="h-11 w-11 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                     >
                       <ChevronRight className="h-5 w-5" />
                     </Button>
@@ -836,12 +836,12 @@ export default function TodayPage() {
                         className={cn(
                           'h-2.5 rounded-full transition-all duration-300',
                           index === currentWordIndex
-                            ? 'w-9 bg-gradient-to-r from-emerald-400 to-emerald-500'
+                            ? 'w-9 bg-primary'
                             : learnedWords.has(word.id)
-                              ? 'w-2.5 bg-emerald-400'
+                              ? 'w-2.5 bg-green-600'
                               : hardWords.has(word.id)
-                                ? 'w-2.5 bg-amber-400'
-                                : 'w-2.5 bg-white/18 hover:bg-white/30',
+                                ? 'w-2.5 bg-amber-500'
+                                : 'w-2.5 bg-muted-foreground/20 hover:bg-muted-foreground/40',
                         )}
                         title={word.word}
                       />
@@ -851,7 +851,7 @@ export default function TodayPage() {
                   <LearningActionCluster className="sm:justify-end">
                     <Button
                       variant="outline"
-                      className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                      className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                       onClick={handleBookmark}
                       disabled={!currentWord}
                     >
@@ -860,7 +860,7 @@ export default function TodayPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                      className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                       onClick={handleShare}
                       disabled={!currentWord}
                     >
@@ -886,10 +886,10 @@ export default function TodayPage() {
               ]}
               actions={
                 <>
-                  <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
+                  <Button variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
                     <Link to="/dashboard/review">去做复习</Link>
                   </Button>
-                  <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                     <Link to="/dashboard/practice">做一次短练习</Link>
                   </Button>
                 </>
@@ -901,16 +901,16 @@ export default function TodayPage() {
         <div className="space-y-6">
           <LearningRailSection title="Learning context">
             <div className="space-y-3">
-              <div className="rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.01] p-4 glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:glass-strong">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-white/42">Active book</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{activeBook?.name || '未选择词书'}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-white/54">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active book</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{activeBook?.name || '未选择词书'}</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
               </div>
 
-              <div className="rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.01] p-4 glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:glass-strong">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-white/42">Review pressure</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{dueWords.length} 个到期复习</p>
-                {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-slate-500 dark:text-white/48">当前词书接近完成</p> : null}
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Review pressure</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{dueWords.length} 个到期复习</p>
+                {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-muted-foreground">当前词书接近完成</p> : null}
               </div>
 
               {learnerModel ? (() => {
@@ -932,27 +932,27 @@ export default function TodayPage() {
                           {modeInfo.labelZh}
                         </span>
                       </div>
-                      <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-white/40">
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
                         {modeInfo.label}
                       </span>
                     </div>
 
                     {/* Description */}
-                    <p className="text-xs leading-5 text-slate-500 dark:text-white/50">
+                    <p className="text-xs leading-5 text-muted-foreground">
                       {MODE_DESCRIPTIONS[learnerModel.mode]}
                     </p>
 
                     {/* Daily targets */}
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36">新词</p>
-                        <p className="mt-0.5 text-base font-bold text-slate-800 dark:text-white">
+                      <div className="rounded-lg bg-muted px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">新词</p>
+                        <p className="mt-0.5 text-base font-bold text-foreground">
                           {learnerModel.recommendedDailyNew}
                         </p>
                       </div>
-                      <div className="rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36">复习</p>
-                        <p className="mt-0.5 text-base font-bold text-slate-800 dark:text-white">
+                      <div className="rounded-lg bg-muted px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">复习</p>
+                        <p className="mt-0.5 text-base font-bold text-foreground">
                           {learnerModel.recommendedDailyReview}
                         </p>
                       </div>
@@ -962,17 +962,17 @@ export default function TodayPage() {
                     {learnerModel.avgRetrievability > 0 && (
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36">记忆保留率</p>
-                          <p className="text-xs font-semibold text-slate-700 dark:text-white/70">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">记忆保留率</p>
+                          <p className="text-xs font-semibold text-foreground">
                             {Math.round(learnerModel.avgRetrievability * 100)}%
                           </p>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-black/[0.06] dark:bg-white/[0.08] overflow-hidden">
+                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                           <div
                             className={cn(
                               'h-full rounded-full transition-all duration-700',
-                              learnerModel.avgRetrievability >= 0.75 ? 'bg-emerald-500' :
-                              learnerModel.avgRetrievability >= 0.5  ? 'bg-amber-500' : 'bg-red-500',
+                              learnerModel.avgRetrievability >= 0.75 ? 'bg-[hsl(var(--accent-practice))]' :
+                              learnerModel.avgRetrievability >= 0.5  ? 'bg-amber-500' : 'bg-destructive',
                             )}
                             style={{ width: `${Math.round(learnerModel.avgRetrievability * 100)}%` }}
                           />
@@ -983,10 +983,10 @@ export default function TodayPage() {
                     {/* Weak topics */}
                     {learnerModel.weakTopics.length > 0 && (
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36 mb-1.5">需加强</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">需加强</p>
                         <div className="flex flex-wrap gap-1.5">
                           {learnerModel.weakTopics.map((t) => (
-                            <span key={t} className="rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] text-red-400">
+                            <span key={t} className="rounded-md bg-destructive/10 px-2 py-0.5 text-[11px] text-destructive">
                               {t}
                             </span>
                           ))}
@@ -996,19 +996,19 @@ export default function TodayPage() {
 
                     {learnerModel.stubbornWordCount > 0 && (
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/36 mb-1.5">强化路径</p>
-                        <div className="flex items-center justify-between rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">强化路径</p>
+                        <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2">
                           <div>
-                            <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                            <p className="text-sm font-semibold text-foreground">
                               顽固词 {learnerModel.stubbornWordCount} 个
                             </p>
-                            <p className="mt-1 text-xs text-slate-500 dark:text-white/50">
+                            <p className="mt-1 text-xs text-muted-foreground">
                               {learnerModel.stubbornTopics.length > 0
                                 ? `集中在 ${learnerModel.stubbornTopics.join(' / ')}`
                                 : '这些词会被安排进更短的强化复习回路。'}
                             </p>
                           </div>
-                          <Badge variant="secondary" className="rounded-full">
+                          <Badge variant="secondary" className="rounded-md">
                             Reinforce
                           </Badge>
                         </div>
@@ -1019,15 +1019,15 @@ export default function TodayPage() {
               })() : null}
 
               {adaptiveDifficulty ? (
-                <div className="rounded-2xl border border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.01] p-4 glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-hover hover:glass-strong">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-white/42">Pacing today</p>
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pacing today</p>
                   <div className="mt-2 flex items-center justify-between gap-3">
-                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{adaptiveDifficulty.labelZh}</p>
-                    <Badge variant="secondary" className="rounded-full">
+                    <p className="text-lg font-semibold text-foreground">{adaptiveDifficulty.labelZh}</p>
+                    <Badge variant="secondary" className="rounded-md">
                       {adaptiveDifficulty.label}
                     </Badge>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-white/54">{adaptiveDifficulty.reason}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{adaptiveDifficulty.reason}</p>
                 </div>
               ) : null}
             </div>
@@ -1037,20 +1037,20 @@ export default function TodayPage() {
             <div className="space-y-3">
               {weaknesses.length > 0 ? (
                 weaknesses.map((weakness) => (
-                  <div key={weakness.tag} className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+                  <div key={weakness.tag} className="rounded-xl border border-border bg-card p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-white">{weakness.titleZh}</p>
-                        <p className="mt-1 text-xs text-white/45">{weakness.title}</p>
+                        <p className="text-sm font-semibold text-foreground">{weakness.titleZh}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{weakness.title}</p>
                       </div>
                       <span
                         className={cn(
-                          'rounded-full px-2.5 py-1 text-xs font-medium',
+                          'rounded-md px-2.5 py-1 text-xs font-medium',
                           weakness.emphasis === 'urgent'
-                            ? 'bg-red-500/15 text-red-300'
+                            ? 'bg-destructive/10 text-destructive'
                             : weakness.emphasis === 'watch'
-                              ? 'bg-amber-500/15 text-amber-300'
-                              : 'bg-white/8 text-white/65',
+                              ? 'bg-amber-500/15 text-amber-600'
+                              : 'bg-muted text-muted-foreground',
                         )}
                       >
                         {weakness.count} 次
@@ -1059,19 +1059,19 @@ export default function TodayPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-3xl border border-dashed border-white/[0.1] px-4 py-5 text-sm leading-6 text-white/50">
+                <div className="rounded-xl border border-dashed border-border px-4 py-5 text-sm leading-6 text-muted-foreground">
                   先完成一次练习或写作反馈，系统才会生成更可信的弱项图谱。
                 </div>
               )}
 
               {recommendedUnit ? (
-                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
-                  <div className="flex items-center gap-2 text-emerald-300">
+                <div className="rounded-xl border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
+                  <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
                     <Target className="h-4 w-4" />
                     <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>
                   </div>
-                  <p className="mt-2 text-sm text-white/58">{recommendedUnit.estimatedMinutes} 分钟</p>
-                  <Button variant="outline" size="sm" className="mt-3 rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
+                  <p className="mt-2 text-sm text-muted-foreground">{recommendedUnit.estimatedMinutes} 分钟</p>
+                  <Button variant="outline" size="sm" className="mt-3 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
                     <Link to="/dashboard/exam">去补强</Link>
                   </Button>
                 </div>
@@ -1088,17 +1088,17 @@ export default function TodayPage() {
                     <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
                       <div
                         className={cn(
-                          'w-full rounded-full transition-colors',
-                          point.active ? 'bg-gradient-to-t from-emerald-500 to-emerald-300' : 'bg-white/10',
+                          'w-full rounded-md transition-colors',
+                          point.active ? 'bg-[hsl(var(--accent-practice))]' : 'bg-muted',
                         )}
                         style={{ height: `${barHeight}px` }}
                       />
-                      <span className="text-[11px] text-white/42">{point.label}</span>
+                      <span className="text-[11px] text-muted-foreground">{point.label}</span>
                     </div>
                   );
                 })}
               </div>
-              {learningOverviewQuery.isLoading ? <TrendingUp className="h-4 w-4 text-emerald-300" /> : null}
+              {learningOverviewQuery.isLoading ? <TrendingUp className="h-4 w-4 text-[hsl(var(--accent-practice))]" /> : null}
             </LearningRailSection>
           ) : null}
         </div>

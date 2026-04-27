@@ -52,8 +52,21 @@ import {
   type LearningEventRecord,
   type WeeklyActivityPoint,
 } from '@/services/learningEvents';
+import { computeLevel, getLevelName } from '@/services/gamification';
 
 const TOPIC_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'];
+
+// ── Theme-aware chart color hook ─────────────────────────────────────────────
+function useChartColors() {
+  // Reads the current theme tokens from :root CSS vars
+  const style = getComputedStyle(document.documentElement);
+  return {
+    border: `hsl(${style.getPropertyValue('--border').trim()})`,
+    foreground: `hsl(${style.getPropertyValue('--foreground').trim()})`,
+    mutedForeground: `hsl(${style.getPropertyValue('--muted-foreground').trim()})`,
+    card: `hsl(${style.getPropertyValue('--card').trim()})`,
+  };
+}
 const ANALYTICS_NOW = Date.now();
 
 const generateTopicData = (wordIds: string[]) => {
@@ -76,6 +89,7 @@ const generateTopicData = (wordIds: string[]) => {
 export default function AnalyticsPage() {
   const { stats, xp, streak, dailyWords, customWords, progress } = useUserData();
   const { user } = useAuth();
+  const colors = useChartColors();
   const [timeRange, setTimeRange] = useState('week');
   const [weeklyData, setWeeklyData] = useState<WeeklyActivityPoint[]>([]);
   const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
@@ -99,10 +113,14 @@ export default function AnalyticsPage() {
     const userId = user?.id || 'guest';
 
     const loadAnalytics = async () => {
+      // Map timeRange to how many days of event history to fetch
+      const eventDays = timeRange === 'year' ? 365 : timeRange === 'month' ? 30 : 7;
+
       const [weekly, heatmap, events] = await Promise.all([
-        getWeeklyActivity(userId),
+        // getWeeklyActivity always returns last-7-day buckets; only include for week view
+        timeRange === 'week' ? getWeeklyActivity(userId) : Promise.resolve([] as WeeklyActivityPoint[]),
         getHeatmapData(userId),
-        getLearningEvents(userId, 30),
+        getLearningEvents(userId, eventDays),
       ]);
 
       setWeeklyData(weekly);
@@ -111,11 +129,11 @@ export default function AnalyticsPage() {
     };
 
     void loadAnalytics();
-  }, [stats.totalWords, user?.id]);
+  }, [stats.totalWords, user?.id, timeRange]);
 
-  // Calculate level based on XP
-  const level = Math.floor(xp.total / 100) + 1;
-  const levelName = level < 5 ? 'Novice' : level < 10 ? 'Apprentice' : level < 20 ? 'Journeyman' : 'Expert';
+  // Calculate level based on XP using the canonical helpers from gamification.ts
+  const level = computeLevel(xp.total);
+  const levelName = getLevelName(xp.total);
   // XP progress within the current level (0–99)
   const xpInCurrentLevel = xp.total % 100;
   const xpToNextLevel = 100 - xpInCurrentLevel;
@@ -375,11 +393,15 @@ export default function AnalyticsPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Weekly Activity Chart */}
+          {/* Activity Chart — title follows the selected time range */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Weekly Activity</CardTitle>
-              <p className="text-sm text-muted-foreground">本周活动</p>
+              <CardTitle className="text-lg">
+                {timeRange === 'year' ? 'Annual Activity' : timeRange === 'month' ? 'Monthly Activity' : 'Weekly Activity'}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {timeRange === 'year' ? '年度活动' : timeRange === 'month' ? '月度活动' : '本周活动'}
+              </p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
@@ -787,12 +809,11 @@ export default function AnalyticsPage() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={vocabDistribution} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis type="number" stroke="rgba(255,255,255,0.3)" fontSize={12} />
-                    <YAxis type="category" dataKey="nameZh" stroke="rgba(255,255,255,0.3)" fontSize={12} width={60} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+                    <XAxis type="number" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                    <YAxis type="category" dataKey="nameZh" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} width={60} />
                     <Tooltip
-                      contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                      labelStyle={{ color: '#fff' }}
+                      contentStyle={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '8px', color: colors.foreground }}
                     />
                     <Bar dataKey="count" radius={[0, 6, 6, 0]}>
                       {vocabDistribution.map((entry, i) => (
@@ -812,9 +833,9 @@ export default function AnalyticsPage() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={260}>
                   <RadarChart data={radarData} outerRadius="75%">
-                    <PolarGrid stroke="rgba(255,255,255,0.08)" />
-                    <PolarAngleAxis dataKey="subject" stroke="rgba(255,255,255,0.4)" fontSize={11} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="rgba(255,255,255,0.15)" fontSize={10} />
+                    <PolarGrid stroke={colors.border} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: colors.mutedForeground, fontSize: 11 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: colors.mutedForeground, fontSize: 10 }} />
                     <Radar
                       name="Score"
                       dataKey="value"
@@ -824,7 +845,7 @@ export default function AnalyticsPage() {
                       strokeWidth={2}
                     />
                     <Tooltip
-                      contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                      contentStyle={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '8px', color: colors.foreground }}
                     />
                   </RadarChart>
                 </ResponsiveContainer>

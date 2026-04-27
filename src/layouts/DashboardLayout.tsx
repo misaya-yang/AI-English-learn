@@ -105,6 +105,22 @@ const shellTitleMap: Record<string, { title: string; description: string }> = {
     title: 'Writing',
     description: '写作练习与 AI 批改，提升书面表达。',
   },
+  '/dashboard/reading': {
+    title: 'Reading',
+    description: 'IELTS 阅读理解精读训练，提升阅读速度与准确率。',
+  },
+  '/dashboard/listening': {
+    title: 'Listening',
+    description: 'IELTS 听力理解训练，练习不同口音和题型。',
+  },
+  '/dashboard/grammar': {
+    title: 'Grammar',
+    description: '语法规则讲解与填空练习，系统巩固语法基础。',
+  },
+  '/dashboard/learning-path': {
+    title: 'Learning Path',
+    description: '结构化学习路线，按阶段推进你的英语能力。',
+  },
   '/dashboard/settings': {
     title: 'Settings',
     description: '调整偏好、反馈风格和系统行为。',

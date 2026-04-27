@@ -32,10 +32,10 @@ import { supabase } from '@/lib/supabase';
 
 const AVATAR_STORAGE_KEY = 'vocabdaily-avatar-url-';
 
-type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
+type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading';
 
-const cefrLevels: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
+const cefrLevels: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 const topics = ['daily', 'business', 'technology', 'travel', 'academic', 'science', 'health', 'arts'];
 

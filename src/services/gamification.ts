@@ -395,4 +395,35 @@ export function _resetCache(): void {
   _cache.clear();
 }
 
+// ─── Level helpers (canonical — shared by AnalyticsPage, ProfilePage, etc.) ──
+
+/**
+ * Thresholds defining rank/title names, highest first.
+ * Mirrors the LEVEL_THRESHOLDS array in ProfilePage.tsx — keep in sync.
+ */
+export const LEVEL_THRESHOLDS: [string, number][] = [
+  ['Language Master', 15000],
+  ['Word Wizard',      7000],
+  ['Expert',           3500],
+  ['Journeyman',       1500],
+  ['Apprentice',        500],
+  ['Novice',              0],
+];
+
+/**
+ * Returns the 1-based level number for a given total XP amount.
+ * One level per 100 XP (e.g. 0-99 XP → level 1, 100-199 → level 2, …).
+ */
+export function computeLevel(totalXp: number): number {
+  return Math.floor(totalXp / 100) + 1;
+}
+
+/**
+ * Returns the rank/title name for a given total XP amount,
+ * using the canonical LEVEL_THRESHOLDS table.
+ */
+export function getLevelName(totalXp: number): string {
+  return (LEVEL_THRESHOLDS.find(([, threshold]) => totalXp >= threshold) ?? ['Novice'])[0];
+}
+
 export { STREAK_FREEZE_COST };

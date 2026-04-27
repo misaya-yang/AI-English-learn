@@ -385,12 +385,12 @@ function useTTSPlayer(transcript: string) {
 
 function LevelBadge({ level }: { level: CEFRLevel }) {
   const cls = {
-    B1: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-    B2: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
-    C1: 'bg-violet-500/15 text-violet-400 border-violet-500/20',
+    B1: 'bg-[hsl(var(--accent-practice)/0.1)] text-[hsl(var(--accent-practice))] border-[hsl(var(--accent-practice)/0.2)]',
+    B2: 'bg-blue-500/15 text-blue-600 border-blue-500/20',
+    C1: 'bg-violet-500/15 text-violet-600 border-violet-500/20',
   }[level];
   return (
-    <span className={cn('rounded-full border px-2.5 py-0.5 text-[11px] font-semibold', cls)}>
+    <span className={cn('rounded-md border px-2.5 py-0.5 text-[11px] font-semibold', cls)}>
       {level}
     </span>
   );
@@ -414,23 +414,23 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
 
   return (
     <div className={cn(
-      'rounded-2xl border p-4 transition-all duration-300',
+      'rounded-xl border p-4 transition-all duration-300',
       !submitted
-        ? 'border-black/5 dark:border-white/[0.07] bg-black/[0.01] dark:bg-white/[0.01]'
+        ? 'border-border bg-card'
         : isCorrect
-          ? 'border-emerald-500/25 bg-emerald-500/[0.05]'
+          ? 'border-primary bg-primary/10'
           : 'border-red-500/25 bg-red-500/[0.05]',
     )}>
       {/* Question header */}
       <div className="flex items-start gap-3 mb-3">
-        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-[11px] font-bold text-slate-600 dark:text-white/60">
+        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
           {index + 1}
         </span>
-        <p className="text-sm font-medium text-slate-800 dark:text-white leading-5">{q.question}</p>
+        <p className="text-sm font-medium text-foreground leading-5">{q.question}</p>
         {submitted && (
           <div className="ml-auto flex-shrink-0">
             {isCorrect
-              ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              ? <CheckCircle2 className="h-4 w-4 text-green-600" />
               : <XCircle className="h-4 w-4 text-red-400" />}
           </div>
         )}
@@ -449,12 +449,12 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
                 disabled={submitted}
                 onClick={() => onChange(optLetter)}
                 className={cn(
-                  'w-full rounded-xl border px-3 py-2 text-left text-sm transition-all duration-200',
-                  !submitted && !isSelected && 'border-black/5 dark:border-white/[0.06] bg-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.04] text-slate-700 dark:text-white/80',
-                  !submitted && isSelected && 'border-blue-500/40 bg-blue-500/[0.08] text-blue-600 dark:text-blue-300',
-                  submitted && isRight && 'border-emerald-500/40 bg-emerald-500/[0.1] text-emerald-700 dark:text-emerald-300',
-                  submitted && isSelected && !isRight && 'border-red-500/40 bg-red-500/[0.08] text-red-600 dark:text-red-300',
-                  submitted && !isSelected && !isRight && 'border-transparent text-slate-400 dark:text-white/30',
+                  'w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200',
+                  !submitted && !isSelected && 'border-border bg-transparent hover:bg-muted text-foreground',
+                  !submitted && isSelected && 'border-blue-500/40 bg-blue-500/[0.08] text-blue-600',
+                  submitted && isRight && 'border-green-500/30 bg-green-50 text-green-700',
+                  submitted && isSelected && !isRight && 'border-red-500/40 bg-red-500/[0.08] text-red-600',
+                  submitted && !isSelected && !isRight && 'border-transparent text-muted-foreground',
                 )}
               >
                 {opt}
@@ -471,16 +471,16 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
             onChange={(e) => onChange(e.target.value)}
             placeholder={q.type === 'fill_blank' ? 'Fill in the blank…' : 'Your answer…'}
             className={cn(
-              'w-full rounded-xl border bg-transparent px-3 py-2 text-sm outline-none transition-all duration-200',
+              'w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none transition-all duration-200',
               !submitted
-                ? 'border-black/10 dark:border-white/[0.1] text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20'
+                ? 'border-border text-foreground placeholder:text-muted-foreground focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20'
                 : isCorrect
-                  ? 'border-emerald-500/40 text-emerald-700 dark:text-emerald-300'
-                  : 'border-red-500/40 text-red-600 dark:text-red-300',
+                  ? 'border-green-500/30 text-green-700'
+                  : 'border-red-500/40 text-red-600',
             )}
           />
           {submitted && !isCorrect && (
-            <p className="mt-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+            <p className="mt-1.5 text-xs text-green-600">
               ✓ Correct: <span className="font-semibold">{correctAnswer}</span>
             </p>
           )}
@@ -489,8 +489,8 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
 
       {/* Explanation */}
       {submitted && (
-        <div className="mt-3 ml-8 rounded-xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2">
-          <p className="text-xs leading-5 text-slate-500 dark:text-white/50">{q.explanation}</p>
+        <div className="mt-3 ml-8 rounded-lg bg-muted px-3 py-2">
+          <p className="text-xs leading-5 text-muted-foreground">{q.explanation}</p>
         </div>
       )}
     </div>
@@ -585,10 +585,10 @@ export default function ListeningPage() {
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Listening Practice
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-white/50">
+          <p className="mt-1 text-sm text-muted-foreground">
             IELTS Academic — audio clips with comprehension questions
           </p>
         </div>
@@ -601,23 +601,23 @@ export default function ListeningPage() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleSelect(passage)}
-              className="w-full rounded-2xl border border-black/5 dark:border-white/[0.07] bg-white dark:bg-white/[0.02] p-5 text-left transition-all hover:shadow-lg hover:border-blue-500/20 dark:hover:border-blue-500/20"
+              className="w-full rounded-xl border border-border bg-card p-5 text-left transition-all hover:shadow-sm hover:border-blue-500/20"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
                     <LevelBadge level={passage.level} />
-                    <span className="text-[11px] text-slate-400 dark:text-white/36">{passage.topic}</span>
+                    <span className="text-[11px] text-muted-foreground">{passage.topic}</span>
                   </div>
-                  <p className="text-base font-semibold text-slate-900 dark:text-white truncate">{passage.title}</p>
-                  <p className="mt-0.5 text-sm text-slate-500 dark:text-white/48 line-clamp-2">{passage.subtitle}</p>
+                  <p className="text-base font-semibold text-foreground truncate">{passage.title}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">{passage.subtitle}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                  <div className="flex items-center gap-1 text-xs text-slate-400 dark:text-white/36">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     {passage.durationLabel}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-400 dark:text-white/36">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <BookOpen className="h-3 w-3" />
                     {passage.questions.length} questions
                   </div>
@@ -650,19 +650,19 @@ export default function ListeningPage() {
         {/* Back button */}
         <button
           onClick={handleReset}
-          className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-white/48 hover:text-slate-800 dark:hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           ← Back to passages
         </button>
 
         {/* Passage info */}
-        <div className="rounded-2xl border border-black/5 dark:border-white/[0.07] bg-white dark:bg-white/[0.02] p-6">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <LevelBadge level={selected.level} />
-            <span className="text-xs text-slate-400 dark:text-white/36">{selected.topic}</span>
+            <span className="text-xs text-muted-foreground">{selected.topic}</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selected.title}</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-white/50">{selected.subtitle}</p>
+          <h2 className="text-xl font-bold text-foreground">{selected.title}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{selected.subtitle}</p>
         </div>
 
         {/* Audio player */}
@@ -670,15 +670,15 @@ export default function ListeningPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Headphones className="h-5 w-5 text-blue-400" />
-              <p className="text-sm font-semibold text-slate-800 dark:text-white">
+              <p className="text-sm font-semibold text-foreground">
                 {tts.isSupported ? 'Listen carefully before answering' : 'Read the transcript'}
               </p>
             </div>
-            <span className="text-xs text-slate-400 dark:text-white/40">{selected.durationLabel}</span>
+            <span className="text-xs text-muted-foreground">{selected.durationLabel}</span>
           </div>
 
           {/* Progress bar */}
-          <div className="mb-4 h-1.5 w-full rounded-full bg-black/[0.06] dark:bg-white/[0.08] overflow-hidden">
+          <div className="mb-4 h-1.5 w-full rounded-full bg-muted overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-blue-500"
               initial={{ width: 0 }}
@@ -694,14 +694,14 @@ export default function ListeningPage() {
                 variant="outline"
                 size="sm"
                 onClick={tts.stop}
-                className="rounded-full border-white/10 dark:bg-white/[0.04] hover:bg-white/[0.08]"
+                className="rounded-md border-border bg-card hover:bg-muted"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
               <Button
                 size="sm"
                 onClick={tts.isPlaying ? tts.pause : tts.play}
-                className="rounded-full bg-blue-500 text-white hover:bg-blue-400 px-6"
+                className="rounded-md bg-blue-500 text-primary-foreground hover:bg-blue-400 px-6"
               >
                 {tts.isPlaying
                   ? <><Pause className="h-4 w-4 mr-1.5" />Pause</>
@@ -713,7 +713,7 @@ export default function ListeningPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleStartQuestions}
-                className="rounded-full border-white/10 dark:bg-white/[0.04] hover:bg-white/[0.08]"
+                className="rounded-md border-border bg-card hover:bg-muted"
               >
                 <SkipForward className="h-3.5 w-3.5" />
               </Button>
@@ -725,7 +725,7 @@ export default function ListeningPage() {
         <div>
           <button
             onClick={() => setShowTranscript((v) => !v)}
-            className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <Volume2 className="h-3.5 w-3.5" />
             {showTranscript ? 'Hide transcript' : 'Show transcript'}
@@ -738,8 +738,8 @@ export default function ListeningPage() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 rounded-2xl border border-black/5 dark:border-white/[0.06] bg-slate-50 dark:bg-white/[0.02] p-4">
-                  <p className="whitespace-pre-line text-sm leading-7 text-slate-600 dark:text-white/60">
+                <div className="mt-3 rounded-xl border border-border bg-muted p-4">
+                  <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                     {selected.transcript}
                   </p>
                 </div>
@@ -751,7 +751,7 @@ export default function ListeningPage() {
         {/* CTA */}
         <Button
           onClick={handleStartQuestions}
-          className="w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400 font-semibold"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold"
         >
           Start Questions <ChevronRight className="ml-1.5 h-4 w-4" />
         </Button>
@@ -770,19 +770,19 @@ export default function ListeningPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{selected.title}</h2>
-            <p className="text-sm text-slate-500 dark:text-white/48">
+            <h2 className="text-lg font-bold text-foreground">{selected.title}</h2>
+            <p className="text-sm text-muted-foreground">
               {submitted ? `Score: ${score}/${totalQ}` : `${totalQ} questions`}
             </p>
           </div>
           {submitted && (
             <div className={cn(
-              'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold',
+              'flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-semibold',
               score / totalQ >= 0.8
-                ? 'bg-emerald-500/15 text-emerald-500'
+                ? 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]'
                 : score / totalQ >= 0.6
                   ? 'bg-amber-500/15 text-amber-500'
-                  : 'bg-red-500/15 text-red-400',
+                  : 'bg-destructive/10 text-destructive',
             )}>
               <Trophy className="h-4 w-4" />
               {Math.round((score / totalQ) * 100)}%
@@ -809,7 +809,7 @@ export default function ListeningPage() {
           <Button
             onClick={handleSubmit}
             disabled={!allAnswered}
-            className="w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400 font-semibold disabled:opacity-50"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold disabled:opacity-50"
           >
             Submit Answers
           </Button>
@@ -818,7 +818,7 @@ export default function ListeningPage() {
             {/* Transcript toggle in review */}
             <button
               onClick={() => setShowTranscript((v) => !v)}
-              className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <Volume2 className="h-3.5 w-3.5" />
               {showTranscript ? 'Hide transcript' : 'Review transcript'}
@@ -831,8 +831,8 @@ export default function ListeningPage() {
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="rounded-2xl border border-black/5 dark:border-white/[0.06] bg-slate-50 dark:bg-white/[0.02] p-4">
-                    <p className="whitespace-pre-line text-sm leading-7 text-slate-600 dark:text-white/60">
+                  <div className="rounded-xl border border-border bg-muted p-4">
+                    <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                       {selected.transcript}
                     </p>
                   </div>
@@ -842,7 +842,7 @@ export default function ListeningPage() {
             <Button
               onClick={handleReset}
               variant="outline"
-              className="w-full rounded-full border-white/10 dark:bg-white/[0.03] hover:bg-white/[0.06] text-slate-700 dark:text-white"
+              className="w-full rounded-md border-border hover:bg-muted text-foreground"
             >
               Try Another Passage
             </Button>

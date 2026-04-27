@@ -85,10 +85,10 @@ const practiceModes = [
   },
 ] as const;
 
-const darkInputClass =
-  'border-white/10 bg-white/[0.04] text-white placeholder:text-white/30 focus-visible:border-emerald-400/40 focus-visible:ring-emerald-400/30';
+const lightInputClass =
+  'border-border bg-background text-foreground placeholder:text-muted-foreground focus-visible:border-primary/40 focus-visible:ring-primary/30';
 
-const darkSelectContentClass = 'border-white/10 bg-[#101010] text-white';
+const lightSelectContentClass = 'border-border bg-background text-foreground';
 
 export default function PracticePage() {
   const { user } = useAuth();
@@ -634,35 +634,35 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-3xl border border-transparent px-4 py-3 text-left transition-all',
-                active ? 'bg-white/[0.06]' : 'hover:border-white/8 hover:bg-white/[0.03]',
+                'group relative w-full rounded-xl border border-transparent px-4 py-3 text-left transition-all',
+                active ? 'bg-muted border-border' : 'hover:border-border hover:bg-muted',
               )}
             >
               <span
                 className={cn(
                   'absolute inset-y-3 left-0 w-[3px] rounded-full transition-colors',
-                  active ? 'bg-emerald-400' : 'bg-transparent group-hover:bg-white/20',
+                  active ? 'bg-primary' : 'bg-transparent group-hover:bg-border',
                 )}
               />
               <div className="flex items-start gap-3">
                 <span
                   className={cn(
-                    'mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl border text-white/72',
-                    active ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/[0.04]',
+                    'mt-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-muted-foreground',
+                    active ? 'border-border bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]' : 'border-border bg-muted',
                   )}
                 >
                   <Icon className="h-4 w-4" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-white">{mode.name}</span>
+                    <span className="truncate text-sm font-semibold text-foreground">{mode.name}</span>
                     {mode.id === recommendedModeId ? (
-                      <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                      <span className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-2 py-0.5 text-[10px] font-medium text-[hsl(var(--accent-practice))]">
                         推荐
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-0.5 block text-xs text-white/45">{mode.nameZh}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{mode.nameZh}</span>
                 </span>
               </div>
             </button>
@@ -683,22 +683,22 @@ export default function PracticePage() {
           ]}
           className="border-t-0 pt-0"
         />
-        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Focus</p>
-          <p className="mt-2 text-lg font-semibold text-white">{focusedMode.nameZh}</p>
-          <p className="mt-1 text-sm text-white/54">{focusedBlueprint.insight}</p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Focus</p>
+          <p className="mt-2 text-lg font-semibold text-foreground">{focusedMode.nameZh}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{focusedBlueprint.insight}</p>
         </div>
-        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Stage</p>
-          <p className="mt-2 text-lg font-semibold text-white">{sessionStage}</p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stage</p>
+          <p className="mt-2 text-lg font-semibold text-foreground">{sessionStage}</p>
         </div>
         {selectedMode === 'writing' ? (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
-            <div className="flex items-center gap-2 text-emerald-300">
+          <div className="rounded-xl border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
+            <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
               <Zap className="h-4 w-4" />
               <p className="text-sm font-semibold">Advanced feedback quota</p>
             </div>
-            <p className="mt-3 text-2xl font-semibold text-white">
+            <p className="mt-3 text-2xl font-semibold text-foreground">
               {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
             </p>
           </div>
@@ -798,13 +798,13 @@ export default function PracticePage() {
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
+            <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
               {focusedBlueprint.labelZh}
             </Badge>
-            <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
               {focusedBlueprint.estimatedQuestions} 题
             </Badge>
-            <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
               {focusedBlueprint.estimatedMinutes} 分钟
             </Badge>
           </div>
@@ -815,8 +815,8 @@ export default function PracticePage() {
             { label: '今日素材', value: `${dailyWords.length} words`, hint: '' },
           ])}
 
-          <div className="border-t border-white/10 pt-5">
-            <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={() => pickMode(focusedModeId)}>
+          <div className="border-t border-border pt-5">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => pickMode(focusedModeId)}>
               Review this mode
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
@@ -834,18 +834,18 @@ export default function PracticePage() {
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
+            <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
               {focusedBlueprint.label}
             </Badge>
-            <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
               <Clock3 className="mr-1.5 h-3.5 w-3.5" />
               {focusedBlueprint.estimatedMinutes} min
             </Badge>
-            <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
               {focusedBlueprint.estimatedQuestions} prompts
             </Badge>
             {selectedMode === 'writing' ? (
-              <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+              <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
                 AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
               </Badge>
             ) : null}
@@ -861,15 +861,15 @@ export default function PracticePage() {
             },
           ])}
 
-          <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-end">
+          <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-end">
             <LearningActionCluster>
-              <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={startFocusedMode}>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={startFocusedMode}>
                 Start practice
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
-                className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                 onClick={exitToPicker}
               >
                 Back to mode picker
@@ -889,11 +889,11 @@ export default function PracticePage() {
         actions={
           <div className="flex items-center gap-2">
             {writingRound > 1 && (
-              <Badge className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-400">
+              <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))]">
                 Round {writingRound}
               </Badge>
             )}
-            <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
               AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
             </Badge>
           </div>
@@ -902,24 +902,24 @@ export default function PracticePage() {
         <div className="space-y-6">
           <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
             <div className="space-y-3">
-              <Label className="text-white">Task Type</Label>
+              <Label className="text-foreground">Task Type</Label>
               <Select value={writingTaskType} onValueChange={(value: 'task1' | 'task2') => setWritingTaskType(value)}>
-                <SelectTrigger className={cn('rounded-3xl', darkInputClass)}>
+                <SelectTrigger className={cn('rounded-md', lightInputClass)}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className={darkSelectContentClass}>
-                  <SelectItem value="task1" className="focus:bg-white/10 focus:text-white">Task 1</SelectItem>
-                  <SelectItem value="task2" className="focus:bg-white/10 focus:text-white">Task 2</SelectItem>
+                <SelectContent className={lightSelectContentClass}>
+                  <SelectItem value="task1" className="focus:bg-muted focus:text-foreground">Task 1</SelectItem>
+                  <SelectItem value="task2" className="focus:bg-muted focus:text-foreground">Task 2</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-white">Prompt</Label>
+              <Label className="text-foreground">Prompt</Label>
               <Textarea
                 value={writingPrompt}
                 onChange={(event) => setWritingPrompt(event.target.value)}
-                className={cn('min-h-[140px] rounded-[24px] p-4', darkInputClass)}
+                className={cn('min-h-[140px] rounded-xl p-4', lightInputClass)}
               />
             </div>
           </div>
@@ -929,9 +929,9 @@ export default function PracticePage() {
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.06] p-4 space-y-2"
+              className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2"
             >
-              <p className="text-xs font-semibold uppercase tracking-widest text-amber-400/80">
+              <p className="text-xs font-semibold uppercase tracking-widest text-amber-600">
                 Round {writingRound - 1} score — revise to improve
               </p>
               <div className="flex flex-wrap gap-3">
@@ -942,34 +942,34 @@ export default function PracticePage() {
                   ['Grammar', previousFeedback.scores.grammaticalRangeAccuracy],
                   ['Overall', previousFeedback.scores.overallBand],
                 ].map(([label, value]) => (
-                  <span key={label as string} className="text-xs text-white/60">
-                    {label}: <span className="text-white/90 font-medium">{(value as number).toFixed(1)}</span>
+                  <span key={label as string} className="text-xs text-muted-foreground">
+                    {label}: <span className="text-foreground font-medium">{(value as number).toFixed(1)}</span>
                   </span>
                 ))}
               </div>
               {previousFeedback.issues.length > 0 && (
-                <p className="text-xs text-white/50 pt-1">
+                <p className="text-xs text-muted-foreground pt-1">
                   Key issue: {previousFeedback.issues[0].message}
                 </p>
               )}
             </motion.div>
           )}
 
-          <div className="space-y-3 border-t border-white/10 pt-5">
-            <Label className="text-white">Your response</Label>
+          <div className="space-y-3 border-t border-border pt-5">
+            <Label className="text-foreground">Your response</Label>
             <Textarea
               value={writingInput}
               onChange={(event) => setWritingInput(event.target.value)}
               placeholder="Write your IELTS response here..."
-              className={cn('min-h-[300px] rounded-[26px] p-5 text-base leading-7', darkInputClass)}
+              className={cn('min-h-[300px] rounded-xl p-5 text-base leading-7', lightInputClass)}
             />
           </div>
 
           {!writingFeedback ? (
-            <div className="flex flex-col gap-4 border-t border-white/10 pt-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-4 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
               <Button
                 onClick={handleWritingSubmit}
-                className="rounded-full bg-emerald-500 px-5 text-black hover:bg-emerald-400"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-5"
                 disabled={
                   isWritingSubmitting ||
                   isQuotaLoading ||
@@ -991,15 +991,15 @@ export default function PracticePage() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-5 border-t border-white/10 pt-6"
+              className="space-y-5 border-t border-border pt-6"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-lg font-semibold text-white">
-                  <Lightbulb className="h-4 w-4 text-yellow-400" />
+                <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <Lightbulb className="h-4 w-4 text-yellow-500" />
                   {writingRound > 1 ? `Round ${writingRound} Feedback` : 'Writing feedback'}
                 </div>
                 {previousFeedback && (
-                  <span className="text-xs text-white/45">
+                  <span className="text-xs text-muted-foreground">
                     vs Round {writingRound - 1}: {previousFeedback.scores.overallBand.toFixed(1)} → {writingFeedback.scores.overallBand.toFixed(1)}
                     {writingFeedback.scores.overallBand > previousFeedback.scores.overallBand
                       ? ' ↑'
@@ -1025,14 +1025,14 @@ export default function PracticePage() {
                   <div
                     key={label}
                     className={cn(
-                      'rounded-3xl border border-white/10 bg-white/[0.03] p-4',
-                      index === 4 && 'border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-300',
+                      'rounded-xl border border-border bg-card p-4',
+                      index === 4 && 'border-border bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]',
                     )}
                   >
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">{label}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
                     <p className="mt-3 text-2xl font-semibold">{value.toFixed(1)}</p>
                     {prevValue !== undefined && delta !== 0 && (
-                      <p className={cn('text-[11px] mt-1', delta > 0 ? 'text-emerald-400' : 'text-red-400')}>
+                      <p className={cn('text-[11px] mt-1', delta > 0 ? 'text-green-600' : 'text-destructive')}>
                         {delta > 0 ? '+' : ''}{delta.toFixed(1)}
                       </p>
                     )}
@@ -1043,12 +1043,12 @@ export default function PracticePage() {
 
               {/* ── Summary ───────────────────────────────────────────── */}
               {writingFeedback.summary && (
-                <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 flex gap-3">
-                  <Quote className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+                <div className="rounded-xl border border-border bg-card p-4 flex gap-3">
+                  <Quote className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
                   <div>
-                    <p className="text-sm leading-6 text-white/80">{writingFeedback.summary}</p>
+                    <p className="text-sm leading-6 text-foreground">{writingFeedback.summary}</p>
                     {writingFeedback.summaryZh && (
-                      <p className="mt-1 text-xs leading-5 text-white/42">{writingFeedback.summaryZh}</p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{writingFeedback.summaryZh}</p>
                     )}
                   </div>
                 </div>
@@ -1056,17 +1056,17 @@ export default function PracticePage() {
 
               {/* ── Strengths ──────────────────────────────────────────── */}
               {writingFeedback.strengths && writingFeedback.strengths.length > 0 && (
-                <div className="rounded-3xl border border-emerald-500/15 bg-emerald-500/[0.06] p-4">
+                <div className="rounded-xl border border-green-200 bg-green-50 p-4">
                   <div className="mb-2 flex items-center gap-2">
-                    <ThumbsUp className="h-3.5 w-3.5 text-emerald-400" />
-                    <span className="text-xs font-medium uppercase tracking-widest text-emerald-400/80">
+                    <ThumbsUp className="h-3.5 w-3.5 text-green-600" />
+                    <span className="text-xs font-medium uppercase tracking-widest text-green-600">
                       Strengths
                     </span>
                   </div>
                   <ul className="space-y-1">
                     {writingFeedback.strengths.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-white/72">
-                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                      <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600" />
                         {s}
                       </li>
                     ))}
@@ -1079,61 +1079,61 @@ export default function PracticePage() {
                 {writingFeedback.issues.map((issue, index) => {
                   const severityColor =
                     issue.severity === 'high'
-                      ? 'border-red-500/20 bg-red-500/[0.05]'
+                      ? 'border-destructive/20 bg-destructive/5'
                       : issue.severity === 'medium'
-                        ? 'border-amber-500/20 bg-amber-500/[0.04]'
-                        : 'border-white/10 bg-white/[0.03]';
+                        ? 'border-amber-200 bg-amber-50'
+                        : 'border-border bg-card';
                   const tagColors: Record<string, string> = {
-                    grammar:       'bg-red-500/15 text-red-300',
-                    lexical:       'bg-violet-500/15 text-violet-300',
-                    coherence:     'bg-blue-500/15 text-blue-300',
-                    task_response: 'bg-amber-500/15 text-amber-300',
-                    collocation:   'bg-pink-500/15 text-pink-300',
-                    tense:         'bg-orange-500/15 text-orange-300',
-                    logic:         'bg-cyan-500/15 text-cyan-300',
-                    word_count:    'bg-yellow-500/15 text-yellow-300',
+                    grammar:       'bg-destructive/10 text-destructive',
+                    lexical:       'bg-violet-500/10 text-violet-600',
+                    coherence:     'bg-blue-500/10 text-blue-600',
+                    task_response: 'bg-amber-500/10 text-amber-600',
+                    collocation:   'bg-pink-500/10 text-pink-600',
+                    tense:         'bg-orange-500/10 text-orange-600',
+                    logic:         'bg-cyan-500/10 text-cyan-600',
+                    word_count:    'bg-yellow-500/10 text-yellow-600',
                   };
                   return (
                     <div
                       key={`${issue.tag}-${index}`}
-                      className={cn('rounded-3xl border p-4 space-y-2', severityColor)}
+                      className={cn('rounded-xl border p-4 space-y-2', severityColor)}
                     >
                       {/* header row */}
                       <div className="flex items-center gap-2">
                         <AlertTriangle className={cn(
                           'h-3.5 w-3.5 shrink-0',
-                          issue.severity === 'high' ? 'text-red-400' : issue.severity === 'medium' ? 'text-amber-400' : 'text-white/40',
+                          issue.severity === 'high' ? 'text-destructive' : issue.severity === 'medium' ? 'text-amber-500' : 'text-muted-foreground',
                         )} />
-                        <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider', tagColors[issue.tag] ?? 'bg-white/10 text-white/60')}>
+                        <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider', tagColors[issue.tag] ?? 'bg-muted text-muted-foreground')}>
                           {issue.tag.replace('_', ' ')}
                         </span>
                       </div>
 
                       {/* problematic sentence (highlighted) */}
                       {issue.sentence && (
-                        <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2">
-                          <p className="text-[11px] uppercase tracking-wider text-white/35 mb-1">原句</p>
-                          <p className="text-sm italic text-white/65 leading-relaxed">"{issue.sentence}"</p>
+                        <div className="rounded-lg border border-border bg-muted px-3 py-2">
+                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">原句</p>
+                          <p className="text-sm italic text-foreground leading-relaxed">"{issue.sentence}"</p>
                         </div>
                       )}
 
                       {/* problem description */}
-                      <p className="text-sm font-medium text-white/90">{issue.message}</p>
+                      <p className="text-sm font-medium text-foreground">{issue.message}</p>
                       {issue.messageZh && (
-                        <p className="text-xs text-white/45">{issue.messageZh}</p>
+                        <p className="text-xs text-muted-foreground">{issue.messageZh}</p>
                       )}
 
                       {/* suggestion */}
-                      <p className="text-sm leading-6 text-white/60">{issue.suggestion}</p>
+                      <p className="text-sm leading-6 text-muted-foreground">{issue.suggestion}</p>
                       {issue.suggestionZh && (
-                        <p className="text-xs text-white/40">{issue.suggestionZh}</p>
+                        <p className="text-xs text-muted-foreground">{issue.suggestionZh}</p>
                       )}
 
                       {/* corrected version */}
                       {issue.correction && (
-                        <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.06] px-3 py-2">
-                          <p className="text-[11px] uppercase tracking-wider text-emerald-400/60 mb-1">建议改为</p>
-                          <p className="text-sm text-emerald-300/80 leading-relaxed italic">"{issue.correction}"</p>
+                        <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                          <p className="text-[11px] uppercase tracking-wider text-green-600 mb-1">建议改为</p>
+                          <p className="text-sm text-green-600 leading-relaxed italic">"{issue.correction}"</p>
                         </div>
                       )}
                     </div>
@@ -1143,31 +1143,31 @@ export default function PracticePage() {
 
               {/* ── Improved sentence example ──────────────────────────── */}
               {writingFeedback.improvedSentence && (
-                <div className="rounded-3xl border border-sky-500/15 bg-sky-500/[0.05] p-4 flex gap-3">
-                  <Wand2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+                <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 flex gap-3">
+                  <Wand2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
                   <div>
-                    <p className="text-[11px] uppercase tracking-wider text-sky-400/60 mb-1">Band 7+ 示范句</p>
-                    <p className="text-sm italic leading-relaxed text-sky-200/80">"{writingFeedback.improvedSentence}"</p>
+                    <p className="text-[11px] uppercase tracking-wider text-sky-600 mb-1">Band 7+ 示范句</p>
+                    <p className="text-sm italic leading-relaxed text-sky-700">"{writingFeedback.improvedSentence}"</p>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center justify-between border-t border-white/10 pt-5">
+              <div className="flex items-center justify-between border-t border-border pt-5">
                 <Button
                   onClick={handleRevise}
                   disabled={feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0}
-                  className="rounded-full bg-emerald-500 px-5 text-black hover:bg-emerald-400 disabled:opacity-50"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-5 disabled:opacity-50"
                 >
                   <PenTool className="mr-2 h-4 w-4" />
                   Revise &amp; Resubmit
                   {writingRound < 3 && (
-                    <span className="ml-1.5 text-black/60 text-xs">Round {writingRound + 1}</span>
+                    <span className="ml-1.5 text-primary-foreground/60 text-xs">Round {writingRound + 1}</span>
                   )}
                 </Button>
                 <Button
                   onClick={handleRestart}
                   variant="outline"
-                  className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Try another
@@ -1193,7 +1193,7 @@ export default function PracticePage() {
           actions={
             <Button
               variant="outline"
-              className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+              className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
               onClick={exitToPicker}
             >
               Back to modes
@@ -1209,19 +1209,19 @@ export default function PracticePage() {
         title="Listen, then type"
       >
         <div className="space-y-6">
-          <div className="space-y-2 border-b border-white/10 pb-5">
-            <div className="flex items-center justify-between text-sm text-white/48">
+          <div className="space-y-2 border-b border-border pb-5">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>Question {currentQuestionIndex + 1} of {listeningWords.length}</span>
               <span>{Math.round(sessionProgress)}%</span>
             </div>
-            <Progress value={sessionProgress} className="h-2 bg-white/10 [&_[data-slot=progress-indicator]]:bg-emerald-400" />
+            <Progress value={sessionProgress} className="h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-primary" />
           </div>
 
           <div className="mx-auto max-w-2xl space-y-6 py-6 text-center">
-            <Headphones className="mx-auto h-16 w-16 text-emerald-300" />
+            <Headphones className="mx-auto h-16 w-16 text-[hsl(var(--accent-practice))]" />
 
             <div className="space-y-4">
-              <Button size="lg" className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={() => playAudio(currentWord.word)}>
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => playAudio(currentWord.word)}>
                 <Headphones className="mr-2 h-5 w-5" />
                 Play word
               </Button>
@@ -1241,14 +1241,14 @@ export default function PracticePage() {
                     }
                   }}
                   placeholder="Type what you hear..."
-                  className={cn('h-14 rounded-full px-5 text-center text-lg', darkInputClass)}
+                  className={cn('h-14 rounded-md px-5 text-center text-lg', lightInputClass)}
                 />
               </div>
 
               {!listeningResult ? (
                 <Button
                   variant="outline"
-                  className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                   onClick={handleListeningCheck}
                   disabled={!listeningInput.trim()}
                 >
@@ -1258,13 +1258,13 @@ export default function PracticePage() {
                 <div className="space-y-3">
                   <div
                     className={cn(
-                      'mx-auto max-w-md rounded-3xl px-4 py-3 text-sm',
-                      listeningResult.isCorrect ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-300',
+                      'mx-auto max-w-md rounded-xl px-4 py-3 text-sm',
+                      listeningResult.isCorrect ? 'bg-green-50 text-green-600' : 'bg-destructive/10 text-destructive',
                     )}
                   >
                     {listeningResult.isCorrect ? 'Correct!' : `Expected: ${listeningResult.expected}`}
                   </div>
-                  <Button onClick={handleListeningNext} className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400">
+                  <Button onClick={handleListeningNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
                     {currentQuestionIndex < listeningWords.length - 1 ? 'Next question' : 'Finish listening quiz'}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -1308,12 +1308,12 @@ export default function PracticePage() {
               <Button
                 onClick={handleRestart}
                 variant="outline"
-                className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+                className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Try again
               </Button>
-              <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={exitToPicker}>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={exitToPicker}>
                 Other modes
               </Button>
             </>
@@ -1321,19 +1321,19 @@ export default function PracticePage() {
         />
         {/* Error notebook */}
         {errorNotebook.length > 0 && (
-          <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/[0.04] p-6">
-            <h3 className="text-base font-semibold text-red-300 mb-4">
+          <div className="mt-6 rounded-xl border border-destructive/20 bg-destructive/5 p-6">
+            <h3 className="text-base font-semibold text-destructive mb-4">
               📝 错题本 · {errorNotebook.length} 个需要加强
             </h3>
             <div className="space-y-3">
               {errorNotebook.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-xs font-bold text-red-400">
+                <div key={i} className="flex items-start gap-3 rounded-lg border border-border bg-card p-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-destructive/10 text-xs font-bold text-destructive">
                     {i + 1}
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-white">{item.word}</p>
-                    <p className="text-xs text-white/50 mt-1">正确答案: {item.correctAnswer}</p>
+                    <p className="text-sm font-semibold text-foreground">{item.word}</p>
+                    <p className="text-xs text-muted-foreground mt-1">正确答案: {item.correctAnswer}</p>
                   </div>
                 </div>
               ))}
@@ -1354,7 +1354,7 @@ export default function PracticePage() {
         actions={
           <Button
             variant="outline"
-            className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+            className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
             onClick={exitToPicker}
           >
             Back to modes
@@ -1369,27 +1369,27 @@ export default function PracticePage() {
       eyebrow="Practice workspace"
       title={`${focusedMode.name} · ${focusedMode.nameZh}`}
       actions={
-        <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/65 hover:bg-white/[0.03]">
+        <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
           Question {currentQuestionIndex + 1} / {quizQuestions.length}
         </Badge>
       }
     >
       <div className="space-y-6">
-        <div className="space-y-2 border-b border-white/10 pb-5">
-          <div className="flex items-center justify-between text-sm text-white/48">
+        <div className="space-y-2 border-b border-border pb-5">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
             <span>{Math.round(sessionProgress)}%</span>
           </div>
-          <Progress value={sessionProgress} className="h-2 bg-white/10 [&_[data-slot=progress-indicator]]:bg-emerald-400" />
+          <Progress value={sessionProgress} className="h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-primary" />
         </div>
 
         <div className="max-w-3xl space-y-5">
           <div className="space-y-3">
-            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-300 hover:bg-emerald-500/10">
+            <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
               {currentQuestion?.word.word}
             </Badge>
-            <h3 className="text-3xl font-semibold tracking-tight text-white">{currentQuestion?.question}</h3>
-            <p className="text-base leading-7 text-white/58">{currentQuestion?.questionZh}</p>
+            <h3 className="text-3xl font-semibold tracking-tight text-foreground">{currentQuestion?.question}</h3>
+            <p className="text-base leading-7 text-muted-foreground">{currentQuestion?.questionZh}</p>
           </div>
 
           <RadioGroup
@@ -1409,40 +1409,40 @@ export default function PracticePage() {
                       : {}
                 }
                 className={cn(
-                  'flex items-center space-x-3 rounded-3xl border px-4 py-4 transition-all',
+                  'flex items-center space-x-3 rounded-xl border px-4 py-4 transition-all',
                   showResult && option === currentQuestion.correctAnswer
-                    ? 'border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-300'
+                    ? 'border-green-200 bg-green-50 text-green-600'
                     : showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer
-                      ? 'border-red-500/20 bg-red-500/[0.08] text-red-300'
+                      ? 'border-destructive/20 bg-destructive/10 text-destructive'
                       : selectedAnswer === option
-                        ? 'border-white/[0.12] bg-white/[0.05]'
-                        : 'border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05] hover:border-white/[0.1]',
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-card hover:bg-muted hover:border-border',
                 )}
               >
-                <RadioGroupItem value={option} id={`option-${index}`} className="border-white/20 text-emerald-300" />
-                <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-sm leading-6 text-white">
+                <RadioGroupItem value={option} id={`option-${index}`} className="border-border text-primary" />
+                <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-sm leading-6 text-foreground">
                   {option}
                 </Label>
-                {showResult && option === currentQuestion.correctAnswer ? <Check className="h-5 w-5 text-emerald-300" /> : null}
-                {showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer ? <X className="h-5 w-5 text-red-300" /> : null}
+                {showResult && option === currentQuestion.correctAnswer ? <Check className="h-5 w-5 text-green-600" /> : null}
+                {showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer ? <X className="h-5 w-5 text-destructive" /> : null}
               </motion.div>
             ))}
           </RadioGroup>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/10 pt-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
           {!showResult ? (
-            <Button onClick={handleAnswer} disabled={!selectedAnswer} className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400 lg:min-w-[180px]">
+            <Button onClick={handleAnswer} disabled={!selectedAnswer} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
               Check answer
             </Button>
           ) : (
-            <Button onClick={handleNext} className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400 lg:min-w-[180px]">
+            <Button onClick={handleNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
               Next question
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           )}
 
-          <div className="text-sm leading-6 text-white/54">
+          <div className="text-sm leading-6 text-muted-foreground">
             {showResult ? `当前正确率 ${accuracyPct}%` : '先选一个最合适的答案，再检查。'}
           </div>
         </div>

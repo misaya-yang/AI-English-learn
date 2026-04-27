@@ -72,22 +72,22 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           tabIndex={0}
           onClick={onReveal}
           onKeyDown={handleRevealKeyDown}
-          className="flex h-full w-full cursor-pointer flex-col items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020303]"
+          className="flex h-full w-full cursor-pointer flex-col items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <Badge className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/72 hover:bg-white/[0.03]">
+          <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
             {word.level} · 第 {item.reviewCount + 1} 次复习
           </Badge>
-          <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Recall first</p>
-          <h2 className="mt-5 text-[3.8rem] font-semibold leading-[0.92] tracking-[-0.065em] text-white sm:text-[5.2rem]">
+          <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Recall first</p>
+          <h2 className="mt-5 text-[3.8rem] font-semibold leading-[0.92] tracking-[-0.065em] text-foreground sm:text-[5.2rem]">
             {word.word}
           </h2>
-          <p className="mt-4 font-mono text-lg text-white/45">{word.partOfSpeech} · {word.phonetic}</p>
+          <p className="mt-4 font-mono text-lg text-muted-foreground">{word.partOfSpeech} · {word.phonetic}</p>
 
           <div className="mt-10 flex items-center gap-3">
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12 rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+              className="h-12 w-12 rounded-md border-border bg-card text-foreground hover:bg-muted"
               onClick={(event) => {
                 event.stopPropagation();
                 playAudio(word.word);
@@ -95,21 +95,21 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
             >
               <Volume2 className="h-5 w-5" />
             </Button>
-            <span className="text-sm text-white/48">先回忆，再揭晓答案</span>
+            <span className="text-sm text-muted-foreground">先回忆，再揭晓答案</span>
           </div>
         </div>
       ) : (
         <div className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Answer revealed</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-white">{word.word}</h2>
-              <p className="mt-1 font-mono text-sm text-white/45">{word.partOfSpeech} · {word.phonetic}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Answer revealed</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">{word.word}</h2>
+              <p className="mt-1 font-mono text-sm text-muted-foreground">{word.partOfSpeech} · {word.phonetic}</p>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white"
+              className="rounded-md border border-border bg-card text-foreground hover:bg-muted"
               onClick={() => playAudio(word.word)}
             >
               <Volume2 className="h-5 w-5" />
@@ -118,31 +118,31 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 
           <div className="mt-6 grid flex-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_0.8fr]">
             <div className="space-y-4">
-              <section className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Definition</p>
-                <p className="mt-3 text-base leading-7 text-white">{word.definition}</p>
-                <p className="mt-2 text-sm leading-7 text-white/58">{word.definitionZh}</p>
+              <section className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Definition</p>
+                <p className="mt-3 text-base leading-7 text-foreground">{word.definition}</p>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
               </section>
 
               {word.examples[0] ? (
-                <section className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Example</p>
-                  <p className="mt-3 text-sm leading-7 text-white">{word.examples[0].en}</p>
-                  <p className="mt-2 text-sm leading-7 text-white/58">{word.examples[0].zh}</p>
+                <section className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Example</p>
+                  <p className="mt-3 text-sm leading-7 text-foreground">{word.examples[0].en}</p>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p>
                 </section>
               ) : null}
             </div>
 
-            <section className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Clues</p>
+            <section className="rounded-xl border border-border bg-card p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Clues</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.synonyms.slice(0, 5).map((synonym) => (
-                  <span key={synonym} className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+                  <span key={synonym} className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
                     {synonym}
                   </span>
                 ))}
                 {word.collocations.slice(0, 4).map((collocation) => (
-                  <span key={collocation} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-white/70">
+                  <span key={collocation} className="rounded-md border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                     {collocation}
                   </span>
                 ))}
@@ -156,10 +156,10 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 }
 
 const ratingMeta = {
-  again: { label: '忘记', delay: '< 1 min', key: '1', accent: 'border-red-500/25 bg-red-500/10 text-red-300' },
-  hard:  { label: '较难', delay: '2 days',  key: '2', accent: 'border-amber-500/25 bg-amber-500/10 text-amber-300' },
-  good:  { label: '良好', delay: '5 days',  key: '3', accent: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' },
-  easy:  { label: '简单', delay: '10 days', key: '4', accent: 'border-sky-500/25 bg-sky-500/10 text-sky-300' },
+  again: { label: '忘记', delay: '< 1 min', key: '1', accent: 'border-destructive/30 bg-destructive/5 text-destructive' },
+  hard:  { label: '较难', delay: '2 days',  key: '2', accent: 'border-amber-500/25 bg-amber-500/10 text-amber-600' },
+  good:  { label: '良好', delay: '5 days',  key: '3', accent: 'border-green-500/30 bg-green-50 text-green-700' },
+  easy:  { label: '简单', delay: '10 days', key: '4', accent: 'border-sky-500/25 bg-sky-500/10 text-sky-700' },
 } as const;
 
 export default function ReviewPage() {
@@ -302,10 +302,10 @@ export default function ReviewPage() {
             ]}
             actions={
               <>
-                <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" asChild>
+                <Button variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted" asChild>
                   <Link to="/dashboard/today">{isZh ? '回到 Today' : 'Back to Today'}</Link>
                 </Button>
-                <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                   <Link to="/dashboard/practice">{isZh ? '做巩固练习' : 'Reinforce in Practice'}</Link>
                 </Button>
               </>
@@ -344,11 +344,11 @@ export default function ReviewPage() {
           ]}
           actions={
             <>
-              <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white" onClick={handleRestart}>
+              <Button variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted" onClick={handleRestart}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Review again
               </Button>
-              <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" asChild>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                 <Link to="/dashboard/practice">继续做 Practice</Link>
               </Button>
             </>
@@ -395,8 +395,9 @@ export default function ReviewPage() {
                     <Button
                       key={rating}
                       variant="outline"
+                      aria-keyshortcuts={meta.key}
                       className={cn(
-                        'h-auto flex-col items-start gap-1 rounded-3xl border px-4 py-4 text-left hover:text-current hover-lift',
+                        'h-auto flex-col items-start gap-1 rounded-xl border px-4 py-4 text-left hover:text-current hover-lift',
                         meta.accent,
                       )}
                       onClick={() => handleRate(rating)}
@@ -412,11 +413,11 @@ export default function ReviewPage() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col gap-3 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between shadow-glass">
-                  <p className="text-sm leading-6 text-white/54">先回忆，再揭晓。</p>
-                  <Button className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400" onClick={handleReveal}>
+                <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                  <p className="text-sm leading-6 text-muted-foreground">先回忆，再揭晓。</p>
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={handleReveal}>
                     Reveal answer
-                    <kbd className="ml-2 rounded border border-black/20 bg-black/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold">
+                    <kbd className="ml-2 rounded border border-primary-foreground/20 bg-primary-foreground/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold">
                       Space
                     </kbd>
                   </Button>
@@ -439,47 +440,47 @@ export default function ReviewPage() {
               className="border-t-0 pt-0"
             />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Completed</p>
-                <p className="mt-2 text-2xl font-semibold text-white">{totalReviewed} / {reviewItems.length}</p>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Completed</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground">{totalReviewed} / {reviewItems.length}</p>
               </div>
-              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">Current stage</p>
-                <p className="mt-2 text-2xl font-semibold text-emerald-300">{isRevealed ? 'Rate it' : 'Recall first'}</p>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Current stage</p>
+                <p className="mt-2 text-2xl font-semibold text-green-700">{isRevealed ? 'Rate it' : 'Recall first'}</p>
               </div>
             </div>
           </LearningRailSection>
 
           <LearningRailSection title="Rating guide">
             <div className="space-y-3">
-              <div className="rounded-3xl border border-red-500/20 bg-red-500/[0.06] p-4">
-                <div className="flex items-center gap-2 text-red-300">
+              <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+                <div className="flex items-center gap-2 text-destructive">
                   <X className="h-4 w-4" />
                   <p className="text-sm font-semibold">Again</p>
                 </div>
-                  <p className="mt-2 text-sm text-white/58">马上重见</p>
+                  <p className="mt-2 text-sm text-muted-foreground">马上重见</p>
                 </div>
-              <div className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
-                <div className="flex items-center gap-2 text-amber-300">
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
+                <div className="flex items-center gap-2 text-amber-600">
                   <Zap className="h-4 w-4" />
                   <p className="text-sm font-semibold">Hard</p>
                 </div>
-                  <p className="mt-2 text-sm text-white/58">短间隔复现</p>
+                  <p className="mt-2 text-sm text-muted-foreground">短间隔复现</p>
                 </div>
-              <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
-                <div className="flex items-center gap-2 text-emerald-300">
+              <div className="rounded-xl border border-green-500/30 bg-green-50 p-4">
+                <div className="flex items-center gap-2 text-green-700">
                   <Check className="h-4 w-4" />
                   <p className="text-sm font-semibold">Good / Easy</p>
                 </div>
-                  <p className="mt-2 text-sm text-white/58">拉长间隔</p>
+                  <p className="mt-2 text-sm text-muted-foreground">拉长间隔</p>
                 </div>
               {isCurrentCardStubborn ? (
-                <div className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
-                  <div className="flex items-center gap-2 text-amber-300">
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
+                  <div className="flex items-center gap-2 text-amber-600">
                     <Zap className="h-4 w-4" />
                     <p className="text-sm font-semibold">Reinforcement path</p>
                   </div>
-                  <p className="mt-2 text-sm text-white/58">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     这张卡已经遗忘 {currentItem?.fsrs.lapses || 0} 次，系统会把它放进更短的强化复习回路。
                   </p>
                 </div>
@@ -489,13 +490,13 @@ export default function ReviewPage() {
 
           {currentItem ? (
             <LearningRailSection title="Current card">
-              <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-4">
-                <div className="flex items-center gap-2 text-white/72">
-                  <Clock3 className="h-4 w-4 text-emerald-300" />
+              <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+                <div className="flex items-center gap-2 text-foreground">
+                  <Clock3 className="h-4 w-4 text-green-600" />
                   <p className="text-sm font-medium">第 {currentItem.reviewCount + 1} 次复习</p>
                 </div>
                 {isCurrentCardStubborn ? (
-                  <Badge className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-300 hover:bg-amber-500/10">
+                  <Badge className="rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-amber-600 hover:bg-amber-500/10">
                     顽固词强化中
                   </Badge>
                 ) : null}
@@ -503,12 +504,12 @@ export default function ReviewPage() {
                 {/* Memory strength bar */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-[10px] uppercase tracking-wider text-white/36">Memory strength</p>
-                    <p className="text-xs font-semibold text-white/70">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Memory strength</p>
+                    <p className="text-xs font-semibold text-foreground">
                       {Math.round(currentItem.fsrs.retrievability * 100)}%
                     </p>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-white/[0.08] overflow-hidden">
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <motion.div
                       className={cn(
                         'h-full rounded-full transition-colors',
@@ -524,12 +525,12 @@ export default function ReviewPage() {
                   </div>
                 </div>
 
-                <p className="text-sm leading-6 text-white/54">
+                <p className="text-sm leading-6 text-muted-foreground">
                   {currentItem.fsrs.lastReviewAt
                     ? `上次复习：${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('zh-CN')}`
                     : '今日首次接触这张卡'}
                 </p>
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm text-white/60">
+                <div className="rounded-xl border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
                   FSRS stability: {currentItem.fsrs.stability.toFixed(1)} 天 · 难度 {currentItem.fsrs.difficulty.toFixed(1)}
                 </div>
               </div>
@@ -543,13 +544,13 @@ export default function ReviewPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4"
+                className="rounded-xl border border-[hsl(var(--accent-memory)/0.2)] bg-[hsl(var(--accent-memory)/0.08)] p-4"
               >
-                <div className="flex items-center gap-2 text-emerald-300 mb-2">
+                <div className="flex items-center gap-2 text-[hsl(var(--accent-memory))] mb-2">
                   <Lightbulb className="h-4 w-4" />
                   <p className="text-sm font-semibold">AI 助记提示</p>
                 </div>
-                <p className="text-sm leading-6 text-white/65">
+                <p className="text-sm leading-6 text-foreground">
                   {currentItem.word.memoryTip || currentItem.word.etymology}
                 </p>
               </motion.div>
