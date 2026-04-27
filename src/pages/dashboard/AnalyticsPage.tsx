@@ -52,6 +52,7 @@ import {
   type LearningEventRecord,
   type WeeklyActivityPoint,
 } from '@/services/learningEvents';
+import { getStudySessions } from '@/data/localStorage';
 import { computeLevel, getLevelName } from '@/services/gamification';
 
 const TOPIC_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'];
@@ -95,13 +96,33 @@ export default function AnalyticsPage() {
   const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
   const [eventHistory, setEventHistory] = useState<LearningEventRecord[]>([]);
 
-  // Derive topic data from all progress words; fall back to today's daily words if no progress yet
+  // Cutoff date derived from the selected time range
+  const cutoffDate = useMemo(() => {
+    if (timeRange === 'all') return null;
+    const days = timeRange === 'year' ? 365 : timeRange === 'month' ? 30 : 7;
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [timeRange]);
+
+  // Derive topic data filtered by the selected time range
   const topicData = useMemo(() => {
-    const ids = progress.length > 0
-      ? progress.map((p) => p.wordId)
-      : dailyWords.map((w) => w.id);
+    let ids: string[];
+    if (progress.length > 0) {
+      const filtered = cutoffDate
+        ? progress.filter((p) => {
+            const ts = p.updatedAt ?? p.firstSeenAt;
+            if (!ts) return false;
+            return new Date(ts) >= cutoffDate;
+          })
+        : progress;
+      ids = (filtered.length > 0 ? filtered : progress).map((p) => p.wordId);
+    } else {
+      ids = dailyWords.map((w) => w.id);
+    }
     return generateTopicData(ids);
-  }, [progress, dailyWords]);
+  }, [progress, dailyWords, cutoffDate]);
 
   const riskWords = useMemo(
     () => computeHighRiskWords(progress, [...customWords, ...dailyWords, ...wordsDatabase]),
@@ -114,7 +135,7 @@ export default function AnalyticsPage() {
 
     const loadAnalytics = async () => {
       // Map timeRange to how many days of event history to fetch
-      const eventDays = timeRange === 'year' ? 365 : timeRange === 'month' ? 30 : 7;
+      const eventDays = timeRange === 'year' || timeRange === 'all' ? 365 : timeRange === 'month' ? 30 : 7;
 
       const [weekly, heatmap, events] = await Promise.all([
         // getWeeklyActivity always returns last-7-day buckets; only include for week view
@@ -123,7 +144,56 @@ export default function AnalyticsPage() {
         getLearningEvents(userId, eventDays),
       ]);
 
-      setWeeklyData(weekly);
+      // For month/year/all views build activity buckets from study sessions
+      let displayData = weekly;
+      if (timeRange !== 'week') {
+        const cutoffMs = timeRange === 'all' ? 0 : Date.now() - eventDays * 24 * 60 * 60 * 1000;
+        const sessions = getStudySessions(userId).filter(
+          (s) => new Date(s.date).getTime() >= cutoffMs,
+        );
+
+        if (timeRange === 'month') {
+          // Group by individual day for the last 30 days
+          const dayMap = new Map<string, WeeklyActivityPoint>();
+          for (let i = 29; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            d.setHours(0, 0, 0, 0);
+            const iso = d.toISOString().slice(0, 10);
+            const label = d.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+            dayMap.set(iso, { day: label, date: iso, words: 0, xp: 0, minutes: 0, events: 0 });
+          }
+          sessions.forEach((s) => {
+            if (dayMap.has(s.date)) {
+              const pt = dayMap.get(s.date)!;
+              pt.words += s.wordsLearned;
+              pt.xp += s.xpEarned;
+              pt.minutes += s.duration;
+              pt.events += s.wordsStudied;
+            }
+          });
+          displayData = Array.from(dayMap.values());
+        } else {
+          // year or all: group by calendar month (YYYY-MM label)
+          const monthMap = new Map<string, WeeklyActivityPoint>();
+          sessions.forEach((s) => {
+            const monthKey = s.date.slice(0, 7); // YYYY-MM
+            if (!monthMap.has(monthKey)) {
+              const [y, m] = monthKey.split('-');
+              const label = `${y}年${parseInt(m)}月`;
+              monthMap.set(monthKey, { day: label, date: monthKey, words: 0, xp: 0, minutes: 0, events: 0 });
+            }
+            const pt = monthMap.get(monthKey)!;
+            pt.words += s.wordsLearned;
+            pt.xp += s.xpEarned;
+            pt.minutes += s.duration;
+            pt.events += s.wordsStudied;
+          });
+          displayData = Array.from(monthMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+        }
+      }
+
+      setWeeklyData(displayData);
       setHeatmapData(heatmap);
       setEventHistory(events);
     };
@@ -323,13 +393,13 @@ export default function AnalyticsPage() {
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[150px]">
             <Calendar className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Time Range" />
+            <SelectValue placeholder="时间范围" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="week">This Week</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
-            <SelectItem value="year">This Year</SelectItem>
-            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="week">本周</SelectItem>
+            <SelectItem value="month">本月</SelectItem>
+            <SelectItem value="year">今年</SelectItem>
+            <SelectItem value="all">全部</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -397,10 +467,10 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                {timeRange === 'year' ? '年度活跃度' : timeRange === 'month' ? '本月活跃度' : '本周活跃度'}
+                {timeRange === 'year' ? '年度活跃度' : timeRange === 'month' ? '本月活跃度' : timeRange === 'all' ? '历史活跃度' : '本周活跃度'}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                {timeRange === 'year' ? '年度活动' : timeRange === 'month' ? '月度活动' : '本周活动'}
+                {timeRange === 'year' ? '年度活动' : timeRange === 'month' ? '月度活动' : timeRange === 'all' ? '全部历史活动' : '本周活动'}
               </p>
             </CardHeader>
             <CardContent>
