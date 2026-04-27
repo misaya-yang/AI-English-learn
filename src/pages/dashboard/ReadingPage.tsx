@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { incrementReviewCount } from '@/services/gamification';
 
@@ -263,6 +264,8 @@ Despite these limitations, urban farming advocates maintain that its value exten
 export default function ReadingPage() {
   const { addStudySession } = useUserData();
   const { user } = useAuth();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language === 'zh';
 
   const [phase, setPhase] = useState<'select' | 'reading' | 'review'>('select');
   const [current, setCurrent] = useState<ReadingPassage | null>(null);
@@ -383,8 +386,8 @@ export default function ReadingPage() {
       <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
         <div>
           <p className="text-xs tracking-wider text-muted-foreground mb-1">阅读模块</p>
-          <h1 className="text-2xl font-semibold text-foreground">IELTS Academic Reading</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Choose a passage or generate a new one with AI</p>
+          <h1 className="text-2xl font-semibold text-foreground">{isZh ? 'IELTS 学术阅读' : 'IELTS Academic Reading'}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{isZh ? '选择文章或用 AI 生成新文章' : 'Choose a passage or generate a new one with AI'}</p>
         </div>
 
         <div className="space-y-3">
@@ -436,7 +439,7 @@ export default function ReadingPage() {
           {isGenerating ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</>
           ) : (
-            <><RefreshCw className="mr-2 h-4 w-4" /> Generate a new passage with AI</>
+            <><RefreshCw className="mr-2 h-4 w-4" /> {isZh ? '用 AI 生成新文章' : 'Generate a new passage with AI'}</>
           )}
         </Button>
       </div>
@@ -490,8 +493,8 @@ export default function ReadingPage() {
           <div className="space-y-4 max-h-[72vh] overflow-y-auto pr-1">
             <div className="flex items-center gap-2 mb-2">
               <Target className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground">
-                Questions ({current.questions.length})
+              <span className="text-xs font-semibold text-muted-foreground">
+                {isZh ? `题目（${current.questions.length}）` : `Questions (${current.questions.length})`}
               </span>
             </div>
 

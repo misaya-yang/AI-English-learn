@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -504,6 +505,8 @@ type Phase = 'select' | 'listening' | 'questions' | 'review';
 export default function ListeningPage() {
   const { addStudySession } = useUserData();
   const { user } = useAuth();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language === 'zh';
   const [phase, setPhase] = useState<Phase>('select');
   const [selected, setSelected] = useState<ListeningPassage | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -586,10 +589,10 @@ export default function ListeningPage() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Listening Practice
+            {isZh ? '听力练习' : 'Listening Practice'}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            IELTS Academic — audio clips with comprehension questions
+            {isZh ? 'IELTS 学术听力 — 音频片段与理解题' : 'IELTS Academic — audio clips with comprehension questions'}
           </p>
         </div>
 
@@ -652,7 +655,7 @@ export default function ListeningPage() {
           onClick={handleReset}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← Back to passages
+          {isZh ? '← 返回段落列表' : '← Back to passages'}
         </button>
 
         {/* Passage info */}
@@ -671,7 +674,9 @@ export default function ListeningPage() {
             <div className="flex items-center gap-2">
               <Headphones className="h-5 w-5 text-blue-400" />
               <p className="text-sm font-semibold text-foreground">
-                {tts.isSupported ? 'Listen carefully before answering' : 'Read the transcript'}
+                {tts.isSupported
+                  ? (isZh ? '仔细听完再作答' : 'Listen carefully before answering')
+                  : (isZh ? '查看文字稿' : 'Read the transcript')}
               </p>
             </div>
             <span className="text-xs text-muted-foreground">{selected.durationLabel}</span>
@@ -728,7 +733,7 @@ export default function ListeningPage() {
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <Volume2 className="h-3.5 w-3.5" />
-            {showTranscript ? 'Hide transcript' : 'Show transcript'}
+            {showTranscript ? (isZh ? '隐藏文字稿' : 'Hide transcript') : (isZh ? '显示文字稿' : 'Show transcript')}
           </button>
           <AnimatePresence>
             {showTranscript && (
@@ -844,7 +849,7 @@ export default function ListeningPage() {
               variant="outline"
               className="w-full rounded-md border-border hover:bg-muted text-foreground"
             >
-              Try Another Passage
+              {isZh ? '换一段' : 'Try Another Passage'}
             </Button>
           </div>
         )}

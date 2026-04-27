@@ -181,8 +181,8 @@ export default function Home() {
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    {t('home.todayCard.label', { defaultValue: 'Today' })}
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t('home.todayCard.label', { defaultValue: '今日' })}
                   </p>
                   <p className="mt-1 text-lg font-semibold">
                     {t('home.todayCard.title', { defaultValue: 'A typical day' })}
@@ -203,11 +203,11 @@ export default function Home() {
                       <Brain className="h-3.5 w-3.5" />
                     </span>
                     <div>
-                      <p className="text-sm font-medium">12 due reviews</p>
+                      <p className="text-sm font-medium">12 个到期复习</p>
                       <p className="text-xs text-muted-foreground" lang="zh-CN">到期复习</p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground">~6 min</span>
+                  <span className="text-xs font-medium text-muted-foreground">约 6 分钟</span>
                 </li>
                 <li className="flex items-center justify-between rounded-md border border-border/80 bg-background px-3 py-2.5">
                   <div className="flex items-center gap-3">
@@ -215,11 +215,11 @@ export default function Home() {
                       <BookOpen className="h-3.5 w-3.5" />
                     </span>
                     <div>
-                      <p className="text-sm font-medium">5 new words</p>
+                      <p className="text-sm font-medium">5 个新词</p>
                       <p className="text-xs text-muted-foreground" lang="zh-CN">新词学习</p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground">~5 min</span>
+                  <span className="text-xs font-medium text-muted-foreground">约 5 分钟</span>
                 </li>
                 <li className="flex items-center justify-between rounded-md border border-border/80 bg-background px-3 py-2.5">
                   <div className="flex items-center gap-3">
@@ -227,11 +227,11 @@ export default function Home() {
                       <MessageSquare className="h-3.5 w-3.5" />
                     </span>
                     <div>
-                      <p className="text-sm font-medium">1 coach mission</p>
+                      <p className="text-sm font-medium">1 个教练任务</p>
                       <p className="text-xs text-muted-foreground" lang="zh-CN">教练任务</p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground">~4 min</span>
+                  <span className="text-xs font-medium text-muted-foreground">约 4 分钟</span>
                 </li>
               </ul>
 
@@ -251,7 +251,7 @@ export default function Home() {
 
           {/* Sample word strip */}
           <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               {t('home.examples.label', { defaultValue: '本周可能学到的词汇' })}
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">

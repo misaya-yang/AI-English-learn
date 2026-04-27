@@ -7,6 +7,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   ChevronRight,
@@ -399,6 +400,8 @@ interface RuleCardProps {
 
 function RuleCard({ rule, onPractice }: RuleCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { i18n } = useTranslation();
+  const isZh = i18n.language === 'zh';
   const catMeta = CATEGORY_META[rule.category];
 
   return (
@@ -439,7 +442,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
 
               {/* Examples */}
               <div>
-                <p className="text-[11px] tracking-wider text-muted-foreground mb-2">Examples</p>
+                <p className="text-[11px] text-muted-foreground mb-2">{isZh ? '例句' : 'Examples'}</p>
                 <div className="space-y-2">
                   {rule.examples.map((ex, i) => (
                     <div key={i} className="rounded-xl border border-border px-4 py-2.5">
@@ -452,7 +455,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
 
               {/* Common Errors */}
               <div>
-                <p className="text-[11px] tracking-wider text-muted-foreground mb-2">Common Errors</p>
+                <p className="text-[11px] text-muted-foreground mb-2">{isZh ? '常见错误' : 'Common Errors'}</p>
                 <ul className="space-y-1.5">
                   {rule.commonErrors.map((err, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -469,7 +472,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold"
               >
                 <Play className="mr-2 h-3.5 w-3.5" />
-                Practice ({rule.practice.length} questions)
+                {isZh ? `练习（${rule.practice.length} 题）` : `Practice (${rule.practice.length} questions)`}
               </Button>
             </div>
           </motion.div>
@@ -579,6 +582,8 @@ type Phase = 'browse' | 'practice' | 'review';
 export default function GrammarPage() {
   const { addStudySession } = useUserData();
   const { user } = useAuth();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language === 'zh';
   const [phase, setPhase] = useState<Phase>('browse');
   const [activeRule, setActiveRule] = useState<GrammarRule | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -649,9 +654,9 @@ export default function GrammarPage() {
     return (
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Grammar</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{isZh ? '语法' : 'Grammar'}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Rules, examples, and fill-in-the-blank practice
+            {isZh ? '语法规则、例句与填空练习' : 'Rules, examples, and fill-in-the-blank practice'}
           </p>
         </div>
 
@@ -666,7 +671,7 @@ export default function GrammarPage() {
                 : 'border-border text-muted-foreground hover:bg-muted',
             )}
           >
-            All
+            {isZh ? '全部' : 'All'}
           </button>
           {Object.entries(CATEGORY_META).map(([cat, meta]) => (
             <button
@@ -708,7 +713,7 @@ export default function GrammarPage() {
           onClick={handleBack}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← Back to rules
+          {isZh ? '← 返回规则列表' : '← Back to rules'}
         </button>
 
         {/* Header */}
@@ -743,7 +748,7 @@ export default function GrammarPage() {
           <div className="rounded-xl border border-border bg-muted px-4 py-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
-              <p className="text-[11px] tracking-wider text-muted-foreground">Rule summary</p>
+              <p className="text-[11px] text-muted-foreground">{isZh ? '规则小结' : 'Rule summary'}</p>
             </div>
             <p className="text-xs leading-5 text-foreground">{activeRule.explanation}</p>
           </div>
@@ -770,7 +775,7 @@ export default function GrammarPage() {
             disabled={!allAnswered}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold disabled:opacity-50"
           >
-            Check Answers
+            {isZh ? '检查答案' : 'Check Answers'}
           </Button>
         ) : (
           <div className="space-y-3">
@@ -779,14 +784,14 @@ export default function GrammarPage() {
               variant="outline"
               className="w-full rounded-md border-border hover:bg-muted"
             >
-              <RotateCcw className="mr-2 h-4 w-4" /> Try Again
+              <RotateCcw className="mr-2 h-4 w-4" /> {isZh ? '再试一次' : 'Try Again'}
             </Button>
             <Button
               onClick={handleBack}
               variant="outline"
               className="w-full rounded-md border-border hover:bg-muted"
             >
-              <Layers className="mr-2 h-4 w-4" /> More Rules
+              <Layers className="mr-2 h-4 w-4" /> {isZh ? '更多规则' : 'More Rules'}
             </Button>
           </div>
         )}
