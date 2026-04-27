@@ -51,6 +51,12 @@ export function ChatMessageBubble({
   );
   const shouldHideAssistantText = !isUser && !isStreaming && hasUnansweredQuiz;
 
+  // Strip the raw coaching_actions JSON block the LLM sometimes appends to its text.
+  // Old stored messages may contain **coaching_actions**\n```json...``` which renders as [object Object].
+  const displayContent = isUser
+    ? message.content
+    : message.content.replace(/\*\*coaching_actions\*\*[\s\S]*?```[\s\S]*?```/g, '').trimEnd();
+
   const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(message.content);
     toast.success(t('chat.copySuccess'));
@@ -109,9 +115,9 @@ export function ChatMessageBubble({
                 transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
               />
             )}
-            {!shouldHideAssistantText && message.content.trim().length > 0 && (
+            {!shouldHideAssistantText && displayContent.trim().length > 0 && (
               <div className="prose relative z-10 max-w-none dark:prose-invert">
-                <MarkdownRenderer content={message.content} />
+                <MarkdownRenderer content={displayContent} />
                 {isStreaming && (
                   <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-emerald-500 align-middle" />
                 )}
