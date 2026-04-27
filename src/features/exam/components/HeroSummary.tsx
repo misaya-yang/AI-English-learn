@@ -61,11 +61,9 @@ export function HeroSummary({
     <motion.header
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card/90 p-4 sm:p-5 lg:p-6"
+      className="relative overflow-hidden rounded-xl border border-border bg-card text-card-foreground p-4 sm:p-5 lg:p-6"
     >
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28%] bg-[linear-gradient(180deg,hsl(var(--primary)/0.12),hsl(var(--accent)/0.02))] xl:block" />
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_360px]">
-        <div className="space-y-4">
+      <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className={cn('rounded-full border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-emerald-600 text-white' : '')}>
               {plan === 'pro' ? <Crown className="mr-1 h-3.5 w-3.5" /> : <BookOpen className="mr-1 h-3.5 w-3.5" />}
@@ -80,14 +78,14 @@ export function HeroSummary({
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_300px]">
-            <div className="rounded-[24px] border border-border/70 bg-background/40 p-5">
+            <div className="rounded-xl border border-border bg-background/40 p-5">
               <WorkspaceLead
                 eyebrow="Premium IELTS workspace"
                 title="考试冲分 · IELTS Exam Prep"
                 body="这不是功能墙，而是一条完整冲分路径：先确定当前回合，再进入写作工作台，最后根据反馈做补救和再练。"
               />
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
@@ -138,7 +136,7 @@ export function HeroSummary({
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-border/70 bg-background/30 p-4">
+            <div className="rounded-xl border border-border bg-background/30 p-4">
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">Quota HUD</p>
               <div className="mt-4 space-y-3">
                 <QuotaRing
@@ -169,7 +167,6 @@ export function HeroSummary({
               </Link>
             </div>
           </div>
-        </div>
       </div>
     </motion.header>
   );

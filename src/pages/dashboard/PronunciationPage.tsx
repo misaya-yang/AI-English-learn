@@ -68,8 +68,8 @@ export default function PronunciationPage() {
   const session = usePronunciationSession();
   const supported = isSpeechRecognitionSupported();
 
-  const item = items[currentIndex];
-  const targetText = mode === 'word' ? item.word : item.exampleSentence;
+  const item = items[currentIndex] ?? items[0];
+  const targetText = item ? (mode === 'word' ? item.word : item.exampleSentence) : '';
   const completedCount = session.records.length;
   const progressPercent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
 
@@ -84,6 +84,7 @@ export default function PronunciationPage() {
   };
 
   const handleRecord = () => {
+    if (!item) return;
     session.startListening(targetText, item.id, item.phonetic);
   };
 
@@ -154,20 +155,20 @@ export default function PronunciationPage() {
             <CardContent className="text-center space-y-3">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={`${item.id}-${mode}`}
+                  key={`${item?.id ?? 'empty'}-${mode}`}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.2 }}
                 >
                   <p className="text-3xl font-bold tracking-tight">{targetText}</p>
-                  {mode === 'word' && item.phonetic && (
+                  {mode === 'word' && item?.phonetic && (
                     <p className="text-sm text-muted-foreground mt-1 font-mono">
                       {item.phonetic}
                     </p>
                   )}
                   <p className="text-sm text-muted-foreground mt-2">
-                    {isZh ? item.definitionZh : item.definition}
+                    {item ? (isZh ? item.definitionZh : item.definition) : ''}
                   </p>
                 </motion.div>
               </AnimatePresence>
@@ -238,7 +239,7 @@ export default function PronunciationPage() {
                   </div>
 
                   {/* Phoneme issues */}
-                  {session.result.phonemeIssues.length > 0 && (
+                  {(session.result.phonemeIssues?.length ?? 0) > 0 && (
                     <div>
                       <h3 className="text-sm font-medium mb-2">
                         {t('pronunciation.phonemeIssues')}

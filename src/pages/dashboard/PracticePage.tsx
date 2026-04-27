@@ -239,6 +239,18 @@ export default function PracticePage() {
     return () => clearInterval(interval);
   }, [timedMode, hasStarted, isComplete, timeLeft, totalQuestions, score, addStudySession, completeMissionTask]);
 
+  // LEARN-05 — emit session_ended + load coach review count once when the
+  // practice session finishes. Must stay above any conditional return so the
+  // hook order is stable across renders.
+  useEffect(() => {
+    if (!isComplete) return;
+    void getDueCoachReviews(userId).then((items) => setDueCoachReviewCount(items.length));
+    void recordEvent(userId, {
+      kind: 'session_ended',
+      payload: { surface: 'practice', mode: selectedMode, score, total: totalQuestions },
+    });
+  }, [isComplete, userId, selectedMode, score, totalQuestions]);
+
   const recommendedModeId = useMemo(() => {
     if (dueWords.length >= 5) return 'quiz';
     if (dailyWords.length >= 8) return 'fill_blank';
@@ -681,7 +693,7 @@ export default function PracticePage() {
           <p className="mt-2 text-lg font-semibold text-white">{sessionStage}</p>
         </div>
         {selectedMode === 'writing' ? (
-          <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 shadow-glow-emerald">
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
             <div className="flex items-center gap-2 text-emerald-300">
               <Zap className="h-4 w-4" />
               <p className="text-sm font-semibold">Advanced feedback quota</p>
@@ -1264,17 +1276,6 @@ export default function PracticePage() {
       </LearningWorkspaceSurface>,
     );
   }
-
-  useEffect(() => {
-    if (!isComplete) return;
-    void getDueCoachReviews(userId).then((items) => setDueCoachReviewCount(items.length));
-    // LEARN-05 — emit session_ended once per completion. The effect runs
-    // exactly when isComplete flips true.
-    void recordEvent(userId, {
-      kind: 'session_ended',
-      payload: { surface: 'practice', mode: selectedMode, score, total: totalQuestions },
-    });
-  }, [isComplete, userId, selectedMode, score, totalQuestions]);
 
   if (isComplete) {
     const safeTotal = Math.max(totalQuestions, 1);

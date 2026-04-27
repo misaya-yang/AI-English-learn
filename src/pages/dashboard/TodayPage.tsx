@@ -204,7 +204,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">Examples</p>
                 <div className="mt-3 space-y-3">
                   {word.examples.slice(0, 2).map((example, index) => (
-                    <div key={`${example.en}-${index}`} className="rounded-2xl border border-white/[0.06] bg-black/30 p-4">
+                    <div key={`${example.en}-${index}`} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
                       <p className="text-sm leading-7 text-white">{example.en}</p>
                       <p className="mt-2 text-sm leading-7 text-white/58">{example.zh}</p>
                     </div>
@@ -1065,7 +1065,7 @@ export default function TodayPage() {
               )}
 
               {recommendedUnit ? (
-                <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 shadow-glow-emerald">
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
                   <div className="flex items-center gap-2 text-emerald-300">
                     <Target className="h-4 w-4" />
                     <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>

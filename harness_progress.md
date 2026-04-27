@@ -1483,3 +1483,79 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
     after deploy.
 
 - Not pushed.
+
+---
+
+## 2026-04-27 — four-module owner team (dashboard audit + fixes)
+
+User flagged: HeroSummary text overlap (image #4) + a dashboard
+route triggering global error boundary "页面出错了" (image #5).
+
+Dispatched four parallel module-owner agents, then verified with
+Playwright + demo login.
+
+- Module A (Exam-prep): fixed `HeroSummary.tsx` — dropped dead
+  outer `xl:grid-cols-[1.15fr_360px]` wrapper (second slot was
+  always empty), changed inner `sm:grid-cols-[1fr_220px]` →
+  `lg:grid-cols-2` so cards stack instead of squeezing Chinese
+  text to 1-char-per-line. `rounded-[28px]` → `rounded-xl`,
+  `bg-card/90` → `bg-card`. Punted Reading/Listening/Grammar
+  page-chrome dark glass leftovers (high blast radius).
+- Module B (core learning loop): **found the actual crash.**
+  `PracticePage.tsx` had a `useEffect` placed AFTER the
+  `selectedMode === 'writing'` and `selectedMode === 'listening'`
+  early-returns. Switching modes changed hook count → React
+  "Rendered more hooks than during the previous render" → global
+  error boundary trip. Moved the effect above all conditional
+  returns. Also sweep on `rounded-3xl shadow-glow-emerald` /
+  `bg-black/30` chrome on Today, Practice, Review.
+- Module C (chat/memory/vocab/pronunciation): defensive `?.`
+  audit. Fixed crash candidates in:
+  - `ChatPage.tsx:163` — `learningProfile.tracks.includes(...)`
+    on stale localStorage profiles missing `tracks`.
+  - `MemoryCenterPage.tsx:251-253` — `item.tags.length/map` on
+    rows missing tags.
+  - `VocabularyBankPage.tsx:121-123, 508-509, 513` —
+    `definition.toLowerCase()`, `examples[0]?.en`,
+    `synonyms.slice` on imported custom words.
+  - `PronunciationPage.tsx:71-72,87,157,164-171,241` —
+    `items[currentIndex]` undefined after items shrink, plus
+    word/phonetic deref.
+  No `rounded-3xl/glow-emerald` matches in module dirs — already
+  on unified tokens.
+- Module D (chrome): **DashboardLayout.tsx fully token-driven.**
+  Replaced `bg-[#020303]`, `bg-black/60-80`, `noise-bg`,
+  `text-white`, `border-white/[0.06-10]`, `bg-white/[0.03-08]`,
+  `shadow-glass`, `rounded-3xl/2xl` with semantic tokens
+  (`bg-background/card/sidebar`, `text-foreground/muted-
+  foreground`, `border-border`, `rounded-xl`, `shadow-sm`).
+  Active-route indicator: emerald glow → neutral `bg-muted` +
+  `bg-primary/10 text-primary` icon highlight. EN/中 toggle now
+  theme-aware. Mobile bottom nav unchanged. Plus
+  `ProfilePage.tsx:573` NaN guard
+  (`limit > 0 ? Math.min(100, ...) : 0`).
+
+- Verified:
+  - `npm run build` clean.
+  - `npm test -- --run` → 60 files / 640 tests green
+    (held at +0 from 638 since no service-layer changes).
+  - Playwright demo login → /dashboard/today, /exam, /practice,
+    /review, /chat all render. Console: only favicon 404 and
+    `apple-mobile-web-app-capable` deprecation warning. **No
+    error boundary trip on any route.** Practice mode-switch
+    no longer crashes.
+  - Visual: dashboard chrome now light + token-driven;
+    sidebar emerald-only active state replaced with neutral
+    + primary tint; Exam HeroSummary cards stack cleanly with
+    multi-char wrap.
+
+- Known residual (punted, not crashes):
+  - Practice / Today recommendation-card grids still wrap
+    Chinese text awkwardly inside narrow nested columns. Same
+    nested-grid pattern as the HeroSummary fix but in deeper
+    sections.
+  - Reading / Listening / Grammar pages still on dark-glass
+    chrome (Module A flagged for follow-up).
+  - LearningPath detail view bypasses the cockpit shell.
+
+- Not pushed.

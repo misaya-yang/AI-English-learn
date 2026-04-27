@@ -529,7 +529,7 @@ export default function ReviewPage() {
                     ? `上次复习：${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('zh-CN')}`
                     : '今日首次接触这张卡'}
                 </p>
-                <div className="rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-2 text-sm text-white/60">
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm text-white/60">
                   FSRS stability: {currentItem.fsrs.stability.toFixed(1)} 天 · 难度 {currentItem.fsrs.difficulty.toFixed(1)}
                 </div>
               </div>

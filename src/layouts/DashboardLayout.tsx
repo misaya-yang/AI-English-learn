@@ -300,16 +300,16 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group flex items-center gap-3 rounded-2xl border px-3 py-3 transition-all duration-150',
+            'group flex items-center gap-3 rounded-xl border px-3 py-3 transition-all duration-150',
             active
-              ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_10px_35px_-25px_hsl(var(--primary)/0.8)]'
+              ? 'border-border bg-muted shadow-sm'
               : 'border-transparent hover:border-border hover:bg-muted/60',
           )}
         >
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-xl',
-              active ? 'bg-emerald-500 text-white' : 'bg-muted text-muted-foreground',
+              active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
             )}
           >
             <Icon className="h-4 w-4" />
@@ -338,37 +338,37 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group relative overflow-hidden rounded-3xl border border-transparent px-4 py-3 transition-all duration-150',
-            active ? 'border-white/10 bg-white/[0.06]' : 'hover:border-white/8 hover:bg-white/[0.03]',
+            'group relative overflow-hidden rounded-xl border border-transparent px-4 py-3 transition-all duration-150',
+            active ? 'border-border bg-muted/60' : 'hover:border-border hover:bg-muted/40',
           )}
         >
           <span
             className={cn(
               'absolute inset-y-3 left-0 w-[3px] rounded-full transition-colors',
-              active ? 'bg-emerald-400' : 'bg-transparent group-hover:bg-white/20',
+              active ? 'bg-primary' : 'bg-transparent group-hover:bg-border',
             )}
           />
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-2xl border text-white/80 transition-colors',
-                active ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/[0.04]',
+                'flex h-10 w-10 items-center justify-center rounded-xl border transition-colors',
+                active ? 'border-border bg-primary/10 text-primary' : 'border-border bg-muted text-muted-foreground',
               )}
             >
               <Icon className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className={cn('truncate text-sm font-semibold', active ? 'text-white' : 'text-white/82')}>{item.label}</p>
+                <p className={cn('truncate text-sm font-semibold', active ? 'text-foreground' : 'text-foreground/85')}>{item.label}</p>
                 {item.badge ? (
-                  <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                  <span className="rounded-full border border-border bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                     {item.badge}
                   </span>
                 ) : null}
               </div>
-              {!compact ? <p className="mt-1 truncate text-xs text-white/45">{item.description}</p> : null}
+              {!compact ? <p className="mt-1 truncate text-xs text-muted-foreground">{item.description}</p> : null}
             </div>
-            <ChevronRight className={cn('h-4 w-4 transition-opacity', active ? 'text-white/60' : 'text-white/20 group-hover:text-white/50')} />
+            <ChevronRight className={cn('h-4 w-4 transition-opacity', active ? 'text-muted-foreground' : 'text-muted-foreground/40 group-hover:text-muted-foreground')} />
           </div>
         </div>
       </Link>
@@ -380,32 +380,32 @@ export default function DashboardLayout() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-auto rounded-full border border-white/10 bg-white/[0.03] px-2 py-2 text-white hover:bg-white/[0.08] hover:text-white"
+          className="h-auto rounded-full border bg-card px-2 py-2 hover:bg-muted"
         >
           <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-emerald-500/15 text-emerald-200">
+            <AvatarFallback className="bg-primary/10 text-primary">
               {user?.displayName?.[0] || user?.email?.[0] || 'U'}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 border-white/10 bg-[#121212] text-white">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My account</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator />
         <Link to="/dashboard/profile">
-          <DropdownMenuItem className="focus:bg-white/10 focus:text-white">
+          <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
             Profile
           </DropdownMenuItem>
         </Link>
         <Link to="/dashboard/settings">
-          <DropdownMenuItem className="focus:bg-white/10 focus:text-white">
+          <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </DropdownMenuItem>
         </Link>
-        <DropdownMenuSeparator className="bg-white/10" />
-        <DropdownMenuItem className="focus:bg-white/10 focus:text-white" onClick={() => logout()}>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
           Sign out
         </DropdownMenuItem>
@@ -460,58 +460,58 @@ export default function DashboardLayout() {
   );
 
   const learningMobileSheetBody = (
-    <div className="flex h-full flex-col gap-6 bg-[#020303] text-white">
-      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+    <div className="flex h-full flex-col gap-6 bg-background text-foreground">
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-emerald-500/15 text-emerald-200">
+            <AvatarFallback className="bg-primary/10 text-primary">
               {user?.displayName?.[0] || user?.email?.[0] || 'U'}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="text-sm font-semibold text-white">{user?.displayName || user?.email}</p>
-            <p className="text-xs text-white/45">Level {xp?.level || 1}</p>
+            <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
+            <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
+        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">Mission</p>
-            <p className="mt-1 text-xl font-semibold text-emerald-300">{missionProgress}%</p>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Mission</p>
+            <p className="mt-1 text-xl font-semibold text-primary">{missionProgress}%</p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">Due</p>
-            <p className="mt-1 text-xl font-semibold text-white">{dueWords.length}</p>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Due</p>
+            <p className="mt-1 text-xl font-semibold">{dueWords.length}</p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">Streak</p>
-            <p className="mt-1 text-xl font-semibold text-white">{streak?.current || 0}</p>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Streak</p>
+            <p className="mt-1 text-xl font-semibold">{streak?.current || 0}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Core learning</p>
+        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Core learning</p>
         {learningNav.map((item) => renderLearningNavItem(item))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Skills</p>
+        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Skills</p>
         {skillsNav.map((item) => renderLearningNavItem(item, true))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Tools</p>
+        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Tools</p>
         {learningTools.map((item) => renderLearningNavItem(item, true))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
-        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.03] p-1">
+      <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
+        <div className="inline-flex rounded-full border bg-card p-1">
           <button
             type="button"
             onClick={() => changeLanguage('en')}
             className={cn(
               'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-              currentLang === 'en' ? 'bg-white text-black' : 'text-white/55 hover:text-white',
+              currentLang === 'en' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
             )}
           >
             EN
@@ -521,13 +521,13 @@ export default function DashboardLayout() {
             onClick={() => changeLanguage('zh')}
             className={cn(
               'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-              currentLang === 'zh' ? 'bg-white text-black' : 'text-white/55 hover:text-white',
+              currentLang === 'zh' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
             )}
           >
             中
           </button>
         </div>
-        <Button variant="outline" className="rounded-2xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06] hover:text-white" onClick={() => logout()}>
+        <Button variant="outline" className="rounded-xl" onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
           Sign out
         </Button>
@@ -538,33 +538,33 @@ export default function DashboardLayout() {
   if (isLearningRoute) {
     return (
       <>
-        <div className="noise-bg flex h-screen overflow-hidden bg-[#020303] text-white">
-        <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-white/[0.06] bg-black/80 backdrop-blur-xl px-4 py-4 lg:flex">
-          <Link to="/dashboard/today" className="flex items-center gap-3 rounded-2xl px-1 py-2">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-300">
+        <div className="flex h-screen overflow-hidden bg-background text-foreground">
+        <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-sm px-4 py-4 lg:flex">
+          <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-primary/10 text-primary">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-base font-semibold tracking-tight text-white">VocabDaily</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400">Learning cockpit</p>
+              <p className="text-base font-semibold tracking-tight">VocabDaily</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">Learning cockpit</p>
             </div>
           </Link>
 
-          <div className="mt-5 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-glass">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">Current route</p>
-            <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">{activeShell.title}</h2>
-            <div className="mt-4 grid grid-cols-3 gap-3 border-t border-white/10 pt-4">
+          <div className="mt-5 rounded-xl border bg-card p-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Current route</p>
+            <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em]">{activeShell.title}</h2>
+            <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-white/38">Mission</p>
-                <p className="mt-1 text-lg font-semibold text-emerald-300">{missionProgress}%</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Mission</p>
+                <p className="mt-1 text-lg font-semibold text-primary">{missionProgress}%</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-white/38">Due</p>
-                <p className="mt-1 text-lg font-semibold text-white">{dueWords.length}</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Due</p>
+                <p className="mt-1 text-lg font-semibold">{dueWords.length}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-white/38">Streak</p>
-                <p className="mt-1 text-lg font-semibold text-white">{streak?.current || 0}</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Streak</p>
+                <p className="mt-1 text-lg font-semibold">{streak?.current || 0}</p>
               </div>
             </div>
           </div>
@@ -574,82 +574,81 @@ export default function DashboardLayout() {
             className={cn(
               'mt-5 min-h-0 flex-1 pr-2',
               '[&_[data-slot=scroll-area-scrollbar]]:w-3',
-              '[&_[data-slot=scroll-area-thumb]]:bg-white/15',
-              'hover:[&_[data-slot=scroll-area-thumb]]:bg-white/25',
+              '[&_[data-slot=scroll-area-thumb]]:bg-border/90',
+              'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/45',
             )}
           >
             <div className="space-y-6 pb-4">
               <div className="space-y-2">
-                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Core learning</p>
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Core learning</p>
                 {learningNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Skills</p>
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Skills</p>
                 {skillsNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">Tools</p>
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Tools</p>
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+              <div className="rounded-xl border bg-card p-4 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
                   <StreakCounter
                     current={streak?.current || 0}
                     longest={streak?.longest || 0}
-                    className="text-white"
                   />
-                  <span className="text-xs font-bold text-white/50">Lv {xp?.level || 1}</span>
+                  <span className="text-xs font-bold text-muted-foreground">Lv {xp?.level || 1}</span>
                 </div>
                 <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
               </div>
             </div>
           </ScrollArea>
 
-          <div className="mt-4 rounded-3xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 shadow-glass">
+          <div className="mt-4 rounded-xl border bg-card px-4 py-3 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-white">{user?.displayName || user?.email}</p>
-                <p className="text-xs text-white/45">Level {xp?.level || 1}</p>
+                <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
               </div>
               {learningAccountMenu}
             </div>
           </div>
         </aside>
 
-        <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#020303]">
-          <header className="border-b border-white/[0.06] bg-black/60 backdrop-blur-2xl">
+        <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
+          <header className="border-b bg-background/88 backdrop-blur supports-[backdrop-filter]:bg-background/68">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-2xl border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.08] hover:text-white lg:hidden">
+                    <Button variant="ghost" size="icon" className="rounded-xl lg:hidden">
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-[320px] border-r border-white/10 bg-[#020303] p-4">
+                  <SheetContent side="left" className="w-[320px] border-r bg-background p-4">
                     {learningMobileSheetBody}
                   </SheetContent>
                 </Sheet>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/42">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                     <span>{activeShell.title}</span>
-                    {dueWords.length > 0 ? <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300">{dueWords.length} due</span> : null}
+                    {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} due</Badge> : null}
                   </div>
-                  <p className="truncate text-sm text-white/58 lg:text-base">{activeShell.description}</p>
+                  <p className="truncate text-sm text-muted-foreground lg:text-base">{activeShell.description}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 lg:gap-3">
-                <div className="hidden items-center rounded-full border border-white/10 bg-white/[0.03] p-1 sm:inline-flex">
+                <div className="hidden items-center rounded-full border bg-card p-1 sm:inline-flex">
                   <button
                     type="button"
                     onClick={() => changeLanguage('en')}
                     className={cn(
                       'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-                      currentLang === 'en' ? 'bg-white text-black' : 'text-white/55 hover:text-white',
+                      currentLang === 'en' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
                     )}
                   >
                     EN
@@ -659,7 +658,7 @@ export default function DashboardLayout() {
                     onClick={() => changeLanguage('zh')}
                     className={cn(
                       'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-                      currentLang === 'zh' ? 'bg-white text-black' : 'text-white/55 hover:text-white',
+                      currentLang === 'zh' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
                     )}
                   >
                     中
@@ -667,7 +666,7 @@ export default function DashboardLayout() {
                 </div>
                 <Button
                   variant="outline"
-                  className="hidden rounded-full border-white/10 bg-white text-black hover:bg-white/85 sm:inline-flex"
+                  className="hidden rounded-full sm:inline-flex"
                   asChild
                 >
                   <Link to={learningPrimaryAction.href}>{learningPrimaryAction.label}</Link>
@@ -676,7 +675,7 @@ export default function DashboardLayout() {
                   variant="ghost"
                   size="icon"
                   title="Search (⌘K)"
-                  className="rounded-full border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                  className="rounded-full border bg-card hover:bg-muted"
                   onClick={() => setSearchOpen(true)}
                 >
                   <Search className="h-4 w-4" />
@@ -697,7 +696,7 @@ export default function DashboardLayout() {
         <>
           <BottomNavBar isLearningMode onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
-            <SheetContent side="bottom" className="border-t border-white/10 bg-[#020303] p-4">
+            <SheetContent side="bottom" className="border-t bg-background p-4">
               {learningMobileSheetBody}
             </SheetContent>
           </Sheet>
@@ -733,7 +732,7 @@ export default function DashboardLayout() {
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="rounded-3xl border bg-card px-4 py-4 shadow-card">
+            <div className="rounded-xl border bg-card px-4 py-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Today</p>

@@ -118,9 +118,9 @@ export default function VocabularyBankPage() {
     const status = item.progress?.status || 'new';
 
     const matchesSearch =
-      item.word.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.word.definition.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.word.definitionZh.includes(searchQuery);
+      (item.word.word ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.word.definition ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.word.definitionZh ?? '').includes(searchQuery);
 
     const matchesStatus = selectedStatus === 'all' || status === selectedStatus;
     const matchesTopic = selectedTopic === 'all' || item.word.topic === selectedTopic;
@@ -505,12 +505,12 @@ export default function VocabularyBankPage() {
 
                   <div>
                     <h4 className="font-semibold mb-2">Example</h4>
-                    <p className="text-sm">{item.word.examples[0]?.en}</p>
-                    <p className="text-sm text-muted-foreground">{item.word.examples[0]?.zh}</p>
+                    <p className="text-sm">{item.word.examples?.[0]?.en}</p>
+                    <p className="text-sm text-muted-foreground">{item.word.examples?.[0]?.zh}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {item.word.synonyms.slice(0, 6).map((synonym) => (
+                    {(item.word.synonyms ?? []).slice(0, 6).map((synonym) => (
                       <Badge key={synonym} variant="secondary">
                         {synonym}
                       </Badge>

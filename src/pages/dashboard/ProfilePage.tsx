@@ -570,7 +570,7 @@ export default function ProfilePage() {
                 aiExamFeedback:   '考试反馈',
                 aiListeningGen:   'AI 听力生成',
               };
-              const pct = Math.round((status.used / status.limit) * 100);
+              const pct = status.limit > 0 ? Math.min(100, Math.round((status.used / status.limit) * 100)) : 0;
               return (
                 <div key={status.feature}>
                   <div className="flex items-center justify-between mb-1">

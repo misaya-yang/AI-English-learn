@@ -248,9 +248,9 @@ export default function MemoryCenterPage() {
 
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{item.content}</p>
 
-                  {item.tags.length > 0 && (
+                  {(item.tags?.length ?? 0) > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {item.tags.map((tag) => (
+                      {item.tags?.map((tag) => (
                         <Badge key={`${item.id}-${tag}`} variant="outline" className="text-[11px]">
                           {tag}
                         </Badge>

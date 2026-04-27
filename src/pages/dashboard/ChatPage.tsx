@@ -160,7 +160,7 @@ export default function ChatPage() {
   const quickPrompts = useMemo(() => buildQuickPrompts(t, {
     level: learningProfile.level,
     dueCount: dueWords.length,
-    hasExamGoal: learningProfile.target?.toLowerCase().includes('ielts') || learningProfile.tracks.includes('exam_boost'),
+    hasExamGoal: (learningProfile.target?.toLowerCase().includes('ielts') ?? false) || (learningProfile.tracks?.includes('exam_boost') ?? false),
     incompleteTasks: dailyMission?.tasks.filter((task) => !task.done).map((task) => task.type),
   }), [t, learningProfile, dueWords.length, dailyMission]);
   const attemptedQuizMap = Object.fromEntries(
