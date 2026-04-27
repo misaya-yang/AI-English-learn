@@ -176,19 +176,19 @@ export default function DashboardLayout() {
       },
       {
         path: '/dashboard/reading',
-        label: 'Reading',
+        label: t('nav.reading'),
         description: 'IELTS 阅读理解精读训练',
         icon: BookOpen,
       },
       {
         path: '/dashboard/listening',
-        label: 'Listening',
+        label: t('nav.listening'),
         description: 'IELTS 听力理解训练',
         icon: Headphones,
       },
       {
         path: '/dashboard/grammar',
-        label: 'Grammar',
+        label: t('nav.grammar'),
         description: '语法规则与填空练习',
         icon: GraduationCap,
       },
@@ -206,7 +206,7 @@ export default function DashboardLayout() {
       },
       {
         path: '/dashboard/chat',
-        label: 'Coach',
+        label: t('nav.coach'),
         description: '解释、引导和短测都从这里进入',
         icon: MessageCircleMore,
       },

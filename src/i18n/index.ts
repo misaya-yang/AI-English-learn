@@ -71,6 +71,10 @@ const en = {
     logout: 'Logout',
     pronunciation: 'Pronunciation',
     writing: 'Writing',
+    reading: 'Reading',
+    listening: 'Listening',
+    grammar: 'Grammar',
+    coach: 'Coach',
   },
   chat: {
     title: 'AI English Tutor',
@@ -523,6 +527,10 @@ const zh = {
     logout: '退出登录',
     pronunciation: '发音练习',
     writing: '写作练习',
+    reading: '阅读',
+    listening: '听力',
+    grammar: '语法',
+    coach: 'Coach',
   },
   chat: {
     title: 'AI English Tutor',
