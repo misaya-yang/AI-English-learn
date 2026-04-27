@@ -121,6 +121,10 @@ const shellTitleMap: Record<string, { title: string; description: string }> = {
     title: 'Learning Path',
     description: '结构化学习路线，按阶段推进你的英语能力。',
   },
+  '/dashboard/leaderboard': {
+    title: 'Leaderboard',
+    description: '查看学习排行榜，和其他学习者比较进度。',
+  },
   '/dashboard/settings': {
     title: 'Settings',
     description: '调整偏好、反馈风格和系统行为。',
@@ -277,7 +281,8 @@ export default function DashboardLayout() {
 
   const activeShell =
     shellTitleMap[location.pathname] ||
-    shellTitleMap[primaryNav.find((item) => location.pathname.startsWith(item.path))?.path || '/dashboard/today'];
+    shellTitleMap[primaryNav.find((item) => location.pathname.startsWith(item.path))?.path ?? ''] ||
+    shellTitleMap['/dashboard/today'];
 
   const missionCompleted = dailyMission?.tasks.filter((task) => task.done).length || 0;
   const missionTotal = dailyMission?.tasks.length || 0;

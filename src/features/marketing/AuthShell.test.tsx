@@ -11,7 +11,7 @@ const renderShell = (props: React.ComponentProps<typeof AuthShell>) =>
   );
 
 describe('AuthShell', () => {
-  it('renders both English and Chinese title labels', () => {
+  it('renders the English title as the primary h1', () => {
     renderShell({
       title: 'Sign in',
       titleZh: '登录',
@@ -19,10 +19,11 @@ describe('AuthShell', () => {
     });
 
     expect(screen.getByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument();
-    expect(screen.getByText('登录')).toBeInTheDocument();
+    // titleZh is no longer rendered in the form column header
+    expect(screen.queryByText('登录')).not.toBeInTheDocument();
   });
 
-  it('renders both English and Chinese subtitles when provided', () => {
+  it('renders subtitle when provided, but not subtitleZh', () => {
     renderShell({
       title: 'Welcome back',
       titleZh: '欢迎回来',
@@ -32,10 +33,11 @@ describe('AuthShell', () => {
     });
 
     expect(screen.getByText('Continue your daily learning workflow.')).toBeInTheDocument();
-    expect(screen.getByText('继续你今天的学习计划。')).toBeInTheDocument();
+    // subtitleZh is no longer rendered
+    expect(screen.queryByText('继续你今天的学习计划。')).not.toBeInTheDocument();
   });
 
-  it('renders localized bilingual side-rail reassurance copy', () => {
+  it('renders the English side-rail headline and Chinese tagline', () => {
     renderShell({
       title: 'Welcome back',
       titleZh: '欢迎回来',
@@ -44,20 +46,21 @@ describe('AuthShell', () => {
 
     expect(screen.getByText('A calmer way to practice English every day.')).toBeInTheDocument();
     expect(screen.getByText('把每天的复习、练习、教练反馈整合到一个学习工作台。')).toBeInTheDocument();
-    expect(screen.getByText('基于 FSRS 的间隔重复')).toBeInTheDocument();
+    // Bullets are Chinese-only
+    expect(screen.getByText('· 基于 FSRS 的间隔重复')).toBeInTheDocument();
   });
 
-  it('always renders the bilingual back-to-home affordance', () => {
+  it('renders the Chinese-only back-to-home affordance', () => {
     renderShell({
       title: 'Sign in',
       titleZh: '登录',
       children: <span>panel</span>,
     });
 
-    // The "back to home" link includes both English and Chinese labels so
-    // either language works as a hit target.
-    expect(screen.getByText('Back to home')).toBeInTheDocument();
+    // Only Chinese label now
     expect(screen.getByText('返回首页')).toBeInTheDocument();
+    // English label removed
+    expect(screen.queryByText('Back to home')).not.toBeInTheDocument();
     // Also exposes the brand mark with an accessible name.
     // BrandMark renders twice (mobile inline + desktop aside); both share the
     // same accessible label, so use getAllByLabelText.

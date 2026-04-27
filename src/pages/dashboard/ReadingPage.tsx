@@ -525,7 +525,7 @@ export default function ReadingPage() {
                 {/* MCQ */}
                 {q.type === 'mcq' && (
                   <div className="space-y-2">
-                    {q.options!.map((opt) => (
+                    {(q.options ?? []).map((opt) => (
                       <button
                         key={opt}
                         onClick={() => setAnswer(q.id, opt.charAt(0))}

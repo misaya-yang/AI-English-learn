@@ -128,26 +128,17 @@ export default function LoginPage() {
   return (
     <>
       <AuthShell
-        title="Welcome back"
+        title="欢迎回来"
         titleZh="欢迎回来"
-        subtitle="Sign in to continue your daily learning."
-        subtitleZh="登录后继续你今天的学习节奏。"
+        subtitle="登录后继续你今天的学习节奏。"
         footer={
           <>
-            <span className="opacity-80">Don't have an account yet?</span>{' '}
+            <span className="opacity-80">还没有账号？</span>{' '}
             <Link
               to={`/register${location.search}`}
               className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              Create one
-            </Link>
-            <span className="mx-1.5 text-slate-400 dark:text-white/30">·</span>
-            <Link
-              to={`/register${location.search}`}
-              className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
-              lang="zh-CN"
-            >
-              注册新账号
+              注册
             </Link>
           </>
         }
@@ -158,10 +149,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="text-sm font-medium text-slate-700 dark:text-white/70"
             >
-              <span>Email</span>
-              <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">
-                电子邮箱
-              </span>
+              邮箱
             </Label>
             <Input
               id="email"
@@ -182,17 +170,14 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="text-sm font-medium text-slate-700 dark:text-white/70"
               >
-                <span>Password</span>
-                <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">
-                  密码
-                </span>
+                密码
               </Label>
               <button
                 type="button"
                 onClick={() => { setResetEmail(email); setShowForgotPassword(true); }}
                 className="text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
               >
-                Forgot password? <span lang="zh-CN">忘记密码？</span>
+                忘记密码？
               </button>
             </div>
             <div className="relative">
@@ -228,12 +213,10 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
+                登录中...
               </>
             ) : (
-              <>
-                Sign in <span className="ml-2 opacity-70" lang="zh-CN">登录</span>
-              </>
+              <>登录</>
             )}
           </Button>
         </form>
@@ -243,9 +226,7 @@ export default function LoginPage() {
             <Separator />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-3 text-muted-foreground">
-              or <span lang="zh-CN">或</span>
-            </span>
+            <span className="bg-card px-3 text-muted-foreground">或</span>
           </div>
         </div>
 
@@ -257,10 +238,7 @@ export default function LoginPage() {
           disabled={isLoading}
         >
           <Sparkles className="mr-2 h-4 w-4 text-primary" />
-          <span>Try the demo</span>
-          <span className="ml-2 text-slate-500 dark:text-white/50" lang="zh-CN">
-            体验演示账号
-          </span>
+          体验演示
         </Button>
       </AuthShell>
 
@@ -277,17 +255,10 @@ export default function LoginPage() {
               id="reset-password-title"
               className="text-center text-lg font-semibold tracking-tight text-foreground"
             >
-              Reset password
-            </h3>
-            <p className="mt-1 text-center text-sm text-[hsl(var(--accent-memory))]" lang="zh-CN">
               重置密码
-            </p>
+            </h3>
             <p className="mt-3 text-center text-sm text-muted-foreground">
-              We'll email you a secure reset link.
-              <br />
-              <span lang="zh-CN" className="text-xs text-muted-foreground/80">
-                我们会向你的邮箱发送重置链接。
-              </span>
+              我们会向你的邮箱发送重置链接。
             </p>
             <form onSubmit={handleResetPassword} className="mt-6 space-y-4" noValidate>
               <div className="space-y-2">
@@ -295,7 +266,7 @@ export default function LoginPage() {
                   htmlFor="reset-email"
                   className="text-sm font-medium text-slate-700 dark:text-white/70"
                 >
-                  Email <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">电子邮箱</span>
+                  邮箱
                 </Label>
                 <Input
                   id="reset-email"
@@ -318,12 +289,12 @@ export default function LoginPage() {
                 {isResetting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    发送中...
                   </>
                 ) : (
                   <>
                     <Mail className="mr-2 h-4 w-4" />
-                    Send reset link
+                    发送重置链接
                   </>
                 )}
               </Button>
@@ -333,7 +304,7 @@ export default function LoginPage() {
                 className="h-10 w-full rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => setShowForgotPassword(false)}
               >
-                Back to sign in
+                返回登录
               </Button>
             </form>
           </div>

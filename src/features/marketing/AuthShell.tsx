@@ -8,10 +8,6 @@ import { BrandMark } from './BrandMark';
 interface SideRailCopy {
   headline: string;
   headlineZh: string;
-  body: string;
-  bodyZh: string;
-  quote: string;
-  quoteZh: string;
   bullets: Array<{ en: string; zh: string }>;
 }
 
@@ -56,10 +52,6 @@ export function AuthShell({
   const rail: SideRailCopy = {
     headline: sideRail?.headline ?? t('auth.shell.headline', { defaultValue: 'A calmer way to practice English every day.' }),
     headlineZh: sideRail?.headlineZh ?? t('auth.shell.headlineZh', { defaultValue: '把每天的复习、练习、教练反馈整合到一个学习工作台。' }),
-    body: sideRail?.body ?? t('auth.shell.body', { defaultValue: 'VocabDaily keeps your due reviews, new words, and coach feedback in one daily rhythm.' }),
-    bodyZh: sideRail?.bodyZh ?? t('auth.shell.bodyZh', { defaultValue: 'VocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。' }),
-    quote: sideRail?.quote ?? t('auth.shell.quote', { defaultValue: 'Learning sticks when you come back at the right moment, not when you grind harder.' }),
-    quoteZh: sideRail?.quoteZh ?? t('auth.shell.quoteZh', { defaultValue: '在对的时间回来复习，比一味苦练更能让记忆留下来。' }),
     bullets: sideRail?.bullets ?? [
       { en: t('auth.shell.bullet1', { defaultValue: 'FSRS-based spaced repetition' }), zh: t('auth.shell.bullet1Zh', { defaultValue: '基于 FSRS 的间隔重复' }) },
       { en: t('auth.shell.bullet2', { defaultValue: 'Coach-graded writing & speaking retries' }), zh: t('auth.shell.bullet2Zh', { defaultValue: '教练批改的写作与口语重练' }) },
@@ -81,23 +73,8 @@ export function AuthShell({
               <h1 className="text-xl font-semibold tracking-tight text-foreground">
                 {title}
               </h1>
-              <p
-                className="mt-1 text-sm text-[hsl(var(--accent-memory))]"
-                lang="zh-CN"
-              >
-                {titleZh}
-              </p>
-              {(subtitle || subtitleZh) && (
-                <div className="mt-2 space-y-0.5">
-                  {subtitle && (
-                    <p className="text-sm text-muted-foreground">{subtitle}</p>
-                  )}
-                  {subtitleZh && (
-                    <p className="text-xs text-muted-foreground/80" lang="zh-CN">
-                      {subtitleZh}
-                    </p>
-                  )}
-                </div>
+              {subtitle && (
+                <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
               )}
             </div>
 
@@ -122,8 +99,6 @@ export function AuthShell({
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-                <span>Back to home</span>
-                <span className="text-muted-foreground/60">·</span>
                 <span lang="zh-CN">返回首页</span>
               </Link>
             </div>
@@ -139,22 +114,9 @@ export function AuthShell({
           <p className="mt-2 max-w-md text-sm text-muted-foreground" lang="zh-CN">
             {rail.headlineZh}
           </p>
-          <p className="mt-4 max-w-md text-sm text-muted-foreground">{rail.body}</p>
-          <p className="mt-1 max-w-md text-xs text-muted-foreground/80" lang="zh-CN">
-            {rail.bodyZh}
-          </p>
-          <blockquote className="mt-8 max-w-md border-l-2 border-[hsl(var(--accent-memory))]/60 pl-4 text-sm leading-relaxed text-muted-foreground">
-            <span>"{rail.quote}"</span>
-            <span className="mt-1 block text-xs text-muted-foreground/80" lang="zh-CN">
-              {rail.quoteZh}
-            </span>
-          </blockquote>
-          <ul className="mt-8 space-y-2 text-xs text-muted-foreground">
+          <ul className="mt-8 space-y-2 text-xs text-muted-foreground" lang="zh-CN">
             {rail.bullets.map((b) => (
-              <li key={b.en}>
-                · {b.en}
-                <span className="ml-2 text-muted-foreground/70" lang="zh-CN">{b.zh}</span>
-              </li>
+              <li key={b.en}>· {b.zh}</li>
             ))}
           </ul>
         </aside>

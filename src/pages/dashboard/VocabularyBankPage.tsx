@@ -129,7 +129,7 @@ export default function VocabularyBankPage() {
   });
 
   const topics = useMemo(() => {
-    return Array.from(new Set(vocabulary.map((item) => item.word.topic))).sort();
+    return Array.from(new Set(vocabulary.map((item) => item.word.topic).filter(Boolean))).sort();
   }, [vocabulary]);
 
   const [exportOpen, setExportOpen] = useState(false);

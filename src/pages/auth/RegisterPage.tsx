@@ -102,24 +102,15 @@ export default function RegisterPage() {
 
   return (
     <AuthShell
-      title="Create your account"
+      title="创建账号"
       titleZh="创建账号"
-      subtitle="Free to start. Build a daily English habit in minutes."
-      subtitleZh="免费开始，几分钟就能养成每天学英语的习惯。"
+      subtitle="免费开始，几分钟就能养成每天学英语的习惯。"
       footer={
         <>
-          <span className="opacity-80">Already have an account?</span>{' '}
+          <span className="opacity-80">已有账号？</span>{' '}
           <Link
             to={`/login${location.search}`}
             className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
-          >
-            Sign in
-          </Link>
-          <span className="mx-1.5 text-slate-400 dark:text-white/30">·</span>
-          <Link
-            to={`/login${location.search}`}
-            className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
-            lang="zh-CN"
           >
             立即登录
           </Link>
@@ -132,7 +123,7 @@ export default function RegisterPage() {
             htmlFor="displayName"
             className="text-sm font-medium text-slate-700 dark:text-white/70"
           >
-            Display name <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">显示名称</span>
+            昵称
           </Label>
           <Input
             id="displayName"
@@ -153,7 +144,7 @@ export default function RegisterPage() {
             htmlFor="email"
             className="text-sm font-medium text-slate-700 dark:text-white/70"
           >
-            Email <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">电子邮箱</span>
+            邮箱
           </Label>
           <Input
             id="email"
@@ -174,7 +165,7 @@ export default function RegisterPage() {
             htmlFor="password"
             className="text-sm font-medium text-slate-700 dark:text-white/70"
           >
-            Password <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">密码</span>
+            密码
           </Label>
           <div className="relative">
             <Input
@@ -218,8 +209,6 @@ export default function RegisterPage() {
                     check.passes ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-300 dark:text-white/20',
                   )}
                 />
-                <span>{check.label}</span>
-                <span className="text-slate-400 dark:text-white/30" aria-hidden="true">·</span>
                 <span lang="zh-CN">{check.labelZh}</span>
               </li>
             ))}
@@ -231,7 +220,7 @@ export default function RegisterPage() {
             htmlFor="confirmPassword"
             className="text-sm font-medium text-slate-700 dark:text-white/70"
           >
-            Confirm password <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">确认密码</span>
+            确认密码
           </Label>
           <Input
             id="confirmPassword"
@@ -246,8 +235,8 @@ export default function RegisterPage() {
             className="h-11 rounded-md"
           />
           {formData.confirmPassword && !passwordsMatch && (
-            <p className="text-xs text-rose-500" role="alert">
-              Passwords don't match · <span lang="zh-CN">两次输入的密码不一致</span>
+            <p className="text-xs text-rose-500" role="alert" lang="zh-CN">
+              两次输入的密码不一致
             </p>
           )}
         </div>
@@ -262,23 +251,22 @@ export default function RegisterPage() {
           <Label
             htmlFor="terms"
             className="text-xs leading-relaxed font-normal text-slate-600 dark:text-white/60"
+            lang="zh-CN"
           >
-            I agree to the{' '}
+            同意{' '}
             <Link
               to="#"
               className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              Terms of Service
+              服务条款
             </Link>{' '}
-            and{' '}
+            与{' '}
             <Link
               to="#"
               className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              Privacy Policy
+              隐私政策
             </Link>
-            <span className="text-slate-400 dark:text-white/30"> · </span>
-            <span lang="zh-CN">同意服务条款与隐私政策</span>
           </Label>
         </div>
 
@@ -290,12 +278,10 @@ export default function RegisterPage() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating account...
+              创建中...
             </>
           ) : (
-            <>
-              Create account <span className="ml-2 opacity-70" lang="zh-CN">创建账号</span>
-            </>
+            <>创建账号</>
           )}
         </Button>
       </form>

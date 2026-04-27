@@ -32,13 +32,12 @@ export default function MagicLinkPage() {
   if (isSent) {
     return (
       <AuthShell
-        title="Check your email"
+        title="请查收邮件"
         titleZh="请查收邮件"
-        subtitle="We've sent a secure sign-in link to your inbox."
-        subtitleZh="安全登录链接已发送到你的邮箱。"
+        subtitle="安全登录链接已发送到你的邮箱。"
         footer={
           <>
-            <span className="opacity-80">Didn't receive it?</span>{' '}
+            <span className="opacity-80">没有收到？</span>{' '}
             <button
               type="button"
               onClick={() => {
@@ -47,7 +46,7 @@ export default function MagicLinkPage() {
               }}
               className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              Try again · <span lang="zh-CN">重新发送</span>
+              重新发送
             </button>
           </>
         }
@@ -56,12 +55,10 @@ export default function MagicLinkPage() {
           <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
-          <p className="text-sm text-slate-700 dark:text-white/80">
-            We sent a one-tap sign-in link to{' '}
+          <p className="text-sm text-slate-700 dark:text-white/80" lang="zh-CN">
+            登录链接已发送至{' '}
             <strong className="break-all font-semibold text-slate-900 dark:text-white">{email}</strong>
-          </p>
-          <p className="mt-2 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
-            点击邮件中的链接即可立即登录。
+            ，点击链接即可登录。
           </p>
 
           <div className="mt-6 w-full">
@@ -70,7 +67,7 @@ export default function MagicLinkPage() {
                 variant="outline"
                 className="h-11 w-full rounded-md"
               >
-                Back to sign in
+                返回登录
               </Button>
             </Link>
           </div>
@@ -81,18 +78,17 @@ export default function MagicLinkPage() {
 
   return (
     <AuthShell
-      title="Sign in with a magic link"
+      title="使用魔法链接登录"
       titleZh="使用魔法链接登录"
-      subtitle="No password needed — we'll email you a secure link."
-      subtitleZh="无需密码，我们会发送安全登录链接到你的邮箱。"
+      subtitle="无需密码，我们会发送安全登录链接到你的邮箱。"
       footer={
         <>
-          <span className="opacity-80">Prefer a password?</span>{' '}
+          <span className="opacity-80">更喜欢密码登录？</span>{' '}
           <Link
             to="/login"
             className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
-            Sign in with password
+            密码登录
           </Link>
         </>
       }
@@ -103,7 +99,7 @@ export default function MagicLinkPage() {
             htmlFor="email"
             className="text-sm font-medium text-slate-700 dark:text-white/70"
           >
-            Email <span className="ml-1.5 text-xs text-slate-500 dark:text-white/40" lang="zh-CN">电子邮箱</span>
+            邮箱
           </Label>
           <div className="relative">
             <Mail
@@ -132,12 +128,10 @@ export default function MagicLinkPage() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
+              发送中...
             </>
           ) : (
-            <>
-              Send magic link <span className="ml-2 opacity-70" lang="zh-CN">发送登录链接</span>
-            </>
+            <>发送登录链接</>
           )}
         </Button>
       </form>

@@ -619,7 +619,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={fsrsStats?.curvePoints}>
+                <LineChart data={fsrsStats?.curvePoints ?? []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
                   <YAxis domain={[0, 100]} unit="%" />

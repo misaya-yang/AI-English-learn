@@ -439,7 +439,7 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
       {/* Answer input */}
       {q.type === 'mcq' ? (
         <div className="space-y-1.5 ml-8">
-          {q.options!.map((opt) => {
+          {(q.options ?? []).map((opt) => {
             const optLetter = opt.charAt(0);
             const isSelected = userAnswer === optLetter;
             const isRight = optLetter === correctAnswer;
