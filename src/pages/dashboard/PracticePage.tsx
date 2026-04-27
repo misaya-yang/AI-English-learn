@@ -349,7 +349,7 @@ export default function PracticePage() {
       setAnswerAnim('correct');
       setScore((prev) => prev + 1);
       const comboBonus = newCombo >= 5 ? ' 🔥 Combo x5!' : newCombo >= 3 ? ' ⚡ Combo x3!' : '';
-      toast.success(`Correct! +10 XP${comboBonus}`);
+      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 XP${comboBonus}`);
       // Bump per-word progress through FSRS so a correct answer is reflected
       // in the durable progress store, not just the session score.
       try {
@@ -360,7 +360,7 @@ export default function PracticePage() {
     } else {
       setCombo(0);
       setAnswerAnim('incorrect');
-      toast.error('Incorrect. Try again!');
+      toast.error(isZh ? '回答错误，再试试！' : 'Incorrect. Try again!');
       // Save to error notebook
       setErrorNotebook((prev) => [...prev, {
         word: currentQuestion.word.word,
@@ -548,14 +548,14 @@ export default function PracticePage() {
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      toast.success('Correct! +10 XP');
+      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 XP`);
       try {
         reviewWord(currentWord.id, 'good');
       } catch {
         // see comment in handleAnswer
       }
     } else {
-      toast.error(`Not quite. Correct answer: ${currentWord.word}`);
+      toast.error(isZh ? `不对，正确答案：${currentWord.word}` : `Not quite. Correct answer: ${currentWord.word}`);
       const mistakeRecord = buildPracticeMistakeRecord({
         word: currentWord,
         isCorrect: false,
@@ -678,9 +678,9 @@ export default function PracticePage() {
       <LearningRailSection title={isZh ? '课程进度' : 'Session'}>
         <LearningMetricStrip
           items={[
-            { label: 'Due', value: dueWords.length, accent: dueWords.length > 0 ? 'warm' : 'default' },
-            { label: 'Ready', value: dailyWords.length },
-            { label: 'Streak', value: streak.current, accent: 'emerald' },
+            { label: isZh ? '到期' : 'Due', value: dueWords.length, accent: dueWords.length > 0 ? 'warm' : 'default' },
+            { label: isZh ? '待练' : 'Ready', value: dailyWords.length },
+            { label: isZh ? '连续' : 'Streak', value: streak.current, accent: 'emerald' },
           ]}
           className="border-t-0 pt-0"
         />
@@ -758,7 +758,7 @@ export default function PracticePage() {
         language={practiceLanguage}
         eyebrow="练习"
         progress={heroProgress}
-        progressLabel="Session progress"
+        progressLabel={isZh ? '本轮进度' : 'Session progress'}
         mission={{
           title: pageTitle,
           description: pageDescription,
@@ -767,14 +767,14 @@ export default function PracticePage() {
           secondaryActions,
         }}
         metrics={[
-          { label: 'Recommended', value: focusedMode.nameZh, accent: 'emerald' },
+          { label: isZh ? '推荐' : 'Recommended', value: focusedMode.nameZh, accent: 'emerald' },
           ...(hasStarted && timedMode ? [{ label: '⏱️ Time', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
           ...(hasStarted && combo > 0 ? [{ label: '🔥 Combo', value: `${combo}x`, accent: 'emerald' as const }] : []),
           ...(!hasStarted ? [
-            { label: 'Estimated', value: `${focusedBlueprint.estimatedMinutes} min` },
-            { label: 'Prompts', value: focusedBlueprint.estimatedQuestions },
+            { label: isZh ? '预计' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}` },
+            { label: isZh ? '题量' : 'Prompts', value: focusedBlueprint.estimatedQuestions },
           ] : [
-            { label: 'Score', value: `${score}/${totalQuestions}` },
+            { label: isZh ? '得分' : 'Score', value: `${score}/${totalQuestions}` },
           ]),
         ]}
       >
@@ -794,7 +794,7 @@ export default function PracticePage() {
   if (!selectedMode) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow="Recommended for today"
+        eyebrow={isZh ? '今日推荐' : 'Recommended for today'}
         title={`${focusedMode.name} · ${focusedMode.nameZh}`}
       >
         <div className="space-y-6">
@@ -811,9 +811,9 @@ export default function PracticePage() {
           </div>
 
           {renderFactStrip([
-            { label: '训练目标', value: focusedMode.description, hint: '' },
-            { label: '预计时长', value: `${focusedBlueprint.estimatedMinutes} min`, hint: '', accent: 'emerald' },
-            { label: '今日素材', value: `${dailyWords.length} words`, hint: '' },
+            { label: isZh ? '训练目标' : 'Objective', value: isZh ? (focusedModeId === 'fill_blank' ? '用正确单词补全句子' : focusedModeId === 'listening' ? '听辨单词并拼写' : focusedMode.description) : focusedMode.description, hint: '' },
+            { label: '预计时长', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'emerald' },
+            { label: '今日素材', value: `${dailyWords.length}${isZh ? ' 个词' : ' words'}`, hint: '' },
           ])}
 
           <div className="border-t border-border pt-5">
@@ -830,20 +830,20 @@ export default function PracticePage() {
   if (!hasStarted) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow="Prepare the session"
+        eyebrow={isZh ? '准备本轮' : 'Prepare the session'}
         title={`${focusedMode.name} · ${focusedMode.nameZh}`}
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
-              {focusedBlueprint.label}
+              {isZh ? focusedBlueprint.labelZh : focusedBlueprint.label}
             </Badge>
             <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
               <Clock3 className="mr-1.5 h-3.5 w-3.5" />
-              {focusedBlueprint.estimatedMinutes} min
+              {focusedBlueprint.estimatedMinutes}{isZh ? ' 分钟' : ' min'}
             </Badge>
             <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-              {focusedBlueprint.estimatedQuestions} prompts
+              {focusedBlueprint.estimatedQuestions} {isZh ? '题' : 'prompts'}
             </Badge>
             {selectedMode === 'writing' ? (
               <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
@@ -1212,7 +1212,7 @@ export default function PracticePage() {
         <div className="space-y-6">
           <div className="space-y-2 border-b border-border pb-5">
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>Question {currentQuestionIndex + 1} of {listeningWords.length}</span>
+              <span>{isZh ? `第 ${currentQuestionIndex + 1} / ${listeningWords.length} 题` : `Question ${currentQuestionIndex + 1} of ${listeningWords.length}`}</span>
               <span>{Math.round(sessionProgress)}%</span>
             </div>
             <Progress value={sessionProgress} className="h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-primary" />
@@ -1263,10 +1263,10 @@ export default function PracticePage() {
                       listeningResult.isCorrect ? 'bg-green-50 text-green-600' : 'bg-destructive/10 text-destructive',
                     )}
                   >
-                    {listeningResult.isCorrect ? 'Correct!' : `Expected: ${listeningResult.expected}`}
+                    {listeningResult.isCorrect ? (isZh ? '回答正确！' : 'Correct!') : (isZh ? `正确答案：${listeningResult.expected}` : `Expected: ${listeningResult.expected}`)}
                   </div>
                   <Button onClick={handleListeningNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
-                    {currentQuestionIndex < listeningWords.length - 1 ? 'Next question' : 'Finish listening quiz'}
+                    {currentQuestionIndex < listeningWords.length - 1 ? (isZh ? '下一题' : 'Next question') : (isZh ? '完成听力练习' : 'Finish listening quiz')}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -1349,7 +1349,7 @@ export default function PracticePage() {
     return renderPageShell(
       <LearningEmptyState
         icon={Target}
-        eyebrow="Practice workspace"
+        eyebrow={isZh ? '练习工作区' : 'Practice workspace'}
         title="没有足够的练习素材"
         description="先学一组单词。"
         actions={
@@ -1367,18 +1367,18 @@ export default function PracticePage() {
 
   return renderPageShell(
     <LearningWorkspaceSurface
-      eyebrow="Practice workspace"
+      eyebrow={isZh ? '练习工作区' : 'Practice workspace'}
       title={`${focusedMode.name} · ${focusedMode.nameZh}`}
       actions={
         <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-          Question {currentQuestionIndex + 1} / {quizQuestions.length}
+          {isZh ? `第 ${currentQuestionIndex + 1} / ${quizQuestions.length} 题` : `Question ${currentQuestionIndex + 1} / ${quizQuestions.length}`}
         </Badge>
       }
     >
       <div className="space-y-6">
         <div className="space-y-2 border-b border-border pb-5">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
+            <span>{isZh ? `第 ${currentQuestionIndex + 1} / ${quizQuestions.length} 题` : `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`}</span>
             <span>{Math.round(sessionProgress)}%</span>
           </div>
           <Progress value={sessionProgress} className="h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-primary" />
@@ -1438,7 +1438,7 @@ export default function PracticePage() {
             </Button>
           ) : (
             <Button onClick={handleNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
-              Next question
+              {isZh ? '下一题' : 'Next question'}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           )}

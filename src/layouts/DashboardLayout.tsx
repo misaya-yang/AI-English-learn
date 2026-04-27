@@ -122,11 +122,11 @@ const shellTitleMap: Record<string, { title: string; description: string }> = {
     description: '结构化学习路线，按阶段推进你的英语能力。',
   },
   '/dashboard/leaderboard': {
-    title: 'Leaderboard',
+    title: '排行榜',
     description: '查看学习排行榜，和其他学习者比较进度。',
   },
   '/dashboard/settings': {
-    title: 'Settings',
+    title: '设置',
     description: '调整偏好、反馈风格和系统行为。',
   },
   '/dashboard/profile': {
@@ -242,13 +242,13 @@ export default function DashboardLayout() {
       },
       {
         path: '/dashboard/leaderboard',
-        label: 'Leaderboard',
+        label: '排行榜',
         description: '周榜排名与社区挑战',
         icon: Medal,
       },
       {
         path: '/dashboard/settings',
-        label: 'Settings',
+        label: '设置',
         description: '系统设置',
         icon: Settings,
       },
@@ -736,7 +736,7 @@ export default function DashboardLayout() {
           </div>
           <div>
             <p className="text-base font-semibold">VocabDaily</p>
-            <p className="text-xs text-muted-foreground">Structured English learning</p>
+            <p className="text-xs text-muted-foreground">学习</p>
           </div>
         </Link>
 
@@ -768,14 +768,14 @@ export default function DashboardLayout() {
               </p>
               <div className="mt-4 space-y-2">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Mission progress</span>
+                  <span>任务进度</span>
                   <span>{missionCompleted}/{missionTotal || 3}</span>
                 </div>
                 <Progress value={missionProgress} className="h-2" />
               </div>
               <Button className="mt-4 w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
                 <Link to="/dashboard/today">
-                  Open today plan
+                  今日计划
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -805,7 +805,7 @@ export default function DashboardLayout() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
-              <p className="text-xs text-muted-foreground">Crafted for uu</p>
+              <p className="text-xs text-muted-foreground">学习者</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -873,7 +873,7 @@ export default function DashboardLayout() {
                 <Button variant="ghost" className="hidden rounded-2xl border border-border/70 bg-card/70 lg:flex" asChild>
                   <Link to="/dashboard/today">
                     <Zap className="mr-2 h-4 w-4" />
-                    Continue
+                    继续
                   </Link>
                 </Button>
               ) : null}
