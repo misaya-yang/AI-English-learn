@@ -55,9 +55,9 @@ export default function MagicLinkPage() {
           <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
-          <p className="text-sm text-slate-700 dark:text-white/80" lang="zh-CN">
+          <p className="text-sm text-foreground" lang="zh-CN">
             登录链接已发送至{' '}
-            <strong className="break-all font-semibold text-slate-900 dark:text-white">{email}</strong>
+            <strong className="break-all font-semibold text-foreground">{email}</strong>
             ，点击链接即可登录。
           </p>
 
@@ -97,13 +97,13 @@ export default function MagicLinkPage() {
         <div className="space-y-2">
           <Label
             htmlFor="email"
-            className="text-sm font-medium text-slate-700 dark:text-white/70"
+            className="text-sm font-medium text-muted-foreground"
           >
             邮箱
           </Label>
           <div className="relative">
             <Mail
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-white/40"
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
             />
             <Input

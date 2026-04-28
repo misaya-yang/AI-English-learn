@@ -147,7 +147,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <Label
               htmlFor="email"
-              className="text-sm font-medium text-slate-700 dark:text-white/70"
+              className="text-sm font-medium text-muted-foreground"
             >
               邮箱
             </Label>
@@ -168,7 +168,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <Label
                 htmlFor="password"
-                className="text-sm font-medium text-slate-700 dark:text-white/70"
+                className="text-sm font-medium text-muted-foreground"
               >
                 密码
               </Label>
@@ -264,7 +264,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="reset-email"
-                  className="text-sm font-medium text-slate-700 dark:text-white/70"
+                  className="text-sm font-medium text-muted-foreground"
                 >
                   邮箱
                 </Label>

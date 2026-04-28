@@ -121,7 +121,7 @@ export default function RegisterPage() {
         <div className="space-y-2">
           <Label
             htmlFor="displayName"
-            className="text-sm font-medium text-slate-700 dark:text-white/70"
+            className="text-sm font-medium text-muted-foreground"
           >
             昵称
           </Label>
@@ -142,7 +142,7 @@ export default function RegisterPage() {
         <div className="space-y-2">
           <Label
             htmlFor="email"
-            className="text-sm font-medium text-slate-700 dark:text-white/70"
+            className="text-sm font-medium text-muted-foreground"
           >
             邮箱
           </Label>
@@ -163,7 +163,7 @@ export default function RegisterPage() {
         <div className="space-y-2">
           <Label
             htmlFor="password"
-            className="text-sm font-medium text-slate-700 dark:text-white/70"
+            className="text-sm font-medium text-muted-foreground"
           >
             密码
           </Label>
@@ -200,13 +200,13 @@ export default function RegisterPage() {
                   'flex items-center gap-2 text-xs transition-colors',
                   check.passes
                     ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-slate-500 dark:text-white/40',
+                    : 'text-muted-foreground',
                 )}
               >
                 <Check
                   className={cn(
                     'h-3 w-3 flex-shrink-0 transition-colors',
-                    check.passes ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-300 dark:text-white/20',
+                    check.passes ? 'text-emerald-500 dark:text-emerald-400' : 'text-muted-foreground/40',
                   )}
                 />
                 <span lang="zh-CN">{check.labelZh}</span>
@@ -218,7 +218,7 @@ export default function RegisterPage() {
         <div className="space-y-2">
           <Label
             htmlFor="confirmPassword"
-            className="text-sm font-medium text-slate-700 dark:text-white/70"
+            className="text-sm font-medium text-muted-foreground"
           >
             确认密码
           </Label>
@@ -250,7 +250,7 @@ export default function RegisterPage() {
           />
           <Label
             htmlFor="terms"
-            className="text-xs leading-relaxed font-normal text-slate-600 dark:text-white/60"
+            className="text-xs leading-relaxed font-normal text-muted-foreground"
             lang="zh-CN"
           >
             同意{' '}

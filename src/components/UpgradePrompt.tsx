@@ -70,8 +70,8 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
 
   if (variant === 'modal') {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 backdrop-blur-sm p-4">
+        <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-2xl">
           <UpgradeCard feature={feature} featureMeta={featureMeta} freeLimit={freeLimit} proLimit={proLimit} onDismiss={onDismiss} />
         </div>
       </div>
@@ -108,21 +108,21 @@ function UpgradeCard({ featureMeta, freeLimit, proLimit, onDismiss }: UpgradeCar
           <Crown className="h-5 w-5 text-amber-400" />
         </div>
         {onDismiss && (
-          <button onClick={onDismiss} className="text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/70 transition-colors">
+          <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground transition-colors">
             <X className="h-4 w-4" />
           </button>
         )}
       </div>
 
       <div>
-        <p className="text-base font-bold text-slate-900 dark:text-white">今日额度已用完</p>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-white/50">
+        <p className="text-base font-bold text-foreground">今日额度已用完</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">
           {featureMeta.labelZh}免费版每天限 {freeLimit} 次。升级 Pro 解锁无限使用。
         </p>
       </div>
 
       {/* Pro benefits */}
-      <div className="rounded-xl bg-black/[0.03] dark:bg-white/[0.04] p-3 space-y-2">
+      <div className="rounded-xl bg-muted/30 p-3 space-y-2">
         {([
           `${featureMeta.labelZh} ${proLimit}次/天`,
           '所有 AI 功能无限制',
@@ -131,7 +131,7 @@ function UpgradeCard({ featureMeta, freeLimit, proLimit, onDismiss }: UpgradeCar
         ] as const).map((benefit, i) => (
           <div key={i} className="flex items-center gap-2">
             <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-            <p className="text-xs text-slate-600 dark:text-white/65">{benefit}</p>
+            <p className="text-xs text-muted-foreground">{benefit}</p>
           </div>
         ))}
       </div>
@@ -148,7 +148,7 @@ function UpgradeCard({ featureMeta, freeLimit, proLimit, onDismiss }: UpgradeCar
           <Button
             variant="outline"
             onClick={onDismiss}
-            className="w-full rounded-full border-black/10 dark:border-white/10 text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/80"
+            className="w-full rounded-full border-border text-muted-foreground hover:text-foreground"
           >
             明天再说
           </Button>
