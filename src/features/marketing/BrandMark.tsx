@@ -27,8 +27,8 @@ export function BrandMark({
   const wordmarkClass = cn(
     'text-base font-bold tracking-tight',
     tone === 'light' && 'text-white',
-    tone === 'dark' && 'text-slate-900',
-    tone === 'auto' && 'text-slate-900 dark:text-white',
+    tone === 'dark' && 'text-foreground',
+    tone === 'auto' && 'text-foreground',
   );
 
   const taglineClass = cn(
