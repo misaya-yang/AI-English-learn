@@ -56,7 +56,7 @@ export function CoachActionPanel({ actions, language, onRunAction }: CoachAction
       data-testid="coach-action-panel"
     >
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+        <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
           {heading}
         </span>
         {data.scheduledReviewCount > 0 && (

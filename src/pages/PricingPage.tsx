@@ -278,7 +278,7 @@ export default function PricingPage() {
           <CardContent className="p-4 sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   {isZh ? '当前方案' : <>Current plan · <span lang="zh-CN">当前方案</span></>}
                 </p>
                 <p className="mt-1 text-lg font-semibold">
