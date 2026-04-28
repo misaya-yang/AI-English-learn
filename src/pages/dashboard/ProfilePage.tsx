@@ -554,7 +554,7 @@ export default function ProfilePage() {
               'text-sm rounded-full px-3 py-1 font-semibold',
               plan === 'pro'
                 ? 'bg-amber-500/15 text-amber-500'
-                : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/60',
+                : 'bg-muted text-muted-foreground',
             )}>
               {plan === 'pro' ? 'Pro' : 'Free'}
             </span>
@@ -574,15 +574,15 @@ export default function ProfilePage() {
               return (
                 <div key={status.feature}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm text-slate-700 dark:text-white/70">{featureLabels[status.feature]}</p>
+                    <p className="text-sm text-foreground">{featureLabels[status.feature]}</p>
                     <p className={cn(
                       'text-xs font-semibold',
-                      status.isExhausted ? 'text-red-500' : 'text-slate-500 dark:text-white/50',
+                      status.isExhausted ? 'text-red-500' : 'text-muted-foreground',
                     )}>
                       {status.used}/{status.limit}
                     </p>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/[0.08] overflow-hidden">
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
                       className={cn(
                         'h-full rounded-full transition-all duration-500',

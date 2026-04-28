@@ -33,7 +33,7 @@ type LeaderboardTab = 'weekly' | 'streak' | 'total';
 
 function RankIcon({ rank }: { rank: number }) {
   if (rank === 1) return <Crown className="h-5 w-5 text-amber-400" />;
-  if (rank === 2) return <Medal className="h-4.5 w-4.5 text-slate-400 dark:text-slate-300" />;
+  if (rank === 2) return <Medal className="h-4.5 w-4.5 text-muted-foreground" />;
   if (rank === 3) return <Medal className="h-4.5 w-4.5 text-amber-700" />;
   return <span className="text-sm font-bold text-muted-foreground">{rank}</span>;
 }

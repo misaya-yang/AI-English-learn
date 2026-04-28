@@ -188,7 +188,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
           <div className={cn('text-2xl font-semibold tracking-[-0.04em]', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
-          {item.hint ? <p className="hidden text-xs leading-5 text-slate-400 dark:text-white/46 xl:block">{item.hint}</p> : null}
+          {item.hint ? <p className="hidden text-xs leading-5 text-muted-foreground xl:block">{item.hint}</p> : null}
         </div>
       ))}
     </div>
