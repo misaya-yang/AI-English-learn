@@ -149,7 +149,7 @@ export function ChatHistorySidebar({
                       onSave={(newTitle) => onUpdateSessionTitle(session.id, newTitle)}
                     />
                   ) : (
-                    <p className="truncate text-sm font-medium">{session.title}</p>
+                    <p className="truncate text-sm font-medium" title={session.title}>{session.title}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
                     {session.messages.length} {t('common.messages')} · {formatDate(session.updatedAt)}

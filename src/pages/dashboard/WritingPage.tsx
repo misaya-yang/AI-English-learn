@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Send, Loader2, RefreshCw, BookOpen, Briefcase, PenLine, Notebook } from 'lucide-react';
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { motionPresets } from '@/lib/motion';
 import {
   type WritingType,
@@ -42,8 +44,8 @@ export default function WritingPage() {
       const result = await gradeWithAi(content, writingType, currentType.prompt);
       setGradeResult(result);
     } catch {
-      // Fallback to local
       setGradeResult(gradeLocally(content, writingType));
+      toast.info(isZh ? 'AI 批改暂时不可用，已切换到本地评分' : 'AI grading unavailable — using local scoring');
     } finally {
       setIsGrading(false);
     }
@@ -135,9 +137,17 @@ export default function WritingPage() {
             </Button>
           </div>
 
+          {/* Grading skeleton */}
+          {isGrading && (
+            <div className="mt-6 space-y-4">
+              <Card><CardContent className="pt-6 space-y-3 text-center"><Skeleton className="mx-auto h-10 w-20" /><Skeleton className="mx-auto h-4 w-32" /></CardContent></Card>
+              <Card><CardContent className="pt-4 space-y-3"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-2 w-full" /><Skeleton className="h-2 w-full" /><Skeleton className="h-2 w-4/5" /></CardContent></Card>
+            </div>
+          )}
+
           {/* Grade results */}
           <AnimatePresence>
-            {gradeResult && (
+            {gradeResult && !isGrading && (
               <motion.div {...motionPresets.fadeInUp} className="mt-6 space-y-4">
                 {/* Overall score */}
                 <Card>
