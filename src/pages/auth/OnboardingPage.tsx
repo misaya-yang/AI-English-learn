@@ -152,10 +152,10 @@ export default function OnboardingPage() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <GraduationCap className="h-6 w-6" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 {isZh ? '你的英语水平是？' : "What's your English level?"}
               </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
                 选择你目前的英语水平
               </p>
             </div>
@@ -163,12 +163,12 @@ export default function OnboardingPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-auto w-full border-2 border-dashed border-slate-200 bg-white py-4 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:border-emerald-500/30 dark:hover:bg-emerald-500/[0.05]"
+              className="h-auto w-full border-2 border-dashed border-border bg-card py-4 text-foreground hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:border-emerald-500/30 dark:hover:bg-emerald-500/[0.05]"
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
                 <p className="font-medium">{isZh ? '做 10 道题自动测定等级' : 'Take a 10-question placement test'}</p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+                <p className="mt-1 text-xs text-muted-foreground" lang="zh-CN">
                   10 道题自动判断你的等级
                 </p>
               </div>
@@ -176,10 +176,10 @@ export default function OnboardingPage() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200 dark:border-white/10" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-slate-400 dark:bg-transparent dark:text-white/30">
+                <span className="bg-card px-3 text-muted-foreground">
                   or pick manually · <span lang="zh-CN">手动选择</span>
                 </span>
               </div>
@@ -195,7 +195,7 @@ export default function OnboardingPage() {
                     'flex items-center gap-4 rounded-lg border-2 p-4 text-left transition-all',
                     preferences.cefrLevel === level.level
                       ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
-                      : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
+                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
                   )}
                   aria-pressed={preferences.cefrLevel === level.level}
                 >
@@ -204,15 +204,15 @@ export default function OnboardingPage() {
                       'flex h-12 w-12 items-center justify-center rounded-xl text-base font-bold',
                       preferences.cefrLevel === level.level
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-slate-100 text-slate-600 dark:bg-white/[0.06] dark:text-white/70',
+                        : 'bg-muted text-muted-foreground',
                     )}
                   >
                     {level.level}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-900 dark:text-white">{level.label}</p>
-                    <p className="text-sm text-slate-600 dark:text-white/60">{level.description}</p>
-                    <p className="text-xs text-slate-500 dark:text-white/40" lang="zh-CN">
+                    <p className="font-medium text-foreground">{level.label}</p>
+                    <p className="text-sm text-muted-foreground">{level.description}</p>
+                    <p className="text-xs text-muted-foreground" lang="zh-CN">
                       {level.descriptionZh}
                     </p>
                   </div>
@@ -232,10 +232,10 @@ export default function OnboardingPage() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <Target className="h-7 w-7" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Set your daily goal
               </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
                 设定每日学习目标
               </p>
             </div>
@@ -245,7 +245,7 @@ export default function OnboardingPage() {
                 <span className="text-5xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                   {preferences.dailyGoal}
                 </span>
-                <p className="mt-2 text-sm text-slate-600 dark:text-white/60">
+                <p className="mt-2 text-sm text-muted-foreground">
                   words per day · <span lang="zh-CN">单词 / 天</span>
                 </p>
               </div>
@@ -262,7 +262,7 @@ export default function OnboardingPage() {
                 aria-label="Daily word goal"
               />
 
-              <div className="flex justify-between text-xs text-slate-500 dark:text-white/40">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>5</span>
                 <span>15</span>
                 <span>25</span>
@@ -271,11 +271,11 @@ export default function OnboardingPage() {
               </div>
 
               <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
-                <p className="text-sm text-slate-700 dark:text-white/80">
+                <p className="text-sm text-foreground">
                   <strong className="text-emerald-700 dark:text-emerald-300">Recommended:</strong>{' '}
                   10–15 words per day for optimal retention.
                 </p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+                <p className="mt-1 text-xs text-muted-foreground" lang="zh-CN">
                   建议：每天 10–15 个新词以获得最佳记忆效果。
                 </p>
               </div>
@@ -290,10 +290,10 @@ export default function OnboardingPage() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <Sparkles className="h-7 w-7" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 What topics interest you?
               </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
                 选择你感兴趣的主题
               </p>
             </div>
@@ -308,22 +308,22 @@ export default function OnboardingPage() {
                     'rounded-lg border-2 p-4 text-left transition-all',
                     preferences.preferredTopics.includes(topic.id)
                       ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
-                      : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
+                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
                   )}
                   aria-pressed={preferences.preferredTopics.includes(topic.id)}
                 >
                   <div className="text-2xl" aria-hidden="true">{topic.icon}</div>
-                  <p className="mt-2 text-sm font-medium text-slate-900 dark:text-white">
+                  <p className="mt-2 text-sm font-medium text-foreground">
                     {topic.label}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50" lang="zh-CN">
+                  <p className="text-xs text-muted-foreground" lang="zh-CN">
                     {topic.labelZh}
                   </p>
                 </button>
               ))}
             </div>
 
-            <p className="text-center text-xs text-slate-500 dark:text-white/50">
+            <p className="text-center text-xs text-muted-foreground">
               Pick at least 2 · <span lang="zh-CN">至少选择 2 个</span>
             </p>
           </div>
@@ -336,10 +336,10 @@ export default function OnboardingPage() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <BookOpen className="h-7 w-7" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 How do you learn best?
               </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-white/50" lang="zh-CN">
+              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
                 你最喜欢的学习方式？
               </p>
             </div>
@@ -354,7 +354,7 @@ export default function OnboardingPage() {
                     'flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-all',
                     preferences.learningStyle === style.id
                       ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
-                      : 'border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30',
+                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
                   )}
                   aria-pressed={preferences.learningStyle === style.id}
                 >
@@ -363,19 +363,19 @@ export default function OnboardingPage() {
                       'flex h-10 w-10 items-center justify-center rounded-xl',
                       preferences.learningStyle === style.id
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-slate-100 text-slate-500 dark:bg-white/[0.06] dark:text-white/40',
+                        : 'bg-muted text-muted-foreground',
                     )}
                   >
                     {preferences.learningStyle === style.id && <Check className="h-5 w-5" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-900 dark:text-white">
+                    <p className="font-medium text-foreground">
                       {style.label}{' '}
-                      <span className="font-normal text-slate-500 dark:text-white/50" lang="zh-CN">
+                      <span className="font-normal text-muted-foreground" lang="zh-CN">
                         ({style.labelZh})
                       </span>
                     </p>
-                    <p className="text-sm text-slate-600 dark:text-white/60">{style.description}</p>
+                    <p className="text-sm text-muted-foreground">{style.description}</p>
                   </div>
                 </button>
               ))}
@@ -397,7 +397,7 @@ export default function OnboardingPage() {
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-white/50">
+            <span className="text-muted-foreground">
               {isZh ? `第 ${step} / ${totalSteps} 步` : `Step ${step} of ${totalSteps}`}
             </span>
             <span className="text-emerald-600 dark:text-emerald-400 font-medium">
@@ -415,7 +415,7 @@ export default function OnboardingPage() {
             variant="outline"
             onClick={handleBack}
             disabled={step === 1 || isLoading}
-            className="rounded-lg border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.08]"
+            className="rounded-lg border-border bg-card text-foreground hover:bg-muted"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             {isZh ? '上一步' : 'Back'}
