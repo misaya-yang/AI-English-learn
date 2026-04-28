@@ -76,6 +76,13 @@ const en = {
     grammar: 'Grammar',
     coach: 'Coach',
   },
+  home: {
+    cta: {
+      primary: "Start today's session",
+      secondary: 'See how it works',
+      guest: "Start today's session",
+    },
+  },
   chat: {
     title: 'AI English Tutor',
     subtitle: 'Powered by DeepSeek',
@@ -531,6 +538,13 @@ const zh = {
     listening: '听力',
     grammar: '语法',
     coach: 'Coach',
+  },
+  home: {
+    cta: {
+      primary: '开始今天的学习',
+      secondary: '了解如何使用',
+      guest: '开始今天的学习',
+    },
   },
   chat: {
     title: 'AI English Tutor',
