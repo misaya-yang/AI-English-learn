@@ -32,21 +32,21 @@ const ICON: Record<MissionRecommendationIcon, typeof Sparkles> = {
 };
 
 const VARIANT_TONE: Record<MissionRecommendationVariant, string> = {
-  recovery: 'border-red-400/30 bg-red-500/10 text-red-100 hover:bg-red-500/15',
-  review:   'border-amber-400/30 bg-amber-500/10 text-amber-100 hover:bg-amber-500/15',
-  today:    'border-emerald-400/30 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/15',
-  sprint:   'border-violet-400/30 bg-violet-500/10 text-violet-100 hover:bg-violet-500/15',
-  practice: 'border-sky-400/30 bg-sky-500/10 text-sky-100 hover:bg-sky-500/15',
-  default:  'border-white/15 bg-white/[0.06] text-white/85 hover:bg-white/[0.10]',
+  recovery: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100/70 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200',
+  review:   'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100/70 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200',
+  today:    'border-primary/20 bg-primary/10 text-primary hover:bg-primary/15',
+  sprint:   'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100/70 dark:border-violet-900/50 dark:bg-violet-950/30 dark:text-violet-200',
+  practice: 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100/70 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200',
+  default:  'border-border bg-card text-foreground hover:bg-muted/40',
 };
 
 const VARIANT_BADGE: Record<MissionRecommendationVariant, string> = {
-  recovery: 'bg-red-500/15 text-red-100',
-  review:   'bg-amber-500/15 text-amber-100',
-  today:    'bg-emerald-500/15 text-emerald-100',
-  sprint:   'bg-violet-500/15 text-violet-100',
-  practice: 'bg-sky-500/15 text-sky-100',
-  default:  'bg-white/[0.08] text-white/80',
+  recovery: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200',
+  review:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200',
+  today:    'bg-primary/10 text-primary',
+  sprint:   'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-200',
+  practice: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200',
+  default:  'bg-muted text-muted-foreground',
 };
 
 const VARIANT_HEADING: Record<MissionRecommendationVariant, { en: string; zh: string }> = {
@@ -98,7 +98,7 @@ export function MissionRecommendationCards({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.18, delay: index * 0.04 }}
             className={cn(
-              'group relative flex w-full flex-col gap-3 rounded-2xl border p-4 text-left transition-colors duration-200 sm:p-5',
+              'group relative flex w-full flex-col gap-3 rounded-xl border p-4 text-left transition-colors duration-200 sm:p-5',
               VARIANT_TONE[card.variant],
             )}
             data-testid="mission-recommendation-card"

@@ -144,8 +144,8 @@ export function ChatComposer({
                       className={cn(
                         'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
                         currentMode === option.id
-                          ? 'border-emerald-500 bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                          : 'border-border hover:border-emerald-400/60',
+                          ? 'border-primary/50 bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/40 hover:bg-primary/5',
                       )}
                     >
                       <option.icon className="h-3.5 w-3.5" />
@@ -239,7 +239,7 @@ export function ChatComposer({
               <button
                 key={prompt.text}
                 onClick={() => onQuickPrompt(prompt.text)}
-                className="flex-shrink-0 whitespace-nowrap rounded-full border border-border px-4 py-2 text-sm transition-all hover:border-emerald-500/50 hover:bg-emerald-50/50"
+                className="flex-shrink-0 whitespace-nowrap rounded-full border border-border px-4 py-2 text-sm transition-all hover:border-primary/40 hover:bg-primary/5"
               >
                 {prompt.textZh}
               </button>
@@ -247,15 +247,15 @@ export function ChatComposer({
           </div>
         )}
 
-        <div className="relative flex items-end gap-2 rounded-2xl border border-border/80 bg-card p-3 transition-all focus-within:border-emerald-500/60 focus-within:ring-2 focus-within:ring-emerald-500/15">
+        <div className="relative flex items-end gap-2 rounded-xl border border-border/80 bg-card p-3 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15">
           <Button
             variant="ghost"
             size="icon"
             className={cn(
               'mb-1 h-10 w-10 rounded-xl border transition-colors',
               toolsExpanded
-                ? 'border-emerald-400 bg-emerald-100/70 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                : 'border-border hover:border-emerald-400/50',
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-border hover:border-primary/40',
             )}
             onClick={onToggleTools}
             title={language.startsWith('zh') ? '工具与模式' : 'Tools & mode'}
@@ -310,7 +310,7 @@ export function ChatComposer({
               <Button
                 onClick={onSend}
                 disabled={!input.trim()}
-                className="h-10 w-10 rounded-xl bg-emerald-600 p-0 hover:bg-emerald-700 disabled:opacity-50"
+                className="h-10 w-10 rounded-xl bg-primary p-0 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 aria-label={language.startsWith('zh') ? '发送消息' : 'Send message'}
               >
                 <Send className="h-5 w-5" />

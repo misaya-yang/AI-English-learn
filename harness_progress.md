@@ -1636,3 +1636,44 @@ Playwright + demo login.
     component-specific visual loops rather than swept blindly.
 
 - Not pushed.
+
+---
+
+## 2026-04-29 13:39 CST - RALPH-20260429-03 (Core chat component token unification)
+
+- Changed:
+  - Migrated core chat child components away from the old emerald visual
+    layer: `ChatComposer`, `ChatMessageBubble`, `ChatWelcome`,
+    `QuizArtifactCard`, `CoachActionPanel`, `ChatArtifactRenderer`,
+    `ChatHistorySidebar`, `MissionRecommendationCards`, and
+    `ThinkingStatusCard`.
+  - Standardized chat interaction states on shared design tokens:
+    `primary` for active/chat controls, `success` for correct/scheduled
+    learning states, and `destructive` for wrong/error states.
+  - Tightened recommendation-card light-mode contrast by replacing
+    pale-on-pale text with readable variant tones.
+  - Expanded `chatVisualContract.test.ts` to guard the core chat shell
+    against legacy accent regressions and ensure coach/quiz/composer controls
+    stay on semantic tokens.
+
+- Verified:
+  - `npm test -- --run src/features/chat/components/chatVisualContract.test.ts src/features/chat/runtime/quizSequenceState.test.ts src/features/chat/utils/missionRecommendations.test.ts src/features/coach/missionCardSelector.test.ts`
+    → 4 files, 38 tests, all green.
+  - `npm test -- --run` → 62 files, 651 tests, all green.
+  - `npm run build` → tsc + vite build clean; pre-existing large-chunk
+    warning remains.
+  - In-app browser smoke against `http://127.0.0.1:4173/dashboard/chat`
+    via demo login → page renders, composer present, no browser warning/error
+    logs.
+  - `npm run smoke:prod` → 7 passed, 0 warned, 0 failed against
+    `https://www.uuedu.online` before push.
+
+- Deploy:
+  - Frontend-only change. No Supabase migration or function deploy needed.
+  - Safe to push `main`; Vercel can auto-deploy from the pushed commit.
+
+- Known residual:
+  - `RoleplayMode` and `ScenarioSelector` still use green as a semantic
+    difficulty/correctness color and were intentionally left alone.
+  - ChatPage bundle size is still high; a dedicated lazy/runtime split remains
+    the next high-impact engineering loop.

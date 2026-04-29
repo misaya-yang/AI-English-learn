@@ -73,14 +73,14 @@ export function ChatMessageBubble({
           'h-8 w-8 flex-shrink-0',
           isUser
             ? 'bg-gradient-to-br from-blue-100 to-indigo-100'
-            : 'bg-gradient-to-br from-emerald-100 to-teal-100',
+            : 'bg-primary/10',
         )}
       >
         <AvatarFallback className="text-xs">
           {isUser ? (
             <User className="h-4 w-4 text-blue-600" />
           ) : (
-            <Bot className="h-4 w-4 text-emerald-600" />
+            <Bot className="h-4 w-4 text-primary" />
           )}
         </AvatarFallback>
       </Avatar>
@@ -92,12 +92,12 @@ export function ChatMessageBubble({
         )}
       >
         {isUser ? (
-          <div className="relative overflow-hidden rounded-2xl rounded-br-sm bg-emerald-600 px-4 py-3 text-white">
+          <div className="relative overflow-hidden rounded-xl rounded-br-sm bg-primary px-4 py-3 text-primary-foreground">
             <p className="relative z-10 whitespace-pre-wrap text-sm leading-relaxed">
               {message.content}
             </p>
             {isStreaming && (
-              <span className="relative z-10 ml-1 inline-block h-4 w-2 animate-pulse bg-emerald-100 align-middle" />
+              <span className="relative z-10 ml-1 inline-block h-4 w-2 animate-pulse bg-primary-foreground/70 align-middle" />
             )}
           </div>
         ) : (
@@ -108,7 +108,7 @@ export function ChatMessageBubble({
                 className="pointer-events-none absolute inset-0"
                 style={{
                   background:
-                    'linear-gradient(100deg, transparent 8%, hsl(161 84% 40% / 0.12) 46%, transparent 82%)',
+                    'linear-gradient(100deg, transparent 8%, hsl(var(--primary) / 0.12) 46%, transparent 82%)',
                   backgroundSize: '200% 100%',
                 }}
                 animate={{ backgroundPosition: ['-120% 0%', '120% 0%'] }}
@@ -119,7 +119,7 @@ export function ChatMessageBubble({
               <div className="prose relative z-10 max-w-none dark:prose-invert">
                 <MarkdownRenderer content={displayContent} />
                 {isStreaming && (
-                  <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-emerald-500 align-middle" />
+                  <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-primary align-middle" />
                 )}
               </div>
             )}

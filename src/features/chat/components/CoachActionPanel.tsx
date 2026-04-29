@@ -51,16 +51,16 @@ export function CoachActionPanel({ actions, language, onRunAction }: CoachAction
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
-      className="mt-3 w-full rounded-xl border border-emerald-200/60 bg-emerald-50/50 px-3 py-2.5 dark:border-emerald-800/40 dark:bg-emerald-900/10"
+      className="mt-3 w-full rounded-xl border border-primary/15 bg-primary/5 px-3 py-2.5"
       aria-label={heading}
       data-testid="coach-action-panel"
     >
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+        <span className="text-[11px] font-medium text-primary">
           {heading}
         </span>
         {data.scheduledReviewCount > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success)/0.12)] px-2 py-0.5 text-[10px] font-medium text-[hsl(var(--success))]">
             <CheckCircle2 className="h-3 w-3" />
             {isZh
               ? `已加入 ${data.scheduledReviewCount} 个复习`
@@ -95,8 +95,8 @@ export function CoachActionPanel({ actions, language, onRunAction }: CoachAction
                 className={cn(
                   'group inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-colors',
                   entry.variant === 'primary'
-                    ? 'border border-emerald-500/60 bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'border border-emerald-200/80 bg-white text-emerald-800 hover:bg-emerald-100 dark:border-emerald-700/50 dark:bg-emerald-900/30 dark:text-emerald-100',
+                    ? 'border border-primary/60 bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-primary/20 bg-background text-primary hover:bg-primary/10',
                   !interactive && 'cursor-default opacity-80 hover:bg-current/0',
                 )}
               >
@@ -107,8 +107,8 @@ export function CoachActionPanel({ actions, language, onRunAction }: CoachAction
                     className={cn(
                       'rounded-sm px-1 text-[10px] font-medium',
                       entry.variant === 'primary'
-                        ? 'bg-emerald-500/30 text-emerald-50'
-                        : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-800/40 dark:text-emerald-200',
+                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                        : 'bg-primary/10 text-primary',
                     )}
                   >
                     {entry.durationHint}

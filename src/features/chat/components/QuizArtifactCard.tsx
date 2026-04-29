@@ -40,10 +40,10 @@ export function QuizArtifactCard({
   return (
     <div className="mt-2 space-y-3 p-0">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+        <p className="text-sm font-semibold text-primary">
           {artifact.payload.title}
         </p>
-        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
           {artifact.payload.difficulty}
         </span>
       </div>
@@ -72,10 +72,10 @@ export function QuizArtifactCard({
               className={cn(
                 'w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors',
                 checked
-                  ? 'border-emerald-500 bg-emerald-100/80 dark:bg-emerald-900/50'
-                  : 'border-border hover:border-emerald-400/60',
-                optionIsCorrect && 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/60',
-                optionIsWrongSelected && 'border-red-500 bg-red-50 dark:bg-red-950/40',
+                  ? 'border-primary/50 bg-primary/10'
+                  : 'border-border hover:border-primary/40',
+                optionIsCorrect && 'border-[hsl(var(--success)/0.5)] bg-[hsl(var(--success)/0.12)]',
+                optionIsWrongSelected && 'border-destructive/50 bg-destructive/10',
               )}
               disabled={disabled}
             >
@@ -88,7 +88,7 @@ export function QuizArtifactCard({
       {!localAttempted ? (
         <Button
           size="sm"
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={!canSubmit}
           onClick={() => {
             if (!sessionId || !selected) return;
@@ -103,7 +103,7 @@ export function QuizArtifactCard({
         </Button>
       ) : (
         <div className="rounded-lg border border-border bg-background/70 px-3 py-2 text-sm">
-          <p className={cn('font-medium', isCorrect ? 'text-emerald-600' : 'text-red-500')}>
+          <p className={cn('font-medium', isCorrect ? 'text-[hsl(var(--success))]' : 'text-destructive')}>
             {isCorrect
               ? language.startsWith('zh')
                 ? '回答正确'

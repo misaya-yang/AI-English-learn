@@ -119,9 +119,9 @@ export function ChatArtifactRenderer({
           return (
             <div
               key={`${messageId}-study-plan-${index}`}
-              className="mt-3 space-y-2 rounded-xl border border-emerald-300/40 bg-emerald-50/50 p-3 dark:bg-emerald-900/20"
+              className="mt-3 space-y-2 rounded-xl border border-primary/15 bg-primary/5 p-3"
             >
-              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+              <p className="text-xs font-semibold text-primary">
                 {artifact.payload.title}
               </p>
               <ul className="list-disc space-y-1 pl-4 text-sm text-muted-foreground">

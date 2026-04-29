@@ -49,12 +49,12 @@ function EditableTitle({
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          className="min-w-0 flex-1 border-b border-emerald-500 bg-transparent px-1 text-sm outline-none"
+          className="min-w-0 flex-1 border-b border-primary bg-transparent px-1 text-sm outline-none"
         />
         <button
           type="button"
           onClick={handleSave}
-          className="rounded p-1 text-emerald-600 hover:bg-emerald-100"
+          className="rounded p-1 text-primary hover:bg-primary/10"
         >
           <Check className="h-3.5 w-3.5" />
         </button>
@@ -136,7 +136,7 @@ export function ChatHistorySidebar({
                 className={cn(
                   'group flex cursor-pointer items-center gap-2.5 rounded-lg border p-3 pr-2 transition-all',
                   currentSessionId === session.id
-                    ? 'border-emerald-200 bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30'
+                    ? 'border-primary/20 bg-primary/10'
                     : 'border-transparent hover:bg-muted',
                 )}
                 onClick={() => onSelectSession(session.id)}
@@ -166,7 +166,6 @@ export function ChatHistorySidebar({
                     'border-red-300/60 hover:border-red-400 hover:bg-red-100/80 hover:text-red-700',
                     'dark:border-red-800/80 dark:bg-red-950/40 dark:text-red-300 dark:hover:border-red-700 dark:hover:bg-red-950/55',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    currentSessionId === session.id ? 'border-emerald-300/50' : '',
                   )}
                   aria-label={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}
                   title={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}

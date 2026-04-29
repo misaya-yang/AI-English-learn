@@ -19,9 +19,9 @@ export const ThinkingStatusCard = ({ label, language, isStreaming, toolRuns }: T
       animate={{ opacity: 1, y: 0 }}
       className="flex gap-3 py-2"
     >
-      <Avatar className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-cyan-100 dark:from-emerald-900/40 dark:to-cyan-900/30">
+      <Avatar className="w-8 h-8 bg-primary/10">
         <AvatarFallback>
-          <Loader2 className="h-4 w-4 text-emerald-600 animate-spin" />
+          <Loader2 className="h-4 w-4 text-primary animate-spin" />
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
@@ -29,7 +29,7 @@ export const ThinkingStatusCard = ({ label, language, isStreaming, toolRuns }: T
           <p className="font-medium">{label}</p>
           <motion.span
             aria-hidden
-            className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"
+            className="inline-flex h-1.5 w-1.5 rounded-full bg-primary"
             animate={{ opacity: [0.25, 1, 0.25] }}
             transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
           />
@@ -49,7 +49,7 @@ export const ThinkingStatusCard = ({ label, language, isStreaming, toolRuns }: T
             {latestRuns.map((run, idx) => {
               const statusClass =
                 run.status === 'success'
-                  ? 'border-emerald-300/60 text-emerald-700 dark:text-emerald-300'
+                  ? 'border-[hsl(var(--success)/0.35)] text-[hsl(var(--success))]'
                   : run.status === 'error'
                     ? 'border-red-300/60 text-red-600 dark:text-red-300'
                     : run.status === 'rate_limited'
