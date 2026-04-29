@@ -67,11 +67,11 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-xl border border-border glass transition-all duration-500';
+  'relative rounded-xl border border-border bg-card shadow-sm transition-all duration-300';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
-  emerald: 'text-emerald-600 dark:text-emerald-300',
+  emerald: 'text-primary',
   warm: 'text-amber-600 dark:text-amber-300',
 };
 
@@ -101,7 +101,7 @@ export function LearningHeroPanel({
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_300px] lg:items-start z-10">
         <div className="space-y-5">
           {eyebrow ? (
-            <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/10">
+            <Badge className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary hover:bg-primary/10">
               {eyebrow}
             </Badge>
           ) : null}
@@ -120,7 +120,7 @@ export function LearningHeroPanel({
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="text-[11px] text-muted-foreground">{progressLabel || '进度'}</p>
-                  <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-emerald-600 dark:text-emerald-300">
+                  <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-primary">
                     {progressValueLabel || `${progress}%`}
                   </p>
                 </div>
@@ -130,7 +130,7 @@ export function LearningHeroPanel({
               </div>
               <Progress
                 value={progress}
-                className="h-2.5 bg-muted [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-emerald-400 [&_[data-slot=progress-indicator]]:to-emerald-500"
+                className="h-2.5 bg-muted [&_[data-slot=progress-indicator]]:bg-primary"
               />
             </div>
           ) : null}
@@ -214,7 +214,7 @@ export function LearningEmptyState({
       animate={{ opacity: 1, scale: 1 }}
       className={cn(learningFrameClassName, 'px-6 py-12 text-center sm:px-10', className)}
     >
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[24px] border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
         <Icon className="h-8 w-8" />
       </div>
       {eyebrow ? <p className="mt-5 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
@@ -243,7 +243,7 @@ export function LearningCompletionState({
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,hsl(var(--primary)/0.05),transparent)]" />
       <div className="relative text-center z-10">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[28px] border border-emerald-500/25 bg-emerald-500/12 text-emerald-600 dark:text-emerald-300">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
           <Icon className="h-9 w-9" />
         </div>
         {eyebrow ? <p className="mt-6 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}

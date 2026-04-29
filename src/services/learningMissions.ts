@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
 import type { LearningMission, LearningMissionTask, LearningProfile, LearningTrack } from '@/types/examContent';
 import type { LearnerModel } from '@/services/learnerModel';
 
@@ -74,6 +75,10 @@ export const saveLearningProfile = async (
 
   map[userId] = next;
   setProfileMap(map);
+
+  if (isLocalAuthUserId(userId)) {
+    return next;
+  }
 
   try {
     await supabase.from('user_learning_profiles').upsert({
@@ -205,6 +210,10 @@ const persistMission = async (
   profile: LearningProfile,
   learnerModel?: LearnerModel | null,
 ): Promise<void> => {
+  if (isLocalAuthUserId(mission.userId)) {
+    return;
+  }
+
   await supabase.from('learning_missions').upsert({
     id: mission.id,
     user_id: mission.userId,
@@ -325,6 +334,10 @@ export const completeMissionTask = async (args: {
 
   map[args.userId] = list.map((item) => (item.id === mission.id ? updated : item));
   setMissionMap(map);
+
+  if (isLocalAuthUserId(args.userId)) {
+    return updated;
+  }
 
   try {
     await supabase

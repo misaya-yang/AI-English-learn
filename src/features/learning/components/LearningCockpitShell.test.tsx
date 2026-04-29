@@ -113,6 +113,28 @@ describe('LearningCockpitShell', () => {
     expect(screen.getByTestId('mission-why-badge').getAttribute('data-variant')).toBe('recovery');
   });
 
+  it('keeps why-badge text readable in the light-first cockpit system', () => {
+    renderShell({
+      mission: {
+        title: 'Reduce backlog with a lighter review block',
+        primaryAction: { label: 'Open review', href: '/dashboard/review' },
+        why: { reason: 'due_words' },
+      },
+    });
+    const badge = screen.getByTestId('mission-why-badge');
+    expect(badge.className).not.toContain('text-white');
+    expect(badge.className).not.toContain('text-amber-100');
+    expect(badge.className).not.toMatch(/(^|\s)text-amber-200(\s|$)/);
+    expect(badge.className).toContain('text-amber-700');
+  });
+
+  it('uses semantic primary tokens for the main cockpit action', () => {
+    renderShell();
+    const link = screen.getByRole('link', { name: 'Continue' });
+    expect(link.className).toContain('bg-primary');
+    expect(link.className).not.toContain('bg-emerald');
+  });
+
   it('renders progress when supplied', () => {
     renderShell({ progress: 42, progressLabel: 'Round progress' });
     expect(screen.getByText('Round progress')).toBeInTheDocument();

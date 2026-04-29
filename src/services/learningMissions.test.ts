@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { LearnerModel } from '@/services/learnerModel';
 import type { LearningMission } from '@/types/examContent';
+import { buildLocalAuthUserId } from '@/lib/localAuthIdentity';
 
 // ---------------------------------------------------------------------------
 // Mocks — must be declared before importing the module under test
@@ -70,6 +71,7 @@ const createStorageMock = (): Storage => {
 // ---------------------------------------------------------------------------
 
 const TEST_USER = 'user-aaaa-bbbb-cccc-dddddddddddd';
+const LOCAL_USER = buildLocalAuthUserId('demo@example.com');
 
 const baseLearnerModel = (overrides: Partial<LearnerModel> = {}): LearnerModel => ({
   userId: TEST_USER,
@@ -178,6 +180,12 @@ describe('learningMissions', () => {
       expect(payload.user_id).toBe(TEST_USER);
       expect(payload.level).toBe('B2');
     });
+
+    it('keeps local fallback profiles local-only', async () => {
+      await saveLearningProfile(LOCAL_USER, { level: 'A2' });
+
+      expect(upsertMock).not.toHaveBeenCalled();
+    });
   });
 
   // =========================================================================
@@ -237,6 +245,16 @@ describe('learningMissions', () => {
       const payload = upsertMock.mock.calls[0][0];
       expect(payload.user_id).toBe(TEST_USER);
       expect(payload.mission_date).toBe('2026-04-04');
+    });
+
+    it('keeps local fallback missions local-only', async () => {
+      await getOrCreateDailyMission({
+        userId: LOCAL_USER,
+        goalWords: 10,
+        dueCount: 5,
+      });
+
+      expect(upsertMock).not.toHaveBeenCalled();
     });
 
     it('limits stored missions to 90 entries', async () => {
@@ -702,6 +720,25 @@ describe('learningMissions', () => {
       const payload = updateMock.mock.calls[0][0];
       expect(payload.status).toBe('in_progress');
       expect(payload.tasks).toBeDefined();
+    });
+
+    it('keeps local fallback mission completion local-only', async () => {
+      const mission = await getOrCreateDailyMission({
+        userId: LOCAL_USER,
+        goalWords: 10,
+        dueCount: 5,
+      });
+      upsertMock.mockClear();
+      updateMock.mockClear();
+
+      await completeMissionTask({
+        userId: LOCAL_USER,
+        missionId: mission.id,
+        taskId: mission.tasks[0].id,
+      });
+
+      expect(upsertMock).not.toHaveBeenCalled();
+      expect(updateMock).not.toHaveBeenCalled();
     });
 
     it('does not affect other tasks when completing one', async () => {

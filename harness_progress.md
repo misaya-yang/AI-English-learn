@@ -1286,7 +1286,6 @@ Each entry uses the format defined in `CLAUDE_CODE_RALPH_PROMPT.md` step 8.
 
 - Not pushed.
 
-
 ---
 
 ## 2026-04-25 18:55 — UIR-01..05 visual reset (Modern Learning Workbench)
@@ -1557,5 +1556,45 @@ Playwright + demo login.
   - Reading / Listening / Grammar pages still on dark-glass
     chrome (Module A flagged for follow-up).
   - LearningPath detail view bypasses the cockpit shell.
+
+- Not pushed.
+
+---
+
+## 2026-04-29 13:06 CST - RALPH-20260429-01 (Learning cockpit polish + local fallback hardening)
+
+- Changed:
+  - Hardened the shared learning cockpit primitives: removed leftover
+    `glass`/emerald-only styling from `LearningWorkspace`, switched main
+    cockpit CTAs to semantic `primary` tokens, and made mission why badges
+    readable in light mode.
+  - Polished Today and Learning Path surfaces so the suggested next step,
+    progress, learned-count marker, and steady-mode card follow the same
+    token system instead of old emerald/glow accents.
+  - Added real SVG favicon/PWA app icons and updated `manifest.json` /
+    `index.html`, removing the previous missing `favicon.ico` and
+    invalid `icon-192.png` browser warnings.
+  - Fixed local demo-auth verification noise: legacy `local-dev-*` fallback
+    users now migrate to stable UUID-shaped local IDs, and local fallback
+    profiles, missions, and learning events stay local-only instead of
+    sending fake IDs to Supabase UUID columns.
+
+- Verified:
+  - `npm test -- --run` → 61 files, 648 tests, all green.
+  - `npm run build` → tsc + vite build clean; only the pre-existing
+    large-chunk warning remains.
+  - `npm run smoke:prod` → 7 passed, 0 warned, 0 failed against
+    `https://www.uuedu.online`.
+  - Browser smoke against `http://127.0.0.1:4173/dashboard/today` and
+    `/dashboard/learning-path`: both render with demo local auth; legacy
+    local ID migrates to UUID; no `>=400` network responses.
+
+- Known residual:
+  - `ChatPage.tsx` remains the largest runtime/page module and still has
+    older success-state emerald styling; split/runtime cleanup should be a
+    later focused loop.
+  - Analytics/Profile/Leaderboard/VocabBank still contain older emerald
+    semantic drift, some of which may be meaningful state color and should
+    be audited page-by-page rather than swept blindly.
 
 - Not pushed.

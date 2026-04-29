@@ -239,9 +239,9 @@ export default function LearningPathPage() {
             </div>
           </motion.div>
 
-          <Card className="border-emerald-500/15 bg-emerald-500/[0.04]">
+          <Card className="border-primary/15 bg-primary/5">
             <CardContent className="flex items-start gap-3 p-4">
-              <Sparkles className="mt-0.5 h-4 w-4 text-emerald-500" />
+              <Sparkles className="mt-0.5 h-4 w-4 text-primary" />
               <div className="space-y-1">
                 <p className="text-sm font-medium">
                   {isZh ? '下一步建议' : 'Suggested next step'}

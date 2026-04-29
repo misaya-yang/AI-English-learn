@@ -1,5 +1,6 @@
 // Supabase Authentication Service
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase';
+import { buildLocalAuthUserId, isLocalAuthUserId } from './localAuthIdentity';
 
 export interface AuthUser {
   id: string;
@@ -94,8 +95,22 @@ function isDemoAccountEmail(email: string): boolean {
 }
 
 function normalizeLocalUserId(email: string): string {
-  const normalized = email.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  return `local-dev-${normalized || 'user'}`;
+  return buildLocalAuthUserId(email);
+}
+
+function ensureLocalAuthUserIdentity(user: AuthUser): AuthUser {
+  if (isLocalAuthUserId(user.id)) {
+    return user;
+  }
+
+  const nextId = normalizeLocalUserId(user.email || DEFAULT_DEMO_EMAIL);
+  const migrated = { ...user, id: nextId };
+  const previousProfile = loadLocalProfile(user.id);
+  if (previousProfile && !loadLocalProfile(nextId)) {
+    saveLocalProfile({ ...previousProfile, userId: nextId });
+  }
+  localStorage.setItem(LOCAL_AUTH_USER_KEY, JSON.stringify(migrated));
+  return migrated;
 }
 
 function getLocalAuthUser(): AuthUser | null {
@@ -109,7 +124,7 @@ function getLocalAuthUser(): AuthUser | null {
   }
 
   try {
-    return JSON.parse(raw) as AuthUser;
+    return ensureLocalAuthUserIdentity(JSON.parse(raw) as AuthUser);
   } catch {
     return null;
   }
@@ -529,6 +544,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
 // Get user profile
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  if (isLocalAuthUserId(userId)) {
+    return loadLocalProfile(userId) || getDefaultProfile(userId);
+  }
+
   try {
     // Add timeout for profile fetch
     const timeoutPromise = new Promise<never>((_, reject) => {
@@ -573,6 +592,10 @@ export async function updateUserProfile(
   };
   saveLocalProfile(nextLocal);
 
+  if (isLocalAuthUserId(userId)) {
+    return true;
+  }
+
   try {
     const mappedUpdates: Record<string, unknown> = {
       user_id: userId,
@@ -604,6 +627,14 @@ export async function updateUserDisplayName(
   userId: string, 
   displayName: string
 ): Promise<boolean> {
+  if (isLocalAuthUserId(userId)) {
+    const localUser = getLocalAuthUser();
+    if (localUser?.id === userId) {
+      persistLocalAuthUser({ ...localUser, displayName });
+    }
+    return true;
+  }
+
   try {
     const { error } = await supabase
       .from('users')

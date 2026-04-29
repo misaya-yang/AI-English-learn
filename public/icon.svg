@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="VocabDaily app icon">
+  <defs>
+    <linearGradient id="icon-bg" x1="28" y1="20" x2="164" y2="172" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123C35"/>
+      <stop offset="0.52" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#C7A15A"/>
+    </linearGradient>
+    <linearGradient id="icon-card" x1="48" y1="52" x2="145" y2="139" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7E8"/>
+      <stop offset="1" stop-color="#DFF8EE"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="46" fill="url(#icon-bg)"/>
+  <path d="M41 70c0-12.7 10.3-23 23-23h47c22.1 0 40 17.9 40 40v34c0 13.3-10.7 24-24 24H64c-12.7 0-23-10.3-23-23V70Z" fill="url(#icon-card)"/>
+  <path d="M72 77h45M72 96h34M72 115h49" stroke="#123C35" stroke-width="10" stroke-linecap="round"/>
+  <path d="M132 60v32c0 6.6 5.4 12 12 12h16" stroke="#F4D07A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="139" cy="129" r="11" fill="#0F766E"/>
+  <path d="M134 129l4 4 8-10" stroke="#FFF7E8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -10,6 +10,7 @@ import {
 } from '@/lib/localDb';
 import type { LearningEventName } from '@/types/examContent';
 import { buildIdempotencyKey, syncQueue } from '@/services/syncQueue';
+import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
 
 export interface LearningEventRecord {
   id: string;
@@ -94,6 +95,10 @@ export const recordLearningEvent = async (args: {
   );
   void pruneEvents();
 
+  if (isLocalAuthUserId(event.userId)) {
+    return;
+  }
+
   try {
     const payload = {
       id: event.id,
@@ -170,6 +175,10 @@ export const getLearningEvents = async (userId: string, days = 30): Promise<Lear
       createdAt: row.created_at,
     }))
     .filter((event) => new Date(event.createdAt).getTime() >= cutoff);
+
+  if (isLocalAuthUserId(userId)) {
+    return dedupeEvents(local);
+  }
 
   try {
     const fromIso = new Date(cutoff).toISOString();

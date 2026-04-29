@@ -243,7 +243,6 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
   return (
     <div className="mx-auto w-full max-w-[880px] relative">
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[450px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/5 dark:bg-emerald-500/10 blur-[120px] animate-pulse-glow z-0" />
       <FlashCard
         front={frontContent}
         back={backContent}
@@ -936,7 +935,7 @@ export default function TodayPage() {
                     'rounded-2xl border p-4 space-y-3',
                     learnerModel.mode === 'recovery'    && 'border-red-500/20 bg-red-500/[0.06]',
                     learnerModel.mode === 'maintenance' && 'border-amber-500/20 bg-amber-500/[0.06]',
-                    learnerModel.mode === 'steady'      && 'border-emerald-500/20 bg-emerald-500/[0.06]',
+                    learnerModel.mode === 'steady'      && 'border-primary/20 bg-primary/10',
                     learnerModel.mode === 'stretch'     && 'border-blue-500/20 bg-blue-500/[0.06]',
                     learnerModel.mode === 'sprint'      && 'border-violet-500/20 bg-violet-500/[0.06]',
                   )}>
@@ -1125,7 +1124,7 @@ export default function TodayPage() {
         <div className="mx-4 mb-2 flex items-center justify-center gap-1 pointer-events-auto">
           <div className="flex items-center gap-3 rounded-full border border-border bg-background/90 px-4 py-2 shadow-lg backdrop-blur-md text-xs">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="h-2 w-2 rounded-full bg-primary" />
               <span className="font-medium text-foreground">{learnedWords.size}</span>
               <span className="text-muted-foreground">{isZh ? '已学' : 'learned'}</span>
             </span>

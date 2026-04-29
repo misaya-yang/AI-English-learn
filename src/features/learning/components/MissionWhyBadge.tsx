@@ -23,13 +23,13 @@ interface MissionWhyBadgeProps {
 }
 
 const VARIANT_TONE: Record<MissionWhyVariant, string> = {
-  recovery: 'border-red-400/30 bg-red-500/10 text-red-200 dark:text-red-100',
-  sprint:   'border-violet-400/30 bg-violet-500/10 text-violet-200 dark:text-violet-100',
-  review:   'border-amber-400/30 bg-amber-500/10 text-amber-200 dark:text-amber-100',
-  today:    'border-emerald-400/30 bg-emerald-500/10 text-emerald-200 dark:text-emerald-100',
-  weakness: 'border-orange-400/30 bg-orange-500/10 text-orange-200 dark:text-orange-100',
-  practice: 'border-sky-400/30 bg-sky-500/10 text-sky-200 dark:text-sky-100',
-  default:  'border-white/15 bg-white/[0.06] text-white/80',
+  recovery: 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200',
+  sprint:   'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900/50 dark:bg-violet-950/30 dark:text-violet-200',
+  review:   'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200',
+  today:    'border-primary/20 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/15 dark:text-primary',
+  weakness: 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-200',
+  practice: 'border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200',
+  default:  'border-border bg-muted/50 text-muted-foreground',
 };
 
 const VARIANT_ICON: Record<MissionWhyVariant, typeof Sparkles> = {
