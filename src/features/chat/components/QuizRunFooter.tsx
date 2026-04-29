@@ -23,10 +23,10 @@ export const QuizRunFooter = ({
       <div
         className={cn(
           contentWidthClass,
-          'mx-auto rounded-xl border border-emerald-300/40 bg-emerald-50/60 dark:bg-emerald-900/20 px-3 py-2 flex items-center justify-between gap-3',
+          'mx-auto rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 flex items-center justify-between gap-3',
         )}
       >
-        <p className="text-xs text-emerald-700 dark:text-emerald-300">
+        <p className="text-xs text-primary">
           {isZh
             ? completed
               ? `连续测验已完成：${sequence.targetCount}/${sequence.targetCount} 题`
@@ -38,7 +38,7 @@ export const QuizRunFooter = ({
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-xs text-emerald-700 hover:text-emerald-800"
+          className="h-7 text-xs text-primary hover:bg-primary/10 hover:text-primary"
           onClick={onEnd}
         >
           {isZh

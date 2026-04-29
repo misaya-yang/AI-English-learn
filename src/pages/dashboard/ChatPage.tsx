@@ -9,12 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Sparkles,
-  Lightbulb,
-  BookOpen,
   MessageSquare,
   RotateCcw,
-  Copy,
   MoreVertical,
   Plus,
   Menu,
@@ -24,8 +20,6 @@ import {
   NotebookPen,
   GraduationCap,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,10 +45,19 @@ import { ChatHistorySidebar } from '@/features/chat/components/ChatHistorySideba
 import { ChatMemoryBanner } from '@/features/chat/components/ChatMemoryBanner';
 import { ChatMessageBubble } from '@/features/chat/components/ChatMessageBubble';
 import { ChatWelcome, buildRecommendations } from '@/features/chat/components/ChatWelcome';
+import { DatabaseStatusBanner } from '@/features/chat/components/DatabaseStatusBanner';
 import { MissionCards } from '@/features/coach/MissionCards';
 import { selectMissionCards } from '@/features/coach/missionCardSelector';
-import { QuizArtifactCard } from '@/features/chat/components/QuizArtifactCard';
+import { QuizCanvasPanel } from '@/features/chat/components/QuizCanvasPanel';
+import { QuizRunFooter } from '@/features/chat/components/QuizRunFooter';
 import type { ChatModeOption, QuickPromptOption } from '@/features/chat/types';
+import {
+  collectQuizRunArtifacts,
+  computeQuizDisplayIndex,
+  reconcileCanvasIndex,
+  type QuizRunArtifactEntry,
+  type QuizSequenceState,
+} from '@/features/chat/runtime/quizSequenceState';
 import {
   buildChatGoalContext,
   buildChatLearnerProfile,
@@ -69,43 +72,6 @@ const CHAT_MODE_OPTIONS: ChatModeOption[] = [
   { id: 'quiz', label: 'Quiz', labelZh: '测验', icon: FlaskConical },
   { id: 'canvas', label: 'Canvas', labelZh: '写作', icon: NotebookPen },
 ];
-
-const buildDbSetupGuide = import.meta.env.DEV
-  ? (language: string): string =>
-      language.startsWith('zh')
-        ? [
-            '请不要再复制页面里的旧初始化 SQL。',
-            '请在项目根目录执行：',
-            '1. supabase link',
-            '2. supabase db push --linked',
-            '3. supabase functions deploy ai-chat',
-            '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
-            '如需核对 migration，请查看：supabase/migrations/',
-          ].join('\n')
-        : [
-            'Do not copy the legacy bootstrap SQL from the UI.',
-            'From the project root run:',
-            '1. supabase link',
-            '2. supabase db push --linked',
-            '3. supabase functions deploy ai-chat',
-            '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
-            'Review migrations in: supabase/migrations/',
-          ].join('\n')
-  : (_language: string): string => 'Contact support at support@vocabdaily.com';
-
-interface QuizSequenceState {
-  targetCount: number;
-  answeredCount: number;
-  seedPrompt: string;
-  usedWords: string[];
-  startedAt: number;
-}
-
-interface QuizRunArtifactEntry {
-  messageId: string;
-  artifact: Extract<ChatArtifact, { type: 'quiz' }>;
-  createdAt: number;
-}
 
 // Main Chat Page Component
 export default function ChatPage() {
@@ -183,7 +149,6 @@ export default function ChatPage() {
   const [quizSequence, setQuizSequence] = useState<QuizSequenceState | null>(null);
   const [visibleMessageCount, setVisibleMessageCount] = useState(120);
   const [dbStatus, setDbStatus] = useState<Record<string, boolean>>({});
-  const [showDbSetup, setShowDbSetup] = useState(false);
   const [loadingStageIndex, setLoadingStageIndex] = useState(0);
   const messagesScrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -365,30 +330,10 @@ export default function ChatPage() {
     return () => viewport.removeEventListener('scroll', handleScroll);
   }, [getMessagesViewport, currentSessionId, sidebarOpen]);
 
-  const quizRunArtifacts = useMemo<QuizRunArtifactEntry[]>(() => {
-    if (!quizSequence) return [];
-    const runStartedAt = quizSequence.startedAt || 0;
-
-    const entries: QuizRunArtifactEntry[] = [];
-    const seen = new Set<string>();
-
-    for (const message of messages) {
-      if (runStartedAt > 0 && message.createdAt < runStartedAt - 500) continue;
-      if (!message.artifacts || message.role !== 'assistant') continue;
-      for (const artifact of message.artifacts) {
-        if (artifact.type !== 'quiz') continue;
-        if (seen.has(artifact.payload.quizId)) continue;
-        seen.add(artifact.payload.quizId);
-        entries.push({
-          messageId: message.id,
-          artifact,
-          createdAt: message.createdAt,
-        });
-      }
-    }
-
-    return entries.sort((a, b) => a.createdAt - b.createdAt);
-  }, [messages, quizSequence]);
+  const quizRunArtifacts = useMemo<QuizRunArtifactEntry[]>(
+    () => collectQuizRunArtifacts(messages, quizSequence),
+    [messages, quizSequence],
+  );
 
   useEffect(() => {
     if (!quizSequence) {
@@ -402,11 +347,13 @@ export default function ChatPage() {
 
     quizArtifactsRef.current = quizRunArtifacts;
 
-    setQuizCanvasIndex((current) => {
-      if (quizRunArtifacts.length === 0) return 0;
-      const preferred = Math.max(0, Math.min(quizSequence.answeredCount, quizRunArtifacts.length - 1));
-      return Math.min(Math.max(current, preferred), quizRunArtifacts.length - 1);
-    });
+    setQuizCanvasIndex((current) =>
+      reconcileCanvasIndex({
+        currentIndex: current,
+        answeredCount: quizSequence.answeredCount,
+        artifactsLength: quizRunArtifacts.length,
+      }),
+    );
   }, [quizRunArtifacts, quizSequence]);
 
   useEffect(() => {
@@ -429,13 +376,11 @@ export default function ChatPage() {
 
   const activeQuizRunArtifact = quizRunArtifacts[quizCanvasIndex] || null;
   const quizCompleted = Boolean(quizSequence && quizSequence.answeredCount >= quizSequence.targetCount);
-  const quizDisplayIndex = quizSequence
-    ? (quizCompleted
-        ? quizSequence.targetCount
-        : activeQuizRunArtifact
-          ? Math.min(quizSequence.targetCount, quizCanvasIndex + 1)
-          : Math.min(quizSequence.targetCount, quizSequence.answeredCount + 1))
-    : 0;
+  const quizDisplayIndex = computeQuizDisplayIndex({
+    sequence: quizSequence,
+    canvasIndex: quizCanvasIndex,
+    hasActiveArtifact: Boolean(activeQuizRunArtifact),
+  });
 
   // Auto scroll to bottom when user is near bottom.
   useEffect(() => {
@@ -1183,66 +1128,7 @@ export default function ChatPage() {
 
   return (
     <div className="h-full min-h-0 flex overflow-hidden">
-      {/* Database Status */}
-      {Object.keys(dbStatus).length > 0 && !Object.values(dbStatus).every(Boolean) && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 max-w-lg shadow-lg">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="h-4 w-4 text-amber-600" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-medium text-sm">{language.startsWith('zh') ? '需要初始化数据库表' : 'Database tables need initialization'}</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                {language.startsWith('zh') 
-                  ? '检测到数据库对象缺失。请使用项目 migration 完成初始化，不要再手动粘贴旧 SQL。'
-                  : 'Database objects are missing. Use the project migrations instead of pasting the old bootstrap SQL.'}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {Object.entries(dbStatus).map(([table, exists]) => (
-                  <span 
-                    key={table} 
-                    className={cn(
-                      "text-xs px-2 py-0.5 rounded",
-                      exists ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
-                    )}
-                  >
-                    {table}: {exists ? '✓' : '✗'}
-                  </span>
-                ))}
-              </div>
-              <div className="flex gap-2 mt-3">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="text-xs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(buildDbSetupGuide(language));
-                    toast.success(language.startsWith('zh') ? '初始化步骤已复制到剪贴板' : 'Setup steps copied to clipboard');
-                  }}
-                >
-                  <Copy className="h-3 w-3 mr-1" />
-                  {language.startsWith('zh') ? '复制初始化步骤' : 'Copy Setup Steps'}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="text-xs"
-                  onClick={() => setShowDbSetup(!showDbSetup)}
-                >
-                  {showDbSetup 
-                    ? (language.startsWith('zh') ? '收起' : 'Collapse')
-                    : (language.startsWith('zh') ? '查看 SQL' : 'View SQL')}
-                </Button>
-              </div>
-              {showDbSetup && (
-                <pre className="mt-2 bg-muted rounded p-2 text-xs overflow-x-auto max-h-64 overflow-y-auto">
-                  {buildDbSetupGuide(language)}
-                </pre>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <DatabaseStatusBanner language={language} dbStatus={dbStatus} />
 
       {/* Sidebar - History Panel */}
       <AnimatePresence mode="wait">
@@ -1320,12 +1206,12 @@ export default function ChatPage() {
             <div>
               <h1 className="font-semibold">{t('chat.title')}</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 {t('chat.subtitle')} · {messages.length > 0 ? `${messages.length} ${t('common.messages')}` : t('chat.ready')}
                 {quizSequence && (
                   <>
                     <span>·</span>
-                    <span className="text-emerald-600">
+                    <span className="text-primary">
                       {language.startsWith('zh')
                         ? `连续测验 ${quizDisplayIndex}/${quizSequence.targetCount}`
                         : `Quiz run ${quizDisplayIndex}/${quizSequence.targetCount}`}
@@ -1448,71 +1334,29 @@ export default function ChatPage() {
                 ))}
 
                 {quizSequence && (
-                  <div className="pt-2">
-                    <div className="rounded-2xl border border-emerald-300/40 bg-emerald-50/55 dark:bg-emerald-900/20 p-4 space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                            {language.startsWith('zh') ? '连续测验画布' : 'Quiz Canvas'}
-                          </p>
-                          <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
-                            {language.startsWith('zh')
-                              ? `第 ${Math.min(quizCanvasIndex + 1, quizSequence.targetCount)}/${quizSequence.targetCount} 题 · 已完成 ${quizSequence.answeredCount} 题`
-                              : `Question ${Math.min(quizCanvasIndex + 1, quizSequence.targetCount)}/${quizSequence.targetCount} · ${quizSequence.answeredCount} completed`}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            disabled={quizCanvasIndex <= 0}
-                            onClick={() => setQuizCanvasIndex((current) => Math.max(0, current - 1))}
-                            title={language.startsWith('zh') ? '上一题' : 'Previous question'}
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            disabled={
-                              quizCanvasIndex >= Math.min(quizRunArtifacts.length - 1, quizSequence.answeredCount)
-                            }
-                            onClick={() =>
-                              setQuizCanvasIndex((current) =>
-                                Math.min(Math.min(quizRunArtifacts.length - 1, quizSequence.answeredCount), current + 1),
-                              )
-                            }
-                            title={language.startsWith('zh') ? '下一题' : 'Next question'}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {activeQuizRunArtifact ? (
-                        <QuizArtifactCard
-                          key={`quiz-canvas-${activeQuizRunArtifact.artifact.payload.quizId}`}
-                          artifact={activeQuizRunArtifact.artifact}
-                          sessionId={currentSessionId}
-                          mode={chatMode}
-                          hasAttempt={Boolean(attemptedQuizMap[activeQuizRunArtifact.artifact.payload.quizId])}
-                          attemptedOption={attemptedQuizMap[activeQuizRunArtifact.artifact.payload.quizId]?.selected}
-                          onSubmit={handleQuizSubmit}
-                          onAddReviewCard={addReviewCardFromQuiz}
-                          onGenerateLesson={generateLessonFromQuiz}
-                          language={language}
-                        />
-                      ) : (
-                        <div className="rounded-xl border border-emerald-300/35 bg-background/70 px-3 py-4 text-sm text-muted-foreground">
-                          {isLoading
-                            ? (language.startsWith('zh') ? '正在生成测验题目...' : 'Generating quiz questions...')
-                            : (language.startsWith('zh') ? '暂未拿到题目，请重试或稍后继续。' : 'No quiz item returned yet. Please retry.')}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <QuizCanvasPanel
+                    language={language}
+                    sequence={quizSequence}
+                    canvasIndex={quizCanvasIndex}
+                    artifacts={quizRunArtifacts}
+                    activeArtifact={activeQuizRunArtifact}
+                    attemptedQuizMap={attemptedQuizMap}
+                    sessionId={currentSessionId}
+                    mode={chatMode}
+                    isLoading={isLoading}
+                    onPrevious={() => setQuizCanvasIndex((current) => Math.max(0, current - 1))}
+                    onNext={() =>
+                      setQuizCanvasIndex((current) =>
+                        Math.min(
+                          Math.min(quizRunArtifacts.length - 1, quizSequence.answeredCount),
+                          current + 1,
+                        ),
+                      )
+                    }
+                    onSubmitQuiz={handleQuizSubmit}
+                    onAddReviewCard={addReviewCardFromQuiz}
+                    onGenerateLesson={generateLessonFromQuiz}
+                  />
                 )}
 
                 {/* Streaming message */}
@@ -1581,43 +1425,22 @@ export default function ChatPage() {
         />
 
         {quizSequence && (
-          <div className="px-4 pb-2">
-            <div
-              className={cn(
-                contentWidthClass,
-                'mx-auto rounded-xl border border-emerald-300/40 bg-emerald-50/60 dark:bg-emerald-900/20 px-3 py-2 flex items-center justify-between gap-3',
-              )}
-            >
-              <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                {language.startsWith('zh')
-                  ? quizCompleted
-                    ? `连续测验已完成：${quizSequence.targetCount}/${quizSequence.targetCount} 题`
-                    : `连续测验进行中：已完成 ${quizSequence.answeredCount}/${quizSequence.targetCount} 题`
-                  : quizCompleted
-                    ? `Quiz completed: ${quizSequence.targetCount}/${quizSequence.targetCount}`
-                    : `Quiz streak in progress: ${quizSequence.answeredCount}/${quizSequence.targetCount} completed`}
-              </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs text-emerald-700 hover:text-emerald-800"
-                onClick={() => {
-                  stopGeneration();
-                  syncQuizSequence(null);
-                  setQuizCanvasIndex(0);
-                  quizBatchRequestingRef.current = false;
-                  quizPrefetchAttemptedRef.current = false;
-                  quizBackgroundPrefetchRef.current = false;
-                  clearQuizRun(currentSessionId);
-                  handledSequenceQuizIdsRef.current.clear();
-                }}
-              >
-                {language.startsWith('zh')
-                  ? (quizCompleted ? '收起测验画布' : '结束连续测验')
-                  : (quizCompleted ? 'Close quiz canvas' : 'End quiz run')}
-              </Button>
-            </div>
-          </div>
+          <QuizRunFooter
+            language={language}
+            contentWidthClass={contentWidthClass}
+            sequence={quizSequence}
+            completed={quizCompleted}
+            onEnd={() => {
+              stopGeneration();
+              syncQuizSequence(null);
+              setQuizCanvasIndex(0);
+              quizBatchRequestingRef.current = false;
+              quizPrefetchAttemptedRef.current = false;
+              quizBackgroundPrefetchRef.current = false;
+              clearQuizRun(currentSessionId);
+              handledSequenceQuizIdsRef.current.clear();
+            }}
+          />
         )}
 
         <ChatComposer

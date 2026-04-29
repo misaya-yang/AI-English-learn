@@ -1598,3 +1598,41 @@ Playwright + demo login.
     be audited page-by-page rather than swept blindly.
 
 - Not pushed.
+
+---
+
+## 2026-04-29 13:15 CST - RALPH-20260429-02 (Chat shell component wire-in + token polish)
+
+- Changed:
+  - Wired `ChatPage` to the already extracted
+    `DatabaseStatusBanner`, `QuizCanvasPanel`, and `QuizRunFooter`
+    components, removing duplicate inline DB/quiz shell UI from the page.
+  - Replaced ChatPage quiz-run/header success accents with semantic
+    `primary` tokens.
+  - Updated `QuizCanvasPanel`, `QuizRunFooter`, and
+    `DatabaseStatusBanner` away from emerald-only styling to
+    `primary`, `success`, and `destructive` design tokens.
+  - Reused the shared `quizSequenceState` helpers for artifact collection,
+    display-index calculation, and canvas-index reconciliation.
+  - Added a source-level chat visual contract test so the page stays wired
+    to extracted shell components and quiz shell chrome does not drift back
+    to emerald-only accents.
+
+- Verified:
+  - `npm test -- --run src/features/chat/components/chatVisualContract.test.ts src/features/chat/runtime/quizSequenceState.test.ts`
+    → 2 files, 14 tests, all green.
+  - `npm test -- --run` → 62 files, 650 tests, all green.
+  - `npm run build` → tsc + vite build clean; pre-existing large-chunk
+    warning remains, and ChatPage still needs a dedicated runtime split loop.
+  - Browser smoke against `http://127.0.0.1:4173/dashboard/chat` with legacy
+    local demo auth → page renders, no `>=400` responses, no console issues.
+
+- Known residual:
+  - This loop intentionally avoided changing chat behavior. ChatPage bundle
+    size is still high and needs a focused lazy/runtime split.
+  - Several chat child components still use emerald treatment
+    (`ChatComposer`, `ChatMessageBubble`, `QuizArtifactCard`,
+    `CoachActionPanel`, recommendations). Those should be audited as
+    component-specific visual loops rather than swept blindly.
+
+- Not pushed.

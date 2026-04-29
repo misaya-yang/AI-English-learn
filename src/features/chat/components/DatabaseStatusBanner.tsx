@@ -37,7 +37,9 @@ export const DatabaseStatusBanner = ({ language, dbStatus }: DatabaseStatusBanne
                 key={table}
                 className={cn(
                   'text-xs px-2 py-0.5 rounded',
-                  exists ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700',
+                  exists
+                    ? 'bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))]'
+                    : 'bg-destructive/10 text-destructive',
                 )}
               >
                 {table}: {exists ? '✓' : '✗'}

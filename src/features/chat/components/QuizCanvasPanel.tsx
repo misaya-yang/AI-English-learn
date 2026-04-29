@@ -47,13 +47,13 @@ export const QuizCanvasPanel = ({
 
   return (
     <div className="pt-2">
-      <div className="rounded-2xl border border-emerald-300/40 bg-emerald-50/55 dark:bg-emerald-900/20 p-4 space-y-3">
+      <div className="rounded-xl border border-primary/15 bg-primary/5 p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+            <p className="text-sm font-semibold text-primary">
               {isZh ? '连续测验画布' : 'Quiz Canvas'}
             </p>
-            <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
+            <p className="text-xs text-primary/80">
               {isZh
                 ? `第 ${Math.min(canvasIndex + 1, sequence.targetCount)}/${sequence.targetCount} 题 · 已完成 ${sequence.answeredCount} 题`
                 : `Question ${Math.min(canvasIndex + 1, sequence.targetCount)}/${sequence.targetCount} · ${sequence.answeredCount} completed`}
@@ -97,7 +97,7 @@ export const QuizCanvasPanel = ({
             language={language}
           />
         ) : (
-          <div className="rounded-xl border border-emerald-300/35 bg-background/70 px-3 py-4 text-sm text-muted-foreground">
+          <div className="rounded-xl border border-border bg-card px-3 py-4 text-sm text-muted-foreground">
             {isLoading
               ? (isZh ? '正在生成测验题目...' : 'Generating quiz questions...')
               : (isZh ? '暂未拿到题目，请重试或稍后继续。' : 'No quiz item returned yet. Please retry.')}
