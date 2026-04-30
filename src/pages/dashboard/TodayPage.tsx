@@ -5,13 +5,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { motionPresets } from '@/lib/motion';
 import { FlashCard } from '@/components/FlashCard';
 import {
   LearningActionCluster,
   LearningCompletionState,
   LearningEmptyState,
-  LearningHeroPanel,
   LearningMetricStrip,
   LearningRailSection,
   LearningShellFrame,
@@ -310,23 +308,35 @@ const CircularProgress = memo(function CircularProgress({
 
 // Confetti celebration component
 const CONFETTI_COLORS = ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6'];
+const seededFraction = (seed: number): number => {
+  const value = Math.sin(seed * 12.9898) * 43758.5453;
+  return value - Math.floor(value);
+};
+const CONFETTI_PARTICLES = Array.from({ length: 30 }, (_, i) => ({
+  id: i,
+  left: `${seededFraction(i + 1) * 100}%`,
+  top: `${seededFraction(i + 31) * 40}%`,
+  animationDelay: `${seededFraction(i + 61) * 0.8}s`,
+  animationDuration: `${1.2 + seededFraction(i + 91) * 0.8}s`,
+  size: `${6 + seededFraction(i + 121) * 6}px`,
+}));
 
 function ConfettiCelebration({ active }: { active: boolean }) {
   if (!active) return null;
   return (
     <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
-      {Array.from({ length: 30 }).map((_, i) => (
+      {CONFETTI_PARTICLES.map((particle) => (
         <div
-          key={i}
+          key={particle.id}
           className="confetti-particle"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 40}%`,
-            backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-            animationDelay: `${Math.random() * 0.8}s`,
-            animationDuration: `${1.2 + Math.random() * 0.8}s`,
-            width: `${6 + Math.random() * 6}px`,
-            height: `${6 + Math.random() * 6}px`,
+            left: particle.left,
+            top: particle.top,
+            backgroundColor: CONFETTI_COLORS[particle.id % CONFETTI_COLORS.length],
+            animationDelay: particle.animationDelay,
+            animationDuration: particle.animationDuration,
+            width: particle.size,
+            height: particle.size,
           }}
         />
       ))}
@@ -404,29 +414,16 @@ export default function TodayPage() {
   // yesterday's flags.
   const dayKey: DayKey = useMemo(() => ({ userId, date: new Date() }), [userId]);
   const initialFlags = useMemo(() => loadTodayFlags(dayKey), [dayKey]);
-  const [learnedWords, setLearnedWords] = useState<Set<string>>(new Set());
+  const [optimisticLearnedWords, setOptimisticLearnedWords] = useState<Set<string>>(new Set());
   const [hardWords, setHardWords] = useState<Set<string>>(initialFlags.hard);
   const [bookmarkedWords, setBookmarkedWords] = useState<Set<string>>(initialFlags.bookmark);
   const currentStreak = streak.current;
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const words = dailyWords.length > 0 ? dailyWords : [];
+  const words = useMemo(() => (dailyWords.length > 0 ? dailyWords : []), [dailyWords]);
   const currentWord = words[currentWordIndex];
-  const progress = words.length > 0 ? (learnedWords.size / words.length) * 100 : 0;
-  const recommendedUnit = getRecommendedUnit(userId);
-
-  useEffect(() => {
-    refreshDailyWords();
-    refreshDailyMission();
-  }, [refreshDailyMission, refreshDailyWords]);
-
-  // Hydrate `learnedWords` from durable progress so a refresh does not
-  // reset the workbench. Only words that the daily list still contains
-  // and that have been touched today are counted as "learned today" — a
-  // word reviewed last week is durable progress, not part of this
-  // session's hero metric.
-  useEffect(() => {
-    if (words.length === 0) return;
+  const durableLearnedWords = useMemo(() => {
+    if (words.length === 0) return new Set<string>();
     const todayKey = `${dayKey.date.getFullYear()}-${String(dayKey.date.getMonth() + 1).padStart(2, '0')}-${String(dayKey.date.getDate()).padStart(2, '0')}`;
     const wordIdsToday = new Set(words.map((word) => word.id));
     const learnedToday = new Set<string>();
@@ -438,21 +435,20 @@ export default function TodayPage() {
       const counts = lastKey === todayKey || entry.status === 'mastered';
       if (counts) learnedToday.add(entry.wordId);
     }
-    setLearnedWords((prev) => {
-      // Preserve any optimistic adds (e.g. mid-session marks the user just
-      // tapped) so we never visually undo a fresh tap if the durable write
-      // hasn't roundtripped yet.
-      let changed = false;
-      const next = new Set(prev);
-      learnedToday.forEach((id) => {
-        if (!next.has(id)) {
-          next.add(id);
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
-    });
+    return learnedToday;
   }, [dayKey.date, wordProgress, words]);
+  const learnedWords = useMemo(() => {
+    const next = new Set(durableLearnedWords);
+    optimisticLearnedWords.forEach((id) => next.add(id));
+    return next;
+  }, [durableLearnedWords, optimisticLearnedWords]);
+  const progress = words.length > 0 ? (learnedWords.size / words.length) * 100 : 0;
+  const recommendedUnit = getRecommendedUnit(userId);
+
+  useEffect(() => {
+    refreshDailyWords();
+    refreshDailyMission();
+  }, [refreshDailyMission, refreshDailyWords]);
 
   // ── FSRS-5 Learner Model ──────────────────────────────────────────────────
   const learnerModel = useMemo(() => {
@@ -478,11 +474,11 @@ export default function TodayPage() {
   });
 
   const missionCard = learningOverviewQuery.data?.missionCard;
-  const weaknesses = learningOverviewQuery.data?.weaknesses || [];
+  const weaknesses = useMemo(() => learningOverviewQuery.data?.weaknesses ?? [], [learningOverviewQuery.data?.weaknesses]);
   const adaptiveDifficulty = learningOverviewQuery.data?.adaptiveDifficulty;
-  const activityPoints = learningOverviewQuery.data?.activity || [];
+  const activityPoints = useMemo(() => learningOverviewQuery.data?.activity ?? [], [learningOverviewQuery.data?.activity]);
 
-  const handleFlip = (wordId: string) => {
+  const handleFlip = useCallback((wordId: string) => {
     setFlippedCards((prev) => {
       const next = new Set(prev);
       if (next.has(wordId)) {
@@ -492,7 +488,7 @@ export default function TodayPage() {
       }
       return next;
     });
-  };
+  }, []);
 
   const handleMarkStatus = (status: 'learned' | 'hard') => {
     if (!currentWord) return;
@@ -503,7 +499,7 @@ export default function TodayPage() {
         return;
       }
 
-      setLearnedWords((prev) => new Set(prev).add(currentWord.id));
+      setOptimisticLearnedWords((prev) => new Set(prev).add(currentWord.id));
       markWordAsLearned(currentWord.id);
       void recordLearningEvent({
         userId,
@@ -603,19 +599,19 @@ export default function TodayPage() {
     toast.success('已复制到剪贴板');
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentWordIndex > 0) {
       setCurrentWordIndex((prev) => prev - 1);
       setFlippedCards(new Set());
     }
-  };
+  }, [currentWordIndex]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentWordIndex < words.length - 1) {
       setCurrentWordIndex((prev) => prev + 1);
       setFlippedCards(new Set());
     }
-  };
+  }, [currentWordIndex, words.length]);
 
   // Keyboard shortcuts: Space flips the current card; ArrowLeft/ArrowRight navigate cards.
   // handleFlip is defined in this component scope and takes a wordId parameter,
@@ -637,6 +633,47 @@ export default function TodayPage() {
   const missionDone = dailyMission?.tasks.filter((task) => task.done).length || 0;
   const missionTotal = dailyMission?.tasks.length || 0;
   const missionProgress = missionTotal > 0 ? Math.round((missionDone / missionTotal) * 100) : 0;
+  const coachNextStep = useMemo(() => {
+    const topWeakness = weaknesses[0];
+    if (topWeakness) {
+      return {
+        label: isZh ? '教练下一步' : 'Coach next step',
+        title: isZh ? topWeakness.titleZh : topWeakness.title,
+        detail: isZh
+          ? `先用一次诊断确认 ${topWeakness.titleZh}，再安排针对训练。`
+          : `Diagnose ${topWeakness.title} first, then turn it into a focused drill.`,
+      };
+    }
+
+    if (learnerModel?.stubbornWordCount) {
+      const topic = learnerModel.stubbornTopics[0] || (isZh ? '顽固词' : 'stubborn words');
+      return {
+        label: isZh ? '教练下一步' : 'Coach next step',
+        title: isZh ? `补强 ${topic}` : `Reinforce ${topic}`,
+        detail: isZh
+          ? `${learnerModel.stubbornWordCount} 个顽固词需要进入短测和复习回路。`
+          : `${learnerModel.stubbornWordCount} stubborn items should move into drill and review.`,
+      };
+    }
+
+    if (dueWords.length > 0) {
+      return {
+        label: isZh ? '教练下一步' : 'Coach next step',
+        title: isZh ? '先清理到期复习' : 'Clear due reviews first',
+        detail: isZh
+          ? `${dueWords.length} 个到期项会影响今天的新练习安排。`
+          : `${dueWords.length} due items should shape today's training load.`,
+      };
+    }
+
+    return {
+      label: isZh ? '教练下一步' : 'Coach next step',
+      title: isZh ? '做一次目标诊断' : 'Run a target diagnosis',
+      detail: isZh
+        ? `${learningProfile.target} 会作为今天教练建议的主上下文。`
+        : `${learningProfile.target} will anchor today's coach recommendation.`,
+    };
+  }, [dueWords.length, isZh, learnerModel, learningProfile.target, weaknesses]);
 
   if (words.length === 0) {
     return (
@@ -749,6 +786,29 @@ export default function TodayPage() {
         <StreakFire days={currentStreak} />
         {todayXP > 0 && <XPCounter value={todayXP} />}
       </div>
+
+      <section className={cn(learningFrameClassName, 'border-primary/20 bg-primary/[0.04] p-4')}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <MessageCircleMore className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {coachNextStep.label}
+              </p>
+              <h2 className="mt-1 text-base font-semibold text-foreground">{coachNextStep.title}</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{coachNextStep.detail}</p>
+            </div>
+          </div>
+          <Button className="shrink-0 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+            <Link to="/dashboard/chat">
+              <MessageCircleMore className="mr-2 h-4 w-4" />
+              {isZh ? '去教练室' : 'Open Coach'}
+            </Link>
+          </Button>
+        </div>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">

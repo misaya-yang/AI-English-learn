@@ -40,9 +40,9 @@ describe('buildCoachActionPanelData', () => {
       action({ type: 'retry_with_hint', prompt: 'try again now' }),
       // @ts-expect-error simulate malformed payload from the model
       { type: 'mystery_action', prompt: 'ignored' },
-      // @ts-expect-error
+      // @ts-expect-error simulate nullable model output
       null,
-      // @ts-expect-error
+      // @ts-expect-error simulate primitive model output
       'string',
     ]);
     expect(data.actions.length).toBe(1);

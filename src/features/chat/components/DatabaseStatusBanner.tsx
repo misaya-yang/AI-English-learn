@@ -13,6 +13,10 @@ export interface DatabaseStatusBannerProps {
 export const DatabaseStatusBanner = ({ language, dbStatus }: DatabaseStatusBannerProps) => {
   const [showDbSetup, setShowDbSetup] = useState(false);
 
+  if (!import.meta.env.DEV) {
+    return null;
+  }
+
   const entries = Object.entries(dbStatus);
   if (entries.length === 0 || entries.every(([, exists]) => exists)) {
     return null;

@@ -43,6 +43,7 @@ import {
   Award,
   AlertTriangle,
   Clock3,
+  MessageCircleMore,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -204,6 +205,7 @@ export default function AnalyticsPage() {
   // Calculate level based on XP using the canonical helpers from gamification.ts
   const level = computeLevel(xp.total);
   const levelName = getLevelName(xp.total);
+  const streakCurrent = streak.current;
   // XP progress within the current level (0–99)
   const xpInCurrentLevel = xp.total % 100;
   const xpToNextLevel = 100 - xpInCurrentLevel;
@@ -230,8 +232,8 @@ export default function AnalyticsPage() {
     {
       title: 'Current Streak',
       titleZh: '连续学习',
-      value: `${streak.current} days`,
-      change: streak.current > 0 ? 'On fire!' : 'Start today',
+      value: `${streakCurrent} days`,
+      change: streakCurrent > 0 ? 'On fire!' : 'Start today',
       icon: Flame,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
@@ -318,7 +320,7 @@ export default function AnalyticsPage() {
     const totalWords = Math.max(stats.totalWords, 1);
     const masteryRate = Math.round((stats.masteredWords / totalWords) * 100);
     const retentionScore = fsrsStats ? Math.round(fsrsStats.avgR * 100) : 50;
-    const streakScore = Math.min(100, streak.current * 5);
+    const streakScore = Math.min(100, streakCurrent * 5);
     const practiceScore = Math.min(100, stats.weeklyWords * 4);
     const consistencyScore = Math.min(100, (weeklyData.filter((d) => d.words > 0).length / Math.max(weeklyData.length, 1)) * 100);
     return [
@@ -329,7 +331,7 @@ export default function AnalyticsPage() {
       { subject: 'Practice', value: practiceScore, fullMark: 100 },
       { subject: 'Streak', value: streakScore, fullMark: 100 },
     ];
-  }, [stats, streak, weeklyData, fsrsStats]);
+  }, [stats, streakCurrent, weeklyData, fsrsStats]);
 
   // AI Weekly Report
   const weeklyReport = useMemo(() => {
@@ -349,7 +351,7 @@ export default function AnalyticsPage() {
     else if (avgRetention >= 50) highlights.push(`记忆保留率 ${avgRetention}%，建议增加复习频率。`);
     else if (avgRetention > 0) highlights.push(`记忆保留率偏低 (${avgRetention}%)，优先处理到期复习。`);
 
-    if (streak.current >= 7) highlights.push(`连续学习 ${streak.current} 天🔥，保持住！`);
+    if (streakCurrent >= 7) highlights.push(`连续学习 ${streakCurrent} 天🔥，保持住！`);
 
     const suggestion = avgRetention < 60
       ? '本周建议：优先做到期复习，间隔重复是记忆的核心。'
@@ -358,11 +360,35 @@ export default function AnalyticsPage() {
         : '本周建议：保持当前节奏，可以尝试提升练习难度。';
 
     return { totalWordsThisWeek, totalXpThisWeek, activeDays, highlights, suggestion };
-  }, [weeklyData, fsrsStats, streak]);
+  }, [weeklyData, fsrsStats, streakCurrent]);
+
+  const coachImpact = useMemo(() => {
+    const coachEvents = eventHistory.filter((event) =>
+      event.eventName.startsWith('chat.') ||
+      event.eventName.includes('quiz') ||
+      event.eventName.includes('writing') ||
+      event.eventName.includes('practice'),
+    );
+    const reinforcementEvents = eventHistory.filter((event) =>
+      event.eventName === 'review.word_rated' ||
+      event.eventName === 'mission.task_completed',
+    );
+    const repeatedErrors = riskWords.filter((item) => item.isStubborn).length;
+    const retentionPct = fsrsStats ? Math.round(fsrsStats.avgR * 100) : 0;
+    const primaryFocus = riskWords[0]?.topic || reviewWindowInsight?.primary.label || 'IELTS writing';
+
+    return {
+      diagnosed: coachEvents.length,
+      completedReinforcements: reinforcementEvents.length,
+      repeatedErrors,
+      retentionPct,
+      primaryFocus,
+    };
+  }, [eventHistory, fsrsStats, reviewWindowInsight, riskWords]);
 
   const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
   const badges = [
-    { name: '7-Day Streak', nameZh: '7天连续', icon: Flame, color: 'text-orange-500', earned: streak.current >= 7 },
+    { name: '7-Day Streak', nameZh: '7天连续', icon: Flame, color: 'text-orange-500', earned: streakCurrent >= 7 },
     { name: '100 Words', nameZh: '100单词', icon: BookOpen, color: 'text-emerald-500', earned: stats.totalWords >= 100 },
     { name: 'Perfect Week', nameZh: '完美一周', icon: Calendar, color: 'text-blue-500', earned: hasPerfectWeek },
     { name: 'Word Wizard', nameZh: '单词巫师', icon: Zap, color: 'text-purple-500', earned: stats.masteredWords >= 50 },
@@ -458,6 +484,7 @@ export default function AnalyticsPage() {
           <TabsTrigger value="overview">概览</TabsTrigger>
           <TabsTrigger value="words">词汇</TabsTrigger>
           <TabsTrigger value="retention">记忆保留</TabsTrigger>
+          <TabsTrigger value="coach-impact">Coach Impact</TabsTrigger>
           <TabsTrigger value="insights">AI 洞察</TabsTrigger>
           <TabsTrigger value="badges">成就</TabsTrigger>
         </TabsList>
@@ -833,6 +860,54 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="coach-impact" className="space-y-6">
+          <Card className="border-primary/20 bg-primary/[0.03]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MessageCircleMore className="h-5 w-5 text-primary" />
+                Coach Impact
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                本周 AI 诊断、补强完成、重复错误和 FSRS 保持率的闭环信号。
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <p className="text-xs text-muted-foreground">AI 诊断信号</p>
+                  <p className="mt-2 text-2xl font-semibold">{coachImpact.diagnosed}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">chat / quiz / practice events</p>
+                </div>
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <p className="text-xs text-muted-foreground">已完成补强</p>
+                  <p className="mt-2 text-2xl font-semibold">{coachImpact.completedReinforcements}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">review cards + mission tasks</p>
+                </div>
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <p className="text-xs text-muted-foreground">重复错误风险</p>
+                  <p className="mt-2 text-2xl font-semibold">{coachImpact.repeatedErrors}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">stubborn FSRS items</p>
+                </div>
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <p className="text-xs text-muted-foreground">预测保持率</p>
+                  <p className="mt-2 text-2xl font-semibold">{coachImpact.retentionPct}%</p>
+                  <p className="mt-1 text-xs text-muted-foreground">active FSRS average</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border bg-background p-4">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Next coaching focus
+                </p>
+                <p className="mt-2 text-lg font-semibold capitalize">{coachImpact.primaryFocus}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  下一轮 Today 与 Coach Studio 会优先围绕这个弱项生成诊断、训练和复盘动作。
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="insights" className="space-y-6">

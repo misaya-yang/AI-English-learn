@@ -50,12 +50,10 @@ describe('pricingAvailability', () => {
   });
 
   describe('getCheckoutStatus', () => {
-    it('returns coming_soon with a contact email when checkout is unavailable', () => {
+    it('returns coming_soon without a fake waitlist/contact promise when checkout is unavailable', () => {
       const status = getCheckoutStatus({});
       expect(status.kind).toBe('coming_soon');
-      if (status.kind === 'coming_soon') {
-        expect(status.supportEmail).toMatch(/@/);
-      }
+      expect('supportEmail' in status).toBe(false);
     });
 
     it('returns available when checkout is enabled', () => {

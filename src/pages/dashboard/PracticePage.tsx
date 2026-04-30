@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,10 +13,8 @@ import {
   LearningActionCluster,
   LearningCompletionState,
   LearningEmptyState,
-  LearningHeroPanel,
   LearningMetricStrip,
   LearningRailSection,
-  LearningShellFrame,
   LearningWorkspaceSurface,
 } from '@/features/learning/components/LearningWorkspace';
 import {
@@ -126,7 +124,6 @@ export default function PracticePage() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
-  const [answerAnim, setAnswerAnim] = useState<'correct' | 'incorrect' | null>(null);
   const [errorNotebook, setErrorNotebook] = useState<Array<{ word: string; question: string; correctAnswer: string }>>([]);
 
   const listeningInputRef = useRef<HTMLInputElement | null>(null);
@@ -157,7 +154,6 @@ export default function PracticePage() {
     setPreviousFeedback(null);
     setCombo(0);
     setMaxCombo(0);
-    setAnswerAnim(null);
     setTimeLeft(60);
     setErrorNotebook([]);
   };
@@ -346,7 +342,6 @@ export default function PracticePage() {
       const newCombo = combo + 1;
       setCombo(newCombo);
       setMaxCombo((prev) => Math.max(prev, newCombo));
-      setAnswerAnim('correct');
       setScore((prev) => prev + 1);
       const comboBonus = newCombo >= 5 ? ' 🔥 Combo x5!' : newCombo >= 3 ? ' ⚡ Combo x3!' : '';
       toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 XP${comboBonus}`);
@@ -359,7 +354,6 @@ export default function PracticePage() {
       }
     } else {
       setCombo(0);
-      setAnswerAnim('incorrect');
       toast.error(isZh ? '回答错误，再试试！' : 'Incorrect. Try again!');
       // Save to error notebook
       setErrorNotebook((prev) => [...prev, {
@@ -392,9 +386,6 @@ export default function PracticePage() {
         // see above
       }
     }
-
-    // Clear animation after delay
-    setTimeout(() => setAnswerAnim(null), 600);
 
     void recordLearningEvent({
       userId,

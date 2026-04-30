@@ -49,7 +49,7 @@ export default function WritingPage() {
     } finally {
       setIsGrading(false);
     }
-  }, [content, writingType, currentType.prompt, wordCount]);
+  }, [content, writingType, currentType.prompt, wordCount, isZh]);
 
   const handleReset = () => {
     setContent('');

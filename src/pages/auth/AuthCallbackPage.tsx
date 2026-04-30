@@ -4,11 +4,27 @@ import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AuthShell } from '@/features/marketing/AuthShell';
+import { useTranslation } from 'react-i18next';
 
 export default function AuthCallbackPage() {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
   const [isProcessing, setIsProcessing] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const copy = isZh
+    ? {
+        title: '正在完成登录',
+        verifying: '快好了，正在验证你的登录信息。',
+        signedIn: '登录成功！',
+        failed: '认证失败',
+      }
+    : {
+        title: 'Completing sign in',
+        verifying: 'Almost there — verifying your session.',
+        signedIn: 'Successfully signed in!',
+        failed: 'Authentication failed',
+      };
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -53,14 +69,14 @@ export default function AuthCallbackPage() {
           }
 
           setIsSuccess(true);
-          toast.success('Successfully signed in!');
+          toast.success(copy.signedIn);
         } else {
           // No session found, redirect to login
           setIsSuccess(false);
         }
       } catch (error: unknown) {
         console.error('Auth callback error:', error);
-        toast.error(error instanceof Error ? error.message : 'Authentication failed');
+        toast.error(error instanceof Error ? error.message : copy.failed);
         setIsSuccess(false);
       } finally {
         setIsProcessing(false);
@@ -68,7 +84,7 @@ export default function AuthCallbackPage() {
     };
 
     handleAuthCallback();
-  }, []);
+  }, [copy.failed, copy.signedIn]);
 
   if (isProcessing) {
     return (
@@ -76,10 +92,7 @@ export default function AuthCallbackPage() {
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <Loader2 className="mb-4 h-9 w-9 animate-spin text-primary" aria-hidden="true" />
           <p className="text-sm text-foreground">
-            Almost there — verifying your session.
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground" lang="zh-CN">
-            正在验证你的登录信息……
+            {copy.verifying}
           </p>
         </div>
       </AuthShell>

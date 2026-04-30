@@ -10,7 +10,7 @@ export const buildDbSetupGuide = (language: string): string =>
     ? [
         '请不要再复制页面里的旧初始化 SQL。',
         '请在项目根目录执行：',
-        '1. supabase link --project-ref zjkbktdmwencnouwfrij',
+        '1. supabase link --project-ref <your-project-ref>',
         '2. supabase db push --linked',
         '3. supabase functions deploy ai-chat',
         '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',
@@ -19,7 +19,7 @@ export const buildDbSetupGuide = (language: string): string =>
     : [
         'Do not copy the legacy bootstrap SQL from the UI.',
         'From the project root run:',
-        '1. supabase link --project-ref zjkbktdmwencnouwfrij',
+        '1. supabase link --project-ref <your-project-ref>',
         '2. supabase db push --linked',
         '3. supabase functions deploy ai-chat',
         '4. supabase functions deploy memory-list memory-remember memory-delete memory-pin memory-clear-expired',

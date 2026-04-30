@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 interface BrandMarkProps {
@@ -24,6 +25,11 @@ export function BrandMark({
   className,
   tone = 'auto',
 }: BrandMarkProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
+  const tagline = isZh ? '学习工作台' : 'Learning Cockpit';
+  const linkLabel = isZh ? 'VocabDaily — 返回首页' : 'VocabDaily — back to home';
+
   const wordmarkClass = cn(
     'text-base font-bold tracking-tight',
     tone === 'light' && 'text-white',
@@ -49,7 +55,7 @@ export function BrandMark({
       <span className="flex flex-col leading-tight">
         <span className={wordmarkClass}>VocabDaily</span>
         {variant === 'default' && (
-          <span className={taglineClass}>Learning Cockpit</span>
+          <span className={taglineClass}>{tagline}</span>
         )}
       </span>
     </>
@@ -67,7 +73,7 @@ export function BrandMark({
     <Link
       to="/"
       className={cn('group inline-flex items-center gap-2.5', className)}
-      aria-label="VocabDaily — back to home"
+      aria-label={linkLabel}
     >
       {inner}
     </Link>

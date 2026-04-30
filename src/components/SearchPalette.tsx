@@ -32,10 +32,13 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
   const { progress } = useUserData();
   const [query, setQuery] = useState('');
 
-  // Reset query when dialog closes
-  useEffect(() => {
-    if (!open) setQuery('');
-  }, [open]);
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) setQuery('');
+      onOpenChange(nextOpen);
+    },
+    [onOpenChange],
+  );
 
   // Collect the set of word IDs the user has interacted with
   const progressIds = new Set(progress.map((p) => p.wordId));
@@ -66,7 +69,7 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
   );
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
+    <CommandDialog open={open} onOpenChange={handleOpenChange}>
       <CommandInput
         placeholder="搜索单词或跳转页面… (Cmd+K)"
         value={query}

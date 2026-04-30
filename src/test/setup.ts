@@ -5,3 +5,36 @@ import 'fake-indexeddb/auto';
 // IndexedDB writes still happen; the pending queue stays untouched. Tests that
 // want to exercise sync-flush behavior should override this explicitly.
 Object.defineProperty(navigator, 'onLine', { configurable: true, value: false });
+
+Object.defineProperty(window, 'matchMedia', {
+  configurable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+  }),
+});
+
+class ResizeObserverMock {
+  observe() {
+    return undefined;
+  }
+
+  unobserve() {
+    return undefined;
+  }
+
+  disconnect() {
+    return undefined;
+  }
+}
+
+Object.defineProperty(window, 'ResizeObserver', {
+  configurable: true,
+  value: ResizeObserverMock,
+});

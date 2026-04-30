@@ -78,7 +78,6 @@ export function emitStructuredEvent(input: EmitStructuredEventInput): Structured
   }
   if (typeof import.meta !== 'undefined' && (import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
     try {
-      // eslint-disable-next-line no-console
       console.info(`[obs] ${event.category}.${event.name}`, event.payload);
     } catch {
       /* no-op */

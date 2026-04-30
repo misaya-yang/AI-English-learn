@@ -141,7 +141,6 @@ export const CardItem = ({
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useMouseEnter = () => {
   const context = useContext(MouseEnterContext);
   if (context === undefined) {

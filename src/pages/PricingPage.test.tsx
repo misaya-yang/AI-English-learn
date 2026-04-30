@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // ─── Module mocks ────────────────────────────────────────────────────────────
 //
@@ -12,6 +13,24 @@ import { MemoryRouter } from 'react-router-dom';
 const createBillingCheckoutMock = vi.fn();
 const getEntitlementMock = vi.fn();
 const getSubscriptionEntitlementMock = vi.fn();
+const i18nState = vi.hoisted(() => ({
+  language: 'en',
+  changeLanguage: vi.fn((code: string) => {
+    i18nState.language = code;
+    return Promise.resolve();
+  }),
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    i18n: {
+      get language() {
+        return i18nState.language;
+      },
+      changeLanguage: i18nState.changeLanguage,
+    },
+  }),
+}));
 
 vi.mock('@/services/billingGateway', () => ({
   createBillingCheckout: (...args: unknown[]) => createBillingCheckoutMock(...args),
@@ -34,7 +53,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 vi.mock('@/features/marketing/pricingAvailability', () => ({
   // Force fail-closed for these tests — this is the production env today.
-  getCheckoutStatus: () => ({ kind: 'coming_soon', supportEmail: 'support@vocabdaily.ai' }),
+  getCheckoutStatus: () => ({ kind: 'coming_soon' }),
   isCheckoutAvailable: () => false,
 }));
 
@@ -50,45 +69,54 @@ vi.mock('sonner', () => ({
 
 import PricingPage from './PricingPage';
 
+const renderPricingPage = () =>
+  render(
+    <MemoryRouter>
+      <ThemeProvider defaultTheme="system" storageKey="pricing-test-theme">
+        <PricingPage />
+      </ThemeProvider>
+    </MemoryRouter>,
+  );
+
 describe('PricingPage — fail-closed pro checkout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    document.documentElement.className = '';
+    i18nState.language = 'en';
     getEntitlementMock.mockResolvedValue({ plan: 'free' });
     getSubscriptionEntitlementMock.mockResolvedValue({
       subscription: { status: 'inactive', provider: 'manual' },
     });
   });
 
-  it('renders the "暂未开放 / Coming soon" banner at the top of the page', async () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+  it('renders the localized coming-soon banner without mixing Chinese into English mode', async () => {
+    renderPricingPage();
 
     expect(screen.getByText(/Pro checkout is not yet open/i)).toBeInTheDocument();
+    expect(screen.queryByText('Pro 订阅暂未开放')).not.toBeInTheDocument();
+  });
+
+  it('renders the localized coming-soon banner in Chinese mode', async () => {
+    i18nState.language = 'zh';
+
+    renderPricingPage();
+
     expect(screen.getByText('Pro 订阅暂未开放')).toBeInTheDocument();
+    expect(screen.queryByText(/Pro checkout is not yet open/i)).not.toBeInTheDocument();
   });
 
   it('renders a "Coming soon · 暂未开放" card body in the Pro plan column', async () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+    renderPricingPage();
 
     const proCard = await screen.findByTestId('pricing-pro-coming-soon');
     expect(proCard).toBeInTheDocument();
     expect(proCard).toHaveTextContent(/Coming soon/i);
-    expect(proCard).toHaveTextContent('暂未开放');
+    expect(proCard).not.toHaveTextContent('暂未开放');
   });
 
   it('does NOT render Stripe / Alipay checkout buttons when checkout is unavailable', () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+    renderPricingPage();
 
     // The old UI had explicit "Checkout with Stripe / Alipay" buttons. The
     // fail-closed UI must not render those — we don't want users clicking
@@ -99,26 +127,16 @@ describe('PricingPage — fail-closed pro checkout', () => {
     expect(screen.queryByRole('button', { name: /^Upgrade to Pro$/ })).not.toBeInTheDocument();
   });
 
-  it('exposes a mailto link so the user can opt in for launch notification', async () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+  it('does not expose mailto waitlist links when Pro is not yet launchable', async () => {
+    renderPricingPage();
 
-    const link = await screen.findByRole('link', { name: /Notify me when it launches/i });
-    expect(link).toHaveAttribute(
-      'href',
-      expect.stringContaining('mailto:support@vocabdaily.ai'),
-    );
+    const proCard = await screen.findByTestId('pricing-pro-coming-soon');
+    expect(proCard.querySelector('a[href^="mailto:"]')).toBeNull();
+    expect(screen.queryByText(/Notify me when it launches/i)).not.toBeInTheDocument();
   });
 
   it('keeps the Free plan CTA interactive (sends users to /register when logged out)', async () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+    renderPricingPage();
 
     const freeLink = screen
       .getAllByRole('link')
@@ -127,11 +145,7 @@ describe('PricingPage — fail-closed pro checkout', () => {
   });
 
   it('never invokes createBillingCheckout (no-op even if user clicks anything)', async () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+    renderPricingPage();
 
     // Try clicking everything in the pro plan card. None of these should kick
     // off a real checkout call — the entire button is replaced.
@@ -147,26 +161,34 @@ describe('PricingPage — fail-closed pro checkout', () => {
   });
 
   it('still surfaces the entitlement-derived "Current plan" tile', async () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+    renderPricingPage();
 
     expect(await screen.findByText(/Current plan/i)).toBeInTheDocument();
-    expect(screen.getByText('当前方案')).toBeInTheDocument();
+    expect(screen.queryByText('当前方案')).not.toBeInTheDocument();
   });
 
   it('does not query entitlement APIs for an unauthenticated guest', async () => {
-    render(
-      <MemoryRouter>
-        <PricingPage />
-      </MemoryRouter>,
-    );
+    renderPricingPage();
 
     await waitFor(() => {
       expect(getEntitlementMock).not.toHaveBeenCalled();
       expect(getSubscriptionEntitlementMock).not.toHaveBeenCalled();
     });
+  });
+
+  it('puts theme and language controls in the pricing header', async () => {
+    renderPricingPage();
+
+    expect(screen.getByRole('button', { name: 'Toggle appearance' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Switch language' })).toBeInTheDocument();
+  });
+
+  it('translates plan features in Chinese mode instead of showing English feature lists', async () => {
+    i18nState.language = 'zh';
+
+    renderPricingPage();
+
+    expect(await screen.findByText('每日任务：新词 + 复习')).toBeInTheDocument();
+    expect(screen.queryByText('Daily mission with new words + review')).not.toBeInTheDocument();
   });
 });

@@ -67,7 +67,10 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
   // Always run the hook so rules-of-hooks isn't violated when `now` is
   // injected for tests; the dependency on `tick` makes the timestamp
   // refresh once a minute when no override is supplied.
-  const liveReference = useMemo(() => new Date(), [tick]);
+  const liveReference = useMemo(() => {
+    void tick;
+    return new Date();
+  }, [tick]);
   const reference = now ?? liveReference;
 
   const partition = useMemo(

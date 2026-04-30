@@ -15,7 +15,9 @@ const languages = [
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
-  const currentLang = languages.find((l) => l.code === i18n.language) || languages[1];
+  const isZh = i18n.language?.startsWith('zh');
+  const activeLanguage = isZh ? 'zh' : 'en';
+  const triggerLabel = isZh ? '切换语言' : 'Switch language';
 
   const changeLanguage = (code: string) => {
     i18n.changeLanguage(code);
@@ -25,9 +27,15 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+          aria-label={triggerLabel}
+          title={triggerLabel}
+        >
           <Globe className="h-4 w-4" />
-          <span className="sr-only">Switch language</span>
+          <span className="sr-only">{triggerLabel}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -35,7 +43,7 @@ export function LanguageSwitcher() {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => changeLanguage(lang.code)}
-            className={i18n.language === lang.code ? 'bg-muted' : ''}
+            className={activeLanguage === lang.code ? 'bg-muted' : ''}
           >
             <span className="mr-2">{lang.flag}</span>
             {lang.name}

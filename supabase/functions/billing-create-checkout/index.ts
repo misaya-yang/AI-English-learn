@@ -25,17 +25,6 @@ const stripePriceByPlan = (planId: string): string | null => {
   return Deno.env.get('STRIPE_PRICE_PRO_MONTHLY') || null;
 };
 
-const buildUrlWithParams = (
-  base: string,
-  params: Record<string, string>,
-): string => {
-  const url = new URL(base);
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value);
-  });
-  return url.toString();
-};
-
 // Sentinel thrown when no real provider is wired up. Caller maps this to a
 // 503 so the client never receives a fake "success" URL it can replay to grant
 // itself pro entitlements.

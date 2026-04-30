@@ -8,7 +8,6 @@ import { CoachReviewRail } from '@/features/coach/CoachReviewRail';
 import {
   LearningCompletionState,
   LearningEmptyState,
-  LearningHeroPanel,
   LearningMetricStrip,
   LearningRailSection,
   LearningShellFrame,
@@ -254,7 +253,7 @@ export default function ReviewPage() {
     }
 
     setCurrentIndex(reviewItems.length);
-  }, [currentIndex, currentItem, reviewItems, reviewWord, sessionQueue, totalReviewed, reviewTaskTarget, completeMissionTask]);
+  }, [currentIndex, currentItem, reviewItems, reviewWord, sessionQueue, totalReviewed, reviewTaskTarget, completeMissionTask, userId]);
 
   // Global keyboard shortcuts
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeHighRiskWords, type RetentionRiskItem } from './retentionInsights';
+import { computeHighRiskWords } from './retentionInsights';
 import type { UserProgress } from '@/data/localStorage';
 
 function makeProgress(overrides: Record<string, unknown> & { wordId: string }): UserProgress {

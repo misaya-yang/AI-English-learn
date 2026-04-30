@@ -34,7 +34,6 @@ import {
   Clock,
   Save,
   AlertTriangle,
-  Trash2,
   LogOut,
 } from 'lucide-react';
 import { toast } from 'sonner';

@@ -172,7 +172,6 @@ export function scheduleReminder(title: string, body: string, delayMs = 0): void
 
   const fire = () => {
     if (Notification.permission === 'granted') {
-      // eslint-disable-next-line no-new
       new Notification(title, { body, icon: '/pwa-192x192.png' });
     }
   };

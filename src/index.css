@@ -21,59 +21,63 @@
 }
 
 @layer base {
-  /* Modern Learning Workbench tokens — see docs/claude/UI_MODERNIZATION_BRIEF.md */
+  /* IELTS Coach Studio tokens — ink, paper, and restrained learning accents. */
   :root {
-    --background: 40 30% 98%;
-    --foreground: 222 25% 14%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 25% 14%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 25% 14%;
-    --primary: 161 50% 42%;
+    --background: 218 24% 97%;
+    --foreground: 226 27% 12%;
+    --card: 45 24% 99%;
+    --card-foreground: 226 27% 12%;
+    --popover: 45 24% 99%;
+    --popover-foreground: 226 27% 12%;
+    --primary: 157 42% 34%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 20% 94%;
-    --secondary-foreground: 222 22% 18%;
-    --muted: 40 20% 94%;
-    --muted-foreground: 220 12% 42%;
-    --accent: 245 70% 58%;
+    --secondary: 218 18% 92%;
+    --secondary-foreground: 226 24% 17%;
+    --muted: 218 18% 92%;
+    --muted-foreground: 222 11% 39%;
+    --accent: 263 42% 45%;
     --accent-foreground: 0 0% 100%;
     --destructive: 350 75% 54%;
     --destructive-foreground: 0 0% 98%;
-    --border: 40 14% 86%;
-    --input: 40 14% 86%;
-    --ring: 161 50% 42%;
-    --radius: 0.625rem;
+    --border: 218 17% 84%;
+    --input: 218 17% 84%;
+    --ring: 157 42% 34%;
+    --radius: 0.5rem;
 
     /* Semantic learning accents */
-    --accent-practice: 217 90% 56%;
-    --accent-coach: 245 70% 58%;
-    --accent-exam: 32 92% 52%;
-    --accent-memory: 161 50% 42%;
+    --accent-practice: 211 74% 44%;
+    --accent-coach: 263 42% 45%;
+    --accent-exam: 33 86% 48%;
+    --accent-memory: 157 42% 34%;
     --accent-error: 350 75% 54%;
-    --sidebar-background: 210 17% 96%;
-    --sidebar-foreground: 222 18% 20%;
-    --sidebar-primary: 161 84% 35%;
+    --sidebar-background: 220 22% 94%;
+    --sidebar-foreground: 226 24% 17%;
+    --sidebar-primary: 157 42% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 18% 92%;
-    --sidebar-accent-foreground: 222 20% 18%;
-    --sidebar-border: 214 19% 88%;
-    --sidebar-ring: 161 84% 35%;
+    --sidebar-accent: 45 24% 99%;
+    --sidebar-accent-foreground: 226 24% 17%;
+    --sidebar-border: 218 17% 84%;
+    --sidebar-ring: 157 42% 34%;
 
     /* Semantic status colors */
-    --success: 161 84% 35%;
+    --success: 157 42% 34%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 38 40% 12%;
     --danger: 0 84.2% 60.2%;
     --danger-foreground: 0 0% 98%;
-    --info: 217 91% 60%;
+    --info: 211 74% 44%;
     --info-foreground: 0 0% 100%;
 
     /* Surface & gradient tokens */
-    --surface-elevated: 0 0% 100%;
-    --gradient-start: 161 84% 35%;
-    --gradient-end: 187 86% 37%;
-    --grid-line-color: 0 0% 50% / 0.07;
+    --surface-elevated: 45 24% 99%;
+    --surface-raised: 0 0% 100%;
+    --surface-sunken: 218 22% 94%;
+    --border-strong: 222 16% 75%;
+    --shadow-studio: 226 27% 12%;
+    --gradient-start: 157 42% 34%;
+    --gradient-end: 211 74% 44%;
+    --grid-line-color: 226 27% 12% / 0.045;
 
     --font-ui: "Manrope", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
     --font-code: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
@@ -91,49 +95,57 @@
   }
 
   .dark {
-    --background: 222 18% 12%;
-    --foreground: 210 25% 94%;
-    --card: 222 22% 11%;
-    --card-foreground: 210 25% 94%;
-    --popover: 222 22% 11%;
-    --popover-foreground: 210 25% 94%;
-    --primary: 161 84% 45%;
-    --primary-foreground: 222 24% 8%;
-    --secondary: 223 18% 16%;
-    --secondary-foreground: 210 25% 94%;
-    --muted: 223 18% 16%;
-    --muted-foreground: 214 15% 67%;
-    --accent: 187 78% 48%;
-    --accent-foreground: 222 24% 8%;
+    --background: 224 18% 10%;
+    --foreground: 210 24% 94%;
+    --card: 224 18% 13%;
+    --card-foreground: 210 24% 94%;
+    --popover: 224 18% 13%;
+    --popover-foreground: 210 24% 94%;
+    --primary: 154 52% 49%;
+    --primary-foreground: 224 22% 8%;
+    --secondary: 224 16% 17%;
+    --secondary-foreground: 210 24% 94%;
+    --muted: 224 16% 17%;
+    --muted-foreground: 215 14% 69%;
+    --accent: 268 48% 64%;
+    --accent-foreground: 224 22% 8%;
     --destructive: 0 72% 42%;
     --destructive-foreground: 210 25% 94%;
-    --border: 223 16% 22%;
-    --input: 223 16% 22%;
-    --ring: 161 84% 45%;
-    --sidebar-background: 222 22% 10%;
+    --border: 224 15% 24%;
+    --input: 224 15% 24%;
+    --ring: 154 52% 49%;
+    --accent-practice: 209 84% 62%;
+    --accent-coach: 268 48% 64%;
+    --accent-exam: 36 90% 58%;
+    --accent-memory: 154 52% 49%;
+    --sidebar-background: 224 20% 9%;
     --sidebar-foreground: 210 22% 92%;
-    --sidebar-primary: 161 84% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 223 18% 16%;
+    --sidebar-primary: 154 52% 49%;
+    --sidebar-primary-foreground: 224 22% 8%;
+    --sidebar-accent: 224 17% 14%;
     --sidebar-accent-foreground: 210 22% 92%;
-    --sidebar-border: 223 16% 22%;
-    --sidebar-ring: 161 84% 45%;
+    --sidebar-border: 224 15% 24%;
+    --sidebar-ring: 154 52% 49%;
 
     /* Semantic status colors — dark */
-    --success: 161 84% 45%;
-    --success-foreground: 222 24% 8%;
+    --success: 154 52% 49%;
+    --success-foreground: 224 22% 8%;
     --warning: 38 92% 55%;
     --warning-foreground: 38 40% 12%;
     --danger: 0 72% 42%;
     --danger-foreground: 210 25% 94%;
-    --info: 217 91% 65%;
-    --info-foreground: 222 24% 8%;
+    --info: 209 84% 62%;
+    --info-foreground: 224 22% 8%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 222 22% 14%;
-    --gradient-start: 161 84% 45%;
-    --gradient-end: 187 78% 48%;
-    --grid-line-color: 0 0% 100% / 0.03;
+    --surface-elevated: 224 18% 15%;
+    --surface-raised: 224 18% 13%;
+    --surface-sunken: 224 20% 9%;
+    --border-strong: 224 13% 32%;
+    --shadow-studio: 0 0% 0%;
+    --gradient-start: 154 52% 49%;
+    --gradient-end: 209 84% 62%;
+    --grid-line-color: 210 24% 94% / 0.035;
   }
 }
 
@@ -147,6 +159,12 @@
     line-height: 1.55;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01" on, "cv05" on;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+    color: hsl(var(--foreground));
   }
 }
 
@@ -168,15 +186,15 @@
 .glow-card,
 .glow-surface {
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px -16px rgba(0, 0, 0, 0.08);
+    0 1px 0 hsl(var(--border) / 0.72),
+    0 16px 36px -28px hsl(var(--shadow-studio) / 0.28);
 }
 .dark .glow-emerald,
 .dark .glow-card,
 .dark .glow-surface {
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    0 8px 24px -16px rgba(0, 0, 0, 0.5);
+    0 1px 0 hsl(var(--border) / 0.8),
+    0 18px 42px -30px hsl(0 0% 0% / 0.9);
 }
 
 /* ─── Premium Grid Background (deprecated — near-invisible) ─── */
@@ -222,8 +240,8 @@
 .hover-lift:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 12px 28px -16px rgba(0, 0, 0, 0.12);
+    0 1px 0 hsl(var(--border) / 0.75),
+    0 18px 42px -30px hsl(var(--shadow-studio) / 0.32);
 }
 
 /* ─── Micro-interaction utilities ─── */

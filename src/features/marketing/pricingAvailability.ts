@@ -46,11 +46,11 @@ function readEnv(): EnvLike {
  */
 export type CheckoutStatus =
   | { kind: 'available' }
-  | { kind: 'coming_soon'; supportEmail: string };
+  | { kind: 'coming_soon' };
 
 export function getCheckoutStatus(env: EnvLike = readEnv()): CheckoutStatus {
   if (isCheckoutAvailable(env)) {
     return { kind: 'available' };
   }
-  return { kind: 'coming_soon', supportEmail: 'support@vocabdaily.ai' };
+  return { kind: 'coming_soon' };
 }

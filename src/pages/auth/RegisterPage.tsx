@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
 import { AuthShell } from '@/features/marketing/AuthShell';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const specialCharacterRegex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
 
@@ -23,6 +24,8 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { register, isAuthenticated, validatePassword } = useAuth();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
   const [formData, setFormData] = useState({
     displayName: '',
     email: '',
@@ -34,6 +37,61 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [justRegistered, setJustRegistered] = useState(false);
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
+  const copy = isZh
+    ? {
+        title: '创建账号',
+        subtitle: '免费开始，几分钟就能养成每天学英语的习惯。',
+        hasAccount: '已有账号？',
+        signIn: '立即登录',
+        displayName: '昵称',
+        displayNamePlaceholder: '你希望我们怎么称呼你？',
+        email: '邮箱',
+        password: '密码',
+        confirmPassword: '确认密码',
+        showPassword: '显示密码',
+        hidePassword: '隐藏密码',
+        passwordMismatch: '两次输入的密码不一致',
+        agreePrefix: '同意',
+        terms: '服务条款',
+        and: '与',
+        privacy: '隐私政策',
+        creating: '创建中...',
+        createAccount: '创建账号',
+        missingFields: '请填写所有字段',
+        passwordsDoNotMatch: '密码不一致',
+        weakPassword: '密码不符合要求',
+        termsRequired: '请同意服务条款',
+        success: '注册成功！请检查邮箱验证链接',
+        failed: '注册失败',
+        retry: '注册失败，请稍后重试',
+      }
+    : {
+        title: 'Create account',
+        subtitle: 'Start for free and build a daily English habit in a few minutes.',
+        hasAccount: 'Already have an account?',
+        signIn: 'Sign in',
+        displayName: 'Display name',
+        displayNamePlaceholder: 'What should we call you?',
+        email: 'Email',
+        password: 'Password',
+        confirmPassword: 'Confirm password',
+        showPassword: 'Show password',
+        hidePassword: 'Hide password',
+        passwordMismatch: 'Passwords do not match',
+        agreePrefix: 'I agree to the',
+        terms: 'Terms of Service',
+        and: 'and',
+        privacy: 'Privacy Policy',
+        creating: 'Creating...',
+        createAccount: 'Create account',
+        missingFields: 'Fill in all fields',
+        passwordsDoNotMatch: 'Passwords do not match',
+        weakPassword: 'Password does not meet the requirements',
+        termsRequired: 'Please agree to the Terms of Service',
+        success: 'Account created. Check your email for the verification link.',
+        failed: 'Registration failed',
+        retry: 'Registration failed. Please try again later.',
+      };
 
   // Redirect if already logged in
   if (isAuthenticated && !justRegistered) {
@@ -63,22 +121,22 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!formData.displayName || !formData.email || !formData.password) {
-      toast.error('请填写所有字段');
+      toast.error(copy.missingFields);
       return;
     }
 
     if (!passwordsMatch) {
-      toast.error('密码不一致');
+      toast.error(copy.passwordsDoNotMatch);
       return;
     }
 
     if (!allChecksPass) {
-      toast.error('密码不符合要求');
+      toast.error(copy.weakPassword);
       return;
     }
 
     if (!agreeTerms) {
-      toast.error('请同意服务条款');
+      toast.error(copy.termsRequired);
       return;
     }
 
@@ -88,13 +146,13 @@ export default function RegisterPage() {
       const { success, error } = await register(formData.email, formData.password, formData.displayName);
       if (success) {
         setJustRegistered(true);
-        toast.success('注册成功！请检查邮箱验证链接');
+        toast.success(copy.success);
         navigate(`/onboarding${location.search}`);
       } else {
-        toast.error(error || '注册失败');
+        toast.error(error || copy.failed);
       }
     } catch {
-      toast.error('注册失败，请稍后重试');
+      toast.error(copy.retry);
     } finally {
       setIsLoading(false);
     }
@@ -102,17 +160,18 @@ export default function RegisterPage() {
 
   return (
     <AuthShell
-      title="创建账号"
+      title="Create account"
       titleZh="创建账号"
-      subtitle="免费开始，几分钟就能养成每天学英语的习惯。"
+      subtitle="Start for free and build a daily English habit in a few minutes."
+      subtitleZh="免费开始，几分钟就能养成每天学英语的习惯。"
       footer={
         <>
-          <span className="opacity-80">已有账号？</span>{' '}
+          <span className="opacity-80">{copy.hasAccount}</span>{' '}
           <Link
             to={`/login${location.search}`}
             className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
-            立即登录
+            {copy.signIn}
           </Link>
         </>
       }
@@ -123,14 +182,14 @@ export default function RegisterPage() {
             htmlFor="displayName"
             className="text-sm font-medium text-muted-foreground"
           >
-            昵称
+            {copy.displayName}
           </Label>
           <Input
             id="displayName"
             name="displayName"
             type="text"
             autoComplete="name"
-            placeholder="What should we call you?"
+            placeholder={copy.displayNamePlaceholder}
             value={formData.displayName}
             onChange={handleChange}
             disabled={isLoading}
@@ -144,7 +203,7 @@ export default function RegisterPage() {
             htmlFor="email"
             className="text-sm font-medium text-muted-foreground"
           >
-            邮箱
+            {copy.email}
           </Label>
           <Input
             id="email"
@@ -165,7 +224,7 @@ export default function RegisterPage() {
             htmlFor="password"
             className="text-sm font-medium text-muted-foreground"
           >
-            密码
+            {copy.password}
           </Label>
           <div className="relative">
             <Input
@@ -184,7 +243,7 @@ export default function RegisterPage() {
               type="button"
               variant="ghost"
               size="icon"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? copy.hidePassword : copy.showPassword}
               className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={() => setShowPassword(!showPassword)}
             >
@@ -209,7 +268,7 @@ export default function RegisterPage() {
                     check.passes ? 'text-emerald-500 dark:text-emerald-400' : 'text-muted-foreground/40',
                   )}
                 />
-                <span lang="zh-CN">{check.labelZh}</span>
+                <span>{isZh ? check.labelZh : check.label}</span>
               </li>
             ))}
           </ul>
@@ -220,7 +279,7 @@ export default function RegisterPage() {
             htmlFor="confirmPassword"
             className="text-sm font-medium text-muted-foreground"
           >
-            确认密码
+            {copy.confirmPassword}
           </Label>
           <Input
             id="confirmPassword"
@@ -235,8 +294,8 @@ export default function RegisterPage() {
             className="h-11 rounded-md"
           />
           {formData.confirmPassword && !passwordsMatch && (
-            <p className="text-xs text-rose-500" role="alert" lang="zh-CN">
-              两次输入的密码不一致
+            <p className="text-xs text-rose-500" role="alert">
+              {copy.passwordMismatch}
             </p>
           )}
         </div>
@@ -251,21 +310,20 @@ export default function RegisterPage() {
           <Label
             htmlFor="terms"
             className="text-xs leading-relaxed font-normal text-muted-foreground"
-            lang="zh-CN"
           >
-            同意{' '}
+            {copy.agreePrefix}{' '}
             <Link
               to="#"
               className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              服务条款
+              {copy.terms}
             </Link>{' '}
-            与{' '}
+            {copy.and}{' '}
             <Link
               to="#"
               className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              隐私政策
+              {copy.privacy}
             </Link>
           </Label>
         </div>
@@ -278,10 +336,10 @@ export default function RegisterPage() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              创建中...
+              {copy.creating}
             </>
           ) : (
-            <>创建账号</>
+            <>{copy.createAccount}</>
           )}
         </Button>
       </form>

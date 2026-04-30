@@ -22,13 +22,13 @@ import { AuthShell } from '@/features/marketing/AuthShell';
 import type { CEFRLevel, Topic, LearningStyle } from '@/types';
 import { toast } from 'sonner';
 
-const cefrLevels: { level: CEFRLevel; label: string; description: string; descriptionZh: string }[] = [
-  { level: 'A1', label: 'Beginner', description: 'Basic phrases and expressions', descriptionZh: '基础词汇和表达' },
-  { level: 'A2', label: 'Elementary', description: 'Frequently used expressions', descriptionZh: '常用表达' },
-  { level: 'B1', label: 'Intermediate', description: 'Everyday situations', descriptionZh: '日常生活情境' },
-  { level: 'B2', label: 'Upper Intermediate', description: 'Complex texts and discussions', descriptionZh: '复杂文本和讨论' },
-  { level: 'C1', label: 'Advanced', description: 'Fluent and spontaneous', descriptionZh: '流利自然的表达' },
-  { level: 'C2', label: 'Proficiency', description: 'Near-native fluency', descriptionZh: '接近母语流利度' },
+const cefrLevels: { level: CEFRLevel; label: string; labelZh: string; description: string; descriptionZh: string }[] = [
+  { level: 'A1', label: 'Beginner', labelZh: '入门', description: 'Basic phrases and expressions', descriptionZh: '基础词汇和表达' },
+  { level: 'A2', label: 'Elementary', labelZh: '基础', description: 'Frequently used expressions', descriptionZh: '常用表达' },
+  { level: 'B1', label: 'Intermediate', labelZh: '中级', description: 'Everyday situations', descriptionZh: '日常生活情境' },
+  { level: 'B2', label: 'Upper Intermediate', labelZh: '中高级', description: 'Complex texts and discussions', descriptionZh: '复杂文本和讨论' },
+  { level: 'C1', label: 'Advanced', labelZh: '高级', description: 'Fluent and spontaneous', descriptionZh: '流利自然的表达' },
+  { level: 'C2', label: 'Proficiency', labelZh: '精通', description: 'Near-native fluency', descriptionZh: '接近母语流利度' },
 ];
 
 const topics: { id: Topic; label: string; labelZh: string; icon: string }[] = [
@@ -44,11 +44,11 @@ const topics: { id: Topic; label: string; labelZh: string; icon: string }[] = [
   { id: 'Sports', label: 'Sports', labelZh: '运动', icon: '⚽' },
 ];
 
-const learningStyles: { id: LearningStyle; label: string; labelZh: string; description: string }[] = [
-  { id: 'visual', label: 'Visual', labelZh: '视觉型', description: 'Learn best with images, charts, and visual aids' },
-  { id: 'auditory', label: 'Auditory', labelZh: '听觉型', description: 'Learn best by listening and speaking' },
-  { id: 'kinesthetic', label: 'Kinesthetic', labelZh: '动觉型', description: 'Learn best by doing and practicing' },
-  { id: 'reading', label: 'Reading/Writing', labelZh: '读写型', description: 'Learn best by reading and taking notes' },
+const learningStyles: { id: LearningStyle; label: string; labelZh: string; description: string; descriptionZh: string }[] = [
+  { id: 'visual', label: 'Visual', labelZh: '视觉型', description: 'Learn best with images, charts, and visual aids', descriptionZh: '通过图片、图表和视觉线索学习更高效' },
+  { id: 'auditory', label: 'Auditory', labelZh: '听觉型', description: 'Learn best by listening and speaking', descriptionZh: '通过听力输入和开口表达学习更高效' },
+  { id: 'kinesthetic', label: 'Kinesthetic', labelZh: '动觉型', description: 'Learn best by doing and practicing', descriptionZh: '通过动手练习和反复实践学习更高效' },
+  { id: 'reading', label: 'Reading/Writing', labelZh: '读写型', description: 'Learn best by reading and taking notes', descriptionZh: '通过阅读和整理笔记学习更高效' },
 ];
 
 const stepCopy: Record<number, { en: string; zh: string }> = {
@@ -63,7 +63,7 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language?.startsWith('zh');
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showPlacementTest, setShowPlacementTest] = useState(false);
@@ -109,13 +109,13 @@ export default function OnboardingPage() {
       });
 
       if (success) {
-        toast.success('Profile setup complete!');
+        toast.success(isZh ? '学习档案已设置完成！' : 'Profile setup complete!');
         navigate(redirectTarget, { replace: true });
       } else {
-        toast.error('Failed to save profile. Please try again.');
+        toast.error(isZh ? '保存档案失败，请重试。' : 'Failed to save profile. Please try again.');
       }
     } catch {
-      toast.error('Failed to save profile. Please try again.');
+      toast.error(isZh ? '保存档案失败，请重试。' : 'Failed to save profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -155,8 +155,8 @@ export default function OnboardingPage() {
               <h2 className="text-lg font-semibold text-foreground">
                 {isZh ? '你的英语水平是？' : "What's your English level?"}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
-                选择你目前的英语水平
+              <p className="mt-1 text-sm text-muted-foreground">
+                {isZh ? '选择你目前的英语水平' : 'Choose your current English level'}
               </p>
             </div>
 
@@ -168,8 +168,8 @@ export default function OnboardingPage() {
             >
               <div className="text-center">
                 <p className="font-medium">{isZh ? '做 10 道题自动测定等级' : 'Take a 10-question placement test'}</p>
-                <p className="mt-1 text-xs text-muted-foreground" lang="zh-CN">
-                  10 道题自动判断你的等级
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {isZh ? '10 道题自动判断你的等级' : 'Get an automatic level estimate in a few minutes'}
                 </p>
               </div>
             </Button>
@@ -180,7 +180,7 @@ export default function OnboardingPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-3 text-muted-foreground">
-                  or pick manually · <span lang="zh-CN">手动选择</span>
+                  {isZh ? '手动选择' : 'or pick manually'}
                 </span>
               </div>
             </div>
@@ -210,11 +210,8 @@ export default function OnboardingPage() {
                     {level.level}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground">{level.label}</p>
-                    <p className="text-sm text-muted-foreground">{level.description}</p>
-                    <p className="text-xs text-muted-foreground" lang="zh-CN">
-                      {level.descriptionZh}
-                    </p>
+                    <p className="font-medium text-foreground">{isZh ? level.labelZh : level.label}</p>
+                    <p className="text-sm text-muted-foreground">{isZh ? level.descriptionZh : level.description}</p>
                   </div>
                   {preferences.cefrLevel === level.level && (
                     <Check className="h-5 w-5 text-emerald-500" aria-hidden="true" />
@@ -233,10 +230,10 @@ export default function OnboardingPage() {
                 <Target className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                Set your daily goal
+                {isZh ? '设定每日目标' : 'Set your daily goal'}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
-                设定每日学习目标
+              <p className="mt-1 text-sm text-muted-foreground">
+                {isZh ? '设定每日学习目标' : 'Choose a pace you can keep every day'}
               </p>
             </div>
 
@@ -246,7 +243,7 @@ export default function OnboardingPage() {
                   {preferences.dailyGoal}
                 </span>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  words per day · <span lang="zh-CN">单词 / 天</span>
+                  {isZh ? '单词 / 天' : 'words per day'}
                 </p>
               </div>
 
@@ -259,7 +256,7 @@ export default function OnboardingPage() {
                 max={50}
                 step={5}
                 className="w-full"
-                aria-label="Daily word goal"
+                aria-label={isZh ? '每日单词目标' : 'Daily word goal'}
               />
 
               <div className="flex justify-between text-xs text-muted-foreground">
@@ -272,11 +269,10 @@ export default function OnboardingPage() {
 
               <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
                 <p className="text-sm text-foreground">
-                  <strong className="text-emerald-700 dark:text-emerald-300">Recommended:</strong>{' '}
-                  10–15 words per day for optimal retention.
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground" lang="zh-CN">
-                  建议：每天 10–15 个新词以获得最佳记忆效果。
+                  <strong className="text-emerald-700 dark:text-emerald-300">
+                    {isZh ? '推荐：' : 'Recommended:'}
+                  </strong>{' '}
+                  {isZh ? '每天 10–15 个新词以获得最佳记忆效果。' : '10-15 words per day for optimal retention.'}
                 </p>
               </div>
             </div>
@@ -291,10 +287,10 @@ export default function OnboardingPage() {
                 <Sparkles className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                What topics interest you?
+                {isZh ? '你对哪些主题感兴趣？' : 'What topics interest you?'}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
-                选择你感兴趣的主题
+              <p className="mt-1 text-sm text-muted-foreground">
+                {isZh ? '选择你感兴趣的主题' : 'Pick the content areas you want in daily practice'}
               </p>
             </div>
 
@@ -314,17 +310,14 @@ export default function OnboardingPage() {
                 >
                   <div className="text-2xl" aria-hidden="true">{topic.icon}</div>
                   <p className="mt-2 text-sm font-medium text-foreground">
-                    {topic.label}
-                  </p>
-                  <p className="text-xs text-muted-foreground" lang="zh-CN">
-                    {topic.labelZh}
+                    {isZh ? topic.labelZh : topic.label}
                   </p>
                 </button>
               ))}
             </div>
 
             <p className="text-center text-xs text-muted-foreground">
-              Pick at least 2 · <span lang="zh-CN">至少选择 2 个</span>
+              {isZh ? '至少选择 2 个' : 'Pick at least 2'}
             </p>
           </div>
         );
@@ -337,10 +330,10 @@ export default function OnboardingPage() {
                 <BookOpen className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                How do you learn best?
+                {isZh ? '你最喜欢怎样学习？' : 'How do you learn best?'}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground" lang="zh-CN">
-                你最喜欢的学习方式？
+              <p className="mt-1 text-sm text-muted-foreground">
+                {isZh ? '选择最适合你的练习方式' : 'Choose the practice format that fits you best'}
               </p>
             </div>
 
@@ -370,12 +363,9 @@ export default function OnboardingPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">
-                      {style.label}{' '}
-                      <span className="font-normal text-muted-foreground" lang="zh-CN">
-                        ({style.labelZh})
-                      </span>
+                      {isZh ? style.labelZh : style.label}
                     </p>
-                    <p className="text-sm text-muted-foreground">{style.description}</p>
+                    <p className="text-sm text-muted-foreground">{isZh ? style.descriptionZh : style.description}</p>
                   </div>
                 </button>
               ))}

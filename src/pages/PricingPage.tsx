@@ -22,6 +22,8 @@ import { getSubscriptionEntitlement } from '@/services/billingGateway';
 import { toast } from 'sonner';
 import { BrandMark } from '@/features/marketing/BrandMark';
 import { getCheckoutStatus } from '@/features/marketing/pricingAvailability';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 type PaidPlanId = 'pro';
 
@@ -33,9 +35,10 @@ interface Plan {
   descriptionZh: string;
   monthlyPrice: number;
   yearlyPrice: number;
-  features: string[];
-  notIncluded?: string[];
+  features: Array<{ en: string; zh: string }>;
+  notIncluded?: Array<{ en: string; zh: string }>;
   cta: string;
+  ctaZh: string;
   highlighted: boolean;
 }
 
@@ -49,19 +52,20 @@ const plans: Plan[] = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     features: [
-      'Daily mission with new words + review',
-      'Core quiz, listening, and chat usage',
-      'Limited IELTS simulation and AI feedback',
-      'Smart spaced-review queue',
-      'Basic progress tracking',
+      { en: 'Daily mission with new words + review', zh: '每日任务：新词 + 复习' },
+      { en: 'Core quiz, listening, and chat usage', zh: '核心测验、听力与教练对话' },
+      { en: 'Limited IELTS simulation and AI feedback', zh: '有限 IELTS 仿真与 AI 反馈' },
+      { en: 'Smart spaced-review queue', zh: '智能间隔复习队列' },
+      { en: 'Basic progress tracking', zh: '基础进度追踪' },
     ],
     notIncluded: [
-      'Deep AI writing feedback',
-      'All practice modes unlocked',
-      'Priority generation queue',
-      'Export to CSV / Anki',
+      { en: 'Deep AI writing feedback', zh: '深度 AI 写作反馈' },
+      { en: 'All practice modes unlocked', zh: '全部练习模式' },
+      { en: 'Priority generation queue', zh: '优先生成队列' },
+      { en: 'Export to CSV / Anki', zh: '导出 CSV / Anki' },
     ],
     cta: 'Start with Free',
+    ctaZh: '免费开始',
     highlighted: false,
   },
   {
@@ -73,18 +77,19 @@ const plans: Plan[] = [
     monthlyPrice: 9.99,
     yearlyPrice: 7.99,
     features: [
-      'Unlimited daily words',
-      'Advanced AI feedback',
-      'IELTS Writing Coach (structured scoring)',
-      'IELTS micro courses + simulation items',
-      'Error graph & one-click remediation lessons',
-      'All practice modes',
-      'Priority word generation',
-      'Export to CSV / Anki',
-      'Ad-free experience',
-      'Detailed analytics',
+      { en: 'Unlimited daily words', zh: '每日新词不限量' },
+      { en: 'Advanced AI feedback', zh: '进阶 AI 反馈' },
+      { en: 'IELTS Writing Coach (structured scoring)', zh: 'IELTS 写作教练（结构化评分）' },
+      { en: 'IELTS micro courses + simulation items', zh: 'IELTS 微课程与仿真题' },
+      { en: 'Error graph & one-click remediation lessons', zh: '错因图谱与一键补强课' },
+      { en: 'All practice modes', zh: '全部练习模式' },
+      { en: 'Priority word generation', zh: '优先词汇生成' },
+      { en: 'Export to CSV / Anki', zh: '导出 CSV / Anki' },
+      { en: 'Ad-free experience', zh: '无广告体验' },
+      { en: 'Detailed analytics', zh: '详细学习分析' },
     ],
     cta: 'Upgrade to Pro',
+    ctaZh: '升级到专业版',
     highlighted: true,
   },
 ];
@@ -94,9 +99,9 @@ const faqs = [
     question: 'Why can\'t I subscribe right now?',
     questionZh: '为什么现在还不能订阅？',
     answer:
-      'We\'re finalizing payment provider configuration. Until that\'s live, the free plan is fully functional and we\'re queuing interest so we can notify you the moment Pro opens.',
+      'We\'re finalizing payment provider configuration. Until that\'s live, the free plan is fully functional and this page will only show checkout once a real provider is ready.',
     answerZh:
-      '我们正在完成支付服务的配置。在此之前，免费版完全可用，我们会记录您的意向，并在 Pro 开放的第一时间通知您。',
+      '我们正在完成支付服务的配置。在此之前，免费版完全可用；只有真实支付服务准备好后，本页才会开放结账入口。',
   },
   {
     question: 'Will my current data carry over when Pro launches?',
@@ -128,7 +133,7 @@ export default function PricingPage() {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language?.startsWith('zh');
 
   const [isYearly, setIsYearly] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
@@ -183,20 +188,24 @@ export default function PricingPage() {
     const status = query.get('checkout');
 
     if (status === 'success') {
-      toast.success('订阅流程已完成，正在同步权益');
+      toast.success(isZh ? '订阅流程已完成，正在同步权益' : 'Checkout completed. Syncing your plan access.');
     }
     if (status === 'canceled') {
-      toast.info('已取消支付，仍可继续使用免费版');
+      toast.info(isZh ? '已取消支付，仍可继续使用免费版' : 'Checkout canceled. You can keep using the free plan.');
     }
-  }, [location.search]);
+  }, [isZh, location.search]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header reuses the shared brand mark so Pricing matches Home / Auth. */}
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <BrandMark />
           <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </div>
             {isAuthenticated ? (
               <Link to="/dashboard/today">
                 <Button className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
@@ -223,10 +232,10 @@ export default function PricingPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        <div className="text-center">
+        <div className="mx-auto max-w-3xl text-center">
           <Badge
             variant="secondary"
-            className="rounded-full border border-emerald-200/70 bg-emerald-100/60 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+            className="border border-primary/20 bg-primary/10 text-primary"
           >
             <Crown className="mr-1 h-3 w-3" />
             {isZh ? '定价与会员' : 'Pricing & membership'}
@@ -234,8 +243,8 @@ export default function PricingPage() {
           <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
             {isZh ? '选择你的学习方案' : 'Choose your learning plan'}
           </h1>
-          <p className="mt-3 text-lg text-muted-foreground" lang="zh-CN">
-            选择适合你的学习方案
+          <p className="mt-3 text-lg text-muted-foreground">
+            {isZh ? '选择适合你的学习方案' : 'Choose the plan that fits your practice rhythm.'}
           </p>
           <p className="mt-3 text-base text-muted-foreground">
             {isZh ? '免费开始，Pro 上线后再升级。' : 'Start free, upgrade when Pro is live.'}
@@ -246,40 +255,36 @@ export default function PricingPage() {
         {!isCheckoutLive && (
           <div
             role="status"
-            className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-2xl border border-amber-300/70 bg-amber-50/70 px-5 py-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:gap-3 dark:border-amber-400/30 dark:bg-amber-500/[0.08] dark:text-amber-200"
+            className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-lg border border-amber-300/70 bg-amber-50/70 px-5 py-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:gap-3 dark:border-amber-400/30 dark:bg-amber-500/[0.08] dark:text-amber-200"
           >
             <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
             <div className="space-y-1">
               <p className="font-semibold">
-                {isZh ? 'Pro 订阅暂未开放' : <>Pro checkout is not yet open · <span lang="zh-CN">Pro 订阅暂未开放</span></>}
+                {isZh ? 'Pro 订阅暂未开放' : 'Pro checkout is not yet open'}
               </p>
-              {!isZh && (
-                <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
+              <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
+                {isZh ? (
+                  <>
+                    我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
+                    支付服务真实可用后，本页会显示明确的升级入口。
+                  </>
+                ) : (
+                  <>
                   We haven't wired a real payment provider on this deployment yet, so we won't pretend Pro is purchasable.
-                  The free plan stays fully functional. Email{' '}
-                  <a
-                    href={`mailto:${checkoutStatus.kind === 'coming_soon' ? checkoutStatus.supportEmail : 'support@vocabdaily.ai'}`}
-                    className="font-medium underline-offset-2 hover:underline"
-                  >
-                    {checkoutStatus.kind === 'coming_soon' ? checkoutStatus.supportEmail : 'support@vocabdaily.ai'}
-                  </a>{' '}
-                  if you want a heads-up the moment it goes live.
-                </p>
-              )}
-              <p className="text-xs text-amber-800/80 dark:text-amber-200/70" lang="zh-CN">
-                我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
-                上线后会通过你预留的邮箱第一时间通知。
+                  The free plan stays fully functional, and this page will switch to checkout only after a real provider is ready.
+                  </>
+                )}
               </p>
             </div>
           </div>
         )}
 
-        <Card className="mx-auto mt-10 max-w-3xl border-emerald-200/70 dark:border-emerald-500/20">
+        <Card className="mx-auto mt-10 max-w-3xl border-primary/25">
           <CardContent className="p-4 sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">
-                  {isZh ? '当前方案' : <>Current plan · <span lang="zh-CN">当前方案</span></>}
+                  {isZh ? '当前方案' : 'Current plan'}
                 </p>
                 <p className="mt-1 text-lg font-semibold">
                   {currentPlan === 'pro' ? 'Pro' : (isZh ? '免费版' : 'Free')}
@@ -288,9 +293,9 @@ export default function PricingPage() {
               <Badge
                 variant={currentPlan === 'pro' ? 'default' : 'outline'}
                 className={cn(
-                  'rounded-full px-3 py-1 text-xs',
+                  'px-3 py-1 text-xs',
                   currentPlan === 'pro'
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-primary text-primary-foreground'
                     : 'border-border text-muted-foreground',
                 )}
               >
@@ -315,7 +320,7 @@ export default function PricingPage() {
             {isZh ? '按年' : 'Yearly'}
             <Badge
               variant="secondary"
-              className="ml-2 rounded-full bg-emerald-100/70 text-xs text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+              className="ml-2 bg-primary/10 text-xs text-primary"
             >
               {isZh ? '省 20%' : 'Save 20%'}
             </Badge>
@@ -338,26 +343,22 @@ export default function PricingPage() {
                 <Card
                   data-testid={`pricing-plan-${plan.id}`}
                   className={cn(
-                    'relative h-full overflow-hidden rounded-xl border bg-card',
+                    'relative h-full overflow-hidden rounded-lg border bg-[hsl(var(--surface-raised))]',
                     plan.highlighted
-                      ? 'border-transparent ring-2 ring-[hsl(var(--accent-coach))]'
+                      ? 'border-[hsl(var(--accent-coach))] shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_52px_-38px_hsl(var(--accent-coach)/0.7)]'
                       : 'border-border',
                   )}
                 >
+                  {plan.highlighted && <div className="absolute inset-x-0 top-0 h-1 bg-[hsl(var(--accent-coach))]" />}
                   {plan.highlighted && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[hsl(var(--accent-coach))] px-3 py-1 text-xs font-medium text-white shadow-sm">
-                      {isZh ? '最受欢迎' : 'Most popular · 最受欢迎'}
+                    <Badge className="absolute right-5 top-5 bg-[hsl(var(--accent-coach))] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                      {isZh ? '最受欢迎' : 'Most popular'}
                     </Badge>
                   )}
 
                   <CardContent className="flex h-full flex-col p-6 sm:p-7">
                     <div>
                       <h2 className="text-2xl font-bold">{isZh ? plan.nameZh : plan.name}</h2>
-                      {!isZh && (
-                        <p className="text-sm text-muted-foreground" lang="zh-CN">
-                          {plan.nameZh}
-                        </p>
-                      )}
                       <p className="mt-2 text-sm text-muted-foreground">
                         {isZh ? plan.descriptionZh : plan.description}
                       </p>
@@ -383,23 +384,23 @@ export default function PricingPage() {
 
                     <ul className="flex-1 space-y-3">
                       {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2.5 text-sm">
+                        <li key={feature.en} className="flex items-start gap-2.5 text-sm">
                           <Check
                             className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500"
                             aria-hidden="true"
                           />
-                          <span className="text-foreground">{feature}</span>
+                          <span className="text-foreground">{isZh ? feature.zh : feature.en}</span>
                         </li>
                       ))}
                       {plan.notIncluded?.map((feature) => (
                         <li
-                          key={feature}
+                          key={feature.en}
                           className="flex items-start gap-2.5 text-sm text-muted-foreground"
                         >
                           <span className="mt-0.5 inline-block h-4 w-4 flex-shrink-0 text-center" aria-hidden="true">
                             –
                           </span>
-                          <span>{feature}</span>
+                          <span>{isZh ? feature.zh : feature.en}</span>
                         </li>
                       ))}
                     </ul>
@@ -411,7 +412,7 @@ export default function PricingPage() {
                             className="h-11 w-full rounded-md"
                             variant="outline"
                           >
-                            {isZh ? (plan.id === 'free' ? '免费开始' : '升级到专业版') : plan.cta}
+                            {isZh ? plan.ctaZh : plan.cta}
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
                         </Link>
@@ -421,23 +422,19 @@ export default function PricingPage() {
                         // labelled status state and link to support instead.
                         <div
                           data-testid="pricing-pro-coming-soon"
-                          className="rounded-2xl border border-dashed border-amber-300/70 bg-amber-50/60 p-4 text-center dark:border-amber-400/30 dark:bg-amber-500/[0.08]"
+                          className="rounded-lg border border-dashed border-amber-300/70 bg-amber-50/60 p-4 text-center dark:border-amber-400/30 dark:bg-amber-500/[0.08]"
                         >
                           <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-                            {isZh ? '暂未开放' : <>Coming soon · <span lang="zh-CN">暂未开放</span></>}
+                            {isZh ? '暂未开放' : 'Coming soon'}
                           </p>
                           <p className="mt-1 text-xs leading-relaxed text-amber-800/85 dark:text-amber-200/85">
                             {isZh
                               ? '付费版本暂未开放，免费版可正常使用。'
                               : "Pro subscription isn't available on this deploy yet."}
                           </p>
-                          <a
-                            href={`mailto:${checkoutStatus.kind === 'coming_soon' ? checkoutStatus.supportEmail : 'support@vocabdaily.ai'}?subject=Notify%20me%20when%20VocabDaily%20Pro%20launches`}
-                            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-200"
-                          >
-                            {isZh ? '上线后通知我' : 'Notify me when it launches'}
-                            <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                          </a>
+                          <p className="mt-3 text-xs font-medium text-amber-900 dark:text-amber-200">
+                            {isZh ? '结账入口会在真实支付服务接好后出现。' : 'Checkout appears here once a real provider is connected.'}
+                          </p>
                         </div>
                       ) : (
                         // Real provider is wired. The actual checkout call lives
@@ -449,7 +446,7 @@ export default function PricingPage() {
                             toast.info(isZh ? '支付服务配置完成后即可开始结账。' : 'Checkout will start when payment provider is configured.')
                           }
                         >
-                          {isZh ? '升级到专业版' : plan.cta}
+                          {isZh ? plan.ctaZh : plan.cta}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       )}
@@ -465,15 +462,9 @@ export default function PricingPage() {
           <h2 className="text-center text-2xl font-bold">
             {isZh ? '常见问题' : 'Frequently asked questions'}
           </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground" lang="zh-CN">
-            常见问题
-          </p>
           <div className="mt-8 space-y-3">
             {faqs.map((faq) => (
-              <Card
-                key={faq.question}
-                className="border-border"
-              >
+              <Card key={faq.question} className="border-border">
                 <CardContent className="p-4 sm:p-5">
                   <h3 className="flex items-start gap-2 text-sm font-semibold">
                     <HelpCircle
@@ -482,11 +473,6 @@ export default function PricingPage() {
                     />
                     <span>
                       {isZh ? faq.questionZh : faq.question}
-                      {!isZh && (
-                        <span className="ml-2 text-muted-foreground" lang="zh-CN">
-                          {faq.questionZh}
-                        </span>
-                      )}
                     </span>
                   </h3>
                   <p className="mt-2 pl-6 text-sm text-muted-foreground">
@@ -500,13 +486,7 @@ export default function PricingPage() {
 
         <div className="mt-14 text-center">
           <p className="text-sm text-muted-foreground">
-            {isZh ? '需要企业或学校方案？' : 'Need help with an enterprise or school plan?'}{' '}
-            <a
-              href="mailto:support@vocabdaily.ai"
-              className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
-            >
-              support@vocabdaily.ai
-            </a>
+            {isZh ? '需要企业或学校方案？请先使用免费版完成学习闭环验证。' : 'Need an enterprise or school plan? Start with the free learning loop while checkout is being prepared.'}
           </p>
           <Link to="/register">
             <Button

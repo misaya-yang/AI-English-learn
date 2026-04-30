@@ -65,12 +65,9 @@ describe('routeRegistry', () => {
     expect(new Set(priorities).size).toBe(priorities.length);
   });
 
-  it('mobile nav contract: top 4 priorities include today/review/practice/chat', () => {
+  it('mobile nav contract: top 4 priorities match the IELTS coach studio IA', () => {
     const ids = getMobileNavRoutes(4).map((route) => route.id);
-    expect(ids).toContain('today');
-    expect(ids).toContain('review');
-    expect(ids).toContain('practice');
-    expect(ids).toContain('chat');
+    expect(ids).toEqual(['today', 'chat', 'exam', 'review']);
   });
 
   it('getDashboardRouteByPath matches exact and nested paths', () => {

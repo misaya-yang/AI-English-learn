@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,8 +24,7 @@ import {
   BookmarkPlus,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { wordsDatabase, type WordData, getWordOfTheDay, getPreviousWords } from '@/data/words';
-import { cn } from '@/lib/utils';
+import { wordsDatabase, type WordData, getWordOfTheDay } from '@/data/words';
 import { speakEnglishText } from '@/services/tts';
 
 // Generate mock previous words data for the last 30 days
@@ -73,7 +72,7 @@ export default function WordOfTheDayPage() {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (err) {
+      } catch {
         // Share cancelled or failed — no action needed
       }
     } else {

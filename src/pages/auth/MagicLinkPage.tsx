@@ -6,12 +6,48 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Mail, CheckCircle2 } from 'lucide-react';
 import { AuthShell } from '@/features/marketing/AuthShell';
+import { useTranslation } from 'react-i18next';
 
 export default function MagicLinkPage() {
   const { isAuthenticated } = useAuth();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const copy = isZh
+    ? {
+        sentTitle: '请查收邮件',
+        sentSubtitle: '安全登录链接已发送到你的邮箱。',
+        notReceived: '没有收到？',
+        resend: '重新发送',
+        sentBodyBefore: '登录链接已发送至',
+        sentBodyAfter: '，点击链接即可登录。',
+        backToLogin: '返回登录',
+        title: '使用魔法链接登录',
+        subtitle: '无需密码，我们会发送安全登录链接到你的邮箱。',
+        preferPassword: '更喜欢密码登录？',
+        passwordLogin: '密码登录',
+        email: '邮箱',
+        sending: '发送中...',
+        sendLink: '发送登录链接',
+      }
+    : {
+        sentTitle: 'Check your email',
+        sentSubtitle: 'A secure sign-in link has been sent to your inbox.',
+        notReceived: "Didn't get it?",
+        resend: 'Send again',
+        sentBodyBefore: 'We sent a sign-in link to',
+        sentBodyAfter: '. Open it to finish signing in.',
+        backToLogin: 'Back to sign in',
+        title: 'Sign in with magic link',
+        subtitle: "No password needed. We'll send a secure sign-in link to your email.",
+        preferPassword: 'Prefer using a password?',
+        passwordLogin: 'Password sign in',
+        email: 'Email',
+        sending: 'Sending...',
+        sendLink: 'Send login link',
+      };
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -32,12 +68,13 @@ export default function MagicLinkPage() {
   if (isSent) {
     return (
       <AuthShell
-        title="请查收邮件"
+        title="Check your email"
         titleZh="请查收邮件"
-        subtitle="安全登录链接已发送到你的邮箱。"
+        subtitle="A secure sign-in link has been sent to your inbox."
+        subtitleZh="安全登录链接已发送到你的邮箱。"
         footer={
           <>
-            <span className="opacity-80">没有收到？</span>{' '}
+            <span className="opacity-80">{copy.notReceived}</span>{' '}
             <button
               type="button"
               onClick={() => {
@@ -46,7 +83,7 @@ export default function MagicLinkPage() {
               }}
               className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              重新发送
+              {copy.resend}
             </button>
           </>
         }
@@ -55,10 +92,10 @@ export default function MagicLinkPage() {
           <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
-          <p className="text-sm text-foreground" lang="zh-CN">
-            登录链接已发送至{' '}
+          <p className="text-sm text-foreground">
+            {copy.sentBodyBefore}{' '}
             <strong className="break-all font-semibold text-foreground">{email}</strong>
-            ，点击链接即可登录。
+            {copy.sentBodyAfter}
           </p>
 
           <div className="mt-6 w-full">
@@ -67,7 +104,7 @@ export default function MagicLinkPage() {
                 variant="outline"
                 className="h-11 w-full rounded-md"
               >
-                返回登录
+                {copy.backToLogin}
               </Button>
             </Link>
           </div>
@@ -78,17 +115,18 @@ export default function MagicLinkPage() {
 
   return (
     <AuthShell
-      title="使用魔法链接登录"
+      title="Sign in with magic link"
       titleZh="使用魔法链接登录"
-      subtitle="无需密码，我们会发送安全登录链接到你的邮箱。"
+      subtitle="No password needed. We'll send a secure sign-in link to your email."
+      subtitleZh="无需密码，我们会发送安全登录链接到你的邮箱。"
       footer={
         <>
-          <span className="opacity-80">更喜欢密码登录？</span>{' '}
+          <span className="opacity-80">{copy.preferPassword}</span>{' '}
           <Link
             to="/login"
             className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
-            密码登录
+            {copy.passwordLogin}
           </Link>
         </>
       }
@@ -99,7 +137,7 @@ export default function MagicLinkPage() {
             htmlFor="email"
             className="text-sm font-medium text-muted-foreground"
           >
-            邮箱
+            {copy.email}
           </Label>
           <div className="relative">
             <Mail
@@ -128,10 +166,10 @@ export default function MagicLinkPage() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              发送中...
+              {copy.sending}
             </>
           ) : (
-            <>发送登录链接</>
+            <>{copy.sendLink}</>
           )}
         </Button>
       </form>

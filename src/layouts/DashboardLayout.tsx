@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,6 @@ import {
   Brain,
   CalendarDays,
   ChevronRight,
-  Flame,
   Headphones,
   GraduationCap,
   LayoutGrid,
@@ -321,16 +320,16 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group flex items-center gap-3 rounded-xl border px-3 py-3 transition-all duration-150',
+            'group flex items-center gap-3 rounded-lg border px-3 py-3 transition-all duration-150',
             active
-              ? 'border-border bg-muted shadow-sm'
-              : 'border-transparent hover:border-border hover:bg-muted/60',
+              ? 'border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7)]'
+              : 'border-transparent hover:border-border hover:bg-[hsl(var(--surface-raised))]',
           )}
         >
           <div
             className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-xl',
-              active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+              'flex h-10 w-10 items-center justify-center rounded-md border transition-colors',
+              active ? 'border-primary/20 bg-primary text-primary-foreground' : 'border-border bg-muted text-muted-foreground',
             )}
           >
             <Icon className="h-4 w-4" />
@@ -359,8 +358,8 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group relative overflow-hidden rounded-xl border border-transparent px-4 py-3 transition-all duration-150',
-            active ? 'border-border bg-muted/60' : 'hover:border-border hover:bg-muted/40',
+            'group relative overflow-hidden rounded-lg border border-transparent px-4 py-3 transition-all duration-150',
+            active ? 'border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))]' : 'hover:border-border hover:bg-[hsl(var(--surface-raised))]',
           )}
         >
           <span
@@ -372,8 +371,8 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-xl border transition-colors',
-                active ? 'border-border bg-primary/10 text-primary' : 'border-border bg-muted text-muted-foreground',
+                'flex h-10 w-10 items-center justify-center rounded-md border transition-colors',
+                active ? 'border-primary/20 bg-primary text-primary-foreground' : 'border-border bg-muted text-muted-foreground',
               )}
             >
               <Icon className="h-4 w-4" />
@@ -402,6 +401,7 @@ export default function DashboardLayout() {
         <Button
           variant="ghost"
           className="h-auto rounded-full border bg-card px-2 py-2 hover:bg-muted"
+          aria-label={currentLang === 'zh' ? '打开账号菜单' : 'Open account menu'}
         >
           <Avatar className="h-9 w-9">
             <AvatarFallback className="bg-primary/10 text-primary">
@@ -436,7 +436,7 @@ export default function DashboardLayout() {
 
   const standardMobileSheetBody = (
     <div className="flex h-full flex-col gap-4 px-1">
-      <div className="rounded-2xl border bg-card p-4">
+      <div className="rounded-lg border bg-card p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
@@ -466,13 +466,13 @@ export default function DashboardLayout() {
       </div>
 
       <div className="mt-auto space-y-2 pb-4">
-        <Button className="w-full justify-start rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+        <Button className="w-full justify-start rounded-md" asChild>
           <Link to="/dashboard/today">
             <Sparkles className="mr-2 h-4 w-4" />
             继续今日任务
           </Link>
         </Button>
-        <Button variant="outline" className="w-full justify-start rounded-2xl" onClick={() => logout()}>
+        <Button variant="outline" className="w-full justify-start rounded-md" onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
           退出登录
         </Button>
@@ -526,27 +526,30 @@ export default function DashboardLayout() {
       </div>
 
       <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
-        <div className="inline-flex rounded-full border bg-card p-1">
-          <button
-            type="button"
-            onClick={() => changeLanguage('en')}
-            className={cn(
-              'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-              currentLang === 'en' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            EN
-          </button>
-          <button
-            type="button"
-            onClick={() => changeLanguage('zh')}
-            className={cn(
-              'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-              currentLang === 'zh' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            中
-          </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <div className="inline-flex rounded-full border bg-card p-1">
+            <button
+              type="button"
+              onClick={() => changeLanguage('en')}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
+                currentLang === 'en' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => changeLanguage('zh')}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
+                currentLang === 'zh' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              中
+            </button>
+          </div>
         </div>
         <Button variant="outline" className="rounded-xl" onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
@@ -560,9 +563,9 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="flex h-screen overflow-hidden bg-background text-foreground">
-        <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-sm px-4 py-4 lg:flex">
-          <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-primary/10 text-primary">
+        <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
+          <Link to="/dashboard/today" className="flex items-center gap-3 rounded-lg px-1 py-2">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent text-sidebar-primary shadow-[inset_0_1px_0_hsl(0_0%_100%/0.08)]">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
@@ -571,7 +574,7 @@ export default function DashboardLayout() {
             </div>
           </Link>
 
-          <div className="mt-5 rounded-xl border bg-card p-4 shadow-sm">
+          <div className="mt-5 rounded-lg border border-sidebar-border bg-sidebar-accent p-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
             <h2 className="text-xl font-semibold tracking-[-0.03em]">{activeShell.title}</h2>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
               <div>
@@ -614,7 +617,7 @@ export default function DashboardLayout() {
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="rounded-xl border bg-card p-4 space-y-3 shadow-sm">
+              <div className="rounded-lg border border-sidebar-border bg-sidebar-accent p-4 space-y-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
                 <div className="flex items-center justify-between">
                   <StreakCounter
                     current={streak?.current || 0}
@@ -627,7 +630,7 @@ export default function DashboardLayout() {
             </div>
           </ScrollArea>
 
-          <div className="mt-4 rounded-xl border bg-card px-4 py-3 shadow-sm">
+          <div className="mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
@@ -639,16 +642,22 @@ export default function DashboardLayout() {
         </aside>
 
         <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
-          <header className="border-b bg-background/88 backdrop-blur supports-[backdrop-filter]:bg-background/68">
+          <header className="border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/90">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-xl lg:hidden">
+                    <Button variant="ghost" size="icon" className="rounded-lg lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="left" className="w-[320px] border-r bg-background p-4">
+                    <SheetTitle className="sr-only">
+                      {currentLang === 'zh' ? '学习导航' : 'Learning navigation'}
+                    </SheetTitle>
+                    <SheetDescription className="sr-only">
+                      {currentLang === 'zh' ? '打开学习导航、工具和账号操作。' : 'Open learning navigation, tools, and account actions.'}
+                    </SheetDescription>
                     {learningMobileSheetBody}
                   </SheetContent>
                 </Sheet>
@@ -691,10 +700,12 @@ export default function DashboardLayout() {
                 >
                   <Link to={learningPrimaryAction.href}>{learningPrimaryAction.label}</Link>
                 </Button>
+                <ThemeToggle />
                 <Button
                   variant="ghost"
                   size="icon"
                   title="Search (⌘K)"
+                  aria-label={currentLang === 'zh' ? '打开搜索' : 'Open search'}
                   className="rounded-full border bg-card hover:bg-muted"
                   onClick={() => setSearchOpen(true)}
                 >
@@ -717,6 +728,12 @@ export default function DashboardLayout() {
           <BottomNavBar isLearningMode onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
             <SheetContent side="bottom" className="border-t bg-background p-4">
+              <SheetTitle className="sr-only">
+                {currentLang === 'zh' ? '更多学习工具' : 'More learning tools'}
+              </SheetTitle>
+              <SheetDescription className="sr-only">
+                {currentLang === 'zh' ? '打开学习导航、工具和账号操作。' : 'Open learning navigation, tools, and account actions.'}
+              </SheetDescription>
               {learningMobileSheetBody}
             </SheetContent>
           </Sheet>
@@ -729,9 +746,9 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="hidden h-screen min-h-0 w-[320px] flex-col border-r border-border/60 bg-sidebar/80 backdrop-blur-sm px-4 py-4 lg:flex">
-        <Link to="/dashboard/today" className="flex items-center gap-3 rounded-2xl px-1 py-2">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm">
+      <aside className="hidden h-screen min-h-0 w-[320px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
+        <Link to="/dashboard/today" className="flex items-center gap-3 rounded-lg px-1 py-2">
+          <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-primary text-sidebar-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.14)]">
             <BookText className="h-5 w-5" />
           </div>
           <div>
@@ -752,12 +769,12 @@ export default function DashboardLayout() {
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="rounded-xl border bg-card px-4 py-4 shadow-sm">
+            <div className="rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="mt-1 text-lg font-semibold">继续今日任务</p>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600">
+                <div className="flex h-11 w-11 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
                   <Sparkles className="h-5 w-5" />
                 </div>
               </div>
@@ -773,7 +790,7 @@ export default function DashboardLayout() {
                 </div>
                 <Progress value={missionProgress} className="h-2" />
               </div>
-              <Button className="mt-4 w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700" asChild>
+              <Button className="mt-4 w-full rounded-md" asChild>
                 <Link to="/dashboard/today">
                   今日计划
                   <ChevronRight className="ml-2 h-4 w-4" />
@@ -781,7 +798,7 @@ export default function DashboardLayout() {
               </Button>
             </div>
 
-            <div className="rounded-2xl border bg-card px-4 py-3 space-y-3">
+            <div className="rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 space-y-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
                 <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
@@ -801,7 +818,7 @@ export default function DashboardLayout() {
           </div>
         </ScrollArea>
 
-        <div className="mt-4 rounded-2xl border bg-card px-4 py-3">
+        <div className="mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
@@ -846,16 +863,22 @@ export default function DashboardLayout() {
       </aside>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <header className="border-b bg-background/88 backdrop-blur supports-[backdrop-filter]:bg-background/68">
+        <header className="border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/90">
           <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-xl lg:hidden">
+                  <Button variant="ghost" size="icon" className="rounded-lg lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[320px] border-r bg-background p-4">
+                  <SheetTitle className="sr-only">
+                    {currentLang === 'zh' ? '应用导航' : 'App navigation'}
+                  </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    {currentLang === 'zh' ? '打开应用导航和工具入口。' : 'Open app navigation and tool entries.'}
+                  </SheetDescription>
                   {standardMobileSheetBody}
                 </SheetContent>
               </Sheet>
@@ -900,6 +923,12 @@ export default function DashboardLayout() {
           <BottomNavBar isLearningMode={false} onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
             <SheetContent side="bottom" className="border-t bg-background p-4">
+              <SheetTitle className="sr-only">
+                {currentLang === 'zh' ? '更多工具' : 'More tools'}
+              </SheetTitle>
+              <SheetDescription className="sr-only">
+                {currentLang === 'zh' ? '打开应用导航和工具入口。' : 'Open app navigation and tool entries.'}
+              </SheetDescription>
               {standardMobileSheetBody}
             </SheetContent>
           </Sheet>

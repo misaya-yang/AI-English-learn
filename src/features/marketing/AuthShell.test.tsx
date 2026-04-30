@@ -37,7 +37,7 @@ describe('AuthShell', () => {
     expect(screen.queryByText('继续你今天的学习计划。')).not.toBeInTheDocument();
   });
 
-  it('renders the English side-rail headline and Chinese tagline', () => {
+  it('renders English-only reassurance copy in English mode', () => {
     renderShell({
       title: 'Welcome back',
       titleZh: '欢迎回来',
@@ -45,28 +45,37 @@ describe('AuthShell', () => {
     });
 
     expect(screen.getByText('A calmer way to practice English every day.')).toBeInTheDocument();
-    expect(screen.getByText('把每天的复习、练习、教练反馈整合到一个学习工作台。')).toBeInTheDocument();
-    // Bullets are Chinese-only
-    expect(screen.getByText('· 基于 FSRS 的间隔重复')).toBeInTheDocument();
+    expect(screen.getByText('FSRS-based spaced repetition')).toBeInTheDocument();
+    expect(screen.queryByText('把每天的复习、练习、教练反馈整合到一个学习工作台。')).not.toBeInTheDocument();
+    expect(screen.queryByText('· 基于 FSRS 的间隔重复')).not.toBeInTheDocument();
   });
 
-  it('renders the Chinese-only back-to-home affordance', () => {
+  it('renders the localized back-to-home affordance in English mode', () => {
     renderShell({
       title: 'Sign in',
       titleZh: '登录',
       children: <span>panel</span>,
     });
 
-    // Only Chinese label now
-    expect(screen.getByText('返回首页')).toBeInTheDocument();
-    // English label removed
-    expect(screen.queryByText('Back to home')).not.toBeInTheDocument();
+    expect(screen.getByText('Back to home')).toBeInTheDocument();
+    expect(screen.queryByText('返回首页')).not.toBeInTheDocument();
     // Also exposes the brand mark with an accessible name.
     // BrandMark renders twice (mobile inline + desktop aside); both share the
     // same accessible label, so use getAllByLabelText.
     expect(
       screen.getAllByLabelText('VocabDaily — back to home').length,
     ).toBeGreaterThan(0);
+  });
+
+  it('surfaces theme and language controls on auth pages', () => {
+    renderShell({
+      title: 'Sign in',
+      titleZh: '登录',
+      children: <span>panel</span>,
+    });
+
+    expect(screen.getByRole('button', { name: 'Toggle appearance' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Switch language' })).toBeInTheDocument();
   });
 
   it('renders the children panel content (forms, success states, etc.)', () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,18 +15,29 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
   const isComplete = todayXP >= dailyGoal;
 
   // Track XP gain for fly-in animation
-  const [lastXP, setLastXP] = useState(todayXP);
-  const [xpGain, setXpGain] = useState<number | null>(null);
+  const lastXPRef = useRef(todayXP);
+  const [xpBurst, setXpBurst] = useState<{ gain: number; id: number } | null>(null);
 
   useEffect(() => {
-    if (todayXP > lastXP) {
-      setXpGain(todayXP - lastXP);
-      setLastXP(todayXP);
-      const timer = setTimeout(() => setXpGain(null), 1200);
-      return () => clearTimeout(timer);
+    const previousXP = lastXPRef.current;
+    lastXPRef.current = todayXP;
+    if (todayXP <= previousXP) {
+      return undefined;
     }
-    setLastXP(todayXP);
-  }, [todayXP, lastXP]);
+
+    const gain = todayXP - previousXP;
+    const showTimer = window.setTimeout(() => {
+      setXpBurst({ gain, id: todayXP });
+    }, 0);
+    const hideTimer = window.setTimeout(() => {
+      setXpBurst(null);
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+    };
+  }, [todayXP]);
 
   return (
     <div className={cn('relative', className)}>
@@ -56,16 +67,16 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
 
       {/* XP gain fly-in */}
       <AnimatePresence>
-        {xpGain != null && (
+        {xpBurst && (
           <motion.span
-            key={`xp-${Date.now()}`}
+            key={`xp-${xpBurst.id}`}
             className="absolute -top-1 right-0 text-xs font-bold text-emerald-500 pointer-events-none"
             initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 0, y: -18 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
           >
-            +{xpGain} XP
+            +{xpBurst.gain} XP
           </motion.span>
         )}
       </AnimatePresence>

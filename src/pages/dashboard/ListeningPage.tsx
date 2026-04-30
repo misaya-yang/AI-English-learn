@@ -10,7 +10,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Play,
   Pause,
@@ -283,7 +282,7 @@ My position is this: AI should serve as a second opinion, not a replacement for 
 function useTTSPlayer(transcript: string) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
+  const [isSupported] = useState(() => typeof window !== 'undefined' && 'speechSynthesis' in window);
   const [progress, setProgress] = useState(0);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -291,7 +290,6 @@ function useTTSPlayer(transcript: string) {
   const ESTIMATED_DURATION_MS = transcript.length * 55; // ~55ms per char at normal pace
 
   useEffect(() => {
-    setIsSupported('speechSynthesis' in window);
     return () => {
       window.speechSynthesis?.cancel();
       if (progressTimerRef.current) clearInterval(progressTimerRef.current);

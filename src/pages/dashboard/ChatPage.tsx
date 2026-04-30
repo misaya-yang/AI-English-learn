@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import {
   MessageSquare,
   RotateCcw,
@@ -19,7 +19,6 @@ import {
   FlaskConical,
   NotebookPen,
   GraduationCap,
-  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,7 +49,7 @@ import { MissionCards } from '@/features/coach/MissionCards';
 import { selectMissionCards } from '@/features/coach/missionCardSelector';
 import { QuizCanvasPanel } from '@/features/chat/components/QuizCanvasPanel';
 import { QuizRunFooter } from '@/features/chat/components/QuizRunFooter';
-import type { ChatModeOption, QuickPromptOption } from '@/features/chat/types';
+import type { ChatModeOption } from '@/features/chat/types';
 import {
   collectQuizRunArtifacts,
   computeQuizDisplayIndex,
@@ -65,13 +64,24 @@ import {
 } from '@/features/chat/utils/learnerContext';
 import { buildSocraticRecoveryPrompt } from '@/features/coach/socraticRecovery';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import {
+  buildCoachEvidenceSnapshot,
+  getCoachStudioCopy,
+  type CoachStudioMode,
+} from '@/features/coach/coachStudio';
 
 const CHAT_MODE_OPTIONS: ChatModeOption[] = [
-  { id: 'chat', label: 'Chat', labelZh: '对话', icon: MessageSquare },
-  { id: 'study', label: 'Study', labelZh: '学习', icon: GraduationCap },
-  { id: 'quiz', label: 'Quiz', labelZh: '测验', icon: FlaskConical },
-  { id: 'canvas', label: 'Canvas', labelZh: '写作', icon: NotebookPen },
+  { id: 'study', label: 'Diagnose', labelZh: '诊断', icon: GraduationCap },
+  { id: 'quiz', label: 'Drill', labelZh: '训练', icon: FlaskConical },
+  { id: 'chat', label: 'Review', labelZh: '复盘', icon: NotebookPen },
 ];
+
+const COACH_MODE_BY_CHAT_MODE: Record<ChatMode, CoachStudioMode> = {
+  study: 'diagnose',
+  quiz: 'drill',
+  chat: 'review',
+  canvas: 'diagnose',
+};
 
 // Main Chat Page Component
 export default function ChatPage() {
@@ -143,6 +153,7 @@ export default function ChatPage() {
   }, []);
   const { isListening: voiceListening, isSupported: voiceSupported, toggle: toggleVoice } = useSpeechRecognition(handleVoiceTranscript);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [toolsExpanded, setToolsExpanded] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>('study');
   const [searchMode, setSearchMode] = useState<'auto' | 'off'>('auto');
@@ -235,15 +246,32 @@ export default function ChatPage() {
     return () => { cancelled = true; };
   }, [chatUserId]);
 
+  const streakCurrent = streak.current;
   const chatLearnerModelSnapshot = useMemo(() => {
     if (!progress || progress.length === 0) return null;
     return computeLearnerModel(
       chatUserId,
       progress as UserProgress[],
-      streak.current,
+      streakCurrent,
       activeBookSummary.dailyGoal,
     );
-  }, [activeBookSummary.dailyGoal, chatUserId, progress, streak.current]);
+  }, [activeBookSummary.dailyGoal, chatUserId, progress, streakCurrent]);
+
+  const currentCoachMode = COACH_MODE_BY_CHAT_MODE[chatMode];
+  const currentCoachCopy = getCoachStudioCopy(currentCoachMode);
+  const coachEvidence = useMemo(
+    () =>
+      buildCoachEvidenceSnapshot({
+        userId: chatUserId,
+        learningProfile,
+        dueCount: dueWords.length,
+        learnerModel: chatLearnerModelSnapshot,
+        recentMistakes,
+      }),
+    [chatLearnerModelSnapshot, chatUserId, dueWords.length, learningProfile, recentMistakes],
+  );
+  const coachFocusLabel = coachEvidence.primaryFocus.replace(/_/g, ' ');
+  const coachRetentionLabel = `${Math.round(coachEvidence.retention.predicted30d * 100)}%`;
 
   const getChatLearnerProfile = useCallback(() => {
     return buildChatLearnerProfile({
@@ -543,7 +571,7 @@ export default function ChatPage() {
   // execute the suggested retry/micro_task/reflection. schedule_review
   // actions never reach here — they reduce to a "saved" badge in the panel.
   const handleCoachAction = useCallback(
-    (sendPrompt: string, _action: import('@/features/coach/coachingPolicy').CoachingAction) => {
+    (sendPrompt: string) => {
       const text = sendPrompt.trim();
       if (!text) return;
       void sendMessage(text, {
@@ -705,6 +733,46 @@ export default function ChatPage() {
       return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
     }
   };
+
+  const resetQuizRuntime = useCallback(() => {
+    stopGeneration();
+    syncQuizSequence(null);
+    setQuizCanvasIndex(0);
+    quizBatchRequestingRef.current = false;
+    quizPrefetchAttemptedRef.current = false;
+    quizBackgroundPrefetchRef.current = false;
+    clearQuizRun(currentSessionId);
+    handledSequenceQuizIdsRef.current.clear();
+  }, [clearQuizRun, currentSessionId, stopGeneration, syncQuizSequence]);
+
+  const handleCreateChatSession = useCallback(() => {
+    resetQuizRuntime();
+    void createSession();
+  }, [createSession, resetQuizRuntime]);
+
+  const handleSelectChatSession = useCallback((sessionId: string) => {
+    const recovered = recoverQuizRunFromSession(sessionId);
+    if (recovered) {
+      syncQuizSequence({
+        targetCount: recovered.targetCount,
+        answeredCount: recovered.answeredCount,
+        seedPrompt: recovered.seedPrompt,
+        usedWords: recovered.usedWords,
+        startedAt: recovered.startedAt,
+      });
+      setQuizCanvasIndex(
+        Math.max(0, Math.min(recovered.answeredCount, recovered.targetCount - 1)),
+      );
+    } else {
+      syncQuizSequence(null);
+      setQuizCanvasIndex(0);
+    }
+    quizBatchRequestingRef.current = false;
+    quizPrefetchAttemptedRef.current = false;
+    quizBackgroundPrefetchRef.current = false;
+    handledSequenceQuizIdsRef.current.clear();
+    switchSession(sessionId);
+  }, [recoverQuizRunFromSession, switchSession, syncQuizSequence]);
 
   const extractWordCandidate = (artifact: Extract<ChatArtifact, { type: 'quiz' }>): string => {
     if (artifact.payload.targetWord) {
@@ -1125,6 +1193,26 @@ export default function ChatPage() {
   const shouldWindowMessages = messages.length > 120;
   const hiddenMessageCount = shouldWindowMessages ? Math.max(0, messages.length - visibleMessageCount) : 0;
   const renderedMessages = hiddenMessageCount > 0 ? messages.slice(-visibleMessageCount) : messages;
+  const renderHistorySidebar = (onDone?: () => void) => (
+    <ChatHistorySidebar
+      sessions={sessions}
+      currentSessionId={currentSessionId}
+      t={t}
+      language={language}
+      formatDate={formatDate}
+      onCreateSession={() => {
+        handleCreateChatSession();
+        onDone?.();
+      }}
+      onSelectSession={(sessionId) => {
+        handleSelectChatSession(sessionId);
+        onDone?.();
+      }}
+      onUpdateSessionTitle={updateSessionTitle}
+      onDeleteSession={deleteSession}
+      onDeleteAllSessions={() => deleteAllSessions()}
+    />
+  );
 
   return (
     <div className="h-full min-h-0 flex overflow-hidden">
@@ -1138,55 +1226,26 @@ export default function ChatPage() {
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="flex-shrink-0 border-r border-border bg-card overflow-hidden min-h-0"
+            className="hidden flex-shrink-0 overflow-hidden border-r border-border bg-card md:block min-h-0"
           >
-            <ChatHistorySidebar
-              sessions={sessions}
-              currentSessionId={currentSessionId}
-              t={t}
-              language={language}
-              formatDate={formatDate}
-              onCreateSession={() => {
-                stopGeneration();
-                syncQuizSequence(null);
-                setQuizCanvasIndex(0);
-                quizBatchRequestingRef.current = false;
-                quizPrefetchAttemptedRef.current = false;
-                quizBackgroundPrefetchRef.current = false;
-                clearQuizRun(currentSessionId);
-                handledSequenceQuizIdsRef.current.clear();
-                void createSession();
-              }}
-              onSelectSession={(sessionId) => {
-                const recovered = recoverQuizRunFromSession(sessionId);
-                if (recovered) {
-                  syncQuizSequence({
-                    targetCount: recovered.targetCount,
-                    answeredCount: recovered.answeredCount,
-                    seedPrompt: recovered.seedPrompt,
-                    usedWords: recovered.usedWords,
-                    startedAt: recovered.startedAt,
-                  });
-                  setQuizCanvasIndex(
-                    Math.max(0, Math.min(recovered.answeredCount, recovered.targetCount - 1)),
-                  );
-                } else {
-                  syncQuizSequence(null);
-                  setQuizCanvasIndex(0);
-                }
-                quizBatchRequestingRef.current = false;
-                quizPrefetchAttemptedRef.current = false;
-                quizBackgroundPrefetchRef.current = false;
-                handledSequenceQuizIdsRef.current.clear();
-                switchSession(sessionId);
-              }}
-              onUpdateSessionTitle={updateSessionTitle}
-              onDeleteSession={deleteSession}
-              onDeleteAllSessions={() => deleteAllSessions()}
-            />
+            {renderHistorySidebar()}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Sheet open={mobileHistoryOpen} onOpenChange={setMobileHistoryOpen}>
+        <SheetContent side="left" className="w-[320px] border-r bg-card p-0">
+          <SheetTitle className="sr-only">
+            {language.startsWith('zh') ? '历史对话' : 'Chat history'}
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            {language.startsWith('zh')
+              ? '查看、创建和切换教练工作室对话。'
+              : 'View, create, and switch Coach Studio conversations.'}
+          </SheetDescription>
+          {renderHistorySidebar(() => setMobileHistoryOpen(false))}
+        </SheetContent>
+      </Sheet>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-background">
@@ -1196,18 +1255,34 @@ export default function ChatPage() {
             <Button
               variant="ghost"
               size="icon"
+              className="md:hidden"
+              onClick={() => setMobileHistoryOpen(true)}
+              title={language.startsWith('zh') ? '打开历史对话' : 'Open chat history'}
+              aria-label={language.startsWith('zh') ? '打开历史对话' : 'Open chat history'}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:inline-flex"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               title={sidebarOpen 
+                ? (language.startsWith('zh') ? '收起侧边栏' : 'Collapse sidebar')
+                : (language.startsWith('zh') ? '展开侧边栏' : 'Expand sidebar')}
+              aria-label={sidebarOpen
                 ? (language.startsWith('zh') ? '收起侧边栏' : 'Collapse sidebar')
                 : (language.startsWith('zh') ? '展开侧边栏' : 'Expand sidebar')}
             >
               <Menu className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="font-semibold">{t('chat.title')}</h1>
+              <h1 className="font-semibold">
+                {language.startsWith('zh') ? '雅思教练工作室' : 'IELTS Coach Studio'}
+              </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                {t('chat.subtitle')} · {messages.length > 0 ? `${messages.length} ${t('common.messages')}` : t('chat.ready')}
+                {language.startsWith('zh') ? '诊断 / 训练 / 复盘' : 'Diagnose / Drill / Review'} · {messages.length > 0 ? `${messages.length} ${t('common.messages')}` : t('chat.ready')}
                 {quizSequence && (
                   <>
                     <span>·</span>
@@ -1259,6 +1334,46 @@ export default function ChatPage() {
             )}
           </div>
         </div>
+
+        <section className="border-b border-border bg-card/60 px-4 py-3 md:px-6 lg:px-8">
+          <div className={cn(contentWidthClass, 'mx-auto grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center')}>
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
+                <MessageSquare className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Coach Brief
+                </p>
+                <h2 className="mt-1 text-sm font-semibold text-foreground sm:text-base">
+                  {language.startsWith('zh')
+                    ? `${currentCoachCopy.label.zh}：先处理 ${coachFocusLabel}`
+                    : `${currentCoachCopy.label.en}: focus on ${coachFocusLabel}`}
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {language.startsWith('zh')
+                    ? `${coachEvidence.ieltsTarget} · ${currentCoachCopy.description.zh}`
+                    : `${coachEvidence.ieltsTarget} · ${currentCoachCopy.description.en}`}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="rounded-md border border-border bg-background px-3 py-2">
+                <p className="text-muted-foreground">{language.startsWith('zh') ? '到期' : 'Due'}</p>
+                <p className="mt-1 font-semibold">{coachEvidence.dueReviewCount}</p>
+              </div>
+              <div className="rounded-md border border-border bg-background px-3 py-2">
+                <p className="text-muted-foreground">{language.startsWith('zh') ? '错误' : 'Mistakes'}</p>
+                <p className="mt-1 font-semibold">{coachEvidence.recentMistakeCount}</p>
+              </div>
+              <div className="rounded-md border border-border bg-background px-3 py-2">
+                <p className="text-muted-foreground">{language.startsWith('zh') ? '保持' : 'Retention'}</p>
+                <p className="mt-1 font-semibold">{coachRetentionLabel}</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Messages Area */}
         <ScrollArea className="flex-1 min-h-0 px-4 md:px-6 lg:px-8" ref={messagesScrollAreaRef}>

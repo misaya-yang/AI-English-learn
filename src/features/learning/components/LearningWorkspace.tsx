@@ -67,7 +67,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-xl border border-border bg-card shadow-sm transition-all duration-300';
+  'relative rounded-lg border border-border bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7),0_18px_44px_-36px_hsl(var(--shadow-studio)/0.28)] transition-all duration-300';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
@@ -96,12 +96,12 @@ export function LearningHeroPanel({
       animate={{ opacity: 1, y: 0 }}
       className={cn(learningFrameClassName, 'overflow-hidden p-4 sm:p-6 lg:p-8', className)}
     >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-muted/40 to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[30%] bg-[linear-gradient(180deg,hsl(var(--primary)/0.05),transparent)] xl:block" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primary" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[hsl(var(--border-strong)/0.55)]" />
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_300px] lg:items-start z-10">
         <div className="space-y-5">
           {eyebrow ? (
-            <Badge className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary hover:bg-primary/10">
+            <Badge className="border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary hover:bg-primary/10">
               {eyebrow}
             </Badge>
           ) : null}
@@ -114,7 +114,7 @@ export function LearningHeroPanel({
           {actions ? <LearningActionCluster>{actions}</LearningActionCluster> : null}
         </div>
 
-        <div className="space-y-4 rounded-xl border border-border bg-card/80 p-4 sm:p-6 shadow-sm relative z-10">
+        <div className="space-y-4 rounded-lg border border-border bg-[hsl(var(--surface-sunken))] p-4 shadow-inner sm:p-6 relative z-10">
           {typeof progress === 'number' ? (
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-4">
@@ -164,7 +164,7 @@ export function LearningWorkspaceSurface({
 }: LearningWorkspaceSurfaceProps) {
   return (
     <section className={cn(learningFrameClassName, 'overflow-hidden', className)}>
-      <div className="border-b border-border px-5 py-5 sm:px-6 lg:px-7">
+      <div className="border-b border-border bg-[hsl(var(--surface-sunken))] px-5 py-5 sm:px-6 lg:px-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
@@ -183,7 +183,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
   return (
     <div className={cn('grid gap-3 border-t border-border pt-4 sm:grid-cols-2 xl:grid-cols-3', className)}>
       {items.map((item) => (
-        <div key={`${item.label}-${String(item.value)}`} className="space-y-1.5">
+        <div key={`${item.label}-${String(item.value)}`} className="space-y-1.5 rounded-md border border-border/70 bg-[hsl(var(--surface-raised))] px-3 py-2.5">
           <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
           <div className={cn('text-2xl font-semibold tracking-[-0.04em]', metricToneClass[item.accent || 'default'])}>
             {item.value}
@@ -241,7 +241,7 @@ export function LearningCompletionState({
       animate={{ opacity: 1, scale: 1 }}
       className={cn(learningFrameClassName, 'overflow-hidden px-6 py-12 sm:px-10', className)}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,hsl(var(--primary)/0.05),transparent)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
       <div className="relative text-center z-10">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
           <Icon className="h-9 w-9" />

@@ -10,8 +10,8 @@
  *   • XP reward on completion
  */
 
-import { useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
   BookOpen, CheckCircle2, XCircle, Loader2, RefreshCw,
   ChevronRight, Target, Lightbulb, Award, Clock,
@@ -270,7 +270,6 @@ export default function ReadingPage() {
   const [phase, setPhase] = useState<'select' | 'reading' | 'review'>('select');
   const [current, setCurrent] = useState<ReadingPassage | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState<{ correct: number; total: number } | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -280,7 +279,6 @@ export default function ReadingPage() {
   const startPassage = useCallback((p: ReadingPassage) => {
     setCurrent(p);
     setAnswers({});
-    setSubmitted(false);
     setScore(null);
     setStartTime(Date.now());
     setPhase('reading');
@@ -344,7 +342,6 @@ export default function ReadingPage() {
     const xp        = pct >= 0.8 ? 25 : pct >= 0.6 ? 15 : 8;
 
     setScore({ correct, total });
-    setSubmitted(true);
     addStudySession(0, pct >= 0.8 ? 1 : 0, xp, elapsed);
     setPhase('review');
 

@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
-  ChevronRight,
   ChevronDown,
   CheckCircle2,
   XCircle,

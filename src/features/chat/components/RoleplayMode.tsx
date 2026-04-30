@@ -1,7 +1,6 @@
-import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Circle, Clock, Star, Trophy } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, Clock, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,6 @@ import { motionPresets } from '@/lib/motion';
 import { ScenarioSelector } from './ScenarioSelector';
 import {
   type RoleplayScenario,
-  type ScenarioSession,
   DIFFICULTY_LABELS,
 } from '@/data/roleplayScenarios';
 
@@ -34,7 +32,6 @@ export function RoleplayMode({
   onExit,
   activeScenario,
   completedObjectives,
-  messageCount,
   sessionScore,
 }: RoleplayModeProps) {
   const { i18n } = useTranslation();

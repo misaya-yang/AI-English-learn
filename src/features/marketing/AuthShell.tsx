@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { BrandMark } from './BrandMark';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface SideRailCopy {
   headline: string;
@@ -46,7 +48,11 @@ export function AuthShell({
   panelClassName,
   sideRail,
 }: AuthShellProps) {
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const language = i18n.language ?? 'en';
+  const isZh = language.startsWith('zh');
+  const displayTitle = isZh ? titleZh : title;
+  const displaySubtitle = isZh ? (subtitleZh ?? subtitle) : subtitle;
   const widthClass = size === 'wide' ? 'max-w-xl' : 'max-w-[420px]';
 
   const rail: SideRailCopy = {
@@ -58,29 +64,37 @@ export function AuthShell({
       { en: t('auth.shell.bullet3', { defaultValue: 'Mistake-aware daily missions' }), zh: t('auth.shell.bullet3Zh', { defaultValue: '基于错题的每日学习任务' }) },
     ],
   };
+  const railBody = isZh
+    ? t('auth.shell.bodyZh', { defaultValue: 'VocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。' })
+    : t('auth.shell.body', { defaultValue: 'VocabDaily keeps your due reviews, new words, and coach feedback in one daily rhythm.' });
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[hsl(var(--surface-sunken))] text-foreground">
       <main className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16 lg:py-20">
         {/* Form column — first on mobile per direction. */}
         <div className="order-1 flex justify-center lg:order-2 lg:justify-start">
           <div className={cn('w-full', widthClass)}>
+            <div className="mb-4 flex justify-end gap-2">
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </div>
+
             <div className="mb-6 flex justify-center lg:hidden">
               <BrandMark />
             </div>
 
             <div className="mb-5 text-center lg:text-left">
               <h1 className="text-xl font-semibold tracking-tight text-foreground">
-                {title}
+                {displayTitle}
               </h1>
-              {subtitle && (
-                <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+              {displaySubtitle && (
+                <p className="mt-2 text-sm text-muted-foreground">{displaySubtitle}</p>
               )}
             </div>
 
             <section
               className={cn(
-                'rounded-xl border border-border bg-card p-6 shadow-sm sm:p-7',
+                'rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-6 shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_52px_-40px_hsl(var(--shadow-studio)/0.34)] sm:p-7',
                 panelClassName,
               )}
             >
@@ -99,7 +113,7 @@ export function AuthShell({
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-                <span lang="zh-CN">返回首页</span>
+                <span>{isZh ? '返回首页' : 'Back to home'}</span>
               </Link>
             </div>
           </div>
@@ -108,15 +122,15 @@ export function AuthShell({
         {/* Brand / reassurance column — hidden on mobile, primary on lg. */}
         <aside className="order-2 hidden flex-col justify-center lg:order-1 lg:flex">
           <BrandMark />
-          <h2 className="mt-8 max-w-md text-2xl font-semibold tracking-tight text-foreground">
-            {rail.headline}
+          <h2 className="mt-8 max-w-md text-3xl font-semibold leading-tight tracking-tight text-foreground">
+            {isZh ? rail.headlineZh : rail.headline}
           </h2>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground" lang="zh-CN">
-            {rail.headlineZh}
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            {railBody}
           </p>
-          <ul className="mt-8 space-y-2 text-xs text-muted-foreground" lang="zh-CN">
+          <ul className="mt-8 space-y-2 text-xs text-muted-foreground">
             {rail.bullets.map((b) => (
-              <li key={b.en}>· {b.zh}</li>
+              <li key={b.en}>{isZh ? `· ${b.zh}` : b.en}</li>
             ))}
           </ul>
         </aside>

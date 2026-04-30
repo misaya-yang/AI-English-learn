@@ -14,6 +14,7 @@ import {
   validatePassword,
   validateEmail,
 } from '@/lib/supabase-auth';
+import { syncLearningProfileFromAuthProfile } from '@/services/profileLearningSync';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -37,6 +38,15 @@ function getErrorMessage(error: unknown, fallback: string): string {
     return error.message;
   }
   return fallback;
+}
+
+async function syncLearningProfileSafely(userId: string, profile: UserProfile | null): Promise<void> {
+  if (!profile) return;
+  try {
+    await syncLearningProfileFromAuthProfile(userId, profile);
+  } catch (error) {
+    console.warn('AuthContext: learning profile sync failed:', error);
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -63,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (currentUser) {
           const userProfile = await getUserProfile(currentUser.id);
           setProfile(userProfile);
+          void syncLearningProfileSafely(currentUser.id, userProfile);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -79,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         const userProfile = await getUserProfile(user.id);
         setProfile(userProfile);
+        void syncLearningProfileSafely(user.id, userProfile);
       } else {
         setProfile(null);
       }
@@ -133,6 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (success) {
       const updatedProfile = await getUserProfile(user.id);
       setProfile(updatedProfile);
+      await syncLearningProfileSafely(user.id, updatedProfile);
     }
     return success;
   };
@@ -151,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       const userProfile = await getUserProfile(user.id);
       setProfile(userProfile);
+      await syncLearningProfileSafely(user.id, userProfile);
     }
   };
 

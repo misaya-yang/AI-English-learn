@@ -10,11 +10,14 @@ import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
 import { resetPassword } from '@/lib/supabase-auth';
 import { AuthShell } from '@/features/marketing/AuthShell';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register, isAuthenticated } = useAuth();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +27,71 @@ export default function LoginPage() {
   const [isResetting, setIsResetting] = useState(false);
 
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
+  const copy = isZh
+    ? {
+        title: '欢迎回来',
+        subtitle: '登录后继续你今天的学习节奏。',
+        noAccount: '还没有账号？',
+        register: '注册',
+        email: '邮箱',
+        password: '密码',
+        forgotPassword: '忘记密码？',
+        showPassword: '显示密码',
+        hidePassword: '隐藏密码',
+        signingIn: '登录中...',
+        signIn: '登录',
+        divider: '或',
+        demo: '体验演示',
+        resetTitle: '重置密码',
+        resetBody: '我们会向你的邮箱发送重置链接。',
+        sending: '发送中...',
+        sendReset: '发送重置链接',
+        backToLogin: '返回登录',
+        missingCredentials: '请输入电子邮箱和密码',
+        loginTimeout: '登录超时，请检查网络连接后重试',
+        loginSuccess: '登录成功！',
+        invalidCredentials: '电子邮箱或密码错误',
+        networkError: '网络连接失败，请检查网络后重试',
+        loginFailed: '登录失败，请稍后重试',
+        demoSuccess: '欢迎使用演示账号！',
+        demoUnavailable: '演示账号暂时不可用，请尝试注册新账号',
+        missingEmail: '请输入电子邮箱',
+        resetSuccess: '重置密码邮件已发送，请检查您的邮箱',
+        sendFailed: '发送失败，请稍后重试',
+        genericNetworkError: '网络错误，请稍后重试',
+      }
+    : {
+        title: 'Welcome back',
+        subtitle: 'Sign in to continue your learning rhythm for today.',
+        noAccount: "Don't have an account?",
+        register: 'Create account',
+        email: 'Email',
+        password: 'Password',
+        forgotPassword: 'Forgot password?',
+        showPassword: 'Show password',
+        hidePassword: 'Hide password',
+        signingIn: 'Signing in...',
+        signIn: 'Sign in',
+        divider: 'or',
+        demo: 'Try demo',
+        resetTitle: 'Reset password',
+        resetBody: "We'll send a reset link to your email.",
+        sending: 'Sending...',
+        sendReset: 'Send reset link',
+        backToLogin: 'Back to sign in',
+        missingCredentials: 'Enter your email and password',
+        loginTimeout: 'Sign-in timed out. Check your connection and try again.',
+        loginSuccess: 'Signed in successfully!',
+        invalidCredentials: 'Incorrect email or password',
+        networkError: 'Network connection failed. Check your connection and try again.',
+        loginFailed: 'Sign-in failed. Please try again later.',
+        demoSuccess: 'Demo account ready!',
+        demoUnavailable: 'Demo account is unavailable. Try creating a new account.',
+        missingEmail: 'Enter your email',
+        resetSuccess: 'Password reset email sent. Check your inbox.',
+        sendFailed: 'Could not send the email. Please try again later.',
+        genericNetworkError: 'Network error. Please try again later.',
+      };
 
   // Redirect if already logged in
   if (isAuthenticated) {
@@ -34,7 +102,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!email || !password) {
-      toast.error('请输入电子邮箱和密码');
+      toast.error(copy.missingCredentials);
       return;
     }
 
@@ -43,7 +111,7 @@ export default function LoginPage() {
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       setIsLoading(false);
-      toast.error('登录超时，请检查网络连接后重试');
+      toast.error(copy.loginTimeout);
     }, 15000); // 15 second timeout
 
     try {
@@ -51,18 +119,18 @@ export default function LoginPage() {
       clearTimeout(timeoutId);
 
       if (success) {
-        toast.success('登录成功！');
+        toast.success(copy.loginSuccess);
         navigate(redirectTarget, { replace: true });
       } else {
         console.error('Login failed:', error);
-        toast.error(error || '电子邮箱或密码错误');
+        toast.error(error || copy.invalidCredentials);
       }
     } catch (error: unknown) {
       clearTimeout(timeoutId);
       console.error('Login exception:', error);
       toast.error(error instanceof TypeError
-        ? '网络连接失败，请检查网络后重试'
-        : '登录失败，请稍后重试');
+        ? copy.networkError
+        : copy.loginFailed);
     } finally {
       clearTimeout(timeoutId);
       setIsLoading(false);
@@ -79,7 +147,7 @@ export default function LoginPage() {
       // Step 1: try login
       const first = await login(demoEmail, demoPassword);
       if (first.success) {
-        toast.success('欢迎使用演示账号！');
+        toast.success(copy.demoSuccess);
         navigate(redirectTarget, { replace: true });
         return;
       }
@@ -88,16 +156,16 @@ export default function LoginPage() {
       await register(demoEmail, demoPassword, 'Demo User');
       const retry = await login(demoEmail, demoPassword);
       if (retry.success) {
-        toast.success('欢迎使用演示账号！');
+        toast.success(copy.demoSuccess);
         navigate(redirectTarget, { replace: true });
         return;
       }
 
-      toast.error('演示账号暂时不可用，请尝试注册新账号');
+      toast.error(copy.demoUnavailable);
     } catch (err) {
       toast.error(err instanceof TypeError
-        ? '网络连接失败，请检查网络后重试'
-        : '演示账号暂时不可用，请尝试注册新账号');
+        ? copy.networkError
+        : copy.demoUnavailable);
     } finally {
       setIsLoading(false);
     }
@@ -106,20 +174,20 @@ export default function LoginPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail) {
-      toast.error('请输入电子邮箱');
+      toast.error(copy.missingEmail);
       return;
     }
     setIsResetting(true);
     try {
       const { success, error } = await resetPassword(resetEmail);
       if (success) {
-        toast.success('重置密码邮件已发送，请检查您的邮箱');
+        toast.success(copy.resetSuccess);
         setShowForgotPassword(false);
       } else {
-        toast.error(error || '发送失败，请稍后重试');
+        toast.error(error || copy.sendFailed);
       }
     } catch {
-      toast.error('网络错误，请稍后重试');
+      toast.error(copy.genericNetworkError);
     } finally {
       setIsResetting(false);
     }
@@ -128,17 +196,18 @@ export default function LoginPage() {
   return (
     <>
       <AuthShell
-        title="欢迎回来"
+        title="Welcome back"
         titleZh="欢迎回来"
-        subtitle="登录后继续你今天的学习节奏。"
+        subtitle="Sign in to continue your learning rhythm for today."
+        subtitleZh="登录后继续你今天的学习节奏。"
         footer={
           <>
-            <span className="opacity-80">还没有账号？</span>{' '}
+            <span className="opacity-80">{copy.noAccount}</span>{' '}
             <Link
               to={`/register${location.search}`}
               className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
-              注册
+              {copy.register}
             </Link>
           </>
         }
@@ -149,7 +218,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="text-sm font-medium text-muted-foreground"
             >
-              邮箱
+              {copy.email}
             </Label>
             <Input
               id="email"
@@ -170,14 +239,14 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="text-sm font-medium text-muted-foreground"
               >
-                密码
+                {copy.password}
               </Label>
               <button
                 type="button"
                 onClick={() => { setResetEmail(email); setShowForgotPassword(true); }}
                 className="text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
               >
-                忘记密码？
+                {copy.forgotPassword}
               </button>
             </div>
             <div className="relative">
@@ -196,7 +265,7 @@ export default function LoginPage() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? copy.hidePassword : copy.showPassword}
                 className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -213,10 +282,10 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                登录中...
+                {copy.signingIn}
               </>
             ) : (
-              <>登录</>
+              <>{copy.signIn}</>
             )}
           </Button>
         </form>
@@ -226,7 +295,7 @@ export default function LoginPage() {
             <Separator />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-3 text-muted-foreground">或</span>
+            <span className="bg-card px-3 text-muted-foreground">{copy.divider}</span>
           </div>
         </div>
 
@@ -238,7 +307,7 @@ export default function LoginPage() {
           disabled={isLoading}
         >
           <Sparkles className="mr-2 h-4 w-4 text-primary" />
-          体验演示
+          {copy.demo}
         </Button>
       </AuthShell>
 
@@ -255,10 +324,10 @@ export default function LoginPage() {
               id="reset-password-title"
               className="text-center text-lg font-semibold tracking-tight text-foreground"
             >
-              重置密码
+              {copy.resetTitle}
             </h3>
             <p className="mt-3 text-center text-sm text-muted-foreground">
-              我们会向你的邮箱发送重置链接。
+              {copy.resetBody}
             </p>
             <form onSubmit={handleResetPassword} className="mt-6 space-y-4" noValidate>
               <div className="space-y-2">
@@ -266,7 +335,7 @@ export default function LoginPage() {
                   htmlFor="reset-email"
                   className="text-sm font-medium text-muted-foreground"
                 >
-                  邮箱
+                  {copy.email}
                 </Label>
                 <Input
                   id="reset-email"
@@ -289,12 +358,12 @@ export default function LoginPage() {
                 {isResetting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    发送中...
+                    {copy.sending}
                   </>
                 ) : (
                   <>
                     <Mail className="mr-2 h-4 w-4" />
-                    发送重置链接
+                    {copy.sendReset}
                   </>
                 )}
               </Button>
@@ -304,7 +373,7 @@ export default function LoginPage() {
                 className="h-10 w-full rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => setShowForgotPassword(false)}
               >
-                返回登录
+                {copy.backToLogin}
               </Button>
             </form>
           </div>
