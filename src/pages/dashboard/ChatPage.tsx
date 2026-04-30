@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -87,6 +88,7 @@ const COACH_MODE_BY_CHAT_MODE: Record<ChatMode, CoachStudioMode> = {
 export default function ChatPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const chatUserId = user?.id || 'guest';
   const {
@@ -148,6 +150,17 @@ export default function ChatPage() {
   );
 
   const [input, setInput] = useState('');
+  const dailyPlanHandoff = useMemo(() => {
+    const planId = searchParams.get('dailyPlan');
+    const prompt = searchParams.get('prompt');
+    if (!planId || !prompt) return null;
+    return {
+      planId,
+      reason: searchParams.get('reason') || '',
+      focus: searchParams.get('focus') || '',
+      prompt,
+    };
+  }, [searchParams]);
   const handleVoiceTranscript = useCallback((text: string) => {
     setInput((prev) => prev ? `${prev} ${text}` : text);
   }, []);
@@ -1374,6 +1387,37 @@ export default function ChatPage() {
             </div>
           </div>
         </section>
+
+        {dailyPlanHandoff ? (
+          <section className="border-b border-border bg-[hsl(var(--accent-coach)/0.06)] px-4 py-3 md:px-6 lg:px-8">
+            <div className={cn(contentWidthClass, 'mx-auto flex flex-col gap-3 rounded-md border border-[hsl(var(--accent-coach)/0.22)] bg-background/80 p-3 sm:flex-row sm:items-center sm:justify-between')}>
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-[hsl(var(--accent-coach))]">
+                  {language.startsWith('zh') ? '已载入今日计划' : 'Daily plan loaded'}
+                </p>
+                <h3 className="mt-1 text-sm font-semibold text-foreground">
+                  {dailyPlanHandoff.focus || (language.startsWith('zh') ? '今日教练任务' : 'Today coach task')}
+                </h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {language.startsWith('zh')
+                    ? `来源：${dailyPlanHandoff.reason || 'daily coach'}。点击后把计划放进输入框，由你确认发送。`
+                    : `Source: ${dailyPlanHandoff.reason || 'daily coach'}. Use it to fill the composer, then send when ready.`}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="shrink-0 rounded-md"
+                onClick={() => {
+                  setInput(dailyPlanHandoff.prompt);
+                  requestAnimationFrame(() => inputRef.current?.focus());
+                }}
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                {language.startsWith('zh') ? '使用今日计划' : 'Use plan'}
+              </Button>
+            </div>
+          </section>
+        ) : null}
 
         {/* Messages Area */}
         <ScrollArea className="flex-1 min-h-0 px-4 md:px-6 lg:px-8" ref={messagesScrollAreaRef}>

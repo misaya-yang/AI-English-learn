@@ -56,6 +56,11 @@ import {
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { deriveMissionSourceSignal } from '@/features/learning/missionSourceSignal';
+import {
+  buildDailyCoachPlan,
+  getDailyCoachEvidenceToneClass,
+} from '@/features/learning/dailyCoachPlan';
+import { buildLexicalSummary, toLexicalEntry } from '@/features/lexicon/lexicalEntry';
 import { useTranslation } from 'react-i18next';
 import type { UserProgress } from '@/data/localStorage';
 
@@ -422,6 +427,7 @@ export default function TodayPage() {
 
   const words = useMemo(() => (dailyWords.length > 0 ? dailyWords : []), [dailyWords]);
   const currentWord = words[currentWordIndex];
+  const lexicalFocus = useMemo(() => currentWord ? toLexicalEntry(currentWord) : null, [currentWord]);
   const durableLearnedWords = useMemo(() => {
     if (words.length === 0) return new Set<string>();
     const todayKey = `${dayKey.date.getFullYear()}-${String(dayKey.date.getMonth() + 1).padStart(2, '0')}-${String(dayKey.date.getDate()).padStart(2, '0')}`;
@@ -477,6 +483,30 @@ export default function TodayPage() {
   const weaknesses = useMemo(() => learningOverviewQuery.data?.weaknesses ?? [], [learningOverviewQuery.data?.weaknesses]);
   const adaptiveDifficulty = learningOverviewQuery.data?.adaptiveDifficulty;
   const activityPoints = useMemo(() => learningOverviewQuery.data?.activity ?? [], [learningOverviewQuery.data?.activity]);
+  const dailyCoachPlan = useMemo(() => {
+    if (!missionCard) return null;
+    return buildDailyCoachPlan({
+      userId,
+      profile: learningProfile,
+      missionCard,
+      dueWordsCount: dueWords.length,
+      dailyWordsCount: words.length,
+      learnedTodayCount: learnedWords.size,
+      weaknesses,
+      activeBookName: activeBook?.name || null,
+      lexicalFocus,
+    });
+  }, [
+    activeBook?.name,
+    dueWords.length,
+    learnedWords.size,
+    learningProfile,
+    lexicalFocus,
+    missionCard,
+    userId,
+    weaknesses,
+    words.length,
+  ]);
 
   const handleFlip = useCallback((wordId: string) => {
     setFlippedCards((prev) => {
@@ -634,6 +664,15 @@ export default function TodayPage() {
   const missionTotal = dailyMission?.tasks.length || 0;
   const missionProgress = missionTotal > 0 ? Math.round((missionDone / missionTotal) * 100) : 0;
   const coachNextStep = useMemo(() => {
+    if (dailyCoachPlan) {
+      return {
+        label: isZh ? 'Daily Coach OS' : 'Daily Coach OS',
+        title: isZh ? dailyCoachPlan.briefTitle.zh : dailyCoachPlan.briefTitle.en,
+        detail: isZh ? dailyCoachPlan.brief.zh : dailyCoachPlan.brief.en,
+        href: dailyCoachPlan.coachHref,
+      };
+    }
+
     const topWeakness = weaknesses[0];
     if (topWeakness) {
       return {
@@ -642,6 +681,7 @@ export default function TodayPage() {
         detail: isZh
           ? `先用一次诊断确认 ${topWeakness.titleZh}，再安排针对训练。`
           : `Diagnose ${topWeakness.title} first, then turn it into a focused drill.`,
+        href: '/dashboard/chat',
       };
     }
 
@@ -653,6 +693,7 @@ export default function TodayPage() {
         detail: isZh
           ? `${learnerModel.stubbornWordCount} 个顽固词需要进入短测和复习回路。`
           : `${learnerModel.stubbornWordCount} stubborn items should move into drill and review.`,
+        href: '/dashboard/chat',
       };
     }
 
@@ -663,6 +704,7 @@ export default function TodayPage() {
         detail: isZh
           ? `${dueWords.length} 个到期项会影响今天的新练习安排。`
           : `${dueWords.length} due items should shape today's training load.`,
+        href: '/dashboard/chat',
       };
     }
 
@@ -672,8 +714,9 @@ export default function TodayPage() {
       detail: isZh
         ? `${learningProfile.target} 会作为今天教练建议的主上下文。`
         : `${learningProfile.target} will anchor today's coach recommendation.`,
+      href: '/dashboard/chat',
     };
-  }, [dueWords.length, isZh, learnerModel, learningProfile.target, weaknesses]);
+  }, [dailyCoachPlan, dueWords.length, isZh, learnerModel, learningProfile.target, weaknesses]);
 
   if (words.length === 0) {
     return (
@@ -799,10 +842,25 @@ export default function TodayPage() {
               </p>
               <h2 className="mt-1 text-base font-semibold text-foreground">{coachNextStep.title}</h2>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">{coachNextStep.detail}</p>
+              {dailyCoachPlan ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {dailyCoachPlan.evidence.slice(0, 4).map((item) => (
+                    <span
+                      key={item.id}
+                      className={cn(
+                        'rounded-md border px-2.5 py-1 text-[11px] font-medium',
+                        getDailyCoachEvidenceToneClass(item.tone),
+                      )}
+                    >
+                      {isZh ? item.label.zh : item.label.en}: {item.value}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
           <Button className="shrink-0 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-            <Link to="/dashboard/chat">
+            <Link to={coachNextStep.href}>
               <MessageCircleMore className="mr-2 h-4 w-4" />
               {isZh ? '去教练室' : 'Open Coach'}
             </Link>
@@ -974,6 +1032,42 @@ export default function TodayPage() {
         </div>
 
         <div className="space-y-6">
+          {dailyCoachPlan?.dictionaryFocus && lexicalFocus ? (
+            <LearningRailSection title={isZh ? '词典焦点' : 'Lexicon focus'}>
+              <div className="rounded-xl border border-[hsl(var(--accent-practice)/0.25)] bg-[hsl(var(--accent-practice)/0.08)] p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      {isZh ? '今日词汇知识点' : 'Today lexical signal'}
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-foreground">
+                      {dailyCoachPlan.dictionaryFocus.headword}
+                    </h3>
+                  </div>
+                  <Badge variant="outline" className="rounded-md bg-background/60">
+                    {dailyCoachPlan.dictionaryFocus.cefrLevel}
+                  </Badge>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {buildLexicalSummary(lexicalFocus, language)}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="rounded-md">
+                    {dailyCoachPlan.dictionaryFocus.topic}
+                  </Badge>
+                  <Badge variant="secondary" className="rounded-md">
+                    IELTS {dailyCoachPlan.dictionaryFocus.ieltsRelevance}
+                  </Badge>
+                </div>
+                <Button variant="outline" size="sm" className="mt-4 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
+                  <Link to={`/dashboard/vocabulary?q=${encodeURIComponent(dailyCoachPlan.dictionaryFocus.headword)}`}>
+                    {isZh ? '打开词典条目' : 'Open lexicon entry'}
+                  </Link>
+                </Button>
+              </div>
+            </LearningRailSection>
+          ) : null}
+
           <LearningRailSection title={isZh ? '学习背景' : 'Learning context'}>
             <div className="space-y-3">
               <div className="rounded-xl border border-border bg-card p-4 shadow-sm">

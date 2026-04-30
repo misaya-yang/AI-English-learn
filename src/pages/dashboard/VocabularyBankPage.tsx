@@ -29,6 +29,7 @@ import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportResult
 import { toast } from 'sonner';
 import { speakEnglishText } from '@/services/tts';
 import { exportToCSV, exportToAnkiTSV, downloadFile } from '@/services/wordBookExport';
+import { useTranslation } from 'react-i18next';
 
 interface VocabularyItem {
   word: WordData;
@@ -52,6 +53,8 @@ const statusLabels: Record<string, string> = {
 export default function VocabularyBankPage() {
   const [searchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
 
   const {
     wordBooks,
@@ -234,9 +237,11 @@ export default function VocabularyBankPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">我的词汇</h1>
+          <h1 className="text-2xl font-bold">{isZh ? '词典' : 'Lexicon'}</h1>
           <p className="text-muted-foreground">
-            词书学习中心 • {filteredVocabulary.length} words
+            {isZh
+              ? `词典内核、词书与可复习词汇资产 · ${filteredVocabulary.length} 个词条`
+              : `Dictionary kernel, word books, and review-ready lexical assets · ${filteredVocabulary.length} words`}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -305,7 +310,7 @@ export default function VocabularyBankPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            词书管理
+            {isZh ? '词典与词书管理' : 'Dictionary and word books'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">

@@ -196,13 +196,13 @@ const ROUTES: DashboardRouteMeta[] = [
   {
     id: 'vocabulary',
     path: '/dashboard/vocabulary',
-    label: { en: 'Vocabulary', zh: '词书' },
-    description: { en: 'Word books and vocabulary assets.', zh: '词书与词汇资产。' },
+    label: { en: 'Lexicon', zh: '词典' },
+    description: { en: 'Dictionary, word books, and lexical search.', zh: '词典、词书与词汇检索。' },
     icon: Library,
     group: 'tools',
     mobilePriority: 12,
-    pageTitle: { en: 'Vocabulary · VocabDaily', zh: '词书 · VocabDaily' },
-    searchAliases: ['vocabulary', 'words', '词书', '词汇', 'deck'],
+    pageTitle: { en: 'Lexicon · VocabDaily', zh: '词典 · VocabDaily' },
+    searchAliases: ['lexicon', 'dictionary', 'vocabulary', 'words', '词典', '词书', '词汇', 'deck'],
   },
   {
     id: 'analytics',
