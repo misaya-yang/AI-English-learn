@@ -55,7 +55,7 @@ export default function WritingPage() {
       setGradeResult(result);
     } catch {
       setGradeResult(gradeLocally(content, writingType));
-      toast.info(isZh ? 'AI 批改暂时不可用，已切换到本地评分' : 'AI grading unavailable — using local scoring');
+      toast.info(isZh ? '在线批改暂时不可用，已切换到本地评分' : 'Online grading unavailable. Using local scoring.');
     } finally {
       setIsGrading(false);
     }
@@ -109,10 +109,10 @@ export default function WritingPage() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-primary">
+              <p className="text-xs font-medium text-primary">
                 {isZh ? '写作专项' : 'Writing module'}
               </p>
-              <h1 className="mt-2 text-2xl font-bold tracking-tight">
+              <h1 className="mt-2 text-2xl font-bold">
                 {isZh ? '写作练习' : 'Writing Practice'}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -144,7 +144,7 @@ export default function WritingPage() {
           </div>
 
           <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
-            <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               {isZh ? '评分与修改' : 'Scoring and revision'}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -299,7 +299,7 @@ export default function WritingPage() {
 
                 {!gradeResult.hasAiFeedback && (
                   <p className="text-xs text-muted-foreground text-center">
-                    {isZh ? 'AI 反馈不可用——仅显示本地分析' : 'AI feedback unavailable — showing local analysis only'}
+                    {isZh ? '在线反馈不可用，仅显示本地分析' : 'Online feedback unavailable. Showing local analysis only.'}
                   </p>
                 )}
               </motion.div>

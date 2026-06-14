@@ -151,7 +151,7 @@ const BEGINNER_FALLBACKS: MissionRecommendation[] = [
     title: { en: 'Quick 3-question warm-up quiz', zh: '3 题热身小测' },
     reason: {
       en: 'A tiny quiz gives the coach a baseline before recommending more.',
-      zh: '先做个小测，让教练能更准地推荐下一步。',
+      zh: '先做个小测，后面更容易判断下一步练什么。',
     },
     estimatedMinutes: 5,
     promptEn: 'Give me 3 quick English questions to gauge my current level. After I answer, summarize what to focus on first.',
@@ -180,7 +180,7 @@ export function buildMissionRecommendations(ctx: BuildMissionContext = {}): Miss
       },
       reason: {
         en: dueCount >= 12
-          ? 'Backlog is high — practice them in short bursts so retention does not slip.'
+          ? 'Backlog is high. Practice them in short bursts so retention does not slip.'
           : 'Practising due words in context is the fastest way to keep retention up.',
         zh: dueCount >= 12
           ? '复习积压偏高，先用对话分批清掉，避免遗忘曲线掉得更快。'

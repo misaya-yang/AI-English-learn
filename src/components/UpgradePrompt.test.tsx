@@ -35,7 +35,7 @@ describe('UpgradePrompt', () => {
     renderPrompt('aiChat');
 
     expect(screen.getByText("Today's free quota is used")).toBeInTheDocument();
-    expect(screen.getByText(/Coach Chat is limited to 10\/day on Free/i)).toBeInTheDocument();
+    expect(screen.getByText(/English Help is limited to 10\/day on Free/i)).toBeInTheDocument();
     expect(screen.getByText(/weekly planning/i)).toBeInTheDocument();
     expect(screen.getByText(/IELTS Writing and Speaking scoring rubrics/i)).toBeInTheDocument();
     expect(screen.getByText(/Advanced analytics: review debt/i)).toBeInTheDocument();

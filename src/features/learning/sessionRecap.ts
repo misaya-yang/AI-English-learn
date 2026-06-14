@@ -104,12 +104,12 @@ const buildReviewRecap = (
   // Encouragement is concrete — references the count, not "great job".
   const encouragement: SessionRecap['encouragement'] = total === 0
     ? {
-        en: 'No cards reviewed this round — your memory curve says nothing was due.',
+        en: 'No cards reviewed this round. Your memory curve says nothing was due.',
         zh: '本轮没有需要复习的卡片，记忆曲线说今天不用再回头看。',
       }
     : accuracy >= 0.8
       ? {
-          en: `${improvedCount}/${total} cards landed Good or Easy — that is a strong retention session.`,
+          en: `${improvedCount}/${total} cards landed Good or Easy. That is a strong retention session.`,
           zh: `${improvedCount}/${total} 张评为 Good 或 Easy，这一轮记忆稳定度很好。`,
         }
       : accuracy >= 0.5
@@ -118,11 +118,11 @@ const buildReviewRecap = (
             zh: `这一轮不错：${improvedCount}/${total} 通过，${struggleCount} 张较吃力的会被更早安排再练。`,
           }
         : {
-            en: `Hard set today (${improvedCount}/${total} confident). FSRS will tighten the interval on the rest — that is exactly what should happen.`,
+            en: `Hard set today (${improvedCount}/${total} confident). FSRS will tighten the interval on the rest, which is exactly what should happen.`,
             zh: `今天的卡偏难（${improvedCount}/${total} 稳）。剩下的会被 FSRS 缩短间隔，正是该有的处理。`,
           };
 
-  // Next action: when coach reviews are due, send them there. Otherwise
+  // Next action: when scheduled reviews are due, send them there. Otherwise
   // route to Practice so the struggling cards get reinforced; with zero
   // touched cards, route back to Today.
   const coachDue = args.coachReviews?.dueCount ?? 0;
@@ -133,12 +133,12 @@ const buildReviewRecap = (
       needsReview,
       encouragement,
       nextAction: {
-        ctaEn: `Tackle ${coachDue} coach review${coachDue > 1 ? 's' : ''}`,
-        ctaZh: `处理 ${coachDue} 个教练复习`,
+        ctaEn: `Review ${coachDue} scheduled item${coachDue > 1 ? 's' : ''}`,
+        ctaZh: `处理 ${coachDue} 个复习项`,
         href: '/dashboard/review',
         reason: {
-          en: `The AI coach scheduled ${coachDue} item${coachDue > 1 ? 's' : ''} from your last chat — clear them while the context is fresh.`,
-          zh: `教练上次对话给你安排了 ${coachDue} 个复习项，趁上下文还在先把它们做掉。`,
+          en: `Your last chat scheduled ${coachDue} item${coachDue > 1 ? 's' : ''} for review. Clear them while the context is fresh.`,
+          zh: `上次对话留下了 ${coachDue} 个复习项，趁上下文还在先做掉。`,
         },
       },
     };
@@ -155,7 +155,7 @@ const buildReviewRecap = (
         ctaZh: '回到 Today',
         href: '/dashboard/today',
         reason: {
-          en: 'No FSRS reviews are due — keep the momentum on today\'s mission.',
+          en: 'No FSRS reviews are due. Keep the momentum on today\'s mission.',
           zh: '当前没有到期复习，继续推进今日任务即可。',
         },
       },
@@ -191,7 +191,7 @@ const buildReviewRecap = (
         ctaZh: '做一次雅思 Task 2 冲刺',
         href: '/dashboard/exam',
         reason: {
-          en: 'Retention is high — convert it into a writing sprint while you\'re warm.',
+          en: 'Retention is high. Convert it into a writing sprint while you\'re warm.',
           zh: '记忆稳定，趁状态做一次写作冲刺最划算。',
         },
       },
@@ -246,21 +246,21 @@ const buildPracticeRecap = (
 
   const encouragement: SessionRecap['encouragement'] = total === 0
     ? {
-        en: 'No questions answered — start a short drill to feed the coach context.',
-        zh: '本次没有作答记录——开个短练习给教练一些可参考的信号。',
+        en: 'No questions answered. Start a short drill to create a baseline.',
+        zh: '本次没有作答记录，先做个短练习建立基线。',
       }
     : accuracy >= 0.8
       ? {
-          en: `${correct}/${total} correct — that is a tight retrieval session, push for harder content next.`,
+          en: `${correct}/${total} correct. That is a tight retrieval session, so push for harder content next.`,
           zh: `${correct}/${total} 正确，检索很扎实，下一轮可以挑战更难的内容。`,
         }
       : accuracy >= 0.5
         ? {
-            en: `Steady run: ${correct}/${total}. The ${incorrect} mistakes are queued for the coach to revisit.`,
-            zh: `这一轮不错：${correct}/${total}。${incorrect} 道错题已经进入教练复习队列。`,
+            en: `Steady run: ${correct}/${total}. The ${incorrect} mistakes are queued for review.`,
+            zh: `这一轮不错：${correct}/${total}。${incorrect} 道错题已进入复习队列。`,
           }
         : {
-            en: `Tough drill (${correct}/${total}). The mistakes will surface sooner in review — exactly what should happen.`,
+            en: `Tough drill (${correct}/${total}). The mistakes will surface sooner in review, which is exactly what should happen.`,
             zh: `这一轮偏难（${correct}/${total}）。这些错题会更早出现在复习里，正是该有的处理。`,
           };
 
@@ -272,12 +272,12 @@ const buildPracticeRecap = (
       needsReview,
       encouragement,
       nextAction: {
-        ctaEn: `Open ${coachDue} coach review${coachDue > 1 ? 's' : ''}`,
-        ctaZh: `处理 ${coachDue} 个教练复习`,
+        ctaEn: `Open ${coachDue} scheduled review${coachDue > 1 ? 's' : ''}`,
+        ctaZh: `处理 ${coachDue} 个复习项`,
         href: '/dashboard/review',
         reason: {
-          en: 'The coach has scheduled work from your last chat — clear it while the context is fresh.',
-          zh: '教练已经在上次对话里给你安排了复习，趁上下文还在先把它们做掉。',
+          en: 'Your last chat scheduled review work. Clear it while the context is fresh.',
+          zh: '上次对话留下了复习项，趁上下文还在先做掉。',
         },
       },
     };
@@ -290,12 +290,12 @@ const buildPracticeRecap = (
       needsReview,
       encouragement,
       nextAction: {
-        ctaEn: 'Talk it through with the coach',
-        ctaZh: '让教练带你复盘错题',
+        ctaEn: 'Review the mistake',
+        ctaZh: '复盘错题',
         href: '/dashboard/chat',
         reason: {
-          en: `${incorrect} mistake${incorrect > 1 ? 's are' : ' is'} fresh — let the coach run a Socratic recovery on them.`,
-          zh: `${incorrect} 道错题刚记下，让教练用 Socratic 方式带你复盘最有效。`,
+          en: `${incorrect} mistake${incorrect > 1 ? 's are' : ' is'} fresh. Review them while the details are still clear.`,
+          zh: `${incorrect} 道错题刚记下，现在复盘最省力。`,
         },
       },
     };
@@ -312,7 +312,7 @@ const buildPracticeRecap = (
         ctaZh: '进入雅思准备',
         href: '/dashboard/exam',
         reason: {
-          en: 'Retrieval is sharp — push it into a structured exam-prep round.',
+          en: 'Retrieval is sharp. Push it into a structured exam-prep round.',
           zh: '检索状态好，转入结构化的考试训练最划算。',
         },
       },
@@ -329,7 +329,7 @@ const buildPracticeRecap = (
       ctaZh: '回到 Today',
       href: '/dashboard/today',
       reason: {
-        en: 'Session is clean — keep the momentum on today\'s mission.',
+        en: 'Session is clean. Keep the momentum on today\'s mission.',
         zh: '本轮稳定，继续推进今日任务即可。',
       },
     },

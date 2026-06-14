@@ -57,7 +57,7 @@ const jsonHeaders = async (): Promise<HeadersInit> => {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) {
-    throw new AuthRequiredError('Please sign in before using AI chat.');
+    throw new AuthRequiredError('Please sign in before using online help.');
   }
 
   return {
@@ -387,16 +387,16 @@ export const getChatFallbackReply = (messages: Array<{ role: string; content: st
   const userInput = extractLatestUserMessage(messages).trim();
 
   return [
-    'I am running in local fallback mode (AI gateway unavailable), but I can still help.',
+    'I am running in local fallback mode (online feedback unavailable), but I can still help.',
     '',
     `You asked: "${userInput}"`,
     '',
-    'Quick coaching:',
+    'Quick practice:',
     '- Rewrite one sentence using clearer logic connectors (for example: however, therefore, in contrast).',
     '- Add one concrete example to support your main point.',
     '- Check article/preposition errors and verb tense consistency.',
     '',
-    '我当前在本地降级模式（AI 网关不可用），但仍可给你学习建议。',
+    '我当前在本地降级模式（在线反馈不可用），但仍可给你学习建议。',
     '建议你补一条具体例子，并检查时态与连接词。',
   ].join('\n');
 };

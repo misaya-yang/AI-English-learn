@@ -940,7 +940,7 @@ export default function PracticePage() {
     return renderPageShell(
       <LearningWorkspaceSurface
         eyebrow={isZh ? '写作工作区' : 'Writing workspace'}
-        title={isZh ? 'IELTS 写作教练' : 'IELTS Writing Coach'}
+        title={isZh ? 'IELTS 写作练习' : 'IELTS Writing Practice'}
         actions={
           <div className="flex items-center gap-2">
             {writingRound > 1 && (
@@ -1456,7 +1456,7 @@ export default function PracticePage() {
             <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
               {currentQuestion?.word.word}
             </Badge>
-            <h3 className="text-3xl font-semibold tracking-tight text-foreground">{currentQuestion?.question}</h3>
+            <h3 className="text-3xl font-semibold text-foreground">{currentQuestion?.question}</h3>
             <p className="text-base leading-7 text-muted-foreground">{currentQuestion?.questionZh}</p>
           </div>
 

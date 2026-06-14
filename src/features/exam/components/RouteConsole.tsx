@@ -41,9 +41,9 @@ export function RouteConsole({
 }: RouteConsoleProps) {
   return (
     <motion.aside initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-      <section className="rounded-[24px] border border-border/70 bg-card/90 p-4">
+      <section className="rounded-lg border border-border/70 bg-card/90 p-4">
         <div className="space-y-2">
-          <p className="text-[11px] tracking-wide text-muted-foreground/80">路线选择</p>
+          <p className="text-[11px] font-medium text-muted-foreground/80">路线选择</p>
           <h2 className="text-lg font-semibold">选择冲分轨道</h2>
           <p className="text-sm text-muted-foreground">先定 Band 区间和 skill，再决定这轮写作应该站在哪个单元。</p>
         </div>
@@ -69,7 +69,7 @@ export function RouteConsole({
                     type="button"
                     onClick={() => onSelectTrack(track.id)}
                     className={cn(
-                      'w-full rounded-2xl border px-3 py-3 text-left transition-colors',
+                      'w-full rounded-lg border px-3 py-3 text-left transition-colors',
                       active
                         ? 'border-emerald-500/60 bg-emerald-500/[0.12]'
                         : 'border-border/60 bg-background/35 hover:border-emerald-500/30 hover:bg-muted/40',
@@ -91,9 +91,9 @@ export function RouteConsole({
         </ScrollArea>
       </section>
 
-      <section className="rounded-[24px] border border-border/70 bg-card/90 p-4">
+      <section className="rounded-lg border border-border/70 bg-card/90 p-4">
         <div className="space-y-2">
-          <p className="text-[11px] tracking-wide text-muted-foreground/80">练习单元</p>
+          <p className="text-[11px] font-medium text-muted-foreground/80">练习单元</p>
           <h2 className="text-lg font-semibold">按单元推进，不要一口气全练</h2>
         </div>
 
@@ -105,7 +105,7 @@ export function RouteConsole({
         />
 
         {selectedUnit && (
-          <div className="mt-4 rounded-2xl border border-border/70 bg-background/40 p-3">
+          <div className="mt-4 rounded-lg border border-border/70 bg-background/40 p-3">
             <p className="text-sm font-medium">{selectedUnit.title}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {selectedUnit.cefrLevel} · {selectedUnit.estimatedMinutes} min · {selectedUnitProgress}% 完成
@@ -127,7 +127,7 @@ export function RouteConsole({
                     type="button"
                     onClick={() => onSelectUnit(unit.id)}
                     className={cn(
-                      'w-full rounded-2xl border px-3 py-3 text-left transition-colors',
+                      'w-full rounded-lg border px-3 py-3 text-left transition-colors',
                       active
                         ? 'border-emerald-500/60 bg-emerald-500/[0.12]'
                         : 'border-border/60 bg-background/35 hover:border-emerald-500/30 hover:bg-muted/30',

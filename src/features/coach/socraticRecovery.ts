@@ -83,7 +83,7 @@ export function buildSocraticRecoveryPrompt(
   }
 
   return {
-    visible: 'I just got that one wrong — guide me Socratically per COACHING_POLICY.',
+    visible: 'I just got that one wrong. Guide me Socratically per COACHING_POLICY.',
     api: `LEARNER_INCORRECT_ANSWER ${tagSuffix}\n` +
          `Question: ${question}\n` +
          `My answer: ${userAnswer || '(no answer captured)'}\n` +

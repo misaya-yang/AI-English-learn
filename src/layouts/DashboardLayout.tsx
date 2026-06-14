@@ -80,7 +80,7 @@ const localDateKey = (date: Date): string => {
 const shellTitleMap: Record<string, { title: LocalizedText; description: LocalizedText }> = {
   '/dashboard/today': {
     title: { en: 'Today', zh: '今日' },
-    description: { en: 'Start with one clear task for today.', zh: '今天先做一个明确任务。' },
+    description: { en: 'Reviews, new words, and short practice.', zh: '复习、新词和短练习。' },
   },
   '/dashboard/review': {
     title: { en: 'Review', zh: '复习' },
@@ -91,8 +91,8 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
     description: { en: 'Use short drills for the parts that still feel shaky.', zh: '用短练习处理还不稳的部分。' },
   },
   '/dashboard/chat': {
-    title: { en: 'Coach', zh: '教练' },
-    description: { en: 'Use guided coaching with context, questions, and retries.', zh: '做一轮带上下文的引导学习，把问题讲透。' },
+    title: { en: 'Help', zh: '答疑' },
+    description: { en: 'Use guided practice with context, questions, and retries.', zh: '做一轮带上下文的引导练习，把问题讲透。' },
   },
   '/dashboard/exam': {
     title: { en: 'Exam Prep', zh: '考试冲分' },
@@ -165,17 +165,17 @@ const dashboardLayoutCopy = {
     coreLearning: 'Core learning',
     skillPractice: 'Skill practice',
     tools: 'Tools',
-    continueTodayMission: "Continue today's mission",
+    continueTodayMission: 'Today plan',
     mission: 'Mission',
     due: 'Due',
     streak: 'Streak',
     learning: 'Learning',
     learner: 'Learner',
-    continueTodayHeading: "Continue today's mission",
+    continueTodayHeading: "Today's task",
     continuePanelDue: (count: number) => `${count} due reviews should go first. Then move on to new content.`,
-    continuePanelFresh: 'Finish the main mission first, then use one short drill to reinforce today’s weak spot.',
+    continuePanelFresh: 'Finish the next task, then add one short drill if needed.',
     taskProgress: 'Mission progress',
-    todayPlan: "Today's plan",
+    todayPlan: "Today's task",
     continue: 'Continue',
     switchToLight: 'Switch to light mode',
     switchToDark: 'Switch to dark mode',
@@ -190,17 +190,17 @@ const dashboardLayoutCopy = {
     coreLearning: '核心学习',
     skillPractice: '专项技能',
     tools: '工具',
-    continueTodayMission: '继续今日任务',
+    continueTodayMission: '今日任务',
     mission: '任务',
     due: '到期',
     streak: '连续',
     learning: '学习',
     learner: '学习者',
-    continueTodayHeading: '继续今日任务',
+    continueTodayHeading: '今日任务',
     continuePanelDue: (count: number) => `${count} 个到期复习优先处理，做完后再推进新内容。`,
-    continuePanelFresh: '先完成主任务，再用一次短练习把今天的弱项补上。',
+    continuePanelFresh: '先完成下一步，需要时再加一组短练习。',
     taskProgress: '任务进度',
-    todayPlan: '今日计划',
+    todayPlan: '今日任务',
     continue: '继续',
     switchToLight: '切换浅色模式',
     switchToDark: '切换深色模式',
@@ -457,7 +457,7 @@ export default function DashboardLayout() {
             <div className="flex items-center gap-2">
               <p className="truncate text-sm font-semibold">{item.label}</p>
               {item.badge ? (
-                <Badge className="rounded-full bg-emerald-600 px-2 text-[10px] text-white hover:bg-emerald-600">
+                <Badge className="rounded-md bg-sidebar-primary px-2 text-[10px] text-sidebar-primary-foreground hover:bg-sidebar-primary">
                   {item.badge}
                 </Badge>
               ) : null}

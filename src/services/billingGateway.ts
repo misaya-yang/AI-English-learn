@@ -63,13 +63,13 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     features: [
       'Daily mission with new words and review',
       'FSRS review queue and basic analytics',
-      'Limited coach and exam feedback quota',
+      'Limited help and exam feedback quota',
       'Core lexicon, practice, and Word of the Day',
     ],
     featuresZh: [
       '每日任务：新词 + 复习',
       'FSRS 复习队列与基础分析',
-      '有限教练与考试反馈额度',
+      '有限答疑与考试反馈额度',
       '核心词库、练习与每日单词',
     ],
     limits: { dailyWords: 10, aiChats: 5, exports: false },
@@ -82,14 +82,14 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     priceZh: '¥68',
     period: 'per month',
     features: [
-      'Unlimited coach chat and mistake follow-ups',
+      'Unlimited English help and mistake follow-ups',
       'IELTS Writing and Speaking scoring rubrics',
       'Advanced analytics: review debt, skill trends, mistake patterns',
       'Custom wordbook imports plus Anki / CSV export',
       'Weekly plan and recap',
     ],
     featuresZh: [
-      '不限量教练对话与错题跟进',
+      '不限量英语答疑与错题跟进',
       'IELTS 写作与口语评分量表',
       '进阶分析：复习债、技能趋势、错题记录',
       '自定义词书导入 + Anki / CSV 导出',

@@ -142,7 +142,7 @@ export const buildReviewCardFromQuiz = (args: {
     phonetic: '',
     partOfSpeech: 'phrase',
     definition: args.artifact.payload.explanation || args.artifact.payload.stem,
-    definitionZh: isZh ? '来自 AI 测验回流' : 'Imported from AI quiz',
+    definitionZh: isZh ? '来自短测回流' : 'Imported from quiz',
     examples: [
       {
         en: args.artifact.payload.stem,

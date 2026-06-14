@@ -156,10 +156,10 @@ export default function PronunciationPage() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-primary">
+              <p className="text-xs font-medium text-primary">
                 {isZh ? '发音专项' : 'Pronunciation module'}
               </p>
-              <h1 className="mt-2 text-2xl font-bold tracking-tight">
+              <h1 className="mt-2 text-2xl font-bold">
                 {t('pronunciation.title')}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -168,12 +168,12 @@ export default function PronunciationPage() {
             </div>
 
             <div className="rounded-lg border border-border bg-background/70 p-4">
-              <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '当前目标音' : 'Current target'}
               </p>
               <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-3xl font-bold tracking-tight">{targetText}</p>
+                  <p className="text-3xl font-bold">{targetText}</p>
                   {mode === 'word' && item?.phonetic ? (
                     <p className="mt-1 font-mono text-sm text-muted-foreground">{item.phonetic}</p>
                   ) : null}
@@ -192,16 +192,16 @@ export default function PronunciationPage() {
           <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   {isZh ? '录音反馈预期' : 'Feedback preview'}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {isZh ? '读完后会看到准确度、流利度和语调反馈。' : 'After recording, review accuracy, fluency, and intonation.'}
                 </p>
               </div>
-              <div className="grid h-20 w-20 place-items-center rounded-full border-4 border-primary/20 bg-primary/10 text-center">
-                <span className="text-lg font-bold text-primary">80+</span>
-                <span className="-mt-2 block text-[10px] text-muted-foreground">{isZh ? '目标' : 'goal'}</span>
+              <div className="rounded-lg border border-border bg-card px-4 py-3 text-right">
+                <span className="block text-lg font-semibold text-foreground">80+</span>
+                <span className="block text-[11px] text-muted-foreground">{isZh ? '目标分' : 'goal'}</span>
               </div>
             </div>
             <div className="mt-5 flex h-20 items-center gap-1.5 rounded-lg border border-border bg-card px-4">
@@ -270,7 +270,7 @@ export default function PronunciationPage() {
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <p className="text-3xl font-bold tracking-tight">{targetText}</p>
+                  <p className="text-3xl font-bold">{targetText}</p>
                   {mode === 'word' && item?.phonetic && (
                     <p className="text-sm text-muted-foreground mt-1 font-mono">
                       {item.phonetic}

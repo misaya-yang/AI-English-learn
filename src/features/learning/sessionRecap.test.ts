@@ -58,14 +58,14 @@ describe('buildSessionRecap (review)', () => {
     expect(recap.encouragement.en).not.toMatch(/great job/i);
   });
 
-  it('routes to coach reviews when the queue has due items', () => {
+  it('routes to scheduled reviews when the queue has due items', () => {
     const recap = buildSessionRecap({
       kind: 'review',
       stats: baseReview({ good: 3 }),
       coachReviews: { dueCount: 2, topSkills: ['grammar'] },
     });
     expect(recap.nextAction.href).toBe('/dashboard/review');
-    expect(recap.nextAction.ctaEn).toContain('coach review');
+    expect(recap.nextAction.ctaEn).toContain('scheduled item');
   });
 
   it('routes to exam prep on a clean review when the learner is on an IELTS path', () => {
@@ -98,7 +98,7 @@ describe('buildSessionRecap (practice)', () => {
     expect(recap.nextAction.href).toBe('/dashboard/today');
   });
 
-  it('routes to chat for Socratic recovery when there are mistakes', () => {
+  it('routes to chat for mistake review when there are mistakes', () => {
     const recap = buildSessionRecap({
       kind: 'practice',
       stats: basePractice({ total: 5, correct: 3, incorrect: 2 }),
@@ -106,10 +106,10 @@ describe('buildSessionRecap (practice)', () => {
     expect(recap.improved?.count).toBe(3);
     expect(recap.needsReview?.count).toBe(2);
     expect(recap.nextAction.href).toBe('/dashboard/chat');
-    expect(recap.nextAction.ctaEn.toLowerCase()).toContain('coach');
+    expect(recap.nextAction.ctaEn.toLowerCase()).toContain('review');
   });
 
-  it('routes to coach reviews when the queue has due items even after a mistake-free session', () => {
+  it('routes to scheduled reviews when the queue has due items even after a mistake-free session', () => {
     const recap = buildSessionRecap({
       kind: 'practice',
       stats: basePractice({ total: 5, correct: 5 }),

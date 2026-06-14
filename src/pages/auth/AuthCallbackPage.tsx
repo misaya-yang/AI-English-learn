@@ -21,7 +21,7 @@ export default function AuthCallbackPage() {
       }
     : {
         title: 'Completing sign in',
-        verifying: 'Almost there — verifying your session.',
+        verifying: 'Almost there. Verifying your session.',
         signedIn: 'Successfully signed in!',
         failed: 'Authentication failed',
       };

@@ -244,8 +244,8 @@ export default function MemoryCenterPage() {
                   <>
                     <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
                       {isZh
-                        ? '这里不会展示随意生成的内容，只会沉淀目标、薄弱点、偏好和错误轨迹，用来让 Today、Practice 和 Coach 更懂你的学习状态。'
-                        : 'This page does not fabricate entries. It only stores goals, weaknesses, preferences, and error traces that can personalize Today, Practice, and Coach.'}
+                        ? '这里不会展示随意生成的内容，只会沉淀目标、薄弱点、偏好和错误轨迹，用来让 Today、Practice 和答疑更懂你的学习状态。'
+                        : 'This page does not fabricate entries. It only stores goals, weaknesses, preferences, and error traces that can personalize Today, Practice, and Help.'}
                     </p>
                     <div className="mt-5 grid w-full gap-2 sm:grid-cols-3">
                       {[
@@ -260,7 +260,7 @@ export default function MemoryCenterPage() {
                     </div>
                     <div className="mt-6 flex flex-wrap justify-center gap-2">
                       <Button asChild className="rounded-md">
-                        <Link to="/dashboard/chat">{isZh ? '打开 AI Coach' : 'Open AI Coach'}</Link>
+                        <Link to="/dashboard/chat">{isZh ? '打开答疑' : 'Open help'}</Link>
                       </Button>
                       <Button asChild variant="outline" className="rounded-md">
                         <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Start practice'}</Link>

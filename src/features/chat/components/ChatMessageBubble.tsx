@@ -72,7 +72,7 @@ export function ChatMessageBubble({
         className={cn(
           'h-8 w-8 flex-shrink-0',
           isUser
-            ? 'bg-gradient-to-br from-blue-100 to-indigo-100'
+            ? 'bg-primary/10'
             : 'bg-primary/10',
         )}
       >

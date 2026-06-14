@@ -124,8 +124,8 @@ describe('buildDailyCoachPlan', () => {
       missionCard: missionCard({
         reason: 'today_words',
         href: '/dashboard/today',
-        description: '7 words are still pending in IELTS Core.',
-        descriptionZh: '当前词书《IELTS Core》里还有 7 个建议新词待推进。',
+        description: '7 suggested words are still waiting in your list.',
+        descriptionZh: '还有 7 个建议新词待推进。',
       }),
       dueWordsCount: 0,
       dailyWordsCount: 10,
@@ -140,7 +140,7 @@ describe('buildDailyCoachPlan', () => {
     expect(plan.briefTitle.en).toBe(plan.primaryTask.title);
     expect(plan.evidence.map((item) => item.id)).toContain('dictionary-focus');
     expect(plan.evidence).toContainEqual(expect.objectContaining({ id: 'target', value: 'IELTS 7.0' }));
-    expect(plan.brief.en).toContain('IELTS Core');
+    expect(plan.brief.en).toContain('7 suggested words');
     expect(plan.coachPrompt).toContain('approach');
   });
 });

@@ -128,9 +128,9 @@ const GRAMMAR_RULES: GrammarRule[] = [
     titleZh: '现在完成时 vs 一般过去时',
     level: 'B2',
     explanation:
-      'Use the Present Perfect (have/has + past participle) for actions with a connection to the present — recent events, life experiences, or actions with unspecified time. Use Simple Past for completed actions at a specific past time.',
+      'Use the Present Perfect (have/has + past participle) for actions with a connection to the present, such as recent events, life experiences, or actions with unspecified time. Use Simple Past for completed actions at a specific past time.',
     explanationZh:
-      '现在完成时（have/has + 过去分词）用于与现在有联系的动作——近期事件、人生经历或时间未指明的动作。一般过去时用于在特定过去时间点完成的动作。',
+      '现在完成时（have/has + 过去分词）用于与现在有联系的动作，例如近期事件、人生经历或时间未指明的动作。一般过去时用于在特定过去时间点完成的动作。',
     commonErrors: [
       'Using Simple Past with "yet", "already", "just" (❌ "Did you eat yet?" → ✓ "Have you eaten yet?")',
       'Using Present Perfect with a specific past time (❌ "I have seen her yesterday" → ✓ "I saw her yesterday")',
@@ -161,7 +161,7 @@ const GRAMMAR_RULES: GrammarRule[] = [
         sentence: '___ you ___ (hear) the news yet?',
         answer: 'Have … heard',
         hint: '"Yet" signals Present Perfect',
-        explanation: '"Yet" is a signal word for the Present Perfect — it implies the action may have happened up to now.',
+        explanation: '"Yet" is a signal word for the Present Perfect. It implies the action may have happened up to now.',
         explanationZh: 'yet 是现在完成时的信号词。',
       },
       {
@@ -181,13 +181,13 @@ const GRAMMAR_RULES: GrammarRule[] = [
     titleZh: '时间介词：in / on / at',
     level: 'B1',
     explanation:
-      '"At" is used for precise times and fixed expressions. "On" is used for days and dates. "In" is used for longer periods — months, years, seasons, centuries.',
+      '"At" is used for precise times and fixed expressions. "On" is used for days and dates. "In" is used for longer periods: months, years, seasons, and centuries.',
     explanationZh:
-      '"at" 用于精确时刻和固定表达；"on" 用于具体日期和星期；"in" 用于较长时间段——月份、年份、季节、世纪。',
+      '"at" 用于精确时刻和固定表达；"on" 用于具体日期和星期；"in" 用于较长时间段，例如月份、年份、季节、世纪。',
     commonErrors: [
       'Using "in" for specific days (❌ "in Monday" → ✓ "on Monday")',
       'Using "on" for years (❌ "on 2020" → ✓ "in 2020")',
-      'Missing preposition with "morning/afternoon/evening" (❌ "in the morning" ✓ for general, but ❌ "on Monday morning" → ✓ "on Monday morning" – no "in")',
+      'Missing preposition with "morning/afternoon/evening" (✓ "in the morning" for general time, but ✓ "on Monday morning" for a specific day)',
     ],
     examples: [
       { en: 'The meeting is at 3 PM on Friday in March.', zh: '会议在三月的周五下午三点举行。' },
@@ -276,8 +276,8 @@ const GRAMMAR_RULES: GrammarRule[] = [
   {
     id: 'grammar-passive-001',
     category: 'passive',
-    title: 'Passive Voice — Present and Past',
-    titleZh: '被动语态——现在时与过去时',
+    title: 'Passive Voice: Present and Past',
+    titleZh: '被动语态：现在时与过去时',
     level: 'B2',
     explanation:
       'The passive voice is used when the action is more important than who performs it, or when the agent is unknown/unimportant. Present passive: am/is/are + past participle. Past passive: was/were + past participle.',
@@ -310,7 +310,7 @@ const GRAMMAR_RULES: GrammarRule[] = [
       },
       {
         id: 3,
-        sentence: 'The email ___ (not send) yet — please check.',
+        sentence: 'The email ___ (not send) yet. Please check.',
         answer: 'has not been sent',
         hint: 'Present perfect passive',
         explanation: 'Present Perfect passive: "has not been sent" (has + been + past participle).',
@@ -333,7 +333,7 @@ const GRAMMAR_RULES: GrammarRule[] = [
       'Using "mustn\'t" for negative deduction (❌ "She mustn\'t be home" → ✓ "She can\'t be home")',
     ],
     examples: [
-      { en: 'He\'s been awake for 24 hours — he must be exhausted.', zh: '他已经24小时没睡了——他一定精疲力竭了。' },
+      { en: 'He\'s been awake for 24 hours, so he must be exhausted.', zh: '他已经24小时没睡了，所以他一定精疲力竭了。' },
       { en: 'She might be stuck in traffic.', zh: '她可能堵车了。' },
     ],
     practice: [
@@ -342,8 +342,8 @@ const GRAMMAR_RULES: GrammarRule[] = [
         sentence: 'Nobody answered the door. They ___ be out.',
         answer: 'must',
         hint: 'Strong logical deduction',
-        explanation: '"Must" expresses strong logical deduction — the evidence (no one answered) leads to a confident conclusion.',
-        explanationZh: '"must" 表示有力的逻辑推断——没人开门，所以几乎可以确定他们不在家。',
+        explanation: '"Must" expresses strong logical deduction. The evidence (no one answered) leads to a confident conclusion.',
+        explanationZh: '"must" 表示有力的逻辑推断。没人开门，所以几乎可以确定他们不在家。',
       },
       {
         id: 2,
@@ -355,15 +355,15 @@ const GRAMMAR_RULES: GrammarRule[] = [
       },
       {
         id: 3,
-        sentence: 'That ___ be right — the data clearly shows the opposite.',
+        sentence: 'That ___ be right. The data clearly shows the opposite.',
         answer: 'can\'t',
         hint: 'Near-certain negative deduction',
-        explanation: '"Can\'t" is used for near-certain negative deductions — the evidence contradicts the claim.',
-        explanationZh: '"can\'t" 用于近乎确定的否定推断——证据与说法矛盾。',
+        explanation: '"Can\'t" is used for near-certain negative deductions when the evidence contradicts the claim.',
+        explanationZh: '"can\'t" 用于近乎确定的否定推断，因为证据与说法矛盾。',
       },
       {
         id: 4,
-        sentence: 'The lights are on and I hear music — someone ___ be home.',
+        sentence: 'The lights are on and I hear music, so someone ___ be home.',
         answer: 'must',
         hint: 'Strong positive deduction from evidence',
         explanation: 'Physical evidence (lights + music) supports a confident conclusion: "must be home".',
@@ -525,7 +525,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
               isCorrect ? 'border-green-500/30 bg-green-50 text-green-700' :
               'border-destructive/30 bg-destructive/5 text-destructive',
             )}>
-              {userAnswer || (submitted ? '—' : '___')}
+              {userAnswer || (submitted ? '-' : '___')}
             </span>
             {parts[1]}
           </p>
@@ -661,8 +661,8 @@ export default function GrammarPage() {
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)]">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-semibold tracking-wider text-primary">{isZh ? '语法专项' : 'Grammar module'}</p>
-                <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground">{isZh ? '语法' : 'Grammar'}</h1>
+                <p className="text-xs font-medium text-primary">{isZh ? '语法专项' : 'Grammar module'}</p>
+                <h1 className="mt-2 text-2xl font-bold text-foreground">{isZh ? '语法' : 'Grammar'}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {isZh
                     ? '把常见错误拆成规则、例句和填空题，练到能在写作里自然用对。'
@@ -694,7 +694,7 @@ export default function GrammarPage() {
             </div>
 
             <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
-              <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '填空预演' : 'Drill preview'}
               </p>
               <div className="mt-4 rounded-lg border border-border bg-card p-4">

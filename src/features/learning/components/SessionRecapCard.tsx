@@ -33,7 +33,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
     >
       <div className="flex items-center gap-2 text-[hsl(var(--accent-memory))]">
         <Sparkles className="h-4 w-4" />
-        <p className="text-[11px] font-semibold tracking-wide">{heading}</p>
+        <p className="text-[11px] font-semibold">{heading}</p>
       </div>
 
       <p className="mt-3 text-sm leading-7 text-foreground sm:text-base">
@@ -42,11 +42,11 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {recap.improved && (
-          <div className="rounded-xl border border-green-500/25 bg-green-50 p-3">
-            <p className="text-[10px] font-semibold tracking-wide text-green-700">
+          <div className="rounded-lg border border-primary/20 bg-primary/10 p-3">
+            <p className="text-[10px] font-medium text-primary">
               {isZh ? '已巩固' : 'Improved'}
             </p>
-            <p className="mt-1.5 inline-flex items-center gap-2 text-sm text-green-800">
+            <p className="mt-1.5 inline-flex items-center gap-2 text-sm text-foreground">
               <BookOpen className="h-3.5 w-3.5" />
               {isZh ? recap.improved.label.zh : recap.improved.label.en}
             </p>
@@ -55,7 +55,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
 
         {recap.needsReview && (
           <div className="rounded-xl border border-amber-500/25 bg-amber-50 p-3">
-            <p className="text-[10px] font-semibold tracking-wide text-amber-700">
+            <p className="text-[10px] font-semibold text-amber-700">
               {isZh ? '仍需再练' : 'Needs review'}
             </p>
             <p className="mt-1.5 inline-flex items-center gap-2 text-sm text-amber-800">
@@ -68,7 +68,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
 
       <div className="mt-5 flex flex-col gap-3 rounded-xl border border-border bg-muted p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <p className="text-[10px] font-semibold tracking-wide text-muted-foreground">
+          <p className="text-[10px] font-semibold text-muted-foreground">
             {isZh ? '下一步' : 'Next step'}
           </p>
           <p className="text-sm text-foreground">

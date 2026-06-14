@@ -19,7 +19,7 @@ const COLORS = ['#10b981', '#34d399', '#6ee7b7', '#2dd4bf', '#14b8a6', '#22c55e'
 export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProps) {
   if (analytics.length === 0) {
     return (
-      <div className="rounded-2xl border border-border/70 bg-card/80 p-4 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border/70 bg-card/80 p-4 text-sm text-muted-foreground">
         暂无问题记录。完成一次写作反馈后，这里会显示主要问题分布。
       </div>
     );

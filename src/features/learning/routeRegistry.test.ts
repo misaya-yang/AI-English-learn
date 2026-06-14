@@ -94,6 +94,6 @@ describe('routeRegistry', () => {
 
   it('getDashboardRoute returns the registry entry by id', () => {
     expect(getDashboardRoute('today').path).toBe('/dashboard/today');
-    expect(getDashboardRoute('chat').label.en).toBe('Coach');
+    expect(getDashboardRoute('chat').label.en).toBe('Help');
   });
 });

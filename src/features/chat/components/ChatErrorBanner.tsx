@@ -26,7 +26,7 @@ export const ChatErrorBanner = ({
         <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">
-            {isZh ? 'AI 暂时不可用' : 'AI is temporarily unavailable'}
+            {isZh ? '在线答疑暂时不可用' : 'Online help is temporarily unavailable'}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {error.message}

@@ -55,10 +55,10 @@ export function ExamDraftPanel({
 }: ExamDraftPanelProps) {
   return (
     <div className="space-y-5">
-      <div className="rounded-[22px] border border-border/70 bg-background/40 p-4">
+      <div className="rounded-lg border border-border/70 bg-background/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] tracking-wide text-muted-foreground/80">题目已就绪</p>
+            <p className="text-[11px] font-medium text-muted-foreground/80">题目已就绪</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {taskType === 'task1' ? 'Task 1 目标 >=150 词' : 'Task 2 目标 >=250 词'} · {activeWordCount} words · {autosavedAt ? `自动保存 ${autosavedAt}` : '未保存'}
             </p>
@@ -71,7 +71,7 @@ export function ExamDraftPanel({
               <Sparkles className="mr-1.5 h-4 w-4" /> 词汇升级
             </Button>
             <Button variant="outline" onClick={() => onToolPanelChange('coach')}>
-              <Bot className="mr-1.5 h-4 w-4" /> 问教练
+              <Bot className="mr-1.5 h-4 w-4" /> 答疑
             </Button>
           </div>
         </div>
@@ -103,7 +103,7 @@ export function ExamDraftPanel({
         collapsible
         value={toolPanel}
         onValueChange={(value) => onToolPanelChange((value || undefined) as ToolPanel | undefined)}
-        className="rounded-[22px] border border-border/70 bg-background/35 px-4"
+        className="rounded-lg border border-border/70 bg-background/35 px-4"
       >
         <AccordionItem value="outline" className="border-border/60">
           <AccordionTrigger className="py-4 text-base">Outline Builder</AccordionTrigger>
@@ -162,7 +162,7 @@ export function ExamDraftPanel({
         </AccordionItem>
 
         <AccordionItem value="coach" className="border-none">
-          <AccordionTrigger className="py-4 text-base">AI Writing Tutor</AccordionTrigger>
+          <AccordionTrigger className="py-4 text-base">Writing Help</AccordionTrigger>
           <AccordionContent className="space-y-3">
             <Textarea
               value={tutorQuestion}
@@ -173,7 +173,7 @@ export function ExamDraftPanel({
             <div className="flex justify-end">
               <Button variant="outline" onClick={() => void onAskTutor()} disabled={isBusy}>
                 {loadingStage === 'tutoring' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
-                问教练
+                提交问题
               </Button>
             </div>
             {tutorReply && (

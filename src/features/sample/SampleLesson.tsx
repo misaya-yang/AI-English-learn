@@ -85,7 +85,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
           {copy.eyebrow}
         </span>
         <div className="space-y-3">
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+          <h1 className="text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
             {copy.title}
           </h1>
           <p className="max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
@@ -95,7 +95,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
         <div className="rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-sm">
           <p className="text-xs font-medium text-muted-foreground">{copy.wordLabel}</p>
           <div className="mt-3 flex flex-wrap items-baseline gap-2">
-            <h2 className="text-4xl font-semibold tracking-tight text-foreground">{sampleWord.word}</h2>
+            <h2 className="text-4xl font-semibold text-foreground">{sampleWord.word}</h2>
             <span className="text-sm text-muted-foreground">{sampleWord.partOfSpeech}</span>
             <span className="text-sm text-muted-foreground">{sampleWord.phonetic}</span>
           </div>

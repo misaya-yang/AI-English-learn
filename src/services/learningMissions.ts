@@ -145,7 +145,7 @@ const buildMissionTasks = (args: {
   const quizTask =
     mode === 'recovery'
       ? {
-          title: 'Complete 1 short consolidation coach quiz',
+          title: 'Complete 1 short consolidation quiz',
           titleZh: '完成 1 次巩固型短测',
           meta: { target: 1, focus: 'consolidation', mode },
         }
@@ -157,19 +157,19 @@ const buildMissionTasks = (args: {
           }
       : examTarget || mode === 'sprint'
         ? {
-            title: 'Complete 1 IELTS score-boost coach drill',
-            titleZh: '完成 1 次 IELTS 提分教练练习',
+            title: 'Complete 1 IELTS score-boost drill',
+            titleZh: '完成 1 次 IELTS 提分练习',
             meta: { target: 1, focus: 'ielts_boost', mode },
           }
         : weakTopic
           ? {
-              title: 'Complete 1 weak-spot coach quiz',
-              titleZh: '完成 1 次薄弱点教练测验',
+              title: 'Complete 1 weak-spot quiz',
+              titleZh: '完成 1 次薄弱点短测',
               meta: { target: 1, focus: weakTopic, mode },
             }
           : {
-              title: 'Complete 1 AI quiz in chat',
-              titleZh: '在聊天中完成 1 次 AI 测验',
+              title: 'Complete 1 quick quiz in chat',
+              titleZh: '在对话中完成 1 次短测',
               meta: { target: 1, focus: 'general', mode },
             };
 

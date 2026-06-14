@@ -138,7 +138,7 @@ export default function SettingsPage() {
   };
   const lifecycleQuietNow = isInQuietHours(now, localSettings.quietHoursStart, localSettings.quietHoursEnd);
   const lifecycleStatus = !localSettings.notifications || !localSettings.lifecycleReminders
-    ? '智能提醒已关闭'
+    ? '学习提醒已关闭'
     : todayCompleted
       ? '今日任务已完成，不会继续提醒'
       : lifecycleQuietNow
@@ -393,7 +393,7 @@ export default function SettingsPage() {
                   <div className="space-y-4 rounded-lg border border-border bg-muted/25 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <Label>智能生命周期提醒</Label>
+                        <Label>学习提醒</Label>
                         <p className="text-sm text-muted-foreground">
                           根据复习债、streak 风险、考试周和周报生成提醒内容。
                         </p>
@@ -402,7 +402,7 @@ export default function SettingsPage() {
                         checked={localSettings.lifecycleReminders}
                         onCheckedChange={(checked) => {
                           updateLifecycleSettings({ lifecycleReminders: checked });
-                          toast.success(checked ? '智能提醒已开启' : '智能提醒已关闭');
+                          toast.success(checked ? '学习提醒已开启' : '学习提醒已关闭');
                         }}
                       />
                     </div>

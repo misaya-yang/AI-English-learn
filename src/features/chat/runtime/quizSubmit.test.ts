@@ -188,7 +188,7 @@ describe('buildReviewCardFromQuiz', () => {
   it('uses the Chinese strings for zh locales', () => {
     const artifact = buildQuizArtifact({ targetWord: 'word' });
     const card = buildReviewCardFromQuiz({ artifact, language: 'zh-CN', now: 1_700_000_000_000 });
-    expect(card.definitionZh).toBe('来自 AI 测验回流');
+    expect(card.definitionZh).toBe('来自短测回流');
     expect(card.examples[0].zh).toBe('来自测验题干');
   });
 });

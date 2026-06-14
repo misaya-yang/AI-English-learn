@@ -135,7 +135,7 @@ export function ExamWorkspaceTabs({
 }: ExamWorkspaceTabsProps) {
   return (
     <motion.main initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <section className="overflow-hidden rounded-[28px] border border-border/70 bg-card/90">
+      <section className="overflow-hidden rounded-lg border border-border/70 bg-card/90">
         <Tabs
           value={workspaceView}
           onValueChange={(value) => onWorkspaceViewChange(value as WorkspaceView)}
@@ -144,11 +144,11 @@ export function ExamWorkspaceTabs({
           <div className="border-b border-border/70 px-5 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <WorkspaceLead eyebrow={workspaceCopy.eyebrow} title={workspaceCopy.title} body={workspaceCopy.body} />
-              <TabsList className="grid h-auto w-full max-w-[420px] grid-cols-4 rounded-full bg-muted/70 p-1">
-                <TabsTrigger value="brief" className="rounded-full">概览</TabsTrigger>
-                <TabsTrigger value="draft" className="rounded-full">写作</TabsTrigger>
-                <TabsTrigger value="review" className="rounded-full">结果</TabsTrigger>
-                <TabsTrigger value="insight" className="rounded-full">记录</TabsTrigger>
+              <TabsList className="grid h-auto w-full max-w-[420px] grid-cols-4 rounded-md bg-muted/70 p-1">
+                <TabsTrigger value="brief" className="rounded-md">概览</TabsTrigger>
+                <TabsTrigger value="draft" className="rounded-md">写作</TabsTrigger>
+                <TabsTrigger value="review" className="rounded-md">结果</TabsTrigger>
+                <TabsTrigger value="insight" className="rounded-md">记录</TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -291,10 +291,10 @@ function InsightPanel({
 }: InsightPanelProps) {
   return (
     <Tabs defaultValue="weakness" className="gap-0">
-      <TabsList className="grid w-full max-w-[300px] grid-cols-3 rounded-full bg-muted/70 p-1">
-        <TabsTrigger value="weakness" className="rounded-full">弱项</TabsTrigger>
-        <TabsTrigger value="trend" className="rounded-full">走势</TabsTrigger>
-        <TabsTrigger value="history" className="rounded-full">历史</TabsTrigger>
+      <TabsList className="grid w-full max-w-[300px] grid-cols-3 rounded-md bg-muted/70 p-1">
+        <TabsTrigger value="weakness" className="rounded-md">弱项</TabsTrigger>
+        <TabsTrigger value="trend" className="rounded-md">走势</TabsTrigger>
+        <TabsTrigger value="history" className="rounded-md">历史</TabsTrigger>
       </TabsList>
 
       <div className="mt-4">
@@ -302,7 +302,7 @@ function InsightPanel({
           {errorAnalytics.length === 0 ? (
             <EmptyKickoffCard onQuickStart={() => void onQuickStart()} />
           ) : (
-            <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+            <div className="rounded-lg border border-border/70 bg-background/35 p-4">
               <ErrorGraph
                 analytics={errorAnalytics}
                 activeTag={activeErrorTag}
@@ -311,7 +311,7 @@ function InsightPanel({
             </div>
           )}
 
-          <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+          <div className="rounded-lg border border-border/70 bg-background/35 p-4">
             <p className="text-sm font-semibold">建议先做</p>
             {selectedErrorNode ? (
               <>
@@ -345,7 +345,7 @@ function InsightPanel({
         </TabsContent>
 
         <TabsContent value="trend" className="mt-0 space-y-4">
-          <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+          <div className="rounded-lg border border-border/70 bg-background/35 p-4">
             <p className="text-sm font-semibold">Band 走势</p>
             <p className="mt-1 text-xs text-muted-foreground">最近 7 次反馈走势</p>
             <div className="mt-4">
@@ -353,7 +353,7 @@ function InsightPanel({
             </div>
           </div>
 
-          <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+          <div className="rounded-lg border border-border/70 bg-background/35 p-4">
             <p className="text-sm font-semibold">本轮状态</p>
             <div className="mt-3 space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center justify-between">
@@ -381,13 +381,13 @@ function InsightPanel({
                 {recentHistory.map((item) => {
                   const tags = item.issues.slice(0, 3).map((issue) => ISSUE_LABELS[issue.tag] || issue.tag);
                   return (
-                    <div key={item.attemptId} className="rounded-[20px] border border-border/70 bg-background/35 p-3">
+                    <div key={item.attemptId} className="rounded-lg border border-border/70 bg-background/35 p-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</p>
                           <p className="mt-1 text-lg font-semibold">Band {item.scores.overallBand.toFixed(1)}</p>
                         </div>
-                        <Badge variant="outline" className="rounded-full">{item.provider}</Badge>
+                        <Badge variant="outline" className="rounded-md">{item.provider}</Badge>
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">

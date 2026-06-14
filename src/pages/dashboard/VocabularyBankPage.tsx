@@ -335,7 +335,7 @@ export default function VocabularyBankPage() {
 
               <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <h2 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                  <h2 className="text-4xl font-semibold text-foreground sm:text-5xl">
                     {featuredEntry.headword}
                   </h2>
                   <p className="mt-2 font-mono text-sm text-muted-foreground">

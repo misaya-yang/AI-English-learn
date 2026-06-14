@@ -28,16 +28,16 @@ interface CoachReviewRailProps {
 }
 
 const URGENCY_COLOR: Record<CoachReviewUrgency, string> = {
-  overdue: 'border-red-500/30 bg-red-500/[0.08] text-red-200',
-  now: 'border-amber-500/35 bg-amber-500/[0.10] text-amber-200',
-  soon: 'border-emerald-500/25 bg-emerald-500/[0.08] text-emerald-200',
+  overdue: 'border-red-500/30 bg-red-500/[0.08] text-red-100',
+  now: 'border-warning/35 bg-warning/[0.10] text-warning',
+  soon: 'border-primary/25 bg-primary/[0.08] text-primary',
   later: 'border-white/10 bg-white/[0.04] text-white/70',
 };
 
 const URGENCY_BADGE: Record<CoachReviewUrgency, string> = {
-  overdue: 'border border-red-500/40 bg-red-500/15 text-red-200',
-  now: 'border border-amber-500/40 bg-amber-500/15 text-amber-200',
-  soon: 'border border-emerald-500/40 bg-emerald-500/15 text-emerald-200',
+  overdue: 'border border-red-500/40 bg-red-500/15 text-red-100',
+  now: 'border border-warning/40 bg-warning/15 text-warning',
+  soon: 'border border-primary/40 bg-primary/15 text-primary',
   later: 'border border-white/15 bg-white/[0.06] text-white/65',
 };
 
@@ -97,7 +97,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
     <LearningRailSection title={heading}>
       <div className="space-y-4" data-testid="coach-review-rail">
         <div className="flex items-start gap-3">
-          <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.08] p-2 text-emerald-300">
+          <div className="rounded-md border border-primary/25 bg-primary/[0.08] p-2 text-primary">
             <Brain className="h-4 w-4" />
           </div>
           <div className="space-y-1.5">
@@ -127,7 +127,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    'rounded-2xl border px-3 py-2.5 text-sm shadow-glass',
+                    'rounded-lg border px-3 py-2.5 text-sm shadow-sm',
                     URGENCY_COLOR[urgency],
                   )}
                 >
@@ -138,7 +138,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                         <Clock3 className="h-3 w-3" />
                         <span>{dueLabel}</span>
                         {entry.skill && (
-                          <span className="rounded-sm border border-current/30 px-1 py-0 font-medium uppercase tracking-wide text-[10px]">
+                          <span className="rounded-sm border border-current/30 px-1 py-0 text-[10px] font-medium">
                             {entry.skill}
                           </span>
                         )}
@@ -166,7 +166,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
 
         {partition.upcoming.length > 0 && (
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold tracking-wide text-muted-foreground">
+            <p className="text-[11px] font-semibold text-muted-foreground">
               {upcomingHeading}
             </p>
             {partition.upcoming.map((entry) => {
@@ -176,7 +176,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                 <div
                   key={entry.id}
                   className={cn(
-                    'rounded-2xl border px-3 py-2 text-xs',
+                    'rounded-lg border px-3 py-2 text-xs',
                     URGENCY_COLOR[urgency],
                   )}
                 >
@@ -185,7 +185,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                     <Clock3 className="h-3 w-3" />
                     {dueLabel}
                     {entry.skill && (
-                      <span className="rounded-sm border border-current/30 px-1 py-0 font-medium uppercase tracking-wide text-[10px]">
+                      <span className="rounded-sm border border-current/30 px-1 py-0 text-[10px] font-medium">
                         {entry.skill}
                       </span>
                     )}

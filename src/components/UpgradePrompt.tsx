@@ -1,6 +1,5 @@
 /**
- * UpgradePrompt — Reusable upgrade/paywall prompt component
- * ─────────────────────────────────────────────────────────────────
+ * UpgradePrompt: reusable upgrade/paywall prompt component.
  * Shows when a user has exhausted their free-tier quota.
  * Can be used inline (banner) or as a modal overlay.
  */
@@ -25,7 +24,7 @@ import {
 const FEATURE_LABELS: Record<QuotaFeature, { label: string; labelZh: string }> = {
   aiWritingGrade:   { label: 'Writing Feedback', labelZh: '写作反馈' },
   aiReadingGen:     { label: 'Reading Generation', labelZh: '阅读材料生成' },
-  aiChat:           { label: 'Coach Chat', labelZh: '教练对话' },
+  aiChat:           { label: 'English Help', labelZh: '英语答疑' },
   aiExamFeedback:   { label: 'Exam Feedback', labelZh: '考试反馈' },
   aiListeningGen:   { label: 'Listening Generation', labelZh: '听力材料生成' },
 };
@@ -34,7 +33,7 @@ const FEATURE_LABELS: Record<QuotaFeature, { label: string; labelZh: string }> =
 
 interface UpgradePromptProps {
   feature: QuotaFeature;
-  /** 'banner' — inline bar, 'card' — full card, 'modal' — floating overlay */
+  /** 'banner': inline bar, 'card': full card, 'modal': floating overlay */
   variant?: 'banner' | 'card' | 'modal';
   onDismiss?: () => void;
   className?: string;
@@ -71,7 +70,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   if (variant === 'banner') {
     return (
       <div className={cn(
-        'flex items-center justify-between gap-4 rounded-2xl border border-amber-500/25 bg-amber-500/[0.08] px-4 py-3',
+        'flex items-center justify-between gap-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3',
         className,
       )}>
         <div className="flex items-center gap-2.5">
@@ -83,7 +82,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Button asChild size="sm" className="rounded-full bg-amber-500 text-black hover:bg-amber-400 h-7 text-xs px-3 font-semibold">
+          <Button asChild size="sm" className="h-8 rounded-md bg-warning text-warning-foreground px-3 text-xs font-medium hover:bg-warning/90">
             <Link to="/pricing">
               {ctaLabel}
             </Link>
@@ -111,7 +110,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   // Default: card
   return (
     <div className={cn(
-      'rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.04] p-6',
+        'rounded-lg border border-warning/30 bg-warning/10 p-5',
       className,
     )}>
       <UpgradeCard {...cardProps} />
@@ -148,7 +147,7 @@ function UpgradeCard({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/15">
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-warning/30 bg-warning/10">
           <Crown className="h-5 w-5 text-amber-400" />
         </div>
         {onDismiss && (
@@ -170,7 +169,7 @@ function UpgradeCard({
       </div>
 
       {/* Pro benefits */}
-      <div className="rounded-xl bg-muted/30 p-3 space-y-2">
+      <div className="space-y-2 rounded-md border border-border bg-card p-3">
         {([
           isZh
             ? `${featureMeta.labelZh} Pro 额度：${proLimit} 次/天`
@@ -188,7 +187,7 @@ function UpgradeCard({
 
       {/* CTAs */}
       <div className="space-y-2">
-        <Button asChild className="w-full rounded-full bg-amber-500 text-black hover:bg-amber-400 font-semibold">
+        <Button asChild className="w-full rounded-md bg-warning text-warning-foreground font-medium hover:bg-warning/90">
           <Link to="/pricing">
             <Zap className="mr-2 h-4 w-4" />
             {ctaLabel}
@@ -201,7 +200,7 @@ function UpgradeCard({
           <Button
             variant="outline"
             onClick={onDismiss}
-            className="w-full rounded-full border-border text-muted-foreground hover:text-foreground"
+            className="w-full rounded-md border-border text-muted-foreground hover:text-foreground"
           >
             {isZh ? '明天再说' : 'Maybe tomorrow'}
           </Button>

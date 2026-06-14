@@ -16,7 +16,7 @@ interface BrandMarkProps {
 /**
  * The shared VocabDaily wordmark used across marketing + auth surfaces.
  *
- * Locked to a single visual recipe so Home, LandingPage, Login, Register,
+ * Locked to a single visual recipe so Home, Login, Register,
  * MagicLink, AuthCallback, Onboarding, and Pricing all share one brand.
  */
 export function BrandMark({
@@ -31,14 +31,14 @@ export function BrandMark({
   const linkLabel = isZh ? 'VocabDaily 返回首页' : 'VocabDaily back to home';
 
   const wordmarkClass = cn(
-    'text-base font-bold tracking-tight',
+    'text-base font-bold',
     tone === 'light' && 'text-white',
     tone === 'dark' && 'text-foreground',
     tone === 'auto' && 'text-foreground',
   );
 
   const taglineClass = cn(
-    'text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground',
+    'text-[10px] font-medium text-muted-foreground',
   );
 
   const inner = (

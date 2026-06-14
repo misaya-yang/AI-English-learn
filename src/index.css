@@ -29,7 +29,7 @@
     --card-foreground: 222 32% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 32% 10%;
-    --primary: 165 48% 30%;
+    --primary: 213 48% 34%;
     --primary-foreground: 0 0% 100%;
     --secondary: 214 20% 91%;
     --secondary-foreground: 222 24% 15%;
@@ -41,26 +41,26 @@
     --destructive-foreground: 0 0% 98%;
     --border: 216 16% 82%;
     --input: 216 16% 82%;
-    --ring: 165 48% 30%;
+    --ring: 213 48% 34%;
     --radius: 0.5rem;
 
     /* Semantic learning accents */
-    --accent-practice: 212 74% 42%;
-    --accent-coach: 228 55% 43%;
+    --accent-practice: 207 54% 40%;
+    --accent-coach: 220 38% 38%;
     --accent-exam: 34 84% 46%;
-    --accent-memory: 165 48% 30%;
+    --accent-memory: 176 34% 32%;
     --accent-error: 350 75% 54%;
     --sidebar-background: 222 27% 12%;
     --sidebar-foreground: 214 18% 90%;
-    --sidebar-primary: 160 54% 48%;
+    --sidebar-primary: 213 62% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 24% 16%;
     --sidebar-accent-foreground: 214 18% 92%;
     --sidebar-border: 220 17% 24%;
-    --sidebar-ring: 160 54% 48%;
+    --sidebar-ring: 213 62% 60%;
 
     /* Semantic status colors */
-    --success: 165 48% 30%;
+    --success: 158 38% 32%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 38 40% 12%;
@@ -75,8 +75,8 @@
     --surface-sunken: 216 26% 93%;
     --border-strong: 217 14% 70%;
     --shadow-studio: 222 32% 10%;
-    --gradient-start: 165 48% 30%;
-    --gradient-end: 212 74% 42%;
+    --gradient-start: 213 48% 34%;
+    --gradient-end: 207 54% 40%;
     --grid-line-color: 222 32% 10% / 0.032;
 
     --font-ui: "Manrope", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
@@ -101,7 +101,7 @@
     --card-foreground: 214 22% 92%;
     --popover: 222 20% 12%;
     --popover-foreground: 214 22% 92%;
-    --primary: 160 54% 48%;
+    --primary: 213 68% 64%;
     --primary-foreground: 222 30% 8%;
     --secondary: 222 16% 17%;
     --secondary-foreground: 214 22% 92%;
@@ -113,22 +113,22 @@
     --destructive-foreground: 210 25% 94%;
     --border: 222 14% 25%;
     --input: 222 14% 25%;
-    --ring: 160 54% 48%;
-    --accent-practice: 209 82% 60%;
-    --accent-coach: 221 76% 68%;
+    --ring: 213 68% 64%;
+    --accent-practice: 207 74% 64%;
+    --accent-coach: 220 62% 68%;
     --accent-exam: 36 90% 58%;
-    --accent-memory: 160 54% 48%;
+    --accent-memory: 176 46% 58%;
     --sidebar-background: 222 28% 8%;
     --sidebar-foreground: 214 20% 90%;
-    --sidebar-primary: 160 54% 48%;
+    --sidebar-primary: 213 68% 64%;
     --sidebar-primary-foreground: 222 30% 8%;
     --sidebar-accent: 222 22% 13%;
     --sidebar-accent-foreground: 214 20% 92%;
     --sidebar-border: 222 15% 22%;
-    --sidebar-ring: 160 54% 48%;
+    --sidebar-ring: 213 68% 64%;
 
     /* Semantic status colors — dark */
-    --success: 160 54% 48%;
+    --success: 158 46% 48%;
     --success-foreground: 222 30% 8%;
     --warning: 38 92% 55%;
     --warning-foreground: 38 40% 12%;
@@ -143,8 +143,8 @@
     --surface-sunken: 222 26% 8%;
     --border-strong: 222 13% 34%;
     --shadow-studio: 0 0% 0%;
-    --gradient-start: 160 54% 48%;
-    --gradient-end: 209 82% 60%;
+    --gradient-start: 213 68% 64%;
+    --gradient-end: 207 74% 64%;
     --grid-line-color: 214 22% 92% / 0.03;
   }
 }
@@ -179,8 +179,7 @@
   .study-premium-bg {
     position: relative;
     isolation: isolate;
-    background:
-      linear-gradient(180deg, hsl(var(--surface-sunken)) 0%, hsl(var(--background)) 34%, hsl(var(--background)) 100%);
+    background: hsl(var(--background));
   }
 
   .study-premium-bg::before {
@@ -222,8 +221,7 @@
   }
 
   .premium-hero-panel {
-    background:
-      linear-gradient(180deg, hsl(var(--surface-raised)) 0%, hsl(var(--surface-elevated)) 100%);
+    background: hsl(var(--surface-raised));
   }
 
   .premium-metric-well {
@@ -264,18 +262,16 @@
   }
 
   .premium-word-card {
-    background:
-      linear-gradient(180deg, hsl(var(--surface-raised)), hsl(var(--surface-elevated)) 100%);
+    background: hsl(var(--surface-raised));
   }
 
   .premium-word-card-back {
-    background:
-      linear-gradient(180deg, hsl(var(--surface-raised)), hsl(var(--surface-elevated)) 100%);
+    background: hsl(var(--surface-raised));
   }
 
   .premium-status-chip {
     border-color: hsl(var(--warning) / 0.28);
-    background: linear-gradient(180deg, hsl(var(--warning) / 0.13), hsl(var(--warning) / 0.075));
+    background: hsl(var(--warning) / 0.1);
     color: hsl(var(--warning-foreground));
     box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.42);
   }
@@ -336,17 +332,12 @@
     0 18px 42px -30px hsl(0 0% 0% / 0.9);
 }
 
-/* ─── Premium Grid Background (deprecated — near-invisible) ─── */
+/* ─── Premium Grid Background (deprecated — disabled) ─── */
 .bg-grid {
-  background-size: 40px 40px;
-  background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
+  background-image: none;
 }
 .dark .bg-grid {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-image: none;
 }
 
 .mask-radial-fade {
@@ -682,4 +673,84 @@ input:focus-visible {
 
 .hljs-emphasis {
   @apply italic;
+}
+
+/* Legacy accent suppression.
+   Older screens used emerald/violet/purple as product accents. Keep semantic
+   red/amber/green answer states, but remap decorative accents to the current
+   ink-blue system so surfaces feel like one app. */
+[class*="text-emerald"],
+[class*="text-violet"],
+[class*="text-purple"],
+.dark [class*="text-emerald"],
+.dark [class*="text-violet"],
+.dark [class*="text-purple"] {
+  color: hsl(var(--primary));
+}
+
+[class*="border-emerald"],
+[class*="border-violet"],
+[class*="border-purple"],
+.dark [class*="border-emerald"],
+.dark [class*="border-violet"],
+.dark [class*="border-purple"] {
+  border-color: hsl(var(--primary) / 0.28);
+}
+
+[class*="bg-emerald-50"],
+[class*="bg-emerald-100"],
+[class*="bg-emerald-500/"],
+[class*="bg-emerald-500["],
+[class*="bg-emerald-900"],
+[class*="bg-emerald-950"],
+[class*="bg-violet-50"],
+[class*="bg-violet-100"],
+[class*="bg-violet-500/"],
+[class*="bg-violet-500["],
+[class*="bg-violet-900"],
+[class*="bg-violet-950"],
+[class*="bg-purple-50"],
+[class*="bg-purple-100"],
+[class*="bg-purple-500/"],
+[class*="bg-purple-500["],
+[class*="bg-purple-900"],
+[class*="bg-purple-950"] {
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+[class~="bg-emerald-500"],
+[class~="bg-emerald-600"],
+[class~="bg-emerald-700"],
+[class~="bg-violet-500"],
+[class~="bg-violet-600"],
+[class~="bg-purple-500"],
+[class~="bg-purple-600"] {
+  background-color: hsl(var(--primary));
+}
+
+[class*="hover:text-emerald"]:hover,
+[class*="hover:text-violet"]:hover,
+[class*="hover:text-purple"]:hover,
+.dark [class*="dark:hover:text-emerald"]:hover,
+.dark [class*="dark:hover:text-violet"]:hover,
+.dark [class*="dark:hover:text-purple"]:hover {
+  color: hsl(var(--primary));
+}
+
+[class*="hover:border-emerald"]:hover,
+[class*="hover:border-violet"]:hover,
+[class*="hover:border-purple"]:hover,
+.dark [class*="dark:hover:border-emerald"]:hover,
+.dark [class*="dark:hover:border-violet"]:hover,
+.dark [class*="dark:hover:border-purple"]:hover {
+  border-color: hsl(var(--primary) / 0.36);
+}
+
+[class*="hover:bg-emerald"]:hover,
+[class*="hover:bg-violet"]:hover,
+[class*="hover:bg-purple"]:hover,
+.dark [class*="dark:hover:bg-emerald"]:hover,
+.dark [class*="dark:hover:bg-violet"]:hover,
+.dark [class*="dark:hover:bg-purple"]:hover {
+  background-color: hsl(var(--primary) / 0.1);
 }

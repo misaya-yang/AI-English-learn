@@ -87,20 +87,20 @@ describe('AnalyticsPage empty evidence states', () => {
     expect(screen.getByRole('link', { name: '去做复习' })).toHaveAttribute('href', '/dashboard/review');
   });
 
-  it('does not invent a coach focus when no coach evidence exists', async () => {
+  it('does not invent a help focus when no help evidence exists', async () => {
     render(
       <MemoryRouter>
         <AnalyticsPage />
       </MemoryRouter>,
     );
 
-    selectTab('教练');
+    selectTab('答疑');
 
     await waitFor(() => {
-      expect(screen.getByText('还没有教练记录')).toBeInTheDocument();
+      expect(screen.getByText('还没有答疑记录')).toBeInTheDocument();
     });
     expect(screen.queryByText('IELTS writing')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '打开教练' })).toHaveAttribute('href', '/dashboard/chat');
+    expect(screen.getByRole('link', { name: '打开答疑' })).toHaveAttribute('href', '/dashboard/chat');
   });
 
   it('renders the same no-evidence states in English without Chinese fallback copy', async () => {

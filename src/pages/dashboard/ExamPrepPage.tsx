@@ -321,7 +321,7 @@ export default function ExamPrepPage() {
                     : 'border-border bg-background/70 text-muted-foreground'
                 }`}
               >
-                <span className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+                <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <span
                     className={`grid h-6 w-6 place-items-center rounded-full text-[11px] ${
                       active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'

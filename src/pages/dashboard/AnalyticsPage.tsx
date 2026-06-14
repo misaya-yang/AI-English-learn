@@ -146,7 +146,7 @@ const analyticsCopy = {
       overview: 'Overview',
       words: 'Words',
       retention: 'Retention',
-      coach: 'Coach',
+      coach: 'Help',
       insights: 'Summary',
       badges: 'Badges',
     },
@@ -217,9 +217,9 @@ const analyticsCopy = {
         action: 'Open review queue',
       },
       coach: {
-        title: 'No coach records yet',
-        description: 'Start a chat or complete a practice task before coach follow-ups appear here.',
-        action: 'Open Coach',
+        title: 'No help records yet',
+        description: 'Start a chat or complete a practice task before follow-ups appear here.',
+        action: 'Open help',
       },
       vocabulary: {
         title: 'No vocabulary mastery evidence yet',
@@ -234,12 +234,12 @@ const analyticsCopy = {
     },
     coach: {
       description: 'Chat follow-ups, completed practice, repeated mistakes, and review status.',
-      diagnosed: 'Coach notes',
+      diagnosed: 'Help notes',
       completed: 'Completed follow-ups',
       repeatedErrors: 'Repeated error risk',
       retention: 'Predicted retention',
       focus: 'Practice focus',
-      focusDescription: 'Today and Coach will use this weak spot first.',
+      focusDescription: 'Today and Help will use this weak spot first.',
     },
     insights: {
       weeklyReport: 'Weekly summary',
@@ -275,7 +275,7 @@ const analyticsCopy = {
       overview: '概览',
       words: '词汇',
       retention: '记忆保留',
-      coach: '教练',
+      coach: '答疑',
       insights: '总结',
       badges: '成就',
     },
@@ -346,9 +346,9 @@ const analyticsCopy = {
         action: '打开复习队列',
       },
       coach: {
-        title: '还没有教练记录',
+        title: '还没有答疑记录',
         description: '开始一次对话或完成一次练习后，这里会显示跟进记录。',
-        action: '打开教练',
+        action: '打开答疑',
       },
       vocabulary: {
         title: '还没有词汇掌握记录',
@@ -363,12 +363,12 @@ const analyticsCopy = {
     },
     coach: {
       description: '本周的对话记录、练习完成情况、重复错误和复习状态。',
-      diagnosed: '教练记录',
+      diagnosed: '答疑记录',
       completed: '已完成跟进',
       repeatedErrors: '重复错误风险',
       retention: '预测保持率',
       focus: '练习重点',
-      focusDescription: 'Today 和教练会优先处理这个薄弱点。',
+      focusDescription: 'Today 和答疑会优先处理这个薄弱点。',
     },
     insights: {
       weeklyReport: '本周总结',
@@ -876,7 +876,7 @@ export default function AnalyticsPage() {
           </div>
           <div className="w-full bg-muted rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full transition-all"
+              className="h-2 rounded-full bg-warning transition-all"
               style={{ width: `${xpInCurrentLevel}%` }}
             />
           </div>
@@ -1109,7 +1109,7 @@ export default function AnalyticsPage() {
             <div className="grid md:grid-cols-3 gap-4">
               <Card className="col-span-1">
                 <CardContent className="p-5 flex flex-col items-center justify-center h-full gap-2">
-                  <p className="text-xs tracking-wide text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {isZh ? '平均可回忆率' : 'Avg. retrievability'}
                   </p>
                   <p className="text-[3rem] font-bold text-emerald-500 leading-none">
@@ -1120,7 +1120,7 @@ export default function AnalyticsPage() {
                   </p>
                   <div className="w-full bg-muted rounded-full h-2 mt-1">
                     <div
-                      className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-emerald-500 transition-all"
+                      className="h-2 rounded-full bg-primary transition-all"
                       style={{ width: `${Math.round(fsrsStats.avgR * 100)}%` }}
                     />
                   </div>
@@ -1229,7 +1229,7 @@ export default function AnalyticsPage() {
 	                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-xs tracking-wide text-green-700">
+                          <p className="text-xs text-green-700">
 	                            {isZh ? '主复习时段' : 'Primary window'}
                           </p>
                           <p className="mt-2 text-xl font-semibold">
@@ -1250,12 +1250,12 @@ export default function AnalyticsPage() {
 
                     <div className="grid gap-3 sm:grid-cols-2">
 	                      <div className="rounded-lg border border-border/70 bg-card/60 p-4">
-	                        <p className="text-xs tracking-wide text-muted-foreground">{isZh ? '观察到的学习日' : 'Days observed'}</p>
+	                        <p className="text-xs text-muted-foreground">{isZh ? '观察到的学习日' : 'Days observed'}</p>
                         <p className="mt-2 text-2xl font-semibold">{reviewWindowInsight.activeDays}</p>
                         <p className="text-sm text-muted-foreground">最近 30 天里有学习行为的天数</p>
                       </div>
 	                      <div className="rounded-lg border border-border/70 bg-card/60 p-4">
-	                        <p className="text-xs tracking-wide text-muted-foreground">{isZh ? '备用时段' : 'Backup window'}</p>
+	                        <p className="text-xs text-muted-foreground">{isZh ? '备用时段' : 'Backup window'}</p>
                         <p className="mt-2 text-lg font-semibold">
 	                          {reviewWindowInsight.secondary
                               ? (isZh ? reviewWindowInsight.secondary.labelZh : reviewWindowInsight.secondary.label)
@@ -1298,7 +1298,7 @@ export default function AnalyticsPage() {
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold tracking-wide text-muted-foreground">
+                          <span className="text-xs font-semibold text-muted-foreground">
                             #{index + 1}
                           </span>
                           <p className="text-base font-semibold">{item.word}</p>
@@ -1391,7 +1391,7 @@ export default function AnalyticsPage() {
 
                 {coachImpact.primaryFocus ? (
 	                  <div className="rounded-lg border border-border bg-background p-4">
-                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs font-medium text-muted-foreground">
                       {copy.coach.focus}
                     </p>
                     <p className="mt-2 text-lg font-semibold capitalize">{coachImpact.primaryFocus}</p>
@@ -1415,7 +1415,7 @@ export default function AnalyticsPage() {
 
         <TabsContent value="insights" className="space-y-6">
           {/* Evidence-backed Weekly Report */}
-          <Card className="bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
+          <Card className="border-emerald-500/20 bg-emerald-500/[0.04]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-emerald-500" />

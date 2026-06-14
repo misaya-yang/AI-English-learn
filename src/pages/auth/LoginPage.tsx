@@ -281,7 +281,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 flex items-center">
             <Separator />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
+          <div className="relative flex justify-center text-xs">
             <span className="bg-card px-3 text-muted-foreground">{copy.divider}</span>
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function LoginPage() {
           <div className="w-full max-w-[400px] rounded-xl border border-border bg-card p-7 shadow-lg">
             <h3
               id="reset-password-title"
-              className="text-center text-lg font-semibold tracking-tight text-foreground"
+              className="text-center text-lg font-semibold text-foreground"
             >
               {copy.resetTitle}
             </h3>

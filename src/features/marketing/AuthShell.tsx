@@ -84,7 +84,7 @@ export function AuthShell({
             </div>
 
             <div className="mb-5 text-center lg:text-left">
-              <h1 className="text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-xl font-semibold text-foreground">
                 {displayTitle}
               </h1>
               {displaySubtitle && (
@@ -122,7 +122,7 @@ export function AuthShell({
         {/* Brand / reassurance column — hidden on mobile, primary on lg. */}
         <aside className="order-2 hidden flex-col justify-center lg:order-1 lg:flex">
           <BrandMark />
-          <h2 className="mt-8 max-w-md text-3xl font-semibold leading-tight tracking-tight text-foreground">
+          <h2 className="mt-8 max-w-md text-3xl font-semibold leading-tight text-foreground">
             {isZh ? rail.headlineZh : rail.headline}
           </h2>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">

@@ -86,7 +86,7 @@ const COACH_MODE_BY_CHAT_MODE: Record<ChatMode, CoachStudioMode> = {
 
 const COACH_DISPLAY_LABELS: Record<string, { zh: string; en: string }> = {
   general_improvement: { zh: '综合提升', en: 'General improvement' },
-  ielts_coach: { zh: '雅思教练', en: 'IELTS coaching' },
+  ielts_coach: { zh: '雅思练习', en: 'IELTS practice' },
   ielts_writing: { zh: '雅思写作', en: 'IELTS writing' },
   grammar_accuracy: { zh: '语法准确性', en: 'Grammar accuracy' },
   lexical: { zh: '词汇资源', en: 'Lexical resource' },
@@ -838,7 +838,7 @@ export default function ChatPage() {
         phonetic: '',
         partOfSpeech: 'phrase',
         definition: artifact.payload.explanation || artifact.payload.stem,
-        definitionZh: language.startsWith('zh') ? '来自 AI 测验回流' : 'Imported from AI quiz',
+        definitionZh: language.startsWith('zh') ? '来自短测回流' : 'Imported from quiz',
         examples: [
           {
             en: artifact.payload.stem,
@@ -1283,8 +1283,8 @@ export default function ChatPage() {
           </SheetTitle>
           <SheetDescription className="sr-only">
             {language.startsWith('zh')
-              ? '查看、创建和切换教练工作室对话。'
-              : 'View, create, and switch Coach Studio conversations.'}
+              ? '查看、创建和切换答疑对话。'
+              : 'View, create, and switch help conversations.'}
           </SheetDescription>
           {renderHistorySidebar(() => setMobileHistoryOpen(false))}
         </SheetContent>
@@ -1321,7 +1321,7 @@ export default function ChatPage() {
             </Button>
             <div>
               <h1 className="font-semibold">
-                {language.startsWith('zh') ? '雅思教练工作室' : 'IELTS Coach Studio'}
+                {language.startsWith('zh') ? '英语答疑' : 'English help'}
               </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -1386,7 +1386,7 @@ export default function ChatPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-muted-foreground">
-                  {isZh ? '教练状态' : 'Coach status'}
+                  {isZh ? '练习状态' : 'Practice status'}
                 </p>
                 <h2 className="mt-1 text-sm font-semibold text-foreground sm:text-base">
                   {isZh
@@ -1437,16 +1437,16 @@ export default function ChatPage() {
           <section className="border-b border-border bg-[hsl(var(--accent-coach)/0.06)] px-4 py-3 md:px-6 lg:px-8">
             <div className={cn(contentWidthClass, 'mx-auto flex flex-col gap-3 rounded-md border border-[hsl(var(--accent-coach)/0.22)] bg-background/80 p-3 sm:flex-row sm:items-center sm:justify-between')}>
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-[hsl(var(--accent-coach))]">
+                <p className="text-xs font-medium text-[hsl(var(--accent-coach))]">
                   {language.startsWith('zh') ? '已载入今日计划' : 'Daily plan loaded'}
                 </p>
                 <h3 className="mt-1 text-sm font-semibold text-foreground">
-                  {dailyPlanHandoff.focus || (language.startsWith('zh') ? '今日教练任务' : 'Today coach task')}
+                  {dailyPlanHandoff.focus || (language.startsWith('zh') ? '今日答疑任务' : 'Today help task')}
                 </h3>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {language.startsWith('zh')
-                    ? `来源：${dailyPlanHandoff.reason || 'daily coach'}。点击后把计划放进输入框，由你确认发送。`
-                    : `Source: ${dailyPlanHandoff.reason || 'daily coach'}. Use it to fill the composer, then send when ready.`}
+                    ? `来源：${dailyPlanHandoff.reason || 'daily help'}。点击后把计划放进输入框，由你确认发送。`
+                    : `Source: ${dailyPlanHandoff.reason || 'daily help'}. Use it to fill the composer, then send when ready.`}
                 </p>
               </div>
               <Button
@@ -1473,6 +1473,7 @@ export default function ChatPage() {
                   <MissionCards
                     selected={missionCards}
                     onLaunch={(prompt) => setInput(prompt)}
+                    language={language}
                   />
                 </div>
                 <ChatWelcome
@@ -1607,7 +1608,7 @@ export default function ChatPage() {
               <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
-                  {language.startsWith('zh') ? 'AI 暂时不可用' : 'AI is temporarily unavailable'}
+                  {language.startsWith('zh') ? '在线答疑暂时不可用' : 'Online help is temporarily unavailable'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {chatError.message}

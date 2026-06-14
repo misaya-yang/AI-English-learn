@@ -55,9 +55,7 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
         <motion.div
           className={cn(
             'absolute inset-y-0 left-0 rounded-full',
-            isComplete
-              ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
-              : 'bg-gradient-to-r from-primary to-primary/80',
+            isComplete ? 'bg-emerald-500' : 'bg-primary',
           )}
           initial={false}
           animate={{ width: `${progress}%` }}

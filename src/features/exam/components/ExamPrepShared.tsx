@@ -29,10 +29,10 @@ export function QuotaRing({
   const percent = Math.max(0, Math.min(100, Math.round((remaining / safeTotal) * 100)));
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/40 p-3">
+    <div className="rounded-lg border border-border/70 bg-background/40 p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] tracking-wide text-muted-foreground/80">{label}</p>
+          <p className="text-[11px] font-medium text-muted-foreground/80">{label}</p>
           <p className="mt-1 text-lg font-semibold">
             {remaining}
             <span className="ml-1 text-xs font-normal text-muted-foreground">/ {safeTotal}</span>
@@ -72,8 +72,8 @@ export function ScoreCell({
 
 export function EmptyKickoffCard({ onQuickStart }: { onQuickStart: () => void }) {
   return (
-    <div className="rounded-xl border border-dashed border-emerald-400/40 bg-emerald-500/[0.06] p-4 text-sm">
-      <p className="font-semibold text-emerald-500">还没有问题记录</p>
+    <div className="rounded-lg border border-dashed border-primary/30 bg-primary/[0.05] p-4 text-sm">
+      <p className="font-semibold text-primary">还没有问题记录</p>
       <p className="mt-1 text-muted-foreground">先做 1 次写作反馈，这里会显示主要问题和建议练习。</p>
       <Button className="mt-3" size="sm" onClick={onQuickStart}>
         <Sparkles className="mr-1.5 h-4 w-4" />
@@ -90,7 +90,7 @@ export function LoadingPipeline({ stage }: { stage: LoadingStage }) {
     { id: 'simulating', label: '生成题目中', detail: '正在准备 IELTS 风格题目...' },
     { id: 'outlining', label: '构建提纲中', detail: '正在整理段落结构...' },
     { id: 'vocab', label: '词汇升级中', detail: '正在识别低阶表达并给出替换建议...' },
-    { id: 'tutoring', label: '教练响应中', detail: '正在根据你的草稿给出建议...' },
+    { id: 'tutoring', label: '生成建议中', detail: '正在根据你的草稿给出建议...' },
     { id: 'grading', label: '评分中', detail: '正在按 IELTS 标准评分...' },
     { id: 'micro', label: '生成练习中', detail: '正在根据问题生成 5 分钟练习...' },
   ];
@@ -99,13 +99,13 @@ export function LoadingPipeline({ stage }: { stage: LoadingStage }) {
   const progress = Math.round(((activeIndex + 1) / steps.length) * 100);
 
   return (
-    <div className="rounded-xl border border-emerald-400/40 bg-emerald-500/[0.08] p-4">
+    <div className="rounded-lg border border-primary/30 bg-primary/[0.06] p-4">
       <div className="flex items-start gap-3">
-        <Loader2 className="mt-0.5 h-4 w-4 animate-spin text-emerald-500" />
+        <Loader2 className="mt-0.5 h-4 w-4 animate-spin text-primary" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-emerald-500">{steps[activeIndex]?.label ?? '处理中'}</p>
+          <p className="text-sm font-medium text-primary">{steps[activeIndex]?.label ?? '处理中'}</p>
           <p className="text-sm text-muted-foreground">{steps[activeIndex]?.detail ?? '正在处理请求...'}</p>
-          <Progress value={progress} className="mt-3 h-2 bg-emerald-500/20 [&>[data-slot=progress-indicator]]:bg-emerald-500" />
+          <Progress value={progress} className="mt-3 h-2 bg-primary/15 [&>[data-slot=progress-indicator]]:bg-primary" />
         </div>
       </div>
     </div>
@@ -166,8 +166,8 @@ export function WorkspaceLead({
 }) {
   return (
     <div>
-      <p className="text-[11px] tracking-wide text-muted-foreground/80">{eyebrow}</p>
-      <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">{title}</h2>
+      <p className="text-[11px] font-medium text-muted-foreground/80">{eyebrow}</p>
+      <h2 className="mt-2 text-xl font-semibold text-foreground">{title}</h2>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{body}</p>
     </div>
   );

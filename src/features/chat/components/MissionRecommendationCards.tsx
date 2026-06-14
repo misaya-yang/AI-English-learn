@@ -55,7 +55,7 @@ const VARIANT_HEADING: Record<MissionRecommendationVariant, { en: string; zh: st
   today:    { en: 'Today\'s mission', zh: '今日任务' },
   sprint:   { en: 'Exam sprint', zh: '考前冲刺' },
   practice: { en: 'Targeted practice', zh: '针对练习' },
-  default:  { en: 'Coach pick', zh: '教练推荐' },
+  default:  { en: 'Suggested task', zh: '建议任务' },
 };
 
 const VARIANT_ALERT: Record<MissionRecommendationVariant, typeof Sparkles> = {
@@ -75,7 +75,7 @@ export function MissionRecommendationCards({
 }: MissionRecommendationCardsProps) {
   if (!cards || cards.length === 0) return null;
   const isZh = language.startsWith('zh');
-  const ctaLabel = isZh ? '让教练带我做' : 'Start with coach';
+  const ctaLabel = isZh ? '开始练习' : 'Start practice';
 
   return (
     <div
@@ -109,7 +109,7 @@ export function MissionRecommendationCards({
                 <span className={cn('rounded-full p-1.5', VARIANT_BADGE[card.variant])}>
                   <HeadingIcon className="h-3.5 w-3.5" />
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-90">
+                <span className="text-[10px] font-medium opacity-90">
                   {headingLabel}
                 </span>
               </div>

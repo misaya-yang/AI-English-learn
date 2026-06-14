@@ -56,18 +56,18 @@ export function InsightRail({
 }: InsightRailProps) {
   return (
     <motion.aside initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
-      <section className="overflow-hidden rounded-[24px] border border-border/70 bg-card/90">
+      <section className="overflow-hidden rounded-lg border border-border/70 bg-card/90">
         <Tabs value={insightView} onValueChange={(value) => onInsightViewChange(value as InsightView)} className="gap-0">
           <div className="border-b border-border/70 px-4 py-4">
             <div className="flex flex-col gap-3">
               <div>
-                <p className="text-[11px] tracking-wide text-muted-foreground/80">数据</p>
+                <p className="text-[11px] font-medium text-muted-foreground/80">数据</p>
                 <h2 className="mt-2 text-lg font-semibold">只看这次练习相关的记录</h2>
               </div>
-              <TabsList className="grid w-full grid-cols-3 rounded-full bg-muted/70 p-1">
-                <TabsTrigger value="weakness" className="rounded-full">弱项</TabsTrigger>
-                <TabsTrigger value="trend" className="rounded-full">走势</TabsTrigger>
-                <TabsTrigger value="history" className="rounded-full">历史</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 rounded-md bg-muted/70 p-1">
+                <TabsTrigger value="weakness" className="rounded-md">弱项</TabsTrigger>
+                <TabsTrigger value="trend" className="rounded-md">走势</TabsTrigger>
+                <TabsTrigger value="history" className="rounded-md">历史</TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -77,7 +77,7 @@ export function InsightRail({
               {errorAnalytics.length === 0 ? (
                 <EmptyKickoffCard onQuickStart={() => void onQuickStart()} />
               ) : (
-                <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+                <div className="rounded-lg border border-border/70 bg-background/35 p-4">
                   <ErrorGraph
                     analytics={errorAnalytics}
                     activeTag={activeErrorTag}
@@ -86,7 +86,7 @@ export function InsightRail({
                 </div>
               )}
 
-              <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+              <div className="rounded-lg border border-border/70 bg-background/35 p-4">
                 <p className="text-sm font-semibold">建议先做</p>
                 {selectedErrorNode ? (
                   <>
@@ -120,7 +120,7 @@ export function InsightRail({
             </TabsContent>
 
             <TabsContent value="trend" className="mt-0 space-y-4">
-              <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+              <div className="rounded-lg border border-border/70 bg-background/35 p-4">
                 <p className="text-sm font-semibold">Band 走势</p>
                 <p className="mt-1 text-xs text-muted-foreground">最近 7 次反馈走势</p>
                 <div className="mt-4">
@@ -128,7 +128,7 @@ export function InsightRail({
                 </div>
               </div>
 
-              <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
+              <div className="rounded-lg border border-border/70 bg-background/35 p-4">
                 <p className="text-sm font-semibold">本轮状态</p>
                 <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center justify-between">
@@ -156,13 +156,13 @@ export function InsightRail({
                     {recentHistory.map((item) => {
                       const tags = item.issues.slice(0, 3).map((issue) => ISSUE_LABELS[issue.tag] || issue.tag);
                       return (
-                        <div key={item.attemptId} className="rounded-[20px] border border-border/70 bg-background/35 p-3">
+                        <div key={item.attemptId} className="rounded-lg border border-border/70 bg-background/35 p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <p className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</p>
                               <p className="mt-1 text-lg font-semibold">Band {item.scores.overallBand.toFixed(1)}</p>
                             </div>
-                            <Badge variant="outline" className="rounded-full">{item.provider}</Badge>
+                            <Badge variant="outline" className="rounded-md">{item.provider}</Badge>
                           </div>
 
                           <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">

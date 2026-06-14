@@ -81,7 +81,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
             {word.level} · 第 {item.reviewCount + 1} 次复习
           </Badge>
           <p className="mt-8 text-[11px] text-muted-foreground">先回忆</p>
-          <h2 className="mt-5 text-[3.8rem] font-semibold leading-[0.92] tracking-[-0.065em] text-foreground sm:text-[5.2rem]">
+          <h2 className="mt-5 text-[3.8rem] font-semibold leading-[0.92] text-foreground sm:text-[5.2rem]">
             {word.word}
           </h2>
           <p className="mt-4 font-mono text-lg text-muted-foreground">{word.partOfSpeech} · {word.phonetic}</p>
@@ -106,7 +106,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] text-muted-foreground">答案已揭晓</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">{word.word}</h2>
+              <h2 className="mt-2 text-3xl font-semibold text-foreground">{word.word}</h2>
               <p className="mt-1 font-mono text-sm text-muted-foreground">{word.partOfSpeech} · {word.phonetic}</p>
             </div>
             <Button
@@ -550,7 +550,7 @@ export default function ReviewPage() {
                     </Button>
                     <Button variant="outline" className="rounded-md" asChild>
                       <Link to={`/dashboard/chat?focus=stubborn-recovery&word=${encodeURIComponent(currentRecoveryPlan.wordId)}`}>
-                        {isZh ? '问一下教练' : 'Ask the coach'}
+                        {isZh ? '打开答疑' : 'Open help'}
                       </Link>
                     </Button>
                   </div>
@@ -694,10 +694,10 @@ export default function ReviewPage() {
                     <motion.div
                       className={cn(
                         'h-full rounded-full transition-colors',
-                        currentItem.fsrs.retrievability >= 0.75 ? 'bg-gradient-to-r from-emerald-500 to-emerald-300' :
-                        currentItem.fsrs.retrievability >= 0.5  ? 'bg-gradient-to-r from-amber-500 to-amber-300' :
-                        currentItem.fsrs.retrievability >= 0.25 ? 'bg-gradient-to-r from-orange-500 to-orange-300' :
-                                                                   'bg-gradient-to-r from-red-500 to-red-300',
+                        currentItem.fsrs.retrievability >= 0.75 ? 'bg-emerald-500' :
+                        currentItem.fsrs.retrievability >= 0.5  ? 'bg-amber-500' :
+                        currentItem.fsrs.retrievability >= 0.25 ? 'bg-orange-500' :
+                                                                   'bg-red-500',
                       )}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.round(currentItem.fsrs.retrievability * 100)}%` }}

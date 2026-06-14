@@ -15,7 +15,7 @@ export const LEARNING_STYLE_PERSONALIZATION: Record<LearningStyle, LearningStyle
     practiceBadge: { en: 'Visual-first', zh: '视觉优先' },
     todayNudge: {
       en: 'Use examples, patterns, and contrast cues as you work.',
-      zh: '练习时优先使用例句、结构模式和对比线索。',
+      zh: '练习时优先看例句和句子结构。',
     },
     coachInstruction: 'Prefer visual examples, contrast tables, and pattern spotting before asking for long freeform output.',
   },

@@ -159,7 +159,7 @@ export default function LegalPage() {
           {isZh ? '发布前需复核' : 'Pre-launch review required'}
         </Badge>
 
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+        <h1 className="text-3xl font-semibold sm:text-4xl">{title}</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
 
         <dl className="mt-6 grid gap-3 rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-4 text-sm sm:grid-cols-2">
@@ -180,7 +180,7 @@ export default function LegalPage() {
         <article className="mt-8 space-y-8">
           {sections.map((section) => (
             <section key={section.title}>
-              <h2 className="text-xl font-semibold tracking-tight">
+              <h2 className="text-xl font-semibold">
                 {isZh ? section.titleZh : section.title}
               </h2>
               <div className="mt-3 space-y-3 text-sm leading-7 text-muted-foreground">

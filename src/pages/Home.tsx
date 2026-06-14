@@ -44,9 +44,9 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? '今天练什么，一目了然。' : "See today's practice at a glance.",
+      title: isZh ? '每日英语练习' : 'Daily English practice',
       subtitle: isZh
-        ? '复习到期词，学几个新词，再做一小段练习。'
+        ? '复习到期词，学几个新词，做一个短练习。'
         : 'Review due words, add a few new ones, then do one short drill.',
       primaryCta: isZh ? '开始学习' : 'Start learning',
       secondaryCta: isZh ? '试样课' : 'Try sample',
@@ -122,7 +122,7 @@ export default function Home() {
             <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary text-primary-foreground">
               <BookOpen className="h-4 w-4" />
             </span>
-            <span className="text-sm font-semibold tracking-tight">VocabDaily</span>
+            <span className="text-sm font-semibold">VocabDaily</span>
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
@@ -191,21 +191,14 @@ export default function Home() {
 
       <main>
         <section className="border-b border-border/70">
-          <div className="mx-auto grid min-h-[calc(100dvh-3.5rem)] max-w-6xl gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:items-center lg:py-16">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-2 lg:items-center lg:py-20">
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-border bg-[hsl(var(--surface-raised))]/88 px-3 py-1.5 text-xs font-medium text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 VocabDaily
               </div>
               <h1 className="max-w-2xl text-4xl font-semibold leading-[1.06] text-foreground sm:text-5xl md:text-[3.5rem]">
-                {isZh ? (
-                  <>
-                    <span className="block">今天练什么，</span>
-                    <span className="block">一目了然。</span>
-                  </>
-                ) : (
-                  copy.hero.title
-                )}
+                {copy.hero.title}
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
                 {copy.hero.subtitle}
@@ -302,7 +295,7 @@ export default function Home() {
           </div>
 
           {/* Sample word strip */}
-          <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-14">
+          <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16">
             <p className="text-xs font-medium text-muted-foreground">
               {copy.examplesLabel}
             </p>
@@ -310,7 +303,7 @@ export default function Home() {
               {sampleWords.map((w) => (
                 <div key={w.word} className="rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))]/88 p-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-base font-semibold tracking-tight">{w.word}</span>
+                    <span className="text-base font-semibold">{w.word}</span>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.example}</p>
@@ -322,7 +315,7 @@ export default function Home() {
 
         <section id="workflow" className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/34">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="text-2xl font-semibold sm:text-3xl">
               {copy.workflow.title}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
@@ -366,7 +359,7 @@ export default function Home() {
         <section>
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-20">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              <h2 className="text-xl font-semibold sm:text-2xl">
                 {copy.footerCta.title}
               </h2>
               <p className="mt-1.5 text-sm text-muted-foreground">

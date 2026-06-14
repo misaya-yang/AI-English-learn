@@ -246,7 +246,7 @@ export default function OnboardingPage() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              <div className="relative flex justify-center text-xs">
                 <span className="bg-card px-3 text-muted-foreground">
                   {isZh ? '手动选择' : 'or pick manually'}
                 </span>
@@ -416,7 +416,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-6">
               <div className="text-center">
-                <span className="text-5xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                <span className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">
                   {preferences.dailyGoal}
                 </span>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -449,7 +449,7 @@ export default function OnboardingPage() {
                   <strong className="text-emerald-700 dark:text-emerald-300">
                     {isZh ? '推荐：' : 'Recommended:'}
                   </strong>{' '}
-                  {isZh ? '每天 10–15 个新词以获得最佳记忆效果。' : '10-15 words per day for optimal retention.'}
+                  {isZh ? '每天 10-15 个新词以获得最佳记忆效果。' : '10-15 words per day for optimal retention.'}
                 </p>
               </div>
 
@@ -583,15 +583,15 @@ export default function OnboardingPage() {
                   </p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     <div>
-                      <p className="text-xs uppercase text-muted-foreground">{isZh ? '词书' : 'Book'}</p>
+                      <p className="text-xs text-muted-foreground">{isZh ? '词书' : 'Book'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">{placement.starterBookName}</p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase text-muted-foreground">{isZh ? '路径' : 'Path'}</p>
+                      <p className="text-xs text-muted-foreground">{isZh ? '路径' : 'Path'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">{placement.learningPathName}</p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase text-muted-foreground">{isZh ? '首个任务' : 'First mission'}</p>
+                      <p className="text-xs text-muted-foreground">{isZh ? '首个任务' : 'First mission'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">
                         {isZh ? placement.firstMission.titleZh : placement.firstMission.title}
                       </p>

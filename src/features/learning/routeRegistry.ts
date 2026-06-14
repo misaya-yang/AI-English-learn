@@ -108,13 +108,13 @@ const ROUTES: DashboardRouteMeta[] = [
   {
     id: 'chat',
     path: '/dashboard/chat',
-    label: { en: 'Coach', zh: '教练' },
-    description: { en: 'Explanations, Socratic guidance, micro quizzes.', zh: '解释、引导和短测都从这里进入。' },
+    label: { en: 'Help', zh: '答疑' },
+    description: { en: 'Explanations, guided practice, micro quizzes.', zh: '解释、引导练习和短测都从这里进入。' },
     icon: MessageCircleMore,
     group: 'practice',
     mobilePriority: 2,
-    pageTitle: { en: 'Coach · VocabDaily', zh: '教练 · VocabDaily' },
-    searchAliases: ['chat', 'coach', '教练', '聊天', '对话', 'tutor'],
+    pageTitle: { en: 'Help · VocabDaily', zh: '答疑 · VocabDaily' },
+    searchAliases: ['chat', 'help', 'coach', '答疑', '教练', '聊天', '对话', 'tutor'],
   },
   {
     id: 'reading',

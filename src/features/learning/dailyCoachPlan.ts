@@ -73,7 +73,7 @@ const reasonCopy: Record<DailyCoachPlanReason, { title: { en: string; zh: string
     title: { en: 'Do one exam task', zh: '做一个考试任务' },
     lead: {
       en: 'Use today for one focused exam exercise.',
-      zh: '今天先完成一个明确的考试练习。',
+      zh: '今天先完成一个考试练习。',
     },
   },
   weakness_drill: {
@@ -107,6 +107,14 @@ const reasonPromptLabel: Record<DailyCoachPlanReason, string> = {
   weakness_drill: 'weakness drill',
   daily_vocabulary: 'daily vocabulary',
   coach_checkin: 'coach check-in',
+};
+
+const formatTargetValue = (value: string | undefined, level: string, isZh: boolean): string => {
+  const target = value?.trim();
+  if (!target) return level;
+  const normalized = target.toLowerCase().replace(/[\s-]+/g, '_');
+  if (normalized === 'general_improvement') return isZh ? '综合提升' : 'General improvement';
+  return target.replace(/_/g, ' ');
 };
 
 function buildCoachPrompt(args: {
@@ -159,7 +167,8 @@ export function buildDailyCoachPlan(args: BuildDailyCoachPlanArgs): DailyCoachPl
     {
       id: 'target',
       label: { en: 'Target', zh: '目标' },
-      value: args.profile.target || args.profile.level,
+      value: formatTargetValue(args.profile.target, args.profile.level, false),
+      valueZh: formatTargetValue(args.profile.target, args.profile.level, true),
       tone: 'coach',
     },
     {

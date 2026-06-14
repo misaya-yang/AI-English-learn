@@ -19,7 +19,7 @@ describe('ChatErrorBanner', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('AI 暂时不可用')).toBeInTheDocument();
+    expect(screen.getByText('在线答疑暂时不可用')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '本地练习' })).toHaveAttribute('href', '/dashboard/practice');
 
     fireEvent.click(screen.getByRole('button', { name: /重试/ }));

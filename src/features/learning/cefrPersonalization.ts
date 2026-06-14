@@ -41,7 +41,7 @@ export const CEFR_TODAY_COPY: Record<CefrBand, {
     title: { en: 'Finish today\'s new words', zh: '完成今日新词任务' },
     descriptionPrefix: {
       en: 'Use today to keep vocabulary growth and review pressure balanced.',
-      zh: '今天重点是在新词推进和复习压力之间保持平衡。',
+      zh: '先把今日新词学完，再做复习或练习。',
     },
   },
   advanced: {

@@ -117,7 +117,7 @@ export default function WordOfTheDayPage() {
         saveWord: '保存到我的词库',
         savedWord: '已在我的词库',
         practiceWord: '练这个词',
-        coachWord: '问一下教练',
+        coachWord: '打开答疑',
         startFree: '免费开始',
         anonSave: '注册后可以保存单词、追踪进度，并继续复习。',
         authSave: '已登录：保存后会进入词库，并生成后续复习信号。',
@@ -461,7 +461,7 @@ export default function WordOfTheDayPage() {
               <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <BookOpen className="h-4 w-4" />
               </span>
-              <span className="text-sm font-semibold tracking-tight">VocabDaily</span>
+              <span className="text-sm font-semibold">VocabDaily</span>
             </Link>
             <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
               <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>

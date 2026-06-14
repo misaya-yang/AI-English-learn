@@ -187,7 +187,7 @@ describe('auth pages i18n surfaces', () => {
     renderPage(<AuthCallbackPage />);
 
     expect(screen.getByRole('heading', { name: 'Completing sign in' })).toBeInTheDocument();
-    expect(screen.getByText('Almost there — verifying your session.')).toBeInTheDocument();
+    expect(screen.getByText('Almost there. Verifying your session.')).toBeInTheDocument();
     expect(screen.queryByText('正在验证你的登录信息……')).not.toBeInTheDocument();
   });
 });

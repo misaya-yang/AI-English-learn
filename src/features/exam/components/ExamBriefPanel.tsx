@@ -83,25 +83,25 @@ export function ExamBriefPanel({
           </Button>
         </div>
 
-        <div className="rounded-[22px] border border-border/70 bg-background/40 p-4">
+        <div className="rounded-lg border border-border/70 bg-background/40 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-[11px] tracking-wide text-muted-foreground/80">当前题目</p>
+              <p className="text-[11px] font-medium text-muted-foreground/80">当前题目</p>
               <p className="mt-2 text-base font-semibold">{simItem ? '当前为仿真题模式' : '当前为手动训练模式'}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="rounded-full">
+              <Badge variant="outline" className="rounded-md">
                 <Gauge className="mr-1 h-3 w-3" />
                 {taskType === 'task1' ? 'Task 1' : 'Task 2'}
               </Badge>
-              {simItem?.attribution && <Badge variant="outline" className="rounded-full">{simItem.attribution}</Badge>}
+              {simItem?.attribution && <Badge variant="outline" className="rounded-md">{simItem.attribution}</Badge>}
             </div>
           </div>
           <p className="mt-4 text-sm leading-7 text-foreground/90">{simItem?.prompt || writingPrompt || '先生成题目或选择单元。'}</p>
         </div>
 
         {isSimulationMode && (
-          <div className="rounded-[22px] border border-emerald-400/35 bg-emerald-500/[0.08] p-4">
+          <div className="rounded-lg border border-emerald-400/35 bg-emerald-500/[0.08] p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-medium text-emerald-500">仿真计时进行中</p>
@@ -119,8 +119,8 @@ export function ExamBriefPanel({
         )}
       </div>
 
-      <div className="rounded-[22px] border border-border/70 bg-background/35 p-4">
-        <p className="text-[11px] tracking-wide text-muted-foreground/80">本轮目标</p>
+      <div className="rounded-lg border border-border/70 bg-background/35 p-4">
+        <p className="text-[11px] font-medium text-muted-foreground/80">本轮目标</p>
         <p className="mt-2 text-base font-semibold">{selectedUnit?.title || '先从左侧选择一个单元'}</p>
         <p className="mt-1 text-sm text-muted-foreground">{selectedTrackTitle || '系统会按目标 Band 自动关联轨道。'}</p>
         {unitObjectives.length > 0 && (

@@ -393,7 +393,7 @@ export default function PricingPage() {
 
                     <div className="mt-6">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold tracking-tight">
+                        <span className="text-4xl font-bold">
                           ${price.toFixed(2).replace(/\.00$/, '')}
                         </span>
                         <span className="text-sm text-muted-foreground">{isZh ? '/ 月' : '/ month'}</span>
@@ -425,7 +425,7 @@ export default function PricingPage() {
                           className="flex items-start gap-2.5 text-sm text-muted-foreground"
                         >
                           <span className="mt-0.5 inline-block h-4 w-4 flex-shrink-0 text-center" aria-hidden="true">
-                            –
+                            -
                           </span>
                           <span>{isZh ? feature.zh : feature.en}</span>
                         </li>

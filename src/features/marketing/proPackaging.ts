@@ -22,7 +22,7 @@ export const FREE_PLAN_FEATURES: LocalizedLine[] = [
 ];
 
 export const FREE_PLAN_LIMITATIONS: LocalizedLine[] = [
-  { en: 'Unlimited coach chat', zh: '不限量教练对话' },
+  { en: 'Unlimited English help', zh: '不限量英语答疑' },
   { en: 'IELTS writing and speaking scoring', zh: 'IELTS 写作与口语评分' },
   { en: 'Advanced analytics and mistake patterns', zh: '进阶分析与错题记录' },
   { en: 'Custom wordbook imports', zh: '自定义词书导入' },
@@ -30,7 +30,7 @@ export const FREE_PLAN_LIMITATIONS: LocalizedLine[] = [
 ];
 
 export const PRO_PLAN_FEATURES: LocalizedLine[] = [
-  { en: 'Unlimited coach chat and mistake follow-ups', zh: '不限量教练对话与错题跟进' },
+  { en: 'Unlimited English help and mistake follow-ups', zh: '不限量英语答疑与错题跟进' },
   { en: 'IELTS Writing and Speaking scoring rubrics', zh: 'IELTS 写作与口语评分量表' },
   { en: 'Advanced analytics: review debt, skill trends, mistake patterns', zh: '进阶分析：复习债、技能趋势、错题记录' },
   { en: 'Custom wordbook imports plus Anki / CSV export', zh: '自定义词书导入 + Anki / CSV 导出' },
@@ -53,8 +53,8 @@ export const PRO_GATE_REASONS: Record<string, LocalizedLine> = {
     zh: 'Pro 提供更多生成材料，让进阶学习者围绕自定义主题练习。',
   },
   aiChat: {
-    en: 'Pro gives you more coach chat, mistake follow-ups, and weekly planning.',
-    zh: 'Pro 提供更多教练对话、错题跟进和周计划。',
+    en: 'Pro gives you more English help, mistake follow-ups, and weekly planning.',
+    zh: 'Pro 提供更多英语答疑、错题跟进和周计划。',
   },
   aiExamFeedback: {
     en: 'Pro focuses exam prep on scored IELTS feedback, diagnostics, and targeted remediation.',

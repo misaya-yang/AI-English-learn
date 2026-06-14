@@ -294,7 +294,7 @@ export default function ReadingPage() {
       toast.success(isZh ? '文章已准备好' : 'Passage ready!');
       startPassage({ ...randomSeed, id: `gen-${Date.now()}`, title: randomSeed.title + ' (New)' });
     } catch {
-      toast.error(isZh ? '生成失败，已切换到内置文章' : 'Generation failed — using a built-in passage');
+      toast.error(isZh ? '生成失败，已切换到内置文章' : 'Generation failed. Using a built-in passage');
       startPassage(SEED_PASSAGES[0]);
     } finally {
       setIsGenerating(false);
@@ -346,8 +346,8 @@ export default function ReadingPage() {
     setPhase('review');
 
     if (pct === 1)       toast.success(isZh ? `满分！+${xp} XP` : `Perfect score! +${xp} XP`);
-    else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确，+${xp} XP` : `Great work — ${correct}/${total} correct! +${xp} XP`);
-    else                 toast.info(isZh ? `${correct}/${total} 正确，建议复盘解析` : `${correct}/${total} correct — review the answers below`);
+    else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确，+${xp} XP` : `Great work: ${correct}/${total} correct. +${xp} XP`);
+    else                 toast.info(isZh ? `${correct}/${total} 正确，建议复盘解析` : `${correct}/${total} correct. Review the answers below.`);
 
     if (user?.id) {
       void recordLearningEvent({
@@ -394,7 +394,7 @@ export default function ReadingPage() {
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:items-stretch">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-semibold tracking-wider text-primary">{isZh ? '阅读专项' : 'Reading module'}</p>
+                <p className="text-xs font-medium text-primary">{isZh ? '阅读专项' : 'Reading module'}</p>
                 <h1 className="mt-2 text-2xl font-semibold text-foreground">{isZh ? 'IELTS 学术阅读' : 'IELTS Academic Reading'}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {isZh
@@ -436,7 +436,7 @@ export default function ReadingPage() {
             </div>
 
             <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
-              <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '本轮训练结构' : 'Session structure'}
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2">
@@ -519,7 +519,7 @@ export default function ReadingPage() {
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <p className="text-xs tracking-wider text-muted-foreground">{current.topic}</p>
+            <p className="text-xs font-medium text-muted-foreground">{current.topic}</p>
             <h1 className="text-xl font-semibold text-foreground">{current.title}</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -542,7 +542,7 @@ export default function ReadingPage() {
           <div className="rounded-xl border border-border bg-card p-6 max-h-[72vh] overflow-y-auto shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground">文章</span>
+              <span className="text-xs font-medium text-muted-foreground">文章</span>
             </div>
             <div className="prose prose-sm max-w-none leading-7">
               {current.passage.split('\n\n').map((para, i) => (
@@ -724,7 +724,7 @@ export default function ReadingPage() {
 
               {q.location && (
                 <div className="ml-6 rounded-lg border border-border bg-muted px-3 py-2">
-                  <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-0.5">{isZh ? '原文证据' : 'Evidence in passage'}</p>
+                  <p className="mb-0.5 text-xs font-medium text-muted-foreground">{isZh ? '原文证据' : 'Evidence in passage'}</p>
                   <p className="text-xs italic text-foreground">"{q.location}"</p>
                 </div>
               )}

@@ -193,7 +193,7 @@ export default function ProfilePage() {
           variant={isEditing ? 'default' : 'outline'}
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
           disabled={isSaving}
-          className={isEditing ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+          className={isEditing ? 'bg-primary hover:bg-primary/90' : ''}
         >
           {isSaving ? (
             <>
@@ -220,7 +220,7 @@ export default function ProfilePage() {
             <div className="relative">
               <Avatar className="w-24 h-24">
 	                {avatarUrl && <AvatarImage src={avatarUrl} alt={isZh ? '头像' : 'Avatar'} className="object-cover" />}
-                <AvatarFallback className="text-2xl bg-emerald-100 text-emerald-600">
+                <AvatarFallback className="bg-primary/10 text-2xl text-primary">
                   {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -266,7 +266,7 @@ export default function ProfilePage() {
 	                  <p className="text-muted-foreground">{user?.email}</p>
 	                  <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
 	                    <Badge variant="secondary">{cefrLevel}</Badge>
-	                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+	                    <Badge variant="secondary" className="bg-primary/10 text-primary">
 	                      {isZh ? `等级 ${currentLevel}` : `Level ${currentLevel}`}
 	                    </Badge>
 	                  </div>
@@ -339,8 +339,8 @@ export default function ProfilePage() {
               </Select>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <span className="font-bold text-emerald-600">{cefrLevel}</span>
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10">
+                  <span className="font-bold text-primary">{cefrLevel}</span>
                 </div>
                 <div>
 	                  <p className="font-medium">{isZh ? '当前 CEFR 等级' : 'CEFR level'}</p>
@@ -405,7 +405,7 @@ export default function ProfilePage() {
                     className={cn(
 	                      'rounded-md px-3 py-1 text-sm transition-colors',
                       formData.preferredTopics.includes(topic)
-                        ? 'bg-emerald-600 text-white'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-muted hover:bg-muted/80'
                     )}
                   >
@@ -488,7 +488,7 @@ export default function ProfilePage() {
 	              <p className="text-sm text-muted-foreground">{isZh ? '最长连续' : 'Longest streak'}</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <BookOpen className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
+              <BookOpen className="mx-auto mb-2 h-6 w-6 text-primary" />
               <p className="text-2xl font-bold">{stats.totalWords}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '累计词汇' : 'Total words'}</p>
             </div>
@@ -516,7 +516,7 @@ export default function ProfilePage() {
                 <p className="text-3xl font-bold">{streakFreezes}</p>
               </div>
               {dailyMultiplier > 1 && (
-                <Badge variant="secondary" className="text-emerald-600 bg-emerald-500/10">
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
                   {dailyMultiplier}x XP
                 </Badge>
               )}
@@ -579,7 +579,7 @@ export default function ProfilePage() {
           <CardTitle className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-amber-500" />
-	              {isZh ? '今日 AI 额度' : 'Today AI quota'}
+	              {isZh ? '今日服务额度' : 'Today service quota'}
             </div>
             <span className={cn(
               'text-sm rounded-full px-3 py-1 font-semibold',
@@ -595,11 +595,11 @@ export default function ProfilePage() {
           <div className="space-y-3">
             {allStatuses.map((status) => {
               const featureLabels: Record<QuotaFeature, string> = {
-                aiWritingGrade:   'AI 写作批改',
-                aiReadingGen:     'AI 阅读生成',
-                aiChat:           'AI 教练对话',
+                aiWritingGrade:   '写作反馈',
+                aiReadingGen:     '阅读生成',
+                aiChat:           '答疑对话',
                 aiExamFeedback:   '考试反馈',
-                aiListeningGen:   'AI 听力生成',
+                aiListeningGen:   '听力生成',
               };
               const pct = status.limit > 0 ? Math.min(100, Math.round((status.used / status.limit) * 100)) : 0;
               return (
@@ -617,7 +617,7 @@ export default function ProfilePage() {
                     <div
                       className={cn(
                         'h-full rounded-full transition-all duration-500',
-                        status.isExhausted ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500',
+                        status.isExhausted ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-primary',
                       )}
                       style={{ width: `${pct}%` }}
                     />

@@ -21,7 +21,7 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
     variant: 'recovery',
     label: { en: 'Recovery mode', zh: '回稳模式' },
     subtitle: {
-      en: 'Backlog is high — clear due reviews before adding new words.',
+      en: 'Backlog is high. Clear due reviews before adding new words.',
       zh: '复习积压偏高，今天先把旧账压下去，再决定要不要加新词。',
     },
   },
@@ -37,7 +37,7 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
     variant: 'review',
     label: { en: 'Due backlog', zh: '到期积压' },
     subtitle: {
-      en: 'Reviews are stacking up — clear them first to protect retention.',
+      en: 'Reviews are stacking up. Clear them first to protect retention.',
       zh: '到期复习正在堆积，先清掉再继续会更稳。',
     },
   },
@@ -46,14 +46,14 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
     label: { en: 'Today\'s new words', zh: '今日新词' },
     subtitle: {
       en: 'Finish the new-word block while you have momentum.',
-      zh: '趁状态还在，把今日新词学完再休息。',
+      zh: '今日新词还没完成。',
     },
   },
   weakness_drill: {
     variant: 'weakness',
     label: { en: 'Weak-spot drill', zh: '薄弱点练习' },
     subtitle: {
-      en: 'Recent errors are clustering — drill them while the signal is fresh.',
+      en: 'Recent errors are clustering. Drill them while the signal is fresh.',
       zh: '最近错题集中在某一类，趁信号清晰时立刻针对练。',
     },
   },
@@ -70,10 +70,10 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
 const FALLBACK: MissionWhyChipData = {
   reasonId: 'default',
   variant: 'default',
-  label: { en: 'Coach pick', zh: '教练推荐' },
+  label: { en: 'Suggested step', zh: '建议步骤' },
   subtitle: {
-    en: 'Coach picked this as the most useful next step.',
-    zh: '教练在当前状态下挑出来的最值得做的一步。',
+    en: 'This is the most useful next step for the current state.',
+    zh: '这是当前状态下最值得先做的一步。',
   },
 };
 

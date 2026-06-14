@@ -65,7 +65,7 @@ export function PageSkeleton() {
         <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
           <BookOpen className="h-5 w-5" />
         </div>
-        <p className="text-sm font-medium tracking-tight text-foreground">VocabDaily</p>
+        <p className="text-sm font-medium text-foreground">VocabDaily</p>
         <p className="text-xs text-muted-foreground">{isZh ? '正在打开页面' : 'Opening page'}</p>
         <div className="h-0.5 w-32 overflow-hidden rounded-full bg-muted">
           <div className="h-full w-1/2 rounded-full bg-primary/60 animate-shimmer" />

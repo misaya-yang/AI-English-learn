@@ -31,7 +31,7 @@ export function ChatWelcome({
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-sm">
         <Bot className="h-6 w-6" />
       </div>
-      <h2 className="mb-2 text-center text-xl font-semibold tracking-tight sm:text-2xl">{title}</h2>
+      <h2 className="mb-2 text-center text-xl font-semibold sm:text-2xl">{title}</h2>
       <p className="mb-5 max-w-md text-center text-sm leading-6 text-muted-foreground">{description}</p>
 
       {recommendations && recommendations.length > 0 && (

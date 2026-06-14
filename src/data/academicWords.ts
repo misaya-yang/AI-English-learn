@@ -203,7 +203,7 @@ export const academicWordsDatabase: WordData[] = [
     antonyms: ['impediment', 'obstacle', 'deterrent'],
     collocations: ['act as a catalyst', 'catalyst for change', 'serve as a catalyst'],
     level: 'C1', topic: 'STEM',
-    etymology: 'Greek katalysis — to dissolve',
+    etymology: 'Greek katalysis: to dissolve',
   },
   {
     id: 'w116', word: 'coherent', phonetic: '/kəʊˈhɪərənt/', partOfSpeech: 'adj.',
@@ -726,7 +726,7 @@ export const academicWordsDatabase: WordData[] = [
     antonyms: ['worsen', 'intensify', 'aggravate'],
     collocations: ['mitigate risk', 'mitigate damage', 'steps to mitigate'],
     level: 'C1', topic: 'academic',
-    etymology: 'Latin mitigare — to soften',
+    etymology: 'Latin mitigare: to soften',
   },
   {
     id: 'w156', word: 'nuance', phonetic: '/ˈnjuːɑːns/', partOfSpeech: 'n.',
@@ -740,7 +740,7 @@ export const academicWordsDatabase: WordData[] = [
     antonyms: ['crudeness', 'bluntness'],
     collocations: ['subtle nuance', 'miss the nuance', 'nuance of meaning'],
     level: 'C1', topic: 'academic',
-    etymology: 'French nuance — a shade of color',
+    etymology: 'French nuance: a shade of color',
   },
   {
     id: 'w157', word: 'objective', phonetic: '/əbˈdʒektɪv/', partOfSpeech: 'adj./n.',
@@ -767,7 +767,7 @@ export const academicWordsDatabase: WordData[] = [
     antonyms: [],
     collocations: ['paradigm shift', 'dominant paradigm', 'new paradigm'],
     level: 'C1', topic: 'academic',
-    etymology: 'Greek paradeigma — pattern, example',
+    etymology: 'Greek paradeigma: pattern, example',
   },
   {
     id: 'w159', word: 'perceive', phonetic: '/pəˈsiːv/', partOfSpeech: 'v.',
@@ -794,7 +794,7 @@ export const academicWordsDatabase: WordData[] = [
     antonyms: [],
     collocations: ['social phenomenon', 'natural phenomenon', 'rare phenomenon'],
     level: 'B2', topic: 'STEM',
-    etymology: 'Greek phainomenon — appearing',
+    etymology: 'Greek phainomenon: appearing',
   },
   {
     id: 'w161', word: 'pragmatic', phonetic: '/præɡˈmætɪk/', partOfSpeech: 'adj.',
@@ -1159,7 +1159,7 @@ export const academicWordsDatabase: WordData[] = [
     antonyms: ['rare', 'scarce', 'absent'],
     collocations: ['ubiquitous presence', 'seemingly ubiquitous', 'become ubiquitous'],
     level: 'C1', topic: 'academic',
-    etymology: 'Latin ubique — everywhere',
+    etymology: 'Latin ubique: everywhere',
   },
   {
     id: 'w189', word: 'coherence', phonetic: '/kəʊˈhɪərəns/', partOfSpeech: 'n.',

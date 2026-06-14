@@ -92,7 +92,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
             {word.level}
           </Badge>
           {isLearned ? (
-            <Badge className="rounded-md border border-green-200 bg-green-50 px-3 py-1 text-green-600 hover:bg-green-50">
+            <Badge className="rounded-md border border-primary/20 bg-primary/10 px-3 py-1 text-primary hover:bg-primary/10">
               <Check className="mr-1 h-3 w-3" />
               已学会
             </Badge>
@@ -119,7 +119,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
       <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
         <p className="text-xs text-muted-foreground">当前单词</p>
-        <h2 className="text-[3.1rem] font-semibold leading-none tracking-tight text-foreground sm:text-[4.6rem] lg:text-[5rem]">
+        <h2 className="text-[3.1rem] font-semibold leading-none text-foreground sm:text-[4.6rem] lg:text-[5rem]">
           {word.word}
         </h2>
         <div className="space-y-2">
@@ -172,7 +172,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-3xl font-semibold tracking-tight text-foreground">{word.word}</h3>
+            <h3 className="text-3xl font-semibold text-foreground">{word.word}</h3>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -695,8 +695,8 @@ export default function TodayPage() {
           description={
             activeBook
               ? (isZh
-                ? `当前词书是《${activeBook.name}》。先生成今天的新词，再看是否需要复习。`
-                : `Current word book: ${activeBook.name}. Generate today's words, then check reviews.`)
+                ? '先生成今天的新词，再看是否需要复习。'
+                : 'Generate today\'s words, then check reviews.')
               : (isZh
                 ? '你还没有激活词书。先选词书或导入 deck。'
                 : 'No active word book yet. Pick a word book or import a deck.')
@@ -724,7 +724,7 @@ export default function TodayPage() {
               <Button size="lg" variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
                 <Link to="/dashboard/chat">
                   <MessageCircleMore className="mr-2 h-5 w-5" />
-                  {isZh ? '问一下教练' : 'Ask the coach'}
+                  {isZh ? '打开答疑' : 'Open help'}
                 </Link>
               </Button>
             </>
@@ -856,7 +856,7 @@ export default function TodayPage() {
           <div id="today-vocabulary-workspace" data-testid="today-vocabulary-workspace">
             <LearningWorkspaceSurface
               eyebrow={isZh ? '今日单词' : 'Today words'}
-              title={currentWord ? `${currentWord.word} · 当前主练单词` : 'Vocabulary workspace'}
+              title={currentWord ? `${currentWord.word} · 当前单词` : 'Vocabulary workspace'}
             >
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-4">
@@ -869,7 +869,7 @@ export default function TodayPage() {
                       sublabel={`${learnedWords.size} / ${words.length}`}
                     />
                     <div className="space-y-1">
-                      <p className="text-3xl font-semibold tracking-tight text-[hsl(var(--accent-practice))]">
+                      <p className="text-3xl font-semibold text-[hsl(var(--accent-practice))]">
                         {learnedWords.size}
                         <span className="mx-2 text-muted-foreground">/</span>
                         <span className="text-foreground">{words.length}</span>

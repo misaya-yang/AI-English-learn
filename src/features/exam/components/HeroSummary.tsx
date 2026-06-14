@@ -69,17 +69,17 @@ export function HeroSummary({
             {plan === 'pro' ? <Crown className="mr-1 h-3.5 w-3.5" /> : <BookOpen className="mr-1 h-3.5 w-3.5" />}
             Plan {plan.toUpperCase()}
           </Badge>
-          <Badge variant="outline" className="rounded-full">
+          <Badge variant="outline" className="rounded-md">
             <Flame className="mr-1 h-3.5 w-3.5" /> 连续学习 {streakDays} 天
           </Badge>
-          <Badge variant="outline" className="rounded-full">
+          <Badge variant="outline" className="rounded-md">
             <TrendingUp className="mr-1 h-3.5 w-3.5" /> 本周模拟 {thisWeekRuns} 次
           </Badge>
         </div>
 
         {/* Page title */}
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">考试冲分 · IELTS Exam Prep</h1>
+          <h1 className="text-xl font-semibold">考试冲分 · IELTS Exam Prep</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             先确定这次练什么，再写作，最后按反馈修改。
           </p>

@@ -61,7 +61,7 @@ export function MissionWhyBadge({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        'flex flex-col gap-2 rounded-2xl border px-3 py-2 sm:flex-row sm:items-center sm:gap-3',
+        'flex flex-col gap-2 rounded-lg border px-3 py-2 sm:flex-row sm:items-center sm:gap-3',
         VARIANT_TONE[data.variant],
         className,
       )}
@@ -69,11 +69,11 @@ export function MissionWhyBadge({
       data-variant={data.variant}
     >
       <div className="flex items-center gap-2">
-        <span className="rounded-full bg-current/15 p-1.5 text-current">
+        <span className="rounded-md bg-current/15 p-1.5 text-current">
           <Icon className="h-3.5 w-3.5" />
         </span>
         <div className="flex flex-col">
-          <span className="text-[10px] font-semibold tracking-wide opacity-70">
+          <span className="text-[10px] font-medium opacity-70">
             {whyHeading}
           </span>
           <span className="text-sm font-semibold leading-tight">{label}</span>

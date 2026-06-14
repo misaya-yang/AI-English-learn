@@ -33,7 +33,7 @@ const labelBySurface: Record<LearningPathLessonTarget['surface'], { en: string; 
   today: { en: 'Today vocabulary set', zh: 'Today 词汇任务' },
   grammar: { en: 'Grammar drill', zh: '语法练习' },
   practice: { en: 'Practice drill', zh: '专项练习' },
-  chat: { en: 'Coach roleplay', zh: 'Coach 角色练习' },
+  chat: { en: 'Guided roleplay', zh: '引导式角色练习' },
   review: { en: 'FSRS review round', zh: 'FSRS 复习回合' },
 };
 

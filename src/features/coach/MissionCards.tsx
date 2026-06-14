@@ -9,13 +9,14 @@ import type { MissionCard, MissionAccent } from './missionCardSelector';
 interface MissionCardsProps {
   selected: MissionCard[];
   onLaunch: (prompt: string) => void;
+  language?: string;
   className?: string;
 }
 
 const ACCENT_STYLES: Record<MissionAccent, { bg: string; ring: string; icon: typeof Sparkles }> = {
   practice: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/40',
-    ring: 'ring-emerald-200/60 dark:ring-emerald-800/60',
+    bg: 'bg-primary/5',
+    ring: 'ring-primary/20',
     icon: Sparkles,
   },
   coach: {
@@ -29,14 +30,15 @@ const ACCENT_STYLES: Record<MissionAccent, { bg: string; ring: string; icon: typ
     icon: BookOpen,
   },
   memory: {
-    bg: 'bg-violet-50 dark:bg-violet-950/40',
-    ring: 'ring-violet-200/60 dark:ring-violet-800/60',
+    bg: 'bg-primary/5',
+    ring: 'ring-primary/20',
     icon: Brain,
   },
 };
 
-export function MissionCards({ selected, onLaunch, className }: MissionCardsProps) {
+export function MissionCards({ selected, onLaunch, language = 'en', className }: MissionCardsProps) {
   if (!selected || selected.length === 0) return null;
+  const isZh = language.startsWith('zh');
 
   return (
     <div
@@ -49,11 +51,14 @@ export function MissionCards({ selected, onLaunch, className }: MissionCardsProp
       {selected.map((card) => {
         const style = ACCENT_STYLES[card.accent] ?? ACCENT_STYLES.coach;
         const Icon = style.icon;
+        const title = isZh ? (card.titleZh || card.title) : card.title;
+        const whyRecommended = isZh ? (card.whyRecommendedZh || card.whyRecommended) : card.whyRecommended;
+        const prompt = isZh ? (card.promptZh || card.prompt) : card.prompt;
         return (
           <button
             key={card.id}
             type="button"
-            onClick={() => onLaunch(card.prompt)}
+            onClick={() => onLaunch(prompt)}
             className={cn(
               'group flex flex-col items-start gap-2 rounded-xl p-4 text-left ring-1 ring-inset transition',
               'hover:scale-[1.01] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
@@ -65,9 +70,9 @@ export function MissionCards({ selected, onLaunch, className }: MissionCardsProp
           >
             <span className="inline-flex items-center gap-2 text-sm font-semibold">
               <Icon className="h-4 w-4" aria-hidden />
-              {card.title}
+              {title}
             </span>
-            <span className="text-xs text-muted-foreground">{card.whyRecommended}</span>
+            <span className="text-xs text-muted-foreground">{whyRecommended}</span>
           </button>
         );
       })}

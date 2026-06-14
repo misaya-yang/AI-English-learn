@@ -602,8 +602,8 @@ export default function ListeningPage() {
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-semibold tracking-wider text-primary">{isZh ? '听力专项' : 'Listening module'}</p>
-                <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                <p className="text-xs font-medium text-primary">{isZh ? '听力专项' : 'Listening module'}</p>
+                <h1 className="mt-2 text-2xl font-bold text-foreground">
                   {isZh ? '听力练习' : 'Listening Practice'}
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -632,14 +632,14 @@ export default function ListeningPage() {
             <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {isZh ? '音频训练面板' : 'Audio training panel'}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {featuredListening.questions.length} {isZh ? '题 · 约' : 'questions ·'} {featuredListening.durationLabel}
                   </p>
                 </div>
-                <div className="rounded-full bg-primary/10 p-3 text-primary">
+                <div className="rounded-md border border-primary/20 bg-primary/10 p-3 text-primary">
                   <Headphones className="h-5 w-5" />
                 </div>
               </div>
@@ -698,8 +698,8 @@ export default function ListeningPage() {
                     <BookOpen className="h-3 w-3" />
                     {passage.questions.length} {isZh ? '题' : 'questions'}
                   </div>
-                  <div className="rounded-full bg-blue-500/10 p-1.5">
-                    <ChevronRight className="h-3.5 w-3.5 text-blue-400" />
+                  <div className="rounded-md border border-border bg-muted p-1.5">
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
                 </div>
               </div>
@@ -708,8 +708,8 @@ export default function ListeningPage() {
         </div>
 
         {!tts.isSupported && (
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3">
-            <p className="text-sm text-amber-400 flex items-center gap-2">
+          <div className="rounded-lg border border-warning/25 bg-warning/10 px-4 py-3">
+            <p className="flex items-center gap-2 text-sm text-warning-foreground">
               <VolumeX className="h-4 w-4 flex-shrink-0" />
               {isZh ? '当前浏览器不支持语音合成，你仍然可以阅读文字稿练习。' : "Your browser doesn't support speech synthesis. You can still read the transcript."}
             </p>
@@ -743,10 +743,10 @@ export default function ListeningPage() {
         </div>
 
         {/* Audio player */}
-        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.05] p-6">
+        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Headphones className="h-5 w-5 text-blue-400" />
+              <Headphones className="h-5 w-5 text-primary" />
               <p className="text-sm font-semibold text-foreground">
                 {tts.isSupported
                   ? (isZh ? '仔细听完再作答' : 'Listen carefully before answering')
@@ -759,7 +759,7 @@ export default function ListeningPage() {
           {/* Progress bar */}
           <div className="mb-4 h-1.5 w-full rounded-full bg-muted overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-blue-500"
+              className="h-full rounded-full bg-primary"
               initial={{ width: 0 }}
               animate={{ width: `${tts.progress}%` }}
               transition={{ duration: 0.2 }}
@@ -967,7 +967,7 @@ export default function ListeningPage() {
 
           <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
             <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-              <p className="text-xs font-semibold tracking-wider text-primary">
+              <p className="text-xs font-medium text-primary">
                 {isZh ? '听力任务栏' : 'Listening brief'}
               </p>
               <h3 className="mt-2 text-base font-semibold text-foreground">{selected.title}</h3>

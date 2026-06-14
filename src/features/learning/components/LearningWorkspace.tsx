@@ -105,7 +105,7 @@ export function LearningHeroPanel({
             </Badge>
           ) : null}
           <div className="space-y-3">
-            <h1 className="max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:text-5xl">
               {title}
             </h1>
             {description ? <p className="line-clamp-3 max-w-3xl text-base leading-7 text-muted-foreground sm:line-clamp-none sm:text-lg">{description}</p> : null}
@@ -119,12 +119,12 @@ export function LearningHeroPanel({
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="text-[11px] text-muted-foreground">{progressLabel || '进度'}</p>
-                  <p className="mt-2 text-4xl font-semibold tracking-tight text-primary">
+                  <p className="mt-2 text-4xl font-semibold text-primary">
                     {progressValueLabel || `${progress}%`}
                   </p>
                 </div>
                 <p className="hidden max-w-[8rem] text-right text-sm leading-6 text-muted-foreground lg:block">
-                  {progress >= 100 ? '任务完成' : '继续即可'}
+                  {progress >= 100 ? '任务完成' : '继续'}
                 </p>
               </div>
               <Progress
@@ -167,7 +167,7 @@ export function LearningWorkspaceSurface({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[2rem]">{title}</h2>
+            <h2 className="text-2xl font-semibold text-foreground sm:text-[2rem]">{title}</h2>
             {description ? <p className="max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">{description}</p> : null}
           </div>
           {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
@@ -184,7 +184,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
       {items.map((item) => (
         <div key={`${item.label}-${String(item.value)}`} className="premium-metric-card space-y-1.5 rounded-md border border-border/70 bg-[hsl(var(--surface-raised))] px-3 py-2.5">
           <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
-          <div className={cn('text-2xl font-semibold tracking-tight', metricToneClass[item.accent || 'default'])}>
+          <div className={cn('text-2xl font-semibold', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
           {item.hint ? <p className="hidden text-xs leading-5 text-muted-foreground xl:block">{item.hint}</p> : null}
@@ -217,7 +217,7 @@ export function LearningEmptyState({
         <Icon className="h-8 w-8" />
       </div>
       {eyebrow ? <p className="mt-5 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{title}</h2>
+      <h2 className="mt-3 text-3xl font-semibold text-foreground">{title}</h2>
       <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-muted-foreground">{description}</p>
       {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mx-auto mt-8 max-w-3xl text-left" /> : null}
       {actions ? <LearningActionCluster className="mt-8 justify-center">{actions}</LearningActionCluster> : null}
@@ -246,7 +246,7 @@ export function LearningCompletionState({
           <Icon className="h-9 w-9" />
         </div>
         {eyebrow ? <p className="mt-6 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{title}</h2>
+        <h2 className="mt-3 text-3xl font-semibold text-foreground">{title}</h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-muted-foreground">{description}</p>
       </div>
       {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mt-8" /> : null}

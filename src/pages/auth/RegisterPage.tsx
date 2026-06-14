@@ -111,7 +111,7 @@ export default function RegisterPage() {
 
   const passwordChecks: PasswordCheck[] = [
     { label: 'At least 8 characters', labelZh: '至少 8 个字符', passes: formData.password.length >= 8 },
-    { label: 'One uppercase letter', labelZh: '包含大写字母', passes: /[A-Z]/.test(formData.password) },
+    { label: 'One letter', labelZh: '包含大写字母', passes: /[A-Z]/.test(formData.password) },
     { label: 'One lowercase letter', labelZh: '包含小写字母', passes: /[a-z]/.test(formData.password) },
     { label: 'One number', labelZh: '包含数字', passes: /[0-9]/.test(formData.password) },
     { label: 'One special character', labelZh: '包含特殊字符', passes: specialCharacterRegex.test(formData.password) },
