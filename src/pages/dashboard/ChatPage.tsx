@@ -457,6 +457,10 @@ export default function ChatPage() {
   useEffect(() => {
     const viewport = getMessagesViewport();
     if (!viewport) return;
+    if (messages.length === 0 && !streamingContent) {
+      viewport.scrollTop = 0;
+      return;
+    }
     if (!shouldAutoScrollRef.current) return;
 
     const raf = requestAnimationFrame(() => {
@@ -470,12 +474,19 @@ export default function ChatPage() {
   useEffect(() => {
     const viewport = getMessagesViewport();
     if (!viewport) return;
+    if (messages.length === 0) {
+      viewport.scrollTop = 0;
+      return;
+    }
     shouldAutoScrollRef.current = true;
     viewport.scrollTop = viewport.scrollHeight;
-  }, [currentSessionId, getMessagesViewport]);
+  }, [currentSessionId, getMessagesViewport, messages.length]);
 
   // Focus input on mount
   useEffect(() => {
+    if (typeof window !== 'undefined' && !window.matchMedia('(min-width: 768px)').matches) {
+      return;
+    }
     inputRef.current?.focus();
   }, []);
 
@@ -1320,11 +1331,10 @@ export default function ChatPage() {
               <Menu className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="font-semibold">
+              <h1 className="text-sm font-semibold">
                 {language.startsWith('zh') ? '英语答疑' : 'English help'}
               </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 {language.startsWith('zh') ? '诊断 / 训练 / 复盘' : 'Diagnose / Drill / Review'} · {messages.length > 0 ? `${messages.length} ${t('common.messages')}` : t('chat.ready')}
                 {quizSequence && (
                   <>
@@ -1378,20 +1388,20 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <section className="border-b border-border bg-card/60 px-4 py-2 md:px-6 md:py-3 lg:px-8">
+        <section className="border-b border-border bg-[hsl(var(--surface-sunken))]/55 px-4 py-2.5 md:px-6 lg:px-8">
           <div className={cn(contentWidthClass, 'mx-auto grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center')}>
-            <div className="flex min-w-0 items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
-                <MessageSquare className="h-5 w-5" />
+            <div className="flex min-w-0 items-start gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
+                <MessageSquare className="h-4 w-4" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-muted-foreground">
-                  {isZh ? '练习状态' : 'Practice status'}
+                  {isZh ? '当前模式' : 'Current mode'}
                 </p>
-                <h2 className="mt-1 text-sm font-semibold text-foreground sm:text-base">
+                <h2 className="mt-0.5 text-sm font-semibold text-foreground">
                   {isZh
-                    ? `${currentCoachCopy.label.zh}：先处理 ${coachFocusLabel}`
-                    : `${currentCoachCopy.label.en}: focus on ${coachFocusLabel}`}
+                    ? `${currentCoachCopy.label.zh}: ${coachFocusLabel}`
+                    : `${currentCoachCopy.label.en}: ${coachFocusLabel}`}
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {isZh

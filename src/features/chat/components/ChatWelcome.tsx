@@ -1,4 +1,4 @@
-import { Bot } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import type { QuickPromptOption } from '@/features/chat/types';
 import {
   buildMissionRecommendations,
@@ -27,15 +27,19 @@ export function ChatWelcome({
   const isZh = lang.startsWith('zh');
 
   return (
-    <div className="premium-panel-soft flex flex-col items-center justify-center rounded-lg border border-border bg-card px-4 py-5 sm:py-7">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-sm">
-        <Bot className="h-6 w-6" />
+    <div className="premium-panel-soft rounded-md border border-border bg-card p-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+          <MessageSquare className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold sm:text-lg">{title}</h2>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+        </div>
       </div>
-      <h2 className="mb-2 text-center text-xl font-semibold sm:text-2xl">{title}</h2>
-      <p className="mb-5 max-w-md text-center text-sm leading-6 text-muted-foreground">{description}</p>
 
       {recommendations && recommendations.length > 0 && (
-        <div className="mb-5 w-full">
+        <div className="mt-4 w-full">
           <MissionRecommendationCards
             cards={recommendations}
             language={lang}
@@ -44,14 +48,14 @@ export function ChatWelcome({
         </div>
       )}
 
-      <div className="grid w-full max-w-lg grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="mt-4 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
         {prompts.map((prompt) => (
           <button
             key={prompt.text}
             onClick={() => onPromptClick(prompt.text)}
-            className="flex items-start gap-3 rounded-lg border border-border bg-background/70 p-3 text-left transition-all hover:border-primary/40 hover:bg-primary/5"
+            className="flex items-start gap-3 rounded-md border border-border bg-background/70 p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
           >
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
               <prompt.icon className="h-4 w-4" />
             </div>
             <div>

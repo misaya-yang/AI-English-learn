@@ -17,7 +17,7 @@ import {
   learningFrameClassName,
 } from '@/features/learning/components/LearningWorkspace';
 import {
-  Sparkles,
+  ClipboardList,
   Volume2,
   Check,
   Brain,
@@ -83,7 +83,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section
       className={cn(
         learningFrameClassName,
-        'premium-word-card flex h-full min-h-[430px] cursor-pointer flex-col justify-between p-5 sm:min-h-[520px] sm:p-8',
+        'premium-word-card flex h-full min-h-[360px] cursor-pointer flex-col justify-between p-5 sm:min-h-[440px] sm:p-6',
       )}
     >
       <div className="flex items-center justify-between gap-3">
@@ -119,7 +119,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
       <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
         <p className="text-xs text-muted-foreground">当前单词</p>
-        <h2 className="text-[3.1rem] font-semibold leading-none text-foreground sm:text-[4.6rem] lg:text-[5rem]">
+        <h2 className="text-[2.8rem] font-semibold leading-none text-foreground sm:text-[3.8rem] lg:text-[4.2rem]">
           {word.word}
         </h2>
         <div className="space-y-2">
@@ -131,7 +131,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       <div className="space-y-4">
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
           <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent-practice))]" />
-          点击翻面，查看释义、例句和搭配
+          释义 / 例句 / 搭配
         </div>
         <LearningActionCluster className="justify-center">
           <Button
@@ -166,7 +166,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section
       className={cn(
         learningFrameClassName,
-        'premium-word-card-back h-full min-h-[430px] p-5 sm:min-h-[520px] sm:p-8',
+        'premium-word-card-back h-full min-h-[360px] p-5 sm:min-h-[440px] sm:p-6',
       )}
     >
       <div className="flex h-full flex-col">
@@ -196,17 +196,17 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
         <ScrollArea className="mt-6 flex-1 pr-2">
           <div className="space-y-4">
-            <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+            <section className="premium-panel-soft rounded-md border border-border bg-card p-4">
               <p className="mt-1 text-base leading-7 text-foreground">{word.definition}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
             </section>
 
             {word.examples.length > 0 ? (
-              <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+              <section className="premium-panel-soft rounded-md border border-border bg-card p-4">
                 <p className="text-xs text-muted-foreground">例句</p>
                 <div className="mt-3 space-y-3">
                   {word.examples.slice(0, 2).map((example, index) => (
-                    <div key={`${example.en}-${index}`} className="rounded-lg border border-border bg-muted p-4">
+                    <div key={`${example.en}-${index}`} className="rounded-md border border-border bg-muted p-4">
                       <p className="text-sm leading-7 text-foreground">{example.en}</p>
                       <p className="mt-2 text-sm leading-7 text-muted-foreground">{example.zh}</p>
                     </div>
@@ -217,7 +217,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
             <div className="grid gap-4 lg:grid-cols-2">
               {word.collocations.length > 0 ? (
-                <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+                <section className="premium-panel-soft rounded-md border border-border bg-card p-4">
                   <p className="text-xs text-muted-foreground">搭配</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {word.collocations.slice(0, 8).map((collocation) => (
@@ -233,7 +233,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
               ) : null}
 
               {(word.memoryTip || word.etymology) ? (
-                <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+                <section className="premium-panel-soft rounded-md border border-border bg-card p-4">
                   <p className="text-xs text-muted-foreground">助记</p>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.memoryTip || word.etymology}</p>
                 </section>
@@ -689,7 +689,7 @@ export default function TodayPage() {
     return (
       <LearningShellFrame>
         <LearningEmptyState
-          icon={Sparkles}
+          icon={ClipboardList}
           eyebrow={isZh ? '今日任务' : 'Today mission'}
           title={isZh ? '先准备今天的单词' : 'Prepare today\'s words first'}
           description={
@@ -710,7 +710,7 @@ export default function TodayPage() {
             <>
               {activeBook ? (
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={refreshDailyWords}>
-                  <Sparkles className="mr-2 h-5 w-5" />
+                  <ClipboardList className="mr-2 h-5 w-5" />
                   {isZh ? '生成今日单词' : 'Generate today\'s words'}
                 </Button>
               ) : (
@@ -762,20 +762,37 @@ export default function TodayPage() {
         testId: 'today-primary-mission-cta',
       };
   const isPlanLoading = learningOverviewQuery.isLoading && !dailyCoachPlan;
-  const heroTitle = dailyCoachPlan
-    ? (language.startsWith('zh') ? dailyCoachPlan.briefTitle.zh : dailyCoachPlan.briefTitle.en)
-    : (language.startsWith('zh') ? missionCard?.headlineZh : missionCard?.headline)
-      || (isPlanLoading
-        ? (language.startsWith('zh') ? '正在读取今日任务' : 'Loading today\'s tasks')
-        : (language.startsWith('zh') ? '先完成一个小任务' : 'Start with one small task'));
-  const heroDescription = dailyCoachPlan
-    ? (language.startsWith('zh') ? dailyCoachPlan.brief.zh : dailyCoachPlan.brief.en)
-    : (language.startsWith('zh') ? missionCard?.supportZh : missionCard?.support)
-      || (isPlanLoading
-        ? (language.startsWith('zh')
-          ? '正在读取词书、到期复习和最近错题。'
-          : 'Reading your word book, due reviews, and recent mistakes.')
-        : undefined);
+  const remainingWords = Math.max(words.length - learnedWords.size, 0);
+  const heroTitle = isZh
+    ? (isPlanLoading
+      ? '正在读取今日任务'
+      : dueWords.length > 0
+        ? `先复习 ${dueWords.length} 个到期词`
+        : remainingWords > 0
+          ? `学完 ${remainingWords} 个新词`
+          : '做一组短练习')
+    : (isPlanLoading
+      ? 'Loading today\'s tasks'
+      : dueWords.length > 0
+        ? `Review ${dueWords.length} due words first`
+        : remainingWords > 0
+          ? `Finish ${remainingWords} new words`
+          : 'Do one short drill');
+  const heroDescription = isZh
+    ? (isPlanLoading
+      ? '正在读取词书、到期复习和最近错题。'
+      : dueWords.length > 0
+        ? '到期词优先处理，做完再学新词。'
+        : remainingWords > 0
+          ? '先把今日新词过完，再进入复习或专项练习。'
+          : '新词已完成，可以用刚学的词做一次输出。')
+    : (isPlanLoading
+      ? 'Reading your word book, due reviews, and recent mistakes.'
+      : dueWords.length > 0
+        ? 'Clear due reviews before adding new words.'
+        : remainingWords > 0
+          ? 'Finish today\'s words before review or skill practice.'
+          : 'Use today\'s words in one output task.');
   const heroEstimatedMinutes = primaryMissionTask?.estimatedMinutes || missionCard?.estimatedMinutes || learningProfile.dailyMinutes;
 
   return (
@@ -803,16 +820,16 @@ export default function TodayPage() {
       }}
       metrics={[
         {
-          label: language.startsWith('zh') ? '信号来源' : 'Source signal',
+          label: language.startsWith('zh') ? '优先级' : 'Priority',
           value: language.startsWith('zh') ? sourceSignal.label.zh : sourceSignal.label.en,
-          accent: sourceSignal.signal === 'streak recovery' ? 'warm' : 'emerald',
+          accent: sourceSignal.signal === 'streak recovery' ? 'warm' : 'default',
         },
         {
           label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
           value: `${heroEstimatedMinutes} min`,
         },
         {
-          label: language.startsWith('zh') ? '今日剩余' : 'Words left',
+          label: language.startsWith('zh') ? '新词剩余' : 'Words left',
           value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
           accent: 'emerald',
         },
@@ -835,7 +852,7 @@ export default function TodayPage() {
         <div
           data-testid="today-primary-evidence"
           className="flex flex-wrap gap-2"
-          aria-label={isZh ? '今日主任务证据' : 'Today primary mission evidence'}
+          aria-label={isZh ? '任务依据' : 'Task basis'}
         >
           {dailyCoachPlan.evidence.slice(0, 5).map((item) => (
             <span
@@ -856,16 +873,16 @@ export default function TodayPage() {
           <div id="today-vocabulary-workspace" data-testid="today-vocabulary-workspace">
             <LearningWorkspaceSurface
               eyebrow={isZh ? '今日单词' : 'Today words'}
-              title={currentWord ? `${currentWord.word} · 当前单词` : 'Vocabulary workspace'}
+              title={currentWord ? currentWord.word : (isZh ? '今日单词' : 'Today words')}
             >
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-4">
                 <section className={cn(learningFrameClassName, 'p-4')}>
-                  <p className="text-xs text-muted-foreground">今日进度</p>
+                  <p className="text-xs text-muted-foreground">单词进度</p>
                   <div className="mt-4 flex items-center gap-5">
                     <CircularProgress
                       value={progress}
-                      label="词汇完成度"
+                      label="今日单词"
                       sublabel={`${learnedWords.size} / ${words.length}`}
                     />
                     <div className="space-y-1">
@@ -874,7 +891,7 @@ export default function TodayPage() {
                         <span className="mx-2 text-muted-foreground">/</span>
                         <span className="text-foreground">{words.length}</span>
                       </p>
-                      <p className="text-xs text-muted-foreground">今日已学 / 今日计划</p>
+                      <p className="text-xs text-muted-foreground">已学 / 计划</p>
                     </div>
                   </div>
                 </section>
@@ -919,7 +936,7 @@ export default function TodayPage() {
                   ) : null}
                 </AnimatePresence>
 
-                <div className="premium-action-bar flex flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                <div className="premium-action-bar flex flex-col gap-4 rounded-md border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
                   <TodayWordNavigation
                     words={words}
                     currentWordIndex={currentWordIndex}
@@ -988,7 +1005,7 @@ export default function TodayPage() {
         <div className="space-y-6">
           {dailyCoachPlan?.dictionaryFocus && lexicalFocus ? (
             <LearningRailSection title={isZh ? '词典焦点' : 'Lexicon focus'}>
-              <div className="premium-panel-soft rounded-lg border border-[hsl(var(--accent-practice)/0.25)] bg-[hsl(var(--accent-practice)/0.08)] p-4 shadow-sm">
+              <div className="premium-panel-soft rounded-md border border-[hsl(var(--accent-practice)/0.25)] bg-[hsl(var(--accent-practice)/0.08)] p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs text-muted-foreground">
@@ -1024,14 +1041,14 @@ export default function TodayPage() {
 
           <LearningRailSection title={isZh ? '学习背景' : 'Learning context'}>
             <div className="space-y-3">
-              <div className="premium-panel-soft rounded-lg border border-border bg-card p-4 shadow-sm">
+              <div className="premium-panel-soft rounded-md border border-border bg-card p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">当前词书</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{activeBook?.name || '未选择词书'}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
               </div>
 
               {activePathNextLesson ? (
-                <div className="premium-panel-soft rounded-lg border border-primary/20 bg-primary/5 p-4 shadow-sm">
+                <div className="premium-panel-soft rounded-md border border-primary/20 bg-primary/5 p-4 shadow-sm">
                   <p className="text-xs text-muted-foreground">{isZh ? '学习路径' : 'Learning path'}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {isZh ? activePathNextLesson.lesson.titleZh : activePathNextLesson.lesson.title}
@@ -1047,7 +1064,7 @@ export default function TodayPage() {
                 </div>
               ) : null}
 
-              <div className="premium-panel-soft rounded-lg border border-border bg-card p-4 shadow-sm">
+              <div className="premium-panel-soft rounded-md border border-border bg-card p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">到期复习</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{dueWords.length} 个到期复习</p>
                 {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-muted-foreground">当前词书接近完成</p> : null}
@@ -1057,7 +1074,7 @@ export default function TodayPage() {
                 const modeInfo = MODE_LABELS[learnerModel.mode];
                 return (
                   <div className={cn(
-                    'premium-panel-soft rounded-lg border p-4 space-y-3',
+                    'premium-panel-soft rounded-md border p-4 space-y-3',
                     learnerModel.mode === 'recovery'    && 'border-red-500/20 bg-red-500/[0.06]',
                     learnerModel.mode === 'maintenance' && 'border-amber-500/20 bg-amber-500/[0.06]',
                     learnerModel.mode === 'steady'      && 'border-primary/20 bg-primary/10',
@@ -1084,13 +1101,13 @@ export default function TodayPage() {
 
                     {/* Daily targets */}
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-lg bg-muted px-3 py-2">
+                      <div className="rounded-md bg-muted px-3 py-2">
                         <p className="text-[10px] text-muted-foreground">新词</p>
                         <p className="mt-0.5 text-base font-bold text-foreground">
                           {learnerModel.recommendedDailyNew}
                         </p>
                       </div>
-                      <div className="rounded-lg bg-muted px-3 py-2">
+                      <div className="rounded-md bg-muted px-3 py-2">
                         <p className="text-[10px] text-muted-foreground">复习</p>
                         <p className="mt-0.5 text-base font-bold text-foreground">
                           {learnerModel.recommendedDailyReview}
@@ -1137,7 +1154,7 @@ export default function TodayPage() {
                     {learnerModel.stubbornWordCount > 0 && (
                       <div>
                         <p className="text-[10px] text-muted-foreground mb-1.5">强化路径</p>
-                        <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2">
+                        <div className="flex items-center justify-between rounded-md bg-muted px-3 py-2">
                           <div>
                             <p className="text-sm font-semibold text-foreground">
                               顽固词 {learnerModel.stubbornWordCount} 个
@@ -1159,7 +1176,7 @@ export default function TodayPage() {
               })() : null}
 
               {adaptiveDifficulty ? (
-                <div className="premium-panel-soft rounded-lg border border-border bg-card p-4 shadow-sm">
+                <div className="premium-panel-soft rounded-md border border-border bg-card p-4 shadow-sm">
                   <p className="text-xs text-muted-foreground">{isZh ? '今日难度' : 'Today difficulty'}</p>
                   <div className="mt-2 flex items-center justify-between gap-3">
                     <p className="text-lg font-semibold text-foreground">{adaptiveDifficulty.labelZh}</p>
@@ -1177,7 +1194,7 @@ export default function TodayPage() {
             <div className="space-y-3">
               {weaknesses.length > 0 ? (
                 weaknesses.map((weakness) => (
-                  <div key={weakness.tag} className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+                  <div key={weakness.tag} className="premium-panel-soft rounded-md border border-border bg-card p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">{weakness.titleZh}</p>
@@ -1199,13 +1216,13 @@ export default function TodayPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm leading-6 text-muted-foreground">
+                <div className="rounded-md border border-dashed border-border px-4 py-5 text-sm leading-6 text-muted-foreground">
                   先完成一次练习或写作反馈，这里会显示需要多练的地方。
                 </div>
               )}
 
               {recommendedUnit ? (
-                <div className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
+                <div className="premium-panel-soft rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
                   <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
                     <Target className="h-4 w-4" />
                     <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>

@@ -44,22 +44,22 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? '每日英语练习' : 'Daily English practice',
+      title: isZh ? '15 分钟英语练习' : '15-minute English practice',
       subtitle: isZh
-        ? '复习到期词，学几个新词，做一个短练习。'
+        ? '复习、学词、做练习。每天按这个顺序走。'
         : 'Review due words, add a few new ones, then do one short drill.',
-      primaryCta: isZh ? '开始学习' : 'Start learning',
-      secondaryCta: isZh ? '试样课' : 'Try sample',
+      primaryCta: isZh ? '开始练习' : 'Start practice',
+      secondaryCta: isZh ? '看样课' : 'Try sample',
       evidence: [
-        isZh ? '到期复习' : 'Due review',
+        isZh ? '复习' : 'Review',
         isZh ? '新词' : 'New words',
-        isZh ? '听说读写' : 'Practice',
+        isZh ? '练习' : 'Practice',
       ],
     },
     today: {
-      label: isZh ? '今日计划' : "Today's plan",
-      title: isZh ? '15 分钟' : '15 minutes',
-      subtitle: isZh ? '登录后按你的词库和错题更新' : 'Updates from your words and mistakes after sign-in',
+      label: isZh ? '示例任务' : 'Example task',
+      title: isZh ? '今天 3 步' : '3 steps today',
+      subtitle: isZh ? '登录后换成你的词库和错题' : 'Uses your words and mistakes after sign-in',
       items: [
         {
           title: isZh ? '复习 12 个词' : 'Review 12 words',
@@ -77,12 +77,12 @@ export default function Home() {
           duration: isZh ? '4 分钟' : '4 min',
         },
       ],
-      summary: isZh ? '先完成这三件事' : 'Finish these three first',
+      summary: isZh ? '做完再继续加练' : 'Finish these before extra practice',
     },
-    examplesLabel: isZh ? '今日示例词' : 'Sample words',
+    examplesLabel: isZh ? '示例词' : 'Sample words',
     workflow: {
-      title: isZh ? '一次学习怎么走' : 'How one session works',
-      subtitle: isZh ? '复习，学习，练习。每天保持同一套顺序。' : 'Review, learn, practice. Same order every day.',
+      title: isZh ? '每天的顺序' : 'Daily order',
+      subtitle: isZh ? '先复习，再学新词，最后做一题输出。' : 'Review first, learn new words, then do one output task.',
       steps: [
         {
           title: isZh ? '复习到期词' : 'Review due words',
@@ -99,9 +99,9 @@ export default function Home() {
       ],
     },
     footerCta: {
-      title: isZh ? '今天先练 15 分钟。' : 'Start with 15 minutes today.',
-      subtitle: isZh ? '先做完今日计划，再决定要不要继续。' : 'Finish the daily plan first, then decide whether to continue.',
-      button: isZh ? '开始学习' : 'Start learning',
+      title: isZh ? '先完成今天这 3 步。' : 'Finish today\'s 3 steps.',
+      subtitle: isZh ? '复习、学词、练习都做完，再决定要不要继续。' : 'Review, learn, and practice before adding more.',
+      button: isZh ? '开始练习' : 'Start practice',
     },
   };
 
@@ -191,21 +191,21 @@ export default function Home() {
 
       <main>
         <section className="border-b border-border/70">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-2 lg:items-center lg:py-20">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:py-14">
             <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-border bg-[hsl(var(--surface-raised))]/88 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-border bg-[hsl(var(--surface-raised))]/88 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 VocabDaily
               </div>
-              <h1 className="max-w-2xl text-4xl font-semibold leading-[1.06] text-foreground sm:text-5xl md:text-[3.5rem]">
+              <h1 className="max-w-xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl md:text-[2.8rem]">
                 {copy.hero.title}
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+              <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
                 {copy.hero.subtitle}
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild size="lg" className="h-11 rounded-md px-5 text-sm font-medium">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button asChild size="lg" className="h-10 rounded-md px-4 text-sm font-medium">
                   <Link to={primaryCtaPath}>
                     {copy.hero.primaryCta}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -219,7 +219,7 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-2 text-sm text-muted-foreground">
+              <div className="mt-5 flex flex-wrap gap-2 text-sm text-muted-foreground">
                 {copy.hero.evidence.map((item) => (
                   <span key={item} className="rounded-md border border-border/80 bg-[hsl(var(--surface-raised))]/70 px-3 py-1">
                     {item}
@@ -228,8 +228,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035),0_18px_40px_-32px_hsl(var(--shadow-studio)/0.28)] sm:p-6">
-              <div className="absolute inset-y-0 left-0 w-1 bg-primary" />
+            <div className="relative overflow-hidden rounded-md border border-border bg-[hsl(var(--surface-raised))] p-4 shadow-[0_1px_2px_hsl(var(--shadow-studio)/0.05)] sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
@@ -242,7 +241,7 @@ export default function Home() {
                     {copy.today.subtitle}
                   </p>
                 </div>
-                <span className="flex h-9 w-9 items-center justify-center rounded-md border border-border/80 bg-muted/50 text-muted-foreground">
+                <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-muted/50 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                 </span>
               </div>
@@ -295,18 +294,18 @@ export default function Home() {
           </div>
 
           {/* Sample word strip */}
-          <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16">
+          <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 sm:pb-12">
             <p className="text-xs font-medium text-muted-foreground">
               {copy.examplesLabel}
             </p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="mt-3 overflow-hidden rounded-md border border-border bg-[hsl(var(--surface-raised))]">
               {sampleWords.map((w) => (
-                <div key={w.word} className="rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))]/88 p-4">
+                <div key={w.word} className="grid gap-2 border-b border-border px-4 py-3 last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-baseline">
                   <div className="flex items-baseline gap-2">
                     <span className="text-base font-semibold">{w.word}</span>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.example}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{w.example}</p>
                 </div>
               ))}
             </div>
@@ -314,14 +313,14 @@ export default function Home() {
         </section>
 
         <section id="workflow" className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/34">
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-            <h2 className="text-2xl font-semibold sm:text-3xl">
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
+            <h2 className="text-xl font-semibold sm:text-2xl">
               {copy.workflow.title}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
               {copy.workflow.subtitle}
             </p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {[
                 {
                   icon: Calendar,
@@ -342,7 +341,7 @@ export default function Home() {
                   body: copy.workflow.steps[2].body,
                 },
               ].map((step, i) => (
-                <div key={i} className="rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))] p-5">
+                <div key={i} className="rounded-md border border-border bg-[hsl(var(--surface-raised))] p-4">
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground"
                   >
@@ -357,7 +356,7 @@ export default function Home() {
         </section>
 
         <section>
-          <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-20">
+          <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-12">
             <div>
               <h2 className="text-xl font-semibold sm:text-2xl">
                 {copy.footerCta.title}
@@ -366,7 +365,7 @@ export default function Home() {
                 {copy.footerCta.subtitle}
               </p>
             </div>
-            <Button asChild size="lg" className="h-11 rounded-md px-5 text-sm font-medium shadow-sm">
+            <Button asChild size="lg" className="h-10 rounded-md px-4 text-sm font-medium shadow-sm">
               <Link to={primaryCtaPath}>
                 {copy.footerCta.button}
                 <ArrowRight className="ml-2 h-4 w-4" />

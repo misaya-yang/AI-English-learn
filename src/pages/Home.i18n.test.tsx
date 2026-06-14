@@ -41,7 +41,7 @@ describe('Home i18n surface', () => {
   it('does not mix Chinese-only marketing labels into English mode', () => {
     renderHome();
 
-    expect(screen.getByText('Due review')).toBeInTheDocument();
+    expect(screen.getByText('Review')).toBeInTheDocument();
     expect(screen.getByText('New words')).toBeInTheDocument();
     expect(screen.getByText('Practice')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Try sample' })).toHaveAttribute('href', '/demo');

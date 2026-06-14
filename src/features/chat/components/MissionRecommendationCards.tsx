@@ -4,7 +4,6 @@ import {
   Compass,
   Flame,
   RotateCcw,
-  Sparkles,
   Target,
   Volume2,
 } from 'lucide-react';
@@ -22,10 +21,10 @@ interface MissionRecommendationCardsProps {
   className?: string;
 }
 
-const ICON: Record<MissionRecommendationIcon, typeof Sparkles> = {
+const ICON: Record<MissionRecommendationIcon, typeof Target> = {
   'review-pressure': RotateCcw,
   'mission-task': Target,
-  'level-up': Sparkles,
+  'level-up': Compass,
   'exam-boost': Flame,
   'beginner-warmup': Compass,
   'pronunciation': Volume2,
@@ -58,13 +57,13 @@ const VARIANT_HEADING: Record<MissionRecommendationVariant, { en: string; zh: st
   default:  { en: 'Suggested task', zh: '建议任务' },
 };
 
-const VARIANT_ALERT: Record<MissionRecommendationVariant, typeof Sparkles> = {
+const VARIANT_ALERT: Record<MissionRecommendationVariant, typeof Target> = {
   recovery: AlertTriangle,
   review:   RotateCcw,
   today:    Target,
   sprint:   Flame,
   practice: Compass,
-  default:  Sparkles,
+  default:  Target,
 };
 
 export function MissionRecommendationCards({
@@ -83,7 +82,7 @@ export function MissionRecommendationCards({
       data-testid="mission-recommendation-cards"
     >
       {cards.map((card, index) => {
-        const Icon = ICON[card.icon] || Sparkles;
+        const Icon = ICON[card.icon] || Target;
         const HeadingIcon = VARIANT_ALERT[card.variant];
         const headingLabel = isZh ? VARIANT_HEADING[card.variant].zh : VARIANT_HEADING[card.variant].en;
         const title = isZh ? card.title.zh : card.title.en;
@@ -98,7 +97,7 @@ export function MissionRecommendationCards({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.18, delay: index * 0.04 }}
             className={cn(
-              'group relative flex w-full flex-col gap-3 rounded-xl border p-4 text-left transition-colors duration-200 sm:p-5',
+              'group relative flex w-full flex-col gap-3 rounded-md border p-4 text-left transition-colors duration-150',
               VARIANT_TONE[card.variant],
             )}
             data-testid="mission-recommendation-card"
@@ -106,20 +105,20 @@ export function MissionRecommendationCards({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className={cn('rounded-full p-1.5', VARIANT_BADGE[card.variant])}>
+                <span className={cn('rounded-md p-1.5', VARIANT_BADGE[card.variant])}>
                   <HeadingIcon className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-[10px] font-medium opacity-90">
                   {headingLabel}
                 </span>
               </div>
-              <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium', VARIANT_BADGE[card.variant])}>
+              <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-medium', VARIANT_BADGE[card.variant])}>
                 ~{card.estimatedMinutes} min
               </span>
             </div>
 
             <div className="flex items-start gap-3">
-              <span className={cn('rounded-xl p-2', VARIANT_BADGE[card.variant])}>
+              <span className={cn('rounded-md p-2', VARIANT_BADGE[card.variant])}>
                 <Icon className="h-4 w-4" />
               </span>
               <div className="min-w-0 space-y-1.5">
@@ -130,7 +129,7 @@ export function MissionRecommendationCards({
 
             <span
               className={cn(
-                'mt-1 inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium opacity-90 transition-opacity group-hover:opacity-100',
+                'mt-1 inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium opacity-90 transition-opacity group-hover:opacity-100',
                 VARIANT_BADGE[card.variant],
               )}
             >

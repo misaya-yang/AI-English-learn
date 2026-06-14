@@ -2,7 +2,7 @@
 // welcome (no-messages) state. Pure presentation; the parent owns the
 // composer state and decides what to do with the launched prompt.
 
-import { Sparkles, Target, BookOpen, Brain } from 'lucide-react';
+import { ClipboardList, Target, BookOpen, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { MissionCard, MissionAccent } from './missionCardSelector';
 
@@ -13,11 +13,11 @@ interface MissionCardsProps {
   className?: string;
 }
 
-const ACCENT_STYLES: Record<MissionAccent, { bg: string; ring: string; icon: typeof Sparkles }> = {
+const ACCENT_STYLES: Record<MissionAccent, { bg: string; ring: string; icon: typeof Target }> = {
   practice: {
     bg: 'bg-primary/5',
     ring: 'ring-primary/20',
-    icon: Sparkles,
+    icon: ClipboardList,
   },
   coach: {
     bg: 'bg-blue-50 dark:bg-blue-950/40',
@@ -60,8 +60,8 @@ export function MissionCards({ selected, onLaunch, language = 'en', className }:
             type="button"
             onClick={() => onLaunch(prompt)}
             className={cn(
-              'group flex flex-col items-start gap-2 rounded-xl p-4 text-left ring-1 ring-inset transition',
-              'hover:scale-[1.01] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'group flex flex-col items-start gap-2 rounded-md p-4 text-left ring-1 ring-inset transition-colors',
+              'hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               style.bg,
               style.ring,
             )}

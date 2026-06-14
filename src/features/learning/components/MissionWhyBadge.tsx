@@ -4,7 +4,6 @@ import {
   BookOpen,
   Compass,
   Flame,
-  Sparkles,
   Target,
   Wrench,
 } from 'lucide-react';
@@ -32,14 +31,14 @@ const VARIANT_TONE: Record<MissionWhyVariant, string> = {
   default:  'border-border bg-muted/50 text-muted-foreground',
 };
 
-const VARIANT_ICON: Record<MissionWhyVariant, typeof Sparkles> = {
+const VARIANT_ICON: Record<MissionWhyVariant, typeof Target> = {
   recovery: AlertTriangle,
   sprint:   Flame,
   review:   BookOpen,
   today:    Target,
   weakness: Wrench,
   practice: Compass,
-  default:  Sparkles,
+  default:  Target,
 };
 
 export function MissionWhyBadge({
@@ -54,14 +53,14 @@ export function MissionWhyBadge({
   const isZh = language.startsWith('zh');
   const label = isZh ? data.label.zh : data.label.en;
   const subtitle = isZh ? data.subtitle.zh : data.subtitle.en;
-  const whyHeading = isZh ? '为什么是这一步' : 'Why this step';
+  const whyHeading = isZh ? '任务依据' : 'Task basis';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        'flex flex-col gap-2 rounded-lg border px-3 py-2 sm:flex-row sm:items-center sm:gap-3',
+        'flex flex-col gap-2 rounded-md border px-3 py-2 sm:flex-row sm:items-center sm:gap-3',
         VARIANT_TONE[data.variant],
         className,
       )}

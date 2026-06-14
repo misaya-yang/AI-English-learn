@@ -141,7 +141,7 @@ export function LearningCockpitShell({
   return (
     <section
       data-testid="learning-cockpit"
-      className={cn('space-y-6 lg:space-y-8', className)}
+      className={cn('space-y-4 lg:space-y-5', className)}
     >
       {mission.why ? (
         <MissionWhyBadge
