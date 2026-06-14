@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, BookOpen, Brain, Calendar, Menu, MessageSquare, Target, X } from 'lucide-react';
+import { ArrowRight, BookOpen, Calendar, Menu, MessageSquare, Target, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
@@ -13,17 +13,17 @@ const sampleWords = [
   {
     word: 'nevertheless',
     pos: 'adv.',
-    example: 'The exam was tough; nevertheless, she passed with flying colors.',
+    example: 'It was raining. Nevertheless, we went out.',
   },
   {
     word: 'mitigate',
     pos: 'v.',
-    example: 'Small daily habits mitigate the stress of exam season.',
+    example: 'Good notes mitigate last-minute review.',
   },
   {
     word: 'compelling',
     pos: 'adj.',
-    example: 'A compelling argument needs evidence, not adjectives.',
+    example: 'Her example made the point compelling.',
   },
 ];
 
@@ -44,76 +44,64 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      eyebrow: isZh ? '面向英语学习者的每日工作台' : 'A daily learning workbench for English',
-      title: isZh ? '把英语练到真正记得住。' : "Practice English you'll actually remember.",
+      title: isZh ? '今天练什么，一目了然。' : "See today's practice at a glance.",
       subtitle: isZh
-        ? '每天 15 分钟，把词汇、写作、口语整合到一个学习节奏里。'
-        : 'A focused 15-minute rhythm for vocabulary, writing, speaking, and review.',
-      body: isZh
-        ? 'VocabDaily 每天告诉你该复习什么、接下来学什么，并用 AI 教练反馈你真正练过的写作和口语。'
-        : "Each day VocabDaily shows what's due to review, what to learn next, and gives you AI-coached feedback on the writing and speaking you actually practice.",
-      primaryCta: isZh ? '开始今天的学习' : "Start today's session",
-      secondaryCta: isZh ? '试一节样课' : 'Try a sample lesson',
-      footnote: isZh ? '免费开始 · 无需信用卡' : 'Free to start · No credit card required',
+        ? '复习到期词，学几个新词，再做一小段练习。'
+        : 'Review due words, add a few new ones, then do one short drill.',
+      primaryCta: isZh ? '开始学习' : 'Start learning',
+      secondaryCta: isZh ? '试样课' : 'Try sample',
       evidence: [
-        isZh ? 'FSRS 到期复习' : 'FSRS due reviews',
-        isZh ? 'IELTS 写作反馈' : 'IELTS writing feedback',
-        isZh ? '平均每天 15 分钟' : 'About 15 minutes a day',
+        isZh ? '到期复习' : 'Due review',
+        isZh ? '新词' : 'New words',
+        isZh ? '听说读写' : 'Practice',
       ],
     },
     today: {
-      label: isZh ? '今日' : 'Today',
-      title: isZh ? '典型学习日' : 'A typical day',
-      subtitle: isZh ? '示例任务：登录后会看到你的真实队列' : 'Example session: your real queue appears after sign-in',
+      label: isZh ? '今日计划' : "Today's plan",
+      title: isZh ? '15 分钟' : '15 minutes',
+      subtitle: isZh ? '登录后按你的词库和错题更新' : 'Updates from your words and mistakes after sign-in',
       items: [
         {
-          title: isZh ? '12 个到期复习' : '12 due reviews',
-          subtitle: isZh ? '到期复习' : 'Spaced repetition',
-          duration: isZh ? '约 6 分钟' : 'About 6 min',
+          title: isZh ? '复习 12 个词' : 'Review 12 words',
+          subtitle: isZh ? '今天到期' : 'Due today',
+          duration: isZh ? '6 分钟' : '6 min',
         },
         {
-          title: isZh ? '5 个新词' : '5 new words',
-          subtitle: isZh ? '新词学习' : 'New vocabulary',
-          duration: isZh ? '约 5 分钟' : 'About 5 min',
+          title: isZh ? '学 5 个新词' : 'Learn 5 new words',
+          subtitle: isZh ? '加入后续复习' : 'Added to review',
+          duration: isZh ? '5 分钟' : '5 min',
         },
         {
-          title: isZh ? '1 个教练任务' : '1 coach task',
-          subtitle: isZh ? '教练任务' : 'Coach next step',
-          duration: isZh ? '约 4 分钟' : 'About 4 min',
+          title: isZh ? '做 1 个练习' : 'Do 1 practice task',
+          subtitle: isZh ? '听力或写作' : 'Listening or writing',
+          duration: isZh ? '4 分钟' : '4 min',
         },
       ],
-      summary: isZh ? '预计 15 分钟' : 'Estimated 15 min',
-      cta: isZh ? '试样课' : 'Try sample',
+      summary: isZh ? '先完成这三件事' : 'Finish these three first',
     },
-    examplesLabel: isZh ? '本周可能学到的词汇' : 'Words you might practice this week',
+    examplesLabel: isZh ? '今日示例词' : 'Sample words',
     workflow: {
-      title: isZh ? 'VocabDaily 如何运作' : 'How VocabDaily works',
-      subtitle: isZh ? '三步把零散学习变成稳定节奏。' : 'Three steps turn scattered practice into a steady daily rhythm.',
+      title: isZh ? '一次学习怎么走' : 'How one session works',
+      subtitle: isZh ? '复习，学习，练习。每天保持同一套顺序。' : 'Review, learn, practice. Same order every day.',
       steps: [
         {
-          title: isZh ? '复习到期内容' : 'Review what is due',
-          body: isZh ? '基于 FSRS 的间隔重复告诉你今天该复测哪些词，不靠猜。' : 'FSRS-based spaced repetition tells you which words to retest today, no guessing.',
+          title: isZh ? '复习到期词' : 'Review due words',
+          body: isZh ? '只处理今天该复习的词。' : 'Only work through words due today.',
         },
         {
-          title: isZh ? '用任务练习' : 'Practice with prompts',
-          body: isZh ? '短测、听力、写作任务会围绕你刚学过的词和弱项生成。' : 'Targeted drills, listening, and writing tasks stay tied to the words you just studied.',
+          title: isZh ? '补几个新词' : 'Add a few words',
+          body: isZh ? '新词会进入后续复习。' : 'New words enter later review sessions.',
         },
         {
-          title: isZh ? '获得教练反馈' : 'Get coach feedback',
-          body: isZh ? 'AI 教练复盘答案、安排重练，并把错误转成后续复习。' : 'AI coach reviews your answers, schedules retries, and converts mistakes into review cards.',
+          title: isZh ? '做一个小练习' : 'Do one short drill',
+          body: isZh ? '用刚学过的词写一句、听一段或答一道题。' : 'Use recent words in a sentence, a clip, or one question.',
         },
       ],
     },
-    featureChips: isZh
-      ? ['FSRS 间隔记忆算法', 'AI 教练实时反馈', 'IELTS 考试专项训练', '本地数据可用']
-      : ['FSRS spaced repetition', 'Real-time AI coach feedback', 'IELTS-focused training', 'Local data fallback'],
-    facts: isZh
-      ? ['FSRS 间隔记忆', '教练评分重练', '错题驱动练习']
-      : ['FSRS-based spaced repetition', 'Coach-graded retries', 'Mistake-aware practice'],
     footerCta: {
-      title: isZh ? '建立一个能坚持的每日英语习惯。' : 'Build a daily English habit you can keep.',
-      subtitle: isZh ? '从今天开始，用一个清晰的工作流学英语。' : 'Start with one clear workflow instead of another pile of features.',
-      button: isZh ? '开始今天的学习' : "Start today's session",
+      title: isZh ? '今天先练 15 分钟。' : 'Start with 15 minutes today.',
+      subtitle: isZh ? '先做完今日计划，再决定要不要继续。' : 'Finish the daily plan first, then decide whether to continue.',
+      button: isZh ? '开始学习' : 'Start learning',
     },
   };
 
@@ -127,9 +115,8 @@ export default function Home() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="study-premium-bg min-h-[100dvh] bg-background text-foreground">
-      {/* Top nav — quiet, paper-warm */}
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-[hsl(var(--surface-raised))]/88 shadow-[0_1px_0_hsl(var(--border)/0.45)] backdrop-blur">
+    <div className="min-h-[100dvh] bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.18)]">
@@ -203,22 +190,14 @@ export default function Home() {
       </header>
 
       <main>
-        {/* Hero — first viewport with concrete workflow preview */}
-        <section className="border-b border-border/70 bg-transparent">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:py-20">
+        <section className="border-b border-border/70">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-md border border-border bg-[hsl(var(--surface-raised))] px-3 py-1 text-xs font-semibold text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent-memory))]" />
-                {copy.hero.eyebrow}
-              </span>
-              <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
+              <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
                 {copy.hero.title}
               </h1>
-              <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                 {copy.hero.subtitle}
-              </p>
-              <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {copy.hero.body}
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -236,28 +215,16 @@ export default function Home() {
                 </Link>
               </div>
 
-              <p className="mt-3 text-xs text-muted-foreground">
-                {copy.hero.footnote}
-              </p>
-
-              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <Brain className="h-4 w-4 text-[hsl(var(--accent-memory))]" />
-                  {copy.hero.evidence[0]}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <MessageSquare className="h-4 w-4 text-[hsl(var(--accent-coach))]" />
-                  {copy.hero.evidence[1]}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-[hsl(var(--accent-practice))]" />
-                  {copy.hero.evidence[2]}
-                </span>
+              <div className="mt-6 flex flex-wrap gap-2 text-sm text-muted-foreground">
+                {copy.hero.evidence.map((item) => (
+                  <span key={item} className="rounded-md border border-border px-3 py-1">
+                    {item}
+                  </span>
+                ))}
               </div>
             </div>
 
-            {/* Today preview card */}
-            <div className="premium-hero-panel relative overflow-hidden rounded-lg border border-border border-l-4 border-l-primary bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_48px_-38px_hsl(var(--shadow-studio)/0.34)] sm:p-6">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
@@ -270,16 +237,16 @@ export default function Home() {
                     {copy.today.subtitle}
                   </p>
                 </div>
-                <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[hsl(var(--accent-memory)/0.18)] bg-[hsl(var(--accent-memory))]/10 text-[hsl(var(--accent-memory))]">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                 </span>
               </div>
 
               <ul className="mt-5 space-y-3" aria-label="Example daily learning queue">
-                <li className="premium-panel-soft flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
+                <li className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-memory))]/10 text-[hsl(var(--accent-memory))]">
-                      <Brain className="h-3.5 w-3.5" />
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <Calendar className="h-3.5 w-3.5" />
                     </span>
                     <div>
                       <p className="text-sm font-medium">{copy.today.items[0].title}</p>
@@ -288,9 +255,9 @@ export default function Home() {
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">{copy.today.items[0].duration}</span>
                 </li>
-                <li className="premium-panel-soft flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
+                <li className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-practice))]/10 text-[hsl(var(--accent-practice))]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
                       <BookOpen className="h-3.5 w-3.5" />
                     </span>
                     <div>
@@ -300,9 +267,9 @@ export default function Home() {
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">{copy.today.items[1].duration}</span>
                 </li>
-                <li className="premium-panel-soft flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
+                <li className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-coach))]/10 text-[hsl(var(--accent-coach))]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
                       <MessageSquare className="h-3.5 w-3.5" />
                     </span>
                     <div>
@@ -314,16 +281,10 @@ export default function Home() {
                 </li>
               </ul>
 
-              <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+              <div className="mt-5 border-t border-border pt-4">
                 <p className="text-xs text-muted-foreground">
                   {copy.today.summary}
                 </p>
-                <Link
-                  to="/demo"
-                  className="text-xs font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  {copy.today.cta}
-                </Link>
               </div>
             </div>
           </div>
@@ -335,19 +296,18 @@ export default function Home() {
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {sampleWords.map((w) => (
-                <div key={w.word} className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+                <div key={w.word} className="rounded-lg border border-border bg-card p-4">
                   <div className="flex items-baseline gap-2">
                     <span className="text-base font-semibold tracking-tight">{w.word}</span>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">"{w.example}"</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.example}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* How it works */}
         <section id="workflow" className="border-b border-border/70 bg-transparent">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -377,13 +337,9 @@ export default function Home() {
                   body: copy.workflow.steps[2].body,
                 },
               ].map((step, i) => (
-                <div key={i} className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+                <div key={i} className="rounded-lg border border-border bg-card p-5">
                   <span
-                    className="flex h-9 w-9 items-center justify-center rounded-md"
-                    style={{
-                      backgroundColor: `hsl(${step.accent} / 0.1)`,
-                      color: `hsl(${step.accent})`,
-                    }}
+                    className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground"
                   >
                     <step.icon className="h-4 w-4" />
                   </span>
@@ -395,35 +351,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Feature chip row */}
-        <section className="border-b border-border/70 bg-transparent">
-          <div className="mx-auto max-w-6xl px-4 pb-10 pt-0 sm:px-6">
-            <div className="flex flex-wrap justify-center gap-3">
-              {copy.featureChips.map((feature) => (
-                <span key={feature} className="premium-metric-card rounded-md border border-border bg-[hsl(var(--surface-raised))] px-4 py-1.5 text-sm font-medium text-muted-foreground">
-                  {feature}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Fact strip */}
-        <section className="border-b border-border/70">
-          <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p>
-              <span className="font-medium text-foreground">
-                {copy.facts[0]}
-              </span>
-              <span className="mx-2 text-border">·</span>
-              <span>{copy.facts[1]}</span>
-              <span className="mx-2 text-border">·</span>
-              <span>{copy.facts[2]}</span>
-            </p>
-          </div>
-        </section>
-
-        {/* Closing CTA */}
         <section>
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-20">
             <div>
