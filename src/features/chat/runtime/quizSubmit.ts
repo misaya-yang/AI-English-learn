@@ -108,7 +108,7 @@ export const buildQuizMistakeFeedback = (args: {
         severity: 'medium',
         message: isZh ? '来自对话测验的错误回流。' : 'Captured from chat quiz attempt.',
         suggestion: isZh
-          ? '建议完成对应补救微课并加入复习。'
+          ? '建议完成对应专项讲解并加入复习。'
           : 'Take the remediation micro-lesson and review this card again.',
       },
     ],

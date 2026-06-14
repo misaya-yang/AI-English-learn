@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
@@ -14,15 +15,17 @@ interface StreakCounterProps {
 const MILESTONES = [7, 30, 100, 365] as const;
 
 function getMilestoneGlow(streak: number): string | undefined {
-  if (streak >= 365) return 'ring-2 ring-amber-400/50 shadow-[0_0_20px_hsl(var(--warning)/0.4)]';
-  if (streak >= 100) return 'ring-2 ring-emerald-400/40 shadow-[0_0_16px_hsl(var(--primary)/0.3)]';
-  if (streak >= 30) return 'ring-1 ring-emerald-400/30';
-  if (streak >= 7) return 'ring-1 ring-emerald-400/20';
+  if (streak >= 365) return 'border-warning/45 bg-warning/10';
+  if (streak >= 100) return 'border-primary/35 bg-primary/10';
+  if (streak >= 30) return 'border-primary/25 bg-primary/5';
+  if (streak >= 7) return 'border-primary/20';
   return undefined;
 }
 
 export function StreakCounter({ current, longest, totalStudyDays, className }: StreakCounterProps) {
   const [open, setOpen] = useState(false);
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const milestoneGlow = getMilestoneGlow(current);
   const nextMilestone = MILESTONES.find((m) => m > current);
 
@@ -32,7 +35,7 @@ export function StreakCounter({ current, longest, totalStudyDays, className }: S
         <button
           type="button"
           className={cn(
-            'flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-all hover:scale-105',
+            'flex items-center gap-1.5 rounded-md border border-transparent px-3 py-1.5 transition-colors hover:border-border hover:bg-muted/60',
             milestoneGlow,
             className,
           )}
@@ -57,23 +60,27 @@ export function StreakCounter({ current, longest, totalStudyDays, className }: S
           >
             <div className="flex items-center gap-2 mb-3">
               <Flame className="h-5 w-5 text-orange-500" />
-              <span className="text-lg font-bold">{current} day streak</span>
+              <span className="text-lg font-bold">{isZh ? `连续 ${current} 天` : `${current} day streak`}</span>
             </div>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex justify-between">
-                <span>Longest streak</span>
-                <span className="font-semibold text-foreground">{longest} days</span>
+                <span>{isZh ? '最长连续' : 'Longest streak'}</span>
+                <span className="font-semibold text-foreground">{isZh ? `${longest} 天` : `${longest} days`}</span>
               </div>
               {totalStudyDays != null && (
                 <div className="flex justify-between">
-                  <span>Total study days</span>
+                  <span>{isZh ? '累计学习天数' : 'Total study days'}</span>
                   <span className="font-semibold text-foreground">{totalStudyDays}</span>
                 </div>
               )}
               {nextMilestone && (
-                <div className="mt-3 rounded-xl border bg-muted/50 p-2.5 text-center">
-                  <p className="text-xs text-muted-foreground">Next milestone</p>
-                  <p className="mt-1 text-sm font-bold text-foreground">{nextMilestone - current} days to {nextMilestone}-day streak</p>
+                <div className="mt-3 rounded-md border bg-muted/50 p-2.5 text-center">
+                  <p className="text-xs text-muted-foreground">{isZh ? '下一档' : 'Next milestone'}</p>
+                  <p className="mt-1 text-sm font-bold text-foreground">
+                    {isZh
+                      ? `还差 ${nextMilestone - current} 天到连续 ${nextMilestone} 天`
+                      : `${nextMilestone - current} days to ${nextMilestone}-day streak`}
+                  </p>
                 </div>
               )}
             </div>

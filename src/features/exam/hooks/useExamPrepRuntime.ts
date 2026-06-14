@@ -409,7 +409,7 @@ export function useExamPrepRuntime({
 
     const quotaResult = await consumeExamFeatureQuota(userId, 'microLessonsPerDay');
     if (!quotaResult.allowed) {
-      toast.error('今日补救微课次数已用完。');
+      toast.error('今日专项讲解次数已用完。');
       return;
     }
 
@@ -441,12 +441,12 @@ export function useExamPrepRuntime({
       setInsightView('weakness');
       await refreshQuota();
 
-      toast.success('已整理错因补救微课，并切换到对应单元。');
+      toast.success('已整理错因专项讲解，并切换到对应单元。');
       setLoadingStage('idle');
     } catch (error) {
       clearTimeout(microTimeoutId);
       console.error(error);
-      toast.error('补救微课整理失败，请稍后重试。');
+      toast.error('专项讲解整理失败，请稍后重试。');
       setLoadingStage('idle');
     }
   }, [feedback, onCatalogChange, onSwitchTrack, onSwitchUnit, refreshQuota, userId]);

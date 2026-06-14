@@ -105,7 +105,7 @@ export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProp
               type="button"
               onClick={() => onSelectTag?.(item.tag)}
               className={cn(
-                'rounded-full border px-2.5 py-1 text-xs transition-colors',
+                'rounded-md border px-2.5 py-1 text-xs transition-colors',
                 active
                   ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600'
                   : 'border-border/60 text-muted-foreground hover:border-emerald-500/40 hover:text-foreground',
@@ -113,7 +113,7 @@ export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProp
             >
               <span className="inline-flex items-center gap-1">
                 <span
-                  className="h-1.5 w-1.5 rounded-full"
+                  className="h-1.5 w-1.5 rounded-sm"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
                 {item.label} {item.weight}%

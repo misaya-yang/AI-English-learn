@@ -273,7 +273,7 @@ export default function ReviewPage() {
     }
 
     const interval = isZh ? ratingMeta[rating].delayZh : ratingMeta[rating].delayEn;
-    toast.success(`+${rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10} XP · ${isZh ? '下次' : 'Next'}: ${interval}`);
+    toast.success(`+${rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10} ${isZh ? '经验' : 'XP'} · ${isZh ? '下次' : 'Next'}: ${interval}`);
 
     if (currentIndex < reviewItems.length - 1) {
       setCurrentIndex((prev) => prev + 1);
@@ -364,7 +364,7 @@ export default function ReviewPage() {
             title={isZh ? '当前没有到期复习' : 'No review cards due right now'}
             description={
               isZh
-                ? '今天没有必须复习的卡片。可以去 Practice 做一次短练习；如果有补充复习，会显示在右侧。'
+                ? '今天没有必须复习的卡片。可以做一次短练习；如果有补充复习，会显示在右侧。'
                 : 'No cards are due right now. You can do a short Practice session; extra review items appear on the right.'
             }
             metrics={[
@@ -373,7 +373,7 @@ export default function ReviewPage() {
             actions={
               <>
                 <Button variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted" asChild>
-                  <Link to="/dashboard/today">{isZh ? '回到 Today' : 'Back to Today'}</Link>
+                  <Link to="/dashboard/today">{isZh ? '返回今日' : 'Back to Today'}</Link>
                 </Button>
                 <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                   <Link to="/dashboard/practice">{isZh ? '做巩固练习' : 'Reinforce in Practice'}</Link>
@@ -439,7 +439,7 @@ export default function ReviewPage() {
                 {isZh ? '再次复习' : 'Review again'}
               </Button>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
-                <Link to="/dashboard/practice">继续做 Practice</Link>
+                <Link to="/dashboard/practice">{isZh ? '继续练习' : 'Continue in Practice'}</Link>
               </Button>
             </>
           }

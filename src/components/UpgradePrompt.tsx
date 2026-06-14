@@ -50,8 +50,8 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   const proLimit = QUOTA_LIMITS.pro[feature];
   const checkoutLive = getCheckoutStatus().kind === 'available';
   const ctaLabel = checkoutLive
-    ? (isZh ? '查看 Pro 方案' : 'View Pro plan')
-    : (isZh ? '加入 Pro 等待名单' : 'Join Pro waitlist');
+    ? (isZh ? '查看方案' : 'View plan')
+    : (isZh ? '加入等待名单' : 'Join waitlist');
   const helperCopy = checkoutLive
     ? (isZh ? 'Pro 开放结账时，会在定价页进入真实支付流程。' : 'When checkout is live, Pricing starts the real payment flow.')
     : pickLocalized(PRO_WAITLIST_PROMISE, language);

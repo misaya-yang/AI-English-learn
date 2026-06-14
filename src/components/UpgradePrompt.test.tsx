@@ -40,7 +40,7 @@ describe('UpgradePrompt', () => {
     expect(screen.getByText(/IELTS Writing and Speaking scoring rubrics/i)).toBeInTheDocument();
     expect(screen.getByText(/Advanced analytics: review debt/i)).toBeInTheDocument();
     expect(screen.getByText(/Join the Pro interest list/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Join Pro waitlist/i })).toHaveAttribute('href', '/pricing');
+    expect(screen.getByRole('link', { name: /Join waitlist/i })).toHaveAttribute('href', '/pricing');
     expect(screen.queryByText(/^Upgrade to Pro$/i)).not.toBeInTheDocument();
   });
 
@@ -52,6 +52,6 @@ describe('UpgradePrompt', () => {
     expect(screen.getByText('今日额度已用完')).toBeInTheDocument();
     expect(screen.getByText(/考试反馈免费版每天限 2 次/)).toBeInTheDocument();
     expect(screen.getByText(/IELTS 评分反馈/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '加入 Pro 等待名单' })).toHaveAttribute('href', '/pricing');
+    expect(screen.getByRole('link', { name: '加入等待名单' })).toHaveAttribute('href', '/pricing');
   });
 });

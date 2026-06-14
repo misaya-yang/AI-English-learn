@@ -268,8 +268,8 @@ const analyticsCopy = {
       streakActive: '保持火热',
       streakStart: '从今天开始',
       levelPrefix: '等级',
-      xpTotal: '总 XP',
-      xpNeeded: 'XP 升到等级',
+      xpTotal: '总经验',
+      xpNeeded: '经验到等级',
     },
     tabs: {
       overview: '概览',
@@ -307,8 +307,8 @@ const analyticsCopy = {
     empty: {
       activity: {
         title: '还没有活动曲线',
-        description: '完成一次 Today、Review 或 Practice 后，这里会显示活动趋势。',
-        action: '打开 Today',
+        description: '完成一次今日任务、复习或练习后，这里会显示活动趋势。',
+        action: '打开今日',
       },
       topics: {
         title: '还没有主题记录',
@@ -358,7 +358,7 @@ const analyticsCopy = {
       radar: {
         title: '还没有能力雷达',
         description: '雷达图需要词汇、复习和连续性信号；先完成一个可记录任务。',
-        action: '打开 Today',
+        action: '打开今日',
       },
     },
     coach: {
@@ -368,14 +368,14 @@ const analyticsCopy = {
       repeatedErrors: '重复错误风险',
       retention: '预测保持率',
       focus: '练习重点',
-      focusDescription: 'Today 和答疑会优先处理这个薄弱点。',
+      focusDescription: '今日任务和答疑会优先处理这个薄弱点。',
     },
     insights: {
       weeklyReport: '本周总结',
       wordsStrengthened: '强化词数',
       activeDays: '活跃天数',
       reviewDebt: '复习债信号',
-      insufficient: '暂时没有足够记录。先完成一次 Today、Review 或 Practice。',
+      insufficient: '暂时没有足够记录。先完成一次今日任务、复习或练习。',
       strongestWaiting: '等待更多记录',
       weakestPrefix: '最需要处理',
       strongestPrefix: '最强信号',
@@ -389,6 +389,15 @@ const analyticsCopy = {
 const getAnalyticsCopy = (language: string) => (
   language.startsWith('zh') ? analyticsCopy.zh : analyticsCopy.en
 );
+
+const LEVEL_NAME_ZH: Record<string, string> = {
+  Novice: '入门学习者',
+  Apprentice: '稳定学习者',
+  Journeyman: '进阶学习者',
+  Expert: '熟练学习者',
+  'Word Wizard': '词汇积累者',
+  'Language Master': '高阶学习者',
+};
 
 interface AnalyticsEmptyCardProps {
   icon: ComponentType<{ className?: string }>;
@@ -578,6 +587,7 @@ export default function AnalyticsPage() {
   // Calculate level based on XP using the canonical helpers from gamification.ts
   const level = computeLevel(xp.total);
   const levelName = getLevelName(xp.total);
+  const levelNameDisplay = isZh ? (LEVEL_NAME_ZH[levelName] || levelName) : levelName;
   const streakCurrent = streak.current;
   // XP progress within the current level (0–99)
   const xpInCurrentLevel = xp.total % 100;
@@ -617,8 +627,8 @@ export default function AnalyticsPage() {
       value: xp.total.toString(),
       change: `${copy.stats.levelPrefix} ${level}`,
       icon: Zap,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      color: 'text-slate-600',
+      bgColor: 'bg-slate-100',
     },
   ];
 
@@ -751,11 +761,11 @@ export default function AnalyticsPage() {
 
   const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
   const badges = [
-    { name: '7-Day Streak', nameZh: '7天连续', icon: Flame, color: 'text-orange-500', earned: streakCurrent >= 7 },
-    { name: '100 Words', nameZh: '100单词', icon: BookOpen, color: 'text-emerald-500', earned: stats.totalWords >= 100 },
-    { name: 'Perfect Week', nameZh: '完美一周', icon: Calendar, color: 'text-blue-500', earned: hasPerfectWeek },
-    { name: 'Word Wizard', nameZh: '单词巫师', icon: Zap, color: 'text-purple-500', earned: stats.masteredWords >= 50 },
-    { name: 'Master Learner', nameZh: '学习大师', icon: Award, color: 'text-yellow-500', earned: xp.total >= 1000 },
+    { name: '7-day streak', nameZh: '连续 7 天', detailZh: '按时完成每日学习', detailEn: 'Kept daily study going', icon: Flame, color: 'text-slate-600', earned: streakCurrent >= 7 },
+    { name: '100 words', nameZh: '累计 100 词', detailZh: '词汇量达到 100', detailEn: 'Reached 100 learned words', icon: BookOpen, color: 'text-slate-600', earned: stats.totalWords >= 100 },
+    { name: 'Full week', nameZh: '完整一周', detailZh: '本周每天都有记录', detailEn: 'Recorded activity every day this week', icon: Calendar, color: 'text-slate-600', earned: hasPerfectWeek },
+    { name: 'Vocabulary milestone', nameZh: '词汇里程碑', detailZh: '已掌握词数达到 50', detailEn: 'Mastered 50 words', icon: Target, color: 'text-slate-600', earned: stats.masteredWords >= 50 },
+    { name: 'Steady learner', nameZh: '稳定学习者', detailZh: '总经验达到 1000', detailEn: 'Reached 1000 total points', icon: Award, color: 'text-slate-600', earned: xp.total >= 1000 },
   ];
 
   const formatRiskDueLabel = (hoursUntilDue: number): string => {
@@ -822,7 +832,7 @@ export default function AnalyticsPage() {
                 </p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '完成一次 Today、Review 或 Practice 后，图表会开始展示可追溯的学习记录、复习窗口和遗忘风险。'
+                    ? '完成一次今日任务、复习或练习后，图表会开始展示可追溯的学习记录、复习窗口和遗忘风险。'
                     : 'Complete Today, Review, or Practice once and charts will start using traceable learning records.'}
                 </p>
               </div>
@@ -868,20 +878,20 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Award className="h-5 w-5 text-yellow-500" />
-              <span className="font-medium">{copy.stats.levelPrefix} {level} - {levelName}</span>
+              <span className="font-medium">{copy.stats.levelPrefix} {level} - {levelNameDisplay}</span>
             </div>
             <span className="text-sm text-muted-foreground">
               {xp.total} {copy.stats.xpTotal}
             </span>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
+          <div className="h-2 w-full rounded-md bg-muted">
             <div
-              className="h-2 rounded-full bg-warning transition-all"
+              className="h-2 rounded-md bg-warning transition-all"
               style={{ width: `${xpInCurrentLevel}%` }}
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {xpInCurrentLevel} / 100 XP &mdash; {xpToNextLevel} {copy.stats.xpNeeded} {level + 1}
+            {xpInCurrentLevel} / 100 {isZh ? '经验' : 'XP'} &mdash; {xpToNextLevel} {copy.stats.xpNeeded} {level + 1}
           </p>
         </CardContent>
       </Card>
@@ -912,8 +922,8 @@ export default function AnalyticsPage() {
                     <XAxis dataKey="day" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
                     <YAxis stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
                     <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
-                    <Bar dataKey="words" fill={colors.words} name="Words Learned" />
-                    <Bar dataKey="xp" fill={colors.xp} name="XP Earned" />
+                    <Bar dataKey="words" fill={colors.words} name={isZh ? '学习词数' : 'Words learned'} />
+                    <Bar dataKey="xp" fill={colors.xp} name={isZh ? '经验' : 'Points earned'} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -959,10 +969,7 @@ export default function AnalyticsPage() {
                     <div className="flex flex-wrap gap-2 justify-center mt-4">
                       {topicData.map((topic) => (
                         <div key={topic.name} className="flex items-center gap-1">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: topic.color }}
-                          />
+                          <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: topic.color }} />
                           <span className="text-xs">{topic.name}</span>
                         </div>
                       ))}
@@ -1118,9 +1125,9 @@ export default function AnalyticsPage() {
                   <p className="text-xs text-muted-foreground text-center">
                     {isZh ? `${fsrsStats.total} 个词正在由 FSRS-5 跟踪` : `${fsrsStats.total} active words tracked by FSRS-5`}
                   </p>
-                  <div className="w-full bg-muted rounded-full h-2 mt-1">
+                  <div className="mt-1 h-2 w-full rounded-md bg-muted">
                     <div
-                      className="h-2 rounded-full bg-primary transition-all"
+                      className="h-2 rounded-md bg-primary transition-all"
                       style={{ width: `${Math.round(fsrsStats.avgR * 100)}%` }}
                     />
                   </div>
@@ -1302,11 +1309,11 @@ export default function AnalyticsPage() {
                             #{index + 1}
                           </span>
                           <p className="text-base font-semibold">{item.word}</p>
-                          <Badge variant="outline" className="rounded-full capitalize">
+                          <Badge variant="outline" className="rounded-md capitalize">
                             {item.topic}
                           </Badge>
                           {item.isStubborn ? (
-                            <Badge variant="secondary" className="rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                            <Badge variant="secondary" className="rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300">
 	                              {isZh ? '需要补强' : 'Reinforce'}
                             </Badge>
                           ) : null}
@@ -1318,7 +1325,7 @@ export default function AnalyticsPage() {
                       <div className="flex items-center gap-2">
                         <Badge
                           className={cn(
-                            'rounded-full px-3 py-1',
+                            'rounded-md px-3 py-1',
                             item.riskScore >= 75
                               ? 'bg-red-500/10 text-red-700 dark:text-red-300'
                               : item.riskScore >= 55
@@ -1433,7 +1440,7 @@ export default function AnalyticsPage() {
                   <p className="text-xs text-muted-foreground">{copy.insights.activeDays}</p>
                 </div>
 	                <div className="rounded-lg bg-background/50 p-3">
-                  <p className="text-2xl font-bold text-purple-500">{weeklyReport.reviewDebtTrend.count}</p>
+                  <p className="text-2xl font-bold text-slate-600">{weeklyReport.reviewDebtTrend.count}</p>
                   <p className="text-xs text-muted-foreground">{copy.insights.reviewDebt}</p>
                 </div>
               </div>
@@ -1553,22 +1560,22 @@ export default function AnalyticsPage() {
                 <CardContent className="p-4">
                   <div
                     className={cn(
-                      'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3',
-                      badge.earned ? 'bg-emerald-100' : 'bg-gray-100'
+                      'mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md border border-border',
+                      badge.earned ? 'bg-muted' : 'bg-muted/50'
                     )}
                   >
                     <badge.icon
                       className={cn(
-                        'h-8 w-8',
+                        'h-6 w-6',
                         badge.earned ? badge.color : 'text-gray-400'
                       )}
                     />
                   </div>
-                  <p className="font-medium text-sm">{badge.name}</p>
-                  <p className="text-xs text-muted-foreground">{badge.nameZh}</p>
+                  <p className="font-medium text-sm">{isZh ? badge.nameZh : badge.name}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{isZh ? badge.detailZh : badge.detailEn}</p>
                   {badge.earned && (
-                    <Badge variant="secondary" className="mt-2">
-                      Earned
+                    <Badge variant="secondary" className="mt-2 rounded-md">
+                      {isZh ? '已获得' : 'Earned'}
                     </Badge>
                   )}
                 </CardContent>

@@ -45,16 +45,16 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
         <div className="flex items-center gap-1.5">
           <Star className={cn('h-3.5 w-3.5', isComplete ? 'text-warning' : 'text-muted-foreground')} />
           <span className="text-xs font-semibold text-muted-foreground">
-            {todayXP} / {dailyGoal} XP
+            {todayXP} / {dailyGoal} 经验
           </span>
         </div>
-        <span className="text-xs font-bold text-muted-foreground">Lv {level}</span>
+        <span className="text-xs font-semibold text-muted-foreground">等级 {level}</span>
       </div>
 
-      <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+      <div className="relative h-2 w-full overflow-hidden rounded-md bg-muted">
         <motion.div
           className={cn(
-            'absolute inset-y-0 left-0 rounded-full',
+            'absolute inset-y-0 left-0 rounded-md',
             isComplete ? 'bg-emerald-500' : 'bg-primary',
           )}
           initial={false}
@@ -74,7 +74,7 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
           >
-            +{xpBurst.gain} XP
+            +{xpBurst.gain} 经验
           </motion.span>
         )}
       </AnimatePresence>

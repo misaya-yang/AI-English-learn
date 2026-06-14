@@ -111,7 +111,7 @@ export function InsightRail({
 
                 {microUnit && (
                   <div className="mt-4 rounded-md border border-border/60 bg-background/50 p-3">
-                    <p className="text-sm font-medium">最新补救微课</p>
+                    <p className="text-sm font-medium">最新专项讲解</p>
                     <p className="mt-1 text-sm text-foreground">{microUnit.title}</p>
                     <p className="mt-1 text-xs text-muted-foreground">预计 {microUnit.estimatedMinutes} 分钟 · {microUnit.cefrLevel}</p>
                   </div>
@@ -166,10 +166,10 @@ export function InsightRail({
                           </div>
 
                           <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                            <span className="rounded-md bg-muted/40 px-2 py-1">Task {item.scores.taskResponse.toFixed(1)}</span>
-                            <span className="rounded-md bg-muted/40 px-2 py-1">Coherence {item.scores.coherenceCohesion.toFixed(1)}</span>
-                            <span className="rounded-md bg-muted/40 px-2 py-1">Lexical {item.scores.lexicalResource.toFixed(1)}</span>
-                            <span className="rounded-md bg-muted/40 px-2 py-1">Grammar {item.scores.grammaticalRangeAccuracy.toFixed(1)}</span>
+                            <span className="rounded-md bg-muted/40 px-2 py-1">任务 {item.scores.taskResponse.toFixed(1)}</span>
+                            <span className="rounded-md bg-muted/40 px-2 py-1">连贯 {item.scores.coherenceCohesion.toFixed(1)}</span>
+                            <span className="rounded-md bg-muted/40 px-2 py-1">词汇 {item.scores.lexicalResource.toFixed(1)}</span>
+                            <span className="rounded-md bg-muted/40 px-2 py-1">语法 {item.scores.grammaticalRangeAccuracy.toFixed(1)}</span>
                           </div>
 
                           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -177,7 +177,7 @@ export function InsightRail({
                               <span className="text-xs text-muted-foreground">暂无明显问题</span>
                             ) : (
                               tags.map((tag) => (
-                                <span key={`${item.attemptId}-${tag}`} className="rounded-full border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
+                                <span key={`${item.attemptId}-${tag}`} className="rounded-md border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
                                   {tag}
                                 </span>
                               ))

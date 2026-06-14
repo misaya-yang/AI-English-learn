@@ -374,12 +374,12 @@ const StreakFire = memo(function StreakFire({ days }: { days: number }) {
       >
         <Flame className="h-4 w-4" />
       </motion.span>
-      <span className="text-xs font-bold text-amber-600">{days} day streak</span>
+      <span className="text-xs font-bold text-amber-600">连续 {days} 天</span>
     </motion.div>
   );
 });
 
-// Animated XP counter
+// Animated daily progress counter
 const XPCounter = memo(function XPCounter({ value }: { value: number }) {
   return (
     <motion.div
@@ -394,11 +394,27 @@ const XPCounter = memo(function XPCounter({ value }: { value: number }) {
         animate={{ y: 0, opacity: 1 }}
         className="text-xs font-bold text-[hsl(var(--accent-practice))]"
       >
-        +{value} XP
+        +{value} 经验
       </motion.span>
     </motion.div>
   );
 });
+
+const TOPIC_LABELS: Record<string, string> = {
+  daily: '日常',
+  business: '商务',
+  academic: '学术',
+  science: '科学',
+  technology: '科技',
+  travel: '旅行',
+  nature: '自然',
+  history: '历史',
+  math: '数学',
+  general: '综合',
+  'IELTS general': 'IELTS 综合',
+};
+
+const formatTopicLabel = (topic: string): string => TOPIC_LABELS[topic] || topic;
 
 export default function TodayPage() {
   const { user } = useAuth();
@@ -568,7 +584,7 @@ export default function TodayPage() {
         setTimeout(() => setShowConfetti(false), 3000);
       }
 
-      toast.success(`已学会 "${currentWord.word}"! +5 XP`, {
+      toast.success(`已学会 "${currentWord.word}"! +5 经验`, {
         icon: <Star className="h-4 w-4 text-yellow-500" />,
       });
     } else {
@@ -1023,10 +1039,10 @@ export default function TodayPage() {
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Badge variant="secondary" className="rounded-md">
-                    {dailyCoachPlan.dictionaryFocus.topic}
+                    {formatTopicLabel(dailyCoachPlan.dictionaryFocus.topic)}
                   </Badge>
                   <Badge variant="secondary" className="rounded-md">
-                    IELTS {dailyCoachPlan.dictionaryFocus.ieltsRelevance}
+                    IELTS {formatTopicLabel(dailyCoachPlan.dictionaryFocus.ieltsRelevance)}
                   </Badge>
                 </div>
                 <Button variant="outline" size="sm" className="mt-4 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
@@ -1123,10 +1139,10 @@ export default function TodayPage() {
                             {Math.round(learnerModel.avgRetrievability * 100)}%
                           </p>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                        <div className="h-1.5 w-full overflow-hidden rounded-md bg-muted">
                           <div
                             className={cn(
-                              'h-full rounded-full transition-all duration-700',
+                              'h-full rounded-md transition-all duration-700',
                               learnerModel.avgRetrievability >= 0.75 ? 'bg-[hsl(var(--accent-practice))]' :
                               learnerModel.avgRetrievability >= 0.5  ? 'bg-amber-500' : 'bg-destructive',
                             )}
@@ -1143,7 +1159,7 @@ export default function TodayPage() {
                         <div className="flex flex-wrap gap-1.5">
                           {learnerModel.weakTopics.map((t) => (
                             <span key={t} className="rounded-md bg-destructive/10 px-2 py-0.5 text-[11px] text-destructive">
-                              {t}
+                              {formatTopicLabel(t)}
                             </span>
                           ))}
                         </div>

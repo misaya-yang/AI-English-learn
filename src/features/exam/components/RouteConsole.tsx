@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { getExamTrackTitle, getExamUnitTitle } from '@/features/exam/examDisplayCopy';
 import type { ContentUnit, ExamTrack } from '@/types/examContent';
 
 const skillLabel = (skill: string): string => {
@@ -87,7 +88,7 @@ export function RouteConsole({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium leading-snug">{track.title}</p>
+                        <p className="text-sm font-medium leading-snug">{getExamTrackTitle(track)}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{track.bandTarget} · {skillLabel(track.skill)}</p>
                       </div>
                       <span className="text-xs font-medium text-muted-foreground">{progress}%</span>
@@ -116,7 +117,7 @@ export function RouteConsole({
 
         {selectedUnit && (
           <div className="mt-4 rounded-lg border border-border/70 bg-background/40 p-3">
-            <p className="text-sm font-medium">{selectedUnit.title}</p>
+            <p className="text-sm font-medium">{getExamUnitTitle(selectedUnit)}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {selectedUnit.cefrLevel} · {selectedUnit.estimatedMinutes} 分钟 · {selectedUnitProgress}% 完成
             </p>
@@ -145,7 +146,7 @@ export function RouteConsole({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium leading-snug">{unit.title}</p>
+                        <p className="text-sm font-medium leading-snug">{getExamUnitTitle(unit)}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{unit.cefrLevel} · {unit.estimatedMinutes} 分钟</p>
                       </div>
                       <span className="text-xs font-medium text-muted-foreground">{progress}%</span>

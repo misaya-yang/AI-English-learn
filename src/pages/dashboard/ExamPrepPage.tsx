@@ -10,6 +10,7 @@ import { ExamWorkspaceTabs } from '@/features/exam/components/ExamWorkspaceTabs'
 import { useExamDraftPersistence } from '@/features/exam/hooks/useExamDraftPersistence';
 import { useExamPrepRuntime } from '@/features/exam/hooks/useExamPrepRuntime';
 import { useExamQuotaState } from '@/features/exam/hooks/useExamQuotaState';
+import { getExamObjectiveText, getExamTrackTitle, getExamUnitTitle } from '@/features/exam/examDisplayCopy';
 import type { ExamDraftSnapshot, WorkspaceCopy, WorkspaceView } from '@/features/exam/types';
 import type { AiFeedback, ExamItem, FeedbackIssue } from '@/types/examContent';
 
@@ -150,6 +151,7 @@ export default function ExamPrepPage() {
     return tracks.filter(
       (track) =>
         track.title.toLowerCase().includes(query) ||
+        getExamTrackTitle(track).toLowerCase().includes(query) ||
         track.bandTarget.toLowerCase().includes(query) ||
         track.skill.toLowerCase().includes(query),
     );
@@ -158,7 +160,10 @@ export default function ExamPrepPage() {
   const filteredUnits = useMemo(() => {
     const query = unitSearch.trim().toLowerCase();
     if (!query) return units;
-    return units.filter((unit) => unit.title.toLowerCase().includes(query));
+    return units.filter((unit) =>
+      unit.title.toLowerCase().includes(query) ||
+      getExamUnitTitle(unit).toLowerCase().includes(query)
+    );
   }, [unitSearch, units]);
 
   const handleHydrateDraft = useCallback((snapshot: ExamDraftSnapshot) => {
@@ -216,7 +221,7 @@ export default function ExamPrepPage() {
     ? `先处理 ${ISSUE_LABELS[selectedErrorNode.tag]}，然后重写一段。`
     : '先完成一次写作评分，再看需要改哪一项。';
 
-  const unitObjectives = selectedUnit?.learningObjectives || [];
+  const unitObjectives = (selectedUnit?.learningObjectives || []).map(getExamObjectiveText);
   const recentHistory = feedbackHistory.slice(0, 6);
   const latestNextActions = feedback?.nextActions?.slice(0, 3) || [];
   const activeWordCount = toWordCount(runtime.writingAnswer);
@@ -257,7 +262,7 @@ export default function ExamPrepPage() {
     {
       id: 'brief',
       label: '定轨道',
-      description: selectedTrack?.title || '选择考试轨道与目标分',
+      description: selectedTrack ? getExamTrackTitle(selectedTrack) : '选择考试轨道与目标分',
       metric: selectedUnit ? `${selectedUnitProgress}% 单元进度` : '未选择单元',
     },
     {
@@ -294,8 +299,8 @@ export default function ExamPrepPage() {
         targetBand={targetBand}
         targetProgress={targetProgress}
         nextActionLabel={nextActionLabel}
-        selectedTrackTitle={selectedTrack?.title || null}
-        selectedUnitTitle={selectedUnit?.title || null}
+        selectedTrackTitle={selectedTrack ? getExamTrackTitle(selectedTrack) : null}
+        selectedUnitTitle={selectedUnit ? getExamUnitTitle(selectedUnit) : null}
         selectedUnitProgress={selectedUnitProgress}
         taskType={runtime.taskType}
         remainingQuota={remainingQuota}
@@ -374,7 +379,7 @@ export default function ExamPrepPage() {
           writingPrompt={runtime.writingPrompt}
           taskType={runtime.taskType}
           selectedUnit={selectedUnit}
-          selectedTrackTitle={selectedTrack?.title || null}
+          selectedTrackTitle={selectedTrack ? getExamTrackTitle(selectedTrack) : null}
           unitObjectives={unitObjectives}
           isSimulationMode={runtime.isSimulationMode}
           simulationTotalSec={runtime.simulationTotalSec}
@@ -423,8 +428,8 @@ export default function ExamPrepPage() {
 
       {runtime.showCelebrate && (
         <div className="pointer-events-none fixed inset-x-0 top-5 z-50 flex justify-center px-4">
-          <div className="rounded-full border border-emerald-400/50 bg-emerald-500/20 px-4 py-2 text-sm font-medium text-emerald-500 backdrop-blur-sm">
-            <CheckCircle2 className="mr-1 inline h-4 w-4" /> Band 提升 +0.5，这次写得更稳。
+          <div className="rounded-md border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-sm font-medium text-emerald-600 backdrop-blur-sm">
+            <CheckCircle2 className="mr-1 inline h-4 w-4" /> 评分已更新，这次结构更稳。
           </div>
         </div>
       )}

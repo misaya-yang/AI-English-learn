@@ -146,7 +146,7 @@ describe('buildQuizMistakeFeedback', () => {
       now: 1_700_000_000_000,
     });
     expect(feedback.issues[0].message).toBe('来自对话测验的错误回流。');
-    expect(feedback.issues[0].suggestion).toBe('建议完成对应补救微课并加入复习。');
+    expect(feedback.issues[0].suggestion).toBe('建议完成对应专项讲解并加入复习。');
     expect(feedback.nextActions).toEqual(['完成 1 次补救练习', '24 小时后再次测验']);
   });
 

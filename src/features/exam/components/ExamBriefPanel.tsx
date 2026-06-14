@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getExamUnitTitle } from '@/features/exam/examDisplayCopy';
 import type { PromptDifficulty, TaskType } from '@/features/exam/types';
 import type { ContentUnit, ExamItem } from '@/types/examContent';
 
@@ -50,17 +51,17 @@ export function ExamBriefPanel({
   formatSeconds,
 }: ExamBriefPanelProps) {
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_300px]">
       <div className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_150px_130px]">
+        <div className="flex flex-col gap-3 md:flex-row">
           <Input
             value={promptTopic}
             onChange={(event) => onPromptTopicChange(event.target.value)}
-            placeholder="话题：public transport / education / technology"
-            className="h-10 bg-background/60"
+            placeholder="输入话题，可留空"
+            className="h-10 bg-background/60 md:flex-1"
           />
           <Select value={promptDifficulty} onValueChange={(value) => onPromptDifficultyChange(value as PromptDifficulty)}>
-            <SelectTrigger className="h-10 bg-background/60">
+            <SelectTrigger className="h-10 bg-background/60 md:w-[150px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -69,7 +70,7 @@ export function ExamBriefPanel({
               <SelectItem value="hard">进阶</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={onGeneratePrompt} disabled={isBusy} variant="outline" className="h-10">
+          <Button onClick={onGeneratePrompt} disabled={isBusy} variant="outline" className="h-10 md:w-[130px]">
             <RefreshCw className="mr-1.5 h-4 w-4" /> 随机题
           </Button>
         </div>
@@ -121,7 +122,7 @@ export function ExamBriefPanel({
 
       <div className="rounded-md border border-border/70 bg-background/35 p-4">
         <p className="text-[11px] font-medium text-muted-foreground/80">本轮目标</p>
-        <p className="mt-2 text-base font-semibold">{selectedUnit?.title || '先从左侧选择一个单元'}</p>
+        <p className="mt-2 text-base font-semibold">{selectedUnit ? getExamUnitTitle(selectedUnit) : '先从左侧选择一个单元'}</p>
         <p className="mt-1 text-sm text-muted-foreground">{selectedTrackTitle || '系统会按目标 Band 自动关联轨道。'}</p>
         {unitObjectives.length > 0 && (
           <div className="mt-4 space-y-2">

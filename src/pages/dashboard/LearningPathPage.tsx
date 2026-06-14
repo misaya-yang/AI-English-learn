@@ -3,12 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
   Circle,
   Clock,
+  FileText,
   MapPin,
+  MessageSquareText,
+  RotateCcw,
+  Target,
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,18 +35,22 @@ import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { recordEvent } from '@/services/learningEvents';
 import { toast } from 'sonner';
 
-const DIFFICULTY_COLORS = {
-  beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  intermediate: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  advanced: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+const DIFFICULTY_LABELS = {
+  beginner: { zh: '入门', en: 'Beginner' },
+  intermediate: { zh: '进阶', en: 'Intermediate' },
+  advanced: { zh: '高级', en: 'Advanced' },
 };
 
-const lessonTypeIcon: Record<LessonItem['type'], string> = {
-  vocabulary: '📖',
-  grammar: '📝',
-  practice: '🎯',
-  conversation: '💬',
-  review: '🔄',
+const lessonTypeMeta: Record<LessonItem['type'], {
+  icon: typeof BookOpen;
+  labelZh: string;
+  labelEn: string;
+}> = {
+  vocabulary: { icon: BookOpen, labelZh: '词汇', labelEn: 'Vocabulary' },
+  grammar: { icon: FileText, labelZh: '语法', labelEn: 'Grammar' },
+  practice: { icon: Target, labelZh: '练习', labelEn: 'Practice' },
+  conversation: { icon: MessageSquareText, labelZh: '对话', labelEn: 'Conversation' },
+  review: { icon: RotateCcw, labelZh: '复习', labelEn: 'Review' },
 };
 
 const getLessonIds = (path: LearningPath): string[] =>
@@ -153,23 +162,23 @@ export default function LearningPathPage() {
     const recommendedTitle = isZh ? recommendedPath?.titleZh : recommendedPath?.title;
 
     return (
-      <div className="mx-auto max-w-3xl p-4 sm:p-6">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
         <LearningCockpitShell
           language={i18n.language}
           eyebrow={isZh ? '学习路径' : 'Learning Paths'}
           mission={{
-            title: isZh ? '挑一条路径，让今天的努力沿着一个方向累积。' : 'Pick a path so today\'s effort stacks toward one outcome.',
+            title: isZh ? '选择一条学习路径' : 'Choose a learning path',
             description: isZh
-              ? '选择一条路径，系统化提升你的英语能力。每条路径都把词汇、语法和练习串成可追踪的进度。'
-              : 'Choose a path to systematically improve your English. Each one stitches vocabulary, grammar, and practice into trackable progress.',
+              ? '每条路径按词汇、语法和练习推进，完成后会记录到进度里。'
+              : 'Each path moves through vocabulary, grammar, and practice with progress recorded as you go.',
             primaryAction: recommendedPath
               ? {
-                  label: isZh ? `继续：${recommendedTitle}` : `Continue: ${recommendedTitle}`,
+                  label: isZh ? `继续${recommendedTitle}` : `Continue ${recommendedTitle}`,
                   onClick: () => handleSelectPath(recommendedPath.id),
                 }
               : undefined,
             secondaryActions: [
-              { label: isZh ? '回到 Today' : 'Back to Today', href: '/dashboard/today', variant: 'outline' },
+              { label: isZh ? '返回今日' : 'Back to Today', href: '/dashboard/today', variant: 'outline' },
             ],
           }}
           metrics={[
@@ -184,27 +193,30 @@ export default function LearningPathPage() {
             },
           ]}
         >
-          <div className="grid gap-4">
+          <div className="grid gap-3 md:grid-cols-2">
           {learningPaths.map((path, index) => {
             const percent = pathProgressMap.get(path.id) || 0;
             const lessonIds = getLessonIds(path);
             const completedCount = lessonIds.filter((lessonId) => completedLessonSet.has(lessonId)).length;
+            const difficultyLabel = DIFFICULTY_LABELS[path.difficulty];
 
             return (
               <motion.div key={path.id} {...motionStagger(index)}>
                 <Card
-                  className="cursor-pointer transition-colors hover:border-primary/50"
+                  className="h-full cursor-pointer rounded-md transition-colors hover:border-primary/45"
                   onClick={() => handleSelectPath(path.id)}
                 >
                   <CardContent className="flex items-center gap-4 p-4">
-                    <span className="text-3xl">{path.icon}</span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-sm font-semibold text-muted-foreground">
+                      {index + 1}
+                    </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold">
                           {isZh ? path.titleZh : path.title}
                         </h3>
-                        <span className={`rounded px-1.5 py-0.5 text-xs ${DIFFICULTY_COLORS[path.difficulty]}`}>
-                          {path.difficulty}
+                        <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                          {isZh ? difficultyLabel.zh : difficultyLabel.en}
                         </span>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -236,7 +248,7 @@ export default function LearningPathPage() {
   const pathTitle = isZh ? selectedPath.titleZh : selectedPath.title;
 
   return (
-    <div className="mx-auto max-w-2xl p-4 sm:p-6">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6">
       <LearningCockpitShell
         language={i18n.language}
         eyebrow={isZh ? '学习路径' : 'Learning Paths'}
@@ -245,12 +257,12 @@ export default function LearningPathPage() {
           description: isZh ? selectedPath.descriptionZh : selectedPath.description,
           primaryAction: nextLesson && nextLessonTarget
             ? {
-                label: isZh ? `打开下一课：${nextLesson.titleZh}` : `Open next: ${nextLesson.title}`,
+                label: isZh ? `下一课：${nextLesson.titleZh}` : `Next lesson: ${nextLesson.title}`,
                 onClick: () => navigate(nextLessonTarget.href),
               }
             : undefined,
           secondaryActions: [
-            { label: isZh ? '回到 Today' : 'Back to Today', href: '/dashboard/today', variant: 'outline' },
+            { label: isZh ? '返回今日' : 'Back to Today', href: '/dashboard/today', variant: 'outline' },
           ],
         }}
         metrics={[
@@ -289,7 +301,7 @@ export default function LearningPathPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {nextLesson
-                    ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${isZh ? nextLessonTarget?.labelZh : nextLessonTarget?.label} · ${nextLesson.estimatedMinutes}m`
+                    ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${isZh ? nextLessonTarget?.labelZh : nextLessonTarget?.label} · ${isZh ? `${nextLesson.estimatedMinutes} 分钟` : `${nextLesson.estimatedMinutes} min`}`
                     : isZh
                       ? '这条路径已经完成，可以切换到下一条更高阶路径。'
                       : 'This path is complete. You can switch to a more advanced path next.'}
@@ -323,7 +335,7 @@ export default function LearningPathPage() {
                       return (
                         <div
                           key={lesson.id}
-                          className="flex w-full items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted/50"
+                          className="flex w-full items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
                         >
                           <button
                             type="button"
@@ -344,13 +356,24 @@ export default function LearningPathPage() {
                             className="min-w-0 flex-1 text-left"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="text-sm">{lessonTypeIcon[lesson.type]}</span>
+                              {(() => {
+                                const meta = lessonTypeMeta[lesson.type];
+                                const LessonIcon = meta.icon;
+                                return (
+                                  <span
+                                    title={isZh ? meta.labelZh : meta.labelEn}
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground"
+                                  >
+                                    <LessonIcon className="h-3.5 w-3.5" />
+                                  </span>
+                                );
+                              })()}
                               <span className={`min-w-0 flex-1 text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>
                                 {isZh ? lesson.titleZh : lesson.title}
                               </span>
                               <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
                                 <Clock className="h-3 w-3" />
-                                {lesson.estimatedMinutes}m
+                                {isZh ? `${lesson.estimatedMinutes} 分钟` : `${lesson.estimatedMinutes} min`}
                               </span>
                             </div>
                             <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">

@@ -2,11 +2,8 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
-  Crown,
   Flame,
-  Medal,
   TrendingUp,
-  Trophy,
   Users,
 } from 'lucide-react';
 
@@ -32,10 +29,11 @@ interface LeaderEntry {
 type LeaderboardTab = 'weekly' | 'streak' | 'total';
 
 function RankIcon({ rank }: { rank: number }) {
-  if (rank === 1) return <Crown className="h-5 w-5 text-amber-400" />;
-  if (rank === 2) return <Medal className="h-4.5 w-4.5 text-muted-foreground" />;
-  if (rank === 3) return <Medal className="h-4.5 w-4.5 text-amber-700" />;
-  return <span className="text-sm font-bold text-muted-foreground">{rank}</span>;
+  return (
+    <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted text-xs font-semibold text-muted-foreground">
+      {rank}
+    </span>
+  );
 }
 
 function sortEntries(entries: LeaderEntry[], tab: LeaderboardTab): LeaderEntry[] {
@@ -54,7 +52,10 @@ function sortEntries(entries: LeaderEntry[], tab: LeaderboardTab): LeaderEntry[]
 
 function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) {
   const value = tab === 'weekly' ? entry.weeklyXp : tab === 'streak' ? entry.streak : entry.totalWords;
-  const unit = tab === 'weekly' ? 'XP' : tab === 'streak' ? '天' : '词';
+  const unit = tab === 'weekly' ? '经验' : tab === 'streak' ? '天' : '词';
+  const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
+    ? '演示学习者'
+    : entry.displayName;
 
   return (
     <motion.div
@@ -62,9 +63,9 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'flex items-center gap-3 rounded-lg px-4 py-3 transition-colors',
+        'flex items-center gap-3 rounded-md px-4 py-3 transition-colors',
         entry.isCurrentUser
-          ? 'border border-emerald-500/25 bg-emerald-500/[0.06]'
+          ? 'border border-primary/25 bg-primary/[0.06]'
           : 'border border-transparent hover:border-border hover:bg-muted/30',
       )}
     >
@@ -73,10 +74,7 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
       </div>
 
       <div
-        className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
-          entry.avatarColor,
-        )}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-card text-xs font-semibold text-foreground"
       >
         {entry.avatarInitials}
       </div>
@@ -85,11 +83,11 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
         <p
           className={cn(
             'truncate text-sm font-semibold',
-            entry.isCurrentUser ? 'text-emerald-600 dark:text-emerald-300' : 'text-foreground',
+            entry.isCurrentUser ? 'text-primary' : 'text-foreground',
           )}
         >
-          {entry.displayName}
-          {entry.isCurrentUser ? <span className="ml-1.5 text-[10px] font-normal text-emerald-500">（我）</span> : null}
+          {displayName}
+          {entry.isCurrentUser ? <span className="ml-1.5 text-[10px] font-normal text-primary">（我）</span> : null}
         </p>
         <div className="mt-0.5 flex items-center gap-1.5">
           <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
@@ -103,7 +101,7 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
       </div>
 
       <div className="shrink-0 text-right">
-        <p className={cn('text-base font-bold', entry.isCurrentUser ? 'text-emerald-500' : 'text-foreground')}>
+        <p className={cn('text-base font-semibold', entry.isCurrentUser ? 'text-primary' : 'text-foreground')}>
           {value.toLocaleString()}
         </p>
         <p className="text-[10px] text-muted-foreground">{unit}</p>
@@ -122,7 +120,7 @@ export default function LeaderboardPage() {
     () =>
       buildSocialLeaderboardSnapshot({
         userId: user?.id || 'guest',
-        displayName: user?.displayName || user?.email?.split('@')[0] || 'You',
+        displayName: user?.displayName || user?.email?.split('@')[0] || '演示学习者',
         level: profile?.cefrLevel || 'B1',
         weeklyXp: stats.weeklyXP || xp.today || 0,
         streak: currentStreak,
@@ -152,7 +150,7 @@ export default function LeaderboardPage() {
   const leagueMeta = LEAGUE_TIERS.find((tier) => tier.id === snapshot.leagueTier);
 
   const tabs: Array<{ id: LeaderboardTab; label: string; labelZh: string; icon: React.ReactNode }> = [
-    { id: 'weekly', label: 'Weekly XP', labelZh: '本周 XP', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+    { id: 'weekly', label: 'Weekly points', labelZh: '本周经验', icon: <TrendingUp className="h-3.5 w-3.5" /> },
     { id: 'streak', label: 'Streak', labelZh: '连续天数', icon: <Flame className="h-3.5 w-3.5" /> },
     { id: 'total', label: 'Total Words', labelZh: '累计词量', icon: <BookOpen className="h-3.5 w-3.5" /> },
   ];
@@ -177,32 +175,32 @@ export default function LeaderboardPage() {
         </div>
 
         {leagueMeta ? (
-          <div className="rounded-lg border border-border bg-card px-4 py-3 text-right">
+          <div className="rounded-md border border-border bg-card px-4 py-3 text-right">
             <p className="text-xs text-muted-foreground">当前联赛</p>
-            <p className="mt-1 text-lg font-semibold text-foreground">
-              {leagueMeta.icon} {leagueMeta.labelZh}
-            </p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{leagueMeta.labelZh}</p>
           </div>
         ) : null}
       </div>
 
       {currentUserEntry ? (
-        <div className="flex items-center gap-3 rounded-lg border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+        <div className="flex items-center gap-3 rounded-md border border-primary/25 bg-primary/[0.06] px-4 py-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-card text-xs font-semibold text-foreground">
             {currentUserEntry.avatarInitials}
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-300">{currentUserEntry.displayName}</p>
-            <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
-              第 {currentUserEntry.rank} 名 · 本周 {currentUserEntry.weeklyXp} XP
+            <p className="text-sm font-semibold text-primary">
+              {currentUserEntry.displayName === 'Demo Learner' ? '演示学习者' : currentUserEntry.displayName}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              第 {currentUserEntry.rank} 名 · 本周 {currentUserEntry.weeklyXp} 经验
             </p>
           </div>
-          <Trophy className="h-5 w-5 text-emerald-500" />
+          <RankIcon rank={currentUserEntry.rank} />
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-lg border border-border bg-card p-4">
+      <div className="grid items-start gap-4 md:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-md border border-border bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs text-muted-foreground">本周状态</p>
@@ -218,17 +216,17 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-4">
+        <div className="rounded-md border border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">好友动态</p>
           <div className="mt-3 space-y-2">
             {snapshot.friends.slice(0, 4).map((friend) => (
               <div key={friend.userId} className="flex items-center gap-3 rounded-md bg-muted/40 px-3 py-2">
-                <div className={cn('flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold text-white', friend.avatarColor)}>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-[11px] font-semibold text-foreground">
                   {friend.avatarInitials}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{friend.displayName}</p>
-                  <p className="text-[11px] text-muted-foreground">{friend.weeklyXp} XP · 连续{friend.streak}天</p>
+                  <p className="text-[11px] text-muted-foreground">{friend.weeklyXp} 经验 · 连续{friend.streak}天</p>
                 </div>
               </div>
             ))}
@@ -257,28 +255,28 @@ export default function LeaderboardPage() {
 
       <div className="grid grid-cols-3 gap-3">
         {entries.slice(0, 3).map((entry) => {
-          const colors = ['border-amber-400/30 bg-amber-500/[0.08]', 'border-slate-400/20 bg-slate-500/[0.05]', 'border-amber-700/20 bg-amber-700/[0.05]'];
-          const index = entry.rank - 1;
           const value = activeTab === 'weekly' ? entry.weeklyXp : activeTab === 'streak' ? entry.streak : entry.totalWords;
-          const unit = activeTab === 'weekly' ? 'XP' : activeTab === 'streak' ? '天' : '词';
+          const unit = activeTab === 'weekly' ? '经验' : activeTab === 'streak' ? '天' : '词';
+          const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
+            ? '演示学习者'
+            : entry.displayName;
 
           return (
             <div
               key={entry.userId}
               className={cn(
-                'flex flex-col items-center rounded-lg border p-3 transition-colors',
-                colors[index],
-                entry.isCurrentUser && 'ring-2 ring-emerald-500/50',
+                'flex flex-col items-center rounded-md border border-border bg-card p-3 transition-colors',
+                entry.isCurrentUser && 'border-primary/35 bg-primary/[0.05]',
               )}
             >
               <div className="mb-1">
                 <RankIcon rank={entry.rank} />
               </div>
-              <div className={cn('mb-1 flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white', entry.avatarColor)}>
+              <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-xs font-semibold text-foreground">
                 {entry.avatarInitials}
               </div>
               <p className="w-full truncate text-center text-[11px] font-semibold text-foreground">
-                {entry.displayName.split(' ')[0]}
+                {displayName.split(' ')[0]}
               </p>
               <p className="text-sm font-bold text-foreground">{value.toLocaleString()}</p>
               <p className="text-[9px] text-muted-foreground">{unit}</p>
@@ -296,8 +294,8 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-3">
-        <Trophy className="h-4 w-4 shrink-0 text-primary" />
+      <div className="flex items-center gap-2.5 rounded-md border border-border bg-card px-4 py-3">
+        <Users className="h-4 w-4 shrink-0 text-primary" />
         <p className="text-sm text-muted-foreground">
           联赛按周重置。当前页面保留这一周的本地快照，接入后端实时榜后会切换到实时数据。
         </p>

@@ -67,7 +67,7 @@ export function HeroSummary({
         <div className="flex flex-wrap items-center gap-2">
           <Badge className={cn('rounded-md border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-emerald-600 text-white' : '')}>
             {plan === 'pro' ? <Crown className="mr-1 h-3.5 w-3.5" /> : <BookOpen className="mr-1 h-3.5 w-3.5" />}
-            {plan === 'pro' ? 'Pro' : '免费版'}
+            {plan === 'pro' ? '专业版' : '基础版'}
           </Badge>
           <Badge variant="outline" className="rounded-md">
             <Flame className="mr-1 h-3.5 w-3.5" /> 连续学习 {streakDays} 天
@@ -140,13 +140,13 @@ export function HeroSummary({
             total={quotaTotal.simItemsPerDay}
           />
           <QuotaPill
-            label="补救微课"
+            label="专项讲解"
             remaining={remainingQuota.microLessonsPerDay}
             total={quotaTotal.microLessonsPerDay}
           />
           <Link to="/pricing">
             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
-              查看 Pro <ArrowUpRight className="ml-0.5 h-3 w-3" />
+              查看方案 <ArrowUpRight className="ml-0.5 h-3 w-3" />
             </Button>
           </Link>
         </div>

@@ -556,7 +556,7 @@ export default function ListeningPage() {
     const pct = correct / total;
     const xp = pct >= 0.8 ? 30 : pct >= 0.6 ? 18 : 8;
     addStudySession(0, 0, xp, 0);
-    toast.success(`+${xp} XP`, { description: isZh ? `${correct}/${total} 正确` : `${correct}/${total} correct` });
+    toast.success(`+${xp} ${isZh ? '经验' : 'XP'}`, { description: isZh ? `${correct}/${total} 正确` : `${correct}/${total} correct` });
 
     if (user?.id) {
       void recordLearningEvent({

@@ -345,8 +345,8 @@ export default function ReadingPage() {
     addStudySession(0, pct >= 0.8 ? 1 : 0, xp, elapsed);
     setPhase('review');
 
-    if (pct === 1)       toast.success(isZh ? `满分！+${xp} XP` : `Perfect score! +${xp} XP`);
-    else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确，+${xp} XP` : `Great work: ${correct}/${total} correct. +${xp} XP`);
+    if (pct === 1)       toast.success(isZh ? `满分！+${xp} 经验` : `Perfect score! +${xp} XP`);
+    else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确，+${xp} 经验` : `Great work: ${correct}/${total} correct. +${xp} XP`);
     else                 toast.info(isZh ? `${correct}/${total} 正确，建议复盘解析` : `${correct}/${total} correct. Review the answers below.`);
 
     if (user?.id) {

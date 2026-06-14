@@ -152,7 +152,7 @@ const buildReviewRecap = (
       encouragement,
       nextAction: {
         ctaEn: 'Back to Today',
-        ctaZh: '回到 Today',
+        ctaZh: '返回今日',
         href: '/dashboard/today',
         reason: {
           en: 'No FSRS reviews are due. Keep the momentum on today\'s mission.',
@@ -170,7 +170,7 @@ const buildReviewRecap = (
       encouragement,
       nextAction: {
         ctaEn: 'Reinforce in Practice',
-        ctaZh: '到 Practice 巩固',
+        ctaZh: '去练习巩固',
         href: '/dashboard/practice',
         reason: {
           en: `Practice the ${struggleCount} struggling card${struggleCount > 1 ? 's' : ''} in context so they stick.`,
@@ -326,7 +326,7 @@ const buildPracticeRecap = (
     encouragement,
     nextAction: {
       ctaEn: 'Back to Today',
-      ctaZh: '回到 Today',
+      ctaZh: '返回今日',
       href: '/dashboard/today',
       reason: {
         en: 'Session is clean. Keep the momentum on today\'s mission.',

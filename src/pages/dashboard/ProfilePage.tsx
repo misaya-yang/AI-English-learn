@@ -291,7 +291,7 @@ export default function ProfilePage() {
             <div className="grid w-full grid-cols-3 gap-2 md:w-auto md:min-w-[280px]">
               <div className="rounded-md border border-border bg-background px-3 py-2">
                 <p className="text-lg font-semibold tabular-nums">{xp.total.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">XP</p>
+                <p className="text-xs text-muted-foreground">{isZh ? '经验' : 'XP'}</p>
               </div>
 	              <div className="rounded-md border border-border bg-background px-3 py-2">
 	                <p className="text-lg font-semibold tabular-nums">{streak.current}</p>
@@ -311,7 +311,7 @@ export default function ProfilePage() {
 	                {levelProgressLabel} → {isZh ? `等级 ${currentLevel + 1}` : `Level ${currentLevel + 1}`}
 	              </span>
               <span className="text-sm text-muted-foreground">
-                {xpInCurrentLevel} / {xpNeededForNext} XP
+                {xpInCurrentLevel} / {xpNeededForNext} {isZh ? '经验' : 'XP'}
               </span>
             </div>
             <Progress value={progressPercent} className="h-2" />
@@ -526,7 +526,7 @@ export default function ProfilePage() {
               </div>
               {dailyMultiplier > 1 && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {dailyMultiplier}x XP
+                  {dailyMultiplier}x {isZh ? '经验' : 'XP'}
                 </Badge>
               )}
             </div>
@@ -541,14 +541,14 @@ export default function ProfilePage() {
               onClick={() => {
                 const result = purchaseStreakFreeze();
                 if (result.success) {
-                  toast.success(`已购买打卡冻结（消耗 ${result.cost} XP）`);
+                  toast.success(`已购买打卡冻结（消耗 ${result.cost} 经验）`);
                 } else {
-                  toast.error(`XP 不足（需要 ${result.cost} XP）`);
+                  toast.error(`经验不足（需要 ${result.cost} 经验）`);
                 }
               }}
             >
               <Zap className="h-4 w-4 mr-1" />
-	              {isZh ? '购买冻结（50 XP）' : 'Buy freeze (50 XP)'}
+	              {isZh ? '购买冻结（50 经验）' : 'Buy freeze (50 XP)'}
             </Button>
           </CardContent>
         </Card>
@@ -640,7 +640,7 @@ export default function ProfilePage() {
 	              <p className="text-sm leading-relaxed text-amber-600 dark:text-amber-400">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
 	              <Button asChild size="sm" className="h-8 flex-shrink-0 rounded-md bg-amber-500 px-3 text-xs font-semibold text-black hover:bg-amber-400">
 	                <Link to="/pricing">
-	                  {isZh ? '查看 Pro 入口' : 'View Pro access'}
+	                  {isZh ? '查看方案入口' : 'View plan access'}
 	                </Link>
 	              </Button>
             </div>

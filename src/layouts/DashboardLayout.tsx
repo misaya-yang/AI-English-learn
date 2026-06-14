@@ -530,8 +530,8 @@ export default function DashboardLayout() {
           className="h-auto rounded-md border border-current/15 bg-transparent px-1.5 py-1.5 hover:bg-current/5"
           aria-label={currentLang === 'zh' ? '打开账号菜单' : 'Open account menu'}
         >
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-primary/10 text-primary">
+          <Avatar className="h-9 w-9 rounded-md">
+            <AvatarFallback className="rounded-md bg-primary/10 text-primary">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
@@ -568,8 +568,8 @@ export default function DashboardLayout() {
     <div className="flex h-full flex-col gap-4 px-1 text-sidebar-foreground">
       <div className="rounded-md border border-sidebar-border bg-sidebar-accent p-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback>{avatarInitial}</AvatarFallback>
+          <Avatar className="h-10 w-10 rounded-md">
+            <AvatarFallback className="rounded-md">{avatarInitial}</AvatarFallback>
           </Avatar>
           <div>
             <div className="flex items-center gap-2">
@@ -617,8 +617,8 @@ export default function DashboardLayout() {
     <div className="flex h-full flex-col gap-6 bg-sidebar text-sidebar-foreground">
       <div className="premium-side-card rounded-md border border-sidebar-border bg-sidebar-accent p-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-sidebar-primary/14 text-sidebar-primary">
+          <Avatar className="h-10 w-10 rounded-md">
+            <AvatarFallback className="rounded-md bg-sidebar-primary/14 text-sidebar-primary">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
@@ -756,7 +756,7 @@ export default function DashboardLayout() {
                     current={streak?.current || 0}
                     longest={streak?.longest || 0}
                   />
-                  <span className="text-xs font-bold text-sidebar-foreground/55">Lv {xp?.level || 1}</span>
+                  <span className="text-xs font-semibold text-sidebar-foreground/55">等级 {xp?.level || 1}</span>
                 </div>
                 <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
               </div>
@@ -933,7 +933,7 @@ export default function DashboardLayout() {
             <div className="premium-side-card rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-3 space-y-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
-                <Badge variant="outline" className="rounded-md border-sidebar-border bg-sidebar-accent text-sidebar-foreground">Lv {xp?.level || 1}</Badge>
+                <Badge variant="outline" className="rounded-md border-sidebar-border bg-sidebar-accent text-sidebar-foreground">等级 {xp?.level || 1}</Badge>
               </div>
               <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
             </div>
@@ -962,8 +962,8 @@ export default function DashboardLayout() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="rounded-md px-2">
-                  <Avatar className="h-9 w-9">
-                    <AvatarFallback>{avatarInitial}</AvatarFallback>
+                  <Avatar className="h-9 w-9 rounded-md">
+                    <AvatarFallback className="rounded-md">{avatarInitial}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>

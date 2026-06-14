@@ -42,27 +42,27 @@ export function ExamReviewPanel({
             <h3 className="mt-2 text-lg font-semibold">Overall Band {feedback.scores.overallBand.toFixed(1)}</h3>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="rounded-md">Provider: {feedback.provider}</Badge>
+            <Badge variant="outline" className="rounded-md">评分服务：{feedback.provider}</Badge>
             {(feedbackLatencyMs || feedback.latencyMs) && (
               <Badge
                 variant="outline"
                 className={cn(
-                  'rounded-full',
+                  'rounded-md',
                   (feedbackLatencyMs || feedback.latencyMs)! > 8000 ? 'border-amber-400/60 text-amber-500' : 'border-emerald-400/60 text-emerald-500',
                 )}
               >
-                Latency {(feedbackLatencyMs || feedback.latencyMs)}ms
+                耗时 {(feedbackLatencyMs || feedback.latencyMs)}ms
               </Badge>
             )}
           </div>
         </div>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-5">
-          <ScoreCell title="Task" value={feedback.scores.taskResponse} />
-          <ScoreCell title="Coherence" value={feedback.scores.coherenceCohesion} />
-          <ScoreCell title="Lexical" value={feedback.scores.lexicalResource} />
-          <ScoreCell title="Grammar" value={feedback.scores.grammaticalRangeAccuracy} />
-          <ScoreCell title="Overall" value={feedback.scores.overallBand} highlight />
+          <ScoreCell title="任务" value={feedback.scores.taskResponse} />
+          <ScoreCell title="连贯" value={feedback.scores.coherenceCohesion} />
+          <ScoreCell title="词汇" value={feedback.scores.lexicalResource} />
+          <ScoreCell title="语法" value={feedback.scores.grammaticalRangeAccuracy} />
+          <ScoreCell title="总分" value={feedback.scores.overallBand} highlight />
         </div>
       </div>
 

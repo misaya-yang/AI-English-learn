@@ -624,7 +624,7 @@ export default function GrammarPage() {
     const pct = correct / activeRule.practice.length;
     const xp = pct >= 0.8 ? 20 : pct >= 0.5 ? 10 : 5;
     addStudySession(0, 0, xp, 0);
-    toast.success(`+${xp} XP`, { description: `${correct}/${activeRule.practice.length} correct` });
+    toast.success(`+${xp} ${isZh ? '经验' : 'XP'}`, { description: isZh ? `${correct}/${activeRule.practice.length} 正确` : `${correct}/${activeRule.practice.length} correct` });
 
     // Record learning event and gamification
     if (user?.id) {

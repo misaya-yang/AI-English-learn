@@ -38,7 +38,7 @@ export function QuotaRing({
             <span className="ml-1 text-xs font-normal text-muted-foreground">/ {safeTotal}</span>
           </p>
         </div>
-        <span className="rounded-full border border-emerald-500/25 bg-emerald-500/[0.10] px-2 py-1 text-[11px] font-medium text-emerald-500">
+        <span className="rounded-md border border-emerald-500/25 bg-emerald-500/[0.10] px-2 py-1 text-[11px] font-medium text-emerald-500">
           {percent}%
         </span>
       </div>

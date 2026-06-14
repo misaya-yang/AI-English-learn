@@ -387,7 +387,7 @@ export default function PracticePage() {
         : newCombo >= 3
           ? (isZh ? '，3 连击' : ', 3-answer streak')
           : '';
-      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 XP${comboBonus}`);
+      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 ${isZh ? '经验' : 'XP'}${comboBonus}`);
       // Bump per-word progress through FSRS so a correct answer is reflected
       // in the durable progress store, not just the session score.
       try {
@@ -582,7 +582,7 @@ export default function PracticePage() {
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 XP`);
+      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 ${isZh ? '经验' : 'XP'}`);
       try {
         reviewWord(currentWord.id, 'good');
       } catch {
@@ -967,7 +967,7 @@ export default function PracticePage() {
                     {isZh ? 'Task 1 小作文' : 'Task 1'}
                   </SelectItem>
                   <SelectItem value="task2" className="focus:bg-muted focus:text-foreground">
-                    {isZh ? 'Task 2 大作文' : 'Task 2'}
+                    {isZh ? '大作文' : 'Task 2'}
                   </SelectItem>
                 </SelectContent>
               </Select>
