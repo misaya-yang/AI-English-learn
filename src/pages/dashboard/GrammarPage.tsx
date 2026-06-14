@@ -503,7 +503,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
 
   return (
     <div className={cn(
-      'rounded-xl border p-4 space-y-3 transition-all duration-300',
+      'rounded-md border p-4 space-y-3 transition-all duration-300',
       !submitted
         ? 'border-border bg-card'
         : isCorrect
@@ -512,7 +512,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
     )}>
       {/* Question number + result indicator */}
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
+        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-muted text-[11px] font-bold text-muted-foreground">
           {index + 1}
         </span>
         <div className="flex-1">
@@ -566,7 +566,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
               {isZh ? '正确答案' : 'Correct'}: <span className="font-bold">{item.answer}</span>
             </p>
           )}
-          <div className="rounded-xl bg-muted px-3 py-2 space-y-1">
+          <div className="rounded-md bg-muted px-3 py-2 space-y-1">
             <p className="text-xs leading-5 text-foreground">{item.explanation}</p>
             <p className="text-xs leading-5 text-muted-foreground">{item.explanationZh}</p>
           </div>
@@ -657,20 +657,20 @@ export default function GrammarPage() {
   if (phase === 'browse') {
     return (
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+        <section className="rounded-md border border-border bg-card p-4 sm:p-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)]">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-medium text-primary">{isZh ? '语法专项' : 'Grammar module'}</p>
+                <p className="text-xs font-medium text-muted-foreground">{isZh ? '语法' : 'Grammar'}</p>
                 <h1 className="mt-2 text-2xl font-bold text-foreground">{isZh ? '语法' : 'Grammar'}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '把常见错误拆成规则、例句和填空题，练到能在写作里自然用对。'
-                    : 'Turn common mistakes into rules, examples, and fill-in drills you can reuse in writing.'}
+                    ? '看一条规则，马上做填空。'
+                    : 'Read one rule, then answer fill-in questions.'}
                 </p>
               </div>
 
-              <div className="rounded-lg border border-border bg-background/70 p-4">
+              <div className="rounded-md border border-border bg-background p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={cn('rounded-md border px-2.5 py-1 text-[11px] font-semibold', CATEGORY_META[featuredRule.category].color)}>
                     {isZh ? CATEGORY_META[featuredRule.category].labelZh : CATEGORY_META[featuredRule.category].label}
@@ -689,15 +689,15 @@ export default function GrammarPage() {
 
               <Button onClick={() => handlePractice(featuredRule)} className="rounded-md bg-primary text-primary-foreground">
                 <Play className="mr-2 h-4 w-4" />
-                {isZh ? '开始推荐规则练习' : 'Start recommended drill'}
+                {isZh ? '开始这组' : 'Start this set'}
               </Button>
             </div>
 
-            <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+            <div className="rounded-md border border-border bg-background p-4">
               <p className="text-xs font-medium text-muted-foreground">
-                {isZh ? '填空预演' : 'Drill preview'}
+                {isZh ? '当前题型' : 'Current exercise'}
               </p>
-              <div className="mt-4 rounded-lg border border-border bg-card p-4">
+              <div className="mt-4 rounded-md border border-border bg-card p-4">
                 <p className="text-sm leading-7 text-foreground">
                   {featuredSentenceParts[0]}
                   <span className="mx-1 inline-block min-w-[86px] rounded-md border-b-2 border-primary/50 bg-primary/10 px-2 text-center text-primary">
@@ -715,7 +715,7 @@ export default function GrammarPage() {
                   { label: isZh ? '类别' : 'Categories', value: Object.keys(CATEGORY_META).length },
                   { label: isZh ? '本轮题' : 'Items', value: featuredRule.practice.length },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-lg border border-border bg-card p-3 text-center">
+                  <div key={item.label} className="rounded-md border border-border bg-card p-3 text-center">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -845,7 +845,7 @@ export default function GrammarPage() {
 
         {/* Rule quick-reference */}
         {!submitted && (
-          <div className="rounded-xl border border-border bg-muted px-4 py-3">
+          <div className="rounded-md border border-border bg-muted px-4 py-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
               <p className="text-[11px] text-muted-foreground">{isZh ? '规则小结' : 'Rule summary'}</p>

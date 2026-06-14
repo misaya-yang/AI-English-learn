@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, PlayCircle } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,7 @@ export function ScoreCell({
   return (
     <div
       className={cn(
-        'rounded-xl border border-border/70 bg-card/60 px-3 py-2 text-center',
+        'rounded-md border border-border/70 bg-card/60 px-3 py-2 text-center',
         highlight && 'border-emerald-400/60 bg-emerald-500/10',
       )}
     >
@@ -76,7 +76,7 @@ export function EmptyKickoffCard({ onQuickStart }: { onQuickStart: () => void })
       <p className="font-semibold text-primary">还没有问题记录</p>
       <p className="mt-1 text-muted-foreground">先做 1 次写作反馈，这里会显示主要问题和建议练习。</p>
       <Button className="mt-3" size="sm" onClick={onQuickStart}>
-        <Sparkles className="mr-1.5 h-4 w-4" />
+        <PlayCircle className="mr-1.5 h-4 w-4" />
         开始第一次练习
       </Button>
     </div>
@@ -87,12 +87,12 @@ export function LoadingPipeline({ stage }: { stage: LoadingStage }) {
   if (stage === 'idle') return null;
 
   const steps: Array<{ id: LoadingStage; label: string; detail: string }> = [
-    { id: 'simulating', label: '生成题目中', detail: '正在准备 IELTS 风格题目...' },
+    { id: 'simulating', label: '准备题目中', detail: '正在准备 IELTS 风格题目...' },
     { id: 'outlining', label: '构建提纲中', detail: '正在整理段落结构...' },
-    { id: 'vocab', label: '词汇升级中', detail: '正在识别低阶表达并给出替换建议...' },
-    { id: 'tutoring', label: '生成建议中', detail: '正在根据你的草稿给出建议...' },
+    { id: 'vocab', label: '词汇改写中', detail: '正在识别低阶表达并给出替换建议...' },
+    { id: 'tutoring', label: '整理建议中', detail: '正在根据你的草稿给出建议...' },
     { id: 'grading', label: '评分中', detail: '正在按 IELTS 标准评分...' },
-    { id: 'micro', label: '生成练习中', detail: '正在根据问题生成 5 分钟练习...' },
+    { id: 'micro', label: '准备练习中', detail: '正在根据问题准备 5 分钟练习...' },
   ];
 
   const activeIndex = Math.max(0, steps.findIndex((item) => item.id === stage));

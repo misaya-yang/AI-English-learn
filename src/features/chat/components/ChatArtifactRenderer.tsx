@@ -1,4 +1,4 @@
-import { Link2, Sparkles } from 'lucide-react';
+import { CheckCircle2, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ChatArtifact, ChatMode } from '@/types/chatAgent';
 import type { AttemptedQuizMapEntry } from '@/features/chat/types';
@@ -145,7 +145,7 @@ export function ChatArtifactRenderer({
               <div className="space-y-1.5 text-sm text-muted-foreground">
                 {artifact.payload.hints.map((hint, hintIndex) => (
                   <div key={`${messageId}-hint-${hintIndex}`} className="flex items-start gap-2">
-                    <Sparkles className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
                     <p>{hint}</p>
                   </div>
                 ))}

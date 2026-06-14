@@ -1,4 +1,4 @@
-import { Bot, Loader2, Sparkles, WandSparkles } from 'lucide-react';
+import { Bot, ClipboardCheck, ListChecks, Loader2, PenLine } from 'lucide-react';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
@@ -65,10 +65,10 @@ export function ExamDraftPanel({
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={onBuildOutline} disabled={isBusy}>
-              <WandSparkles className="mr-1.5 h-4 w-4" /> 提纲
+              <ListChecks className="mr-1.5 h-4 w-4" /> 提纲
             </Button>
             <Button variant="outline" onClick={onEnhanceVocabulary} disabled={isBusy}>
-              <Sparkles className="mr-1.5 h-4 w-4" /> 词汇升级
+              <PenLine className="mr-1.5 h-4 w-4" /> 词汇改写
             </Button>
             <Button variant="outline" onClick={() => onToolPanelChange('coach')}>
               <Bot className="mr-1.5 h-4 w-4" /> 答疑
@@ -76,7 +76,7 @@ export function ExamDraftPanel({
           </div>
         </div>
         <Separator className="my-4" />
-        <p className="text-sm leading-7 text-foreground/90">{writingPrompt || '先回到策略面板生成题目或选择单元。'}</p>
+        <p className="text-sm leading-7 text-foreground/90">{writingPrompt || '先回到策略面板准备题目或选择单元。'}</p>
       </div>
 
       <div className="space-y-2">
@@ -110,7 +110,7 @@ export function ExamDraftPanel({
           <AccordionContent>
             {outline ? (
               <div className="space-y-3">
-                <div className="rounded-xl border border-border/60 bg-background/50 p-3 text-sm text-muted-foreground">
+                <div className="rounded-md border border-border/60 bg-background/50 p-3 text-sm text-muted-foreground">
                   <p><span className="font-medium text-foreground">Intro:</span> {outline.intro}</p>
                   <p className="mt-2"><span className="font-medium text-foreground">Body 1:</span> {outline.body1}</p>
                   <p className="mt-2"><span className="font-medium text-foreground">Body 2:</span> {outline.body2}</p>
@@ -124,9 +124,9 @@ export function ExamDraftPanel({
               </div>
             ) : (
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">先根据当前题目生成一版可执行提纲。</p>
+                <p className="text-sm text-muted-foreground">先根据当前题目整理一版可执行提纲。</p>
                 <Button size="sm" onClick={onBuildOutline} disabled={isBusy}>
-                  生成提纲
+                  整理提纲
                 </Button>
               </div>
             )}
@@ -139,7 +139,7 @@ export function ExamDraftPanel({
             {vocabSuggestions.length > 0 ? (
               <div className="space-y-2">
                 {vocabSuggestions.map((item, index) => (
-                  <div key={`${item.from}-${index}`} className="rounded-xl border border-border/60 bg-background/50 p-3">
+                  <div key={`${item.from}-${index}`} className="rounded-md border border-border/60 bg-background/50 p-3">
                     <p className="text-sm">
                       <span className="font-medium">{item.from}</span>
                       <span className="mx-1.5 text-muted-foreground">→</span>
@@ -152,9 +152,9 @@ export function ExamDraftPanel({
               </div>
             ) : (
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">先写出草稿，再抽取低阶表达做升级建议。</p>
+                <p className="text-sm text-muted-foreground">先写出草稿，再抽取低阶表达做改写建议。</p>
                 <Button size="sm" onClick={onEnhanceVocabulary} disabled={isBusy}>
-                  词汇升级
+                  词汇改写
                 </Button>
               </div>
             )}
@@ -177,7 +177,7 @@ export function ExamDraftPanel({
               </Button>
             </div>
             {tutorReply && (
-              <div className="whitespace-pre-wrap rounded-xl border border-border/60 bg-background/50 px-3 py-3 text-sm leading-7 text-foreground/90">
+              <div className="whitespace-pre-wrap rounded-md border border-border/60 bg-background/50 px-3 py-3 text-sm leading-7 text-foreground/90">
                 {tutorReply}
               </div>
             )}
@@ -191,7 +191,7 @@ export function ExamDraftPanel({
           disabled={isBusy}
           className="bg-emerald-600 text-white hover:bg-emerald-700"
         >
-          {loadingStage === 'grading' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+          {loadingStage === 'grading' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
           获取结构化评分反馈
         </Button>
         <Button variant="outline" onClick={onBackToBrief}>

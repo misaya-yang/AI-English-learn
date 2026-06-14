@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Loader2, Sparkles, Mail } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
 import { resetPassword } from '@/lib/supabase-auth';
@@ -293,7 +293,7 @@ export default function LoginPage() {
           onClick={handleDemoLogin}
           disabled={isLoading}
         >
-          <Sparkles className="mr-2 h-4 w-4 text-primary" />
+          <Mail className="mr-2 h-4 w-4 text-primary" />
           {copy.demo}
         </Button>
         <p className="mt-2 text-center text-xs leading-relaxed text-muted-foreground">
@@ -309,7 +309,7 @@ export default function LoginPage() {
           aria-modal="true"
           aria-labelledby="reset-password-title"
         >
-          <div className="w-full max-w-[400px] rounded-xl border border-border bg-card p-7 shadow-lg">
+          <div className="w-full max-w-[400px] rounded-md border border-border bg-card p-7 shadow-lg">
             <h3
               id="reset-password-title"
               className="text-center text-lg font-semibold text-foreground"

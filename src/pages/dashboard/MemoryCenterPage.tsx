@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Pin, PinOff, RefreshCw, Trash2, Search, Sparkles, Shield, Clock3 } from 'lucide-react';
+import { Pin, PinOff, RefreshCw, Trash2, Search, BookOpen, Shield, Clock3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthRequiredError, EdgeFunctionError } from '@/services/aiGateway';
 import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
@@ -177,7 +177,7 @@ export default function MemoryCenterPage() {
         </div>
       </div>
 
-      <div className="premium-panel-soft rounded-lg border border-border bg-card p-3">
+        <div className="rounded-md border border-border bg-card p-3">
         <div className="flex flex-wrap gap-2">
           <div className="relative min-w-[260px] flex-1">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -225,27 +225,27 @@ export default function MemoryCenterPage() {
         </div>
       )}
 
-      <div className="premium-panel-soft min-h-[420px] rounded-lg border border-border bg-card">
+      <div className="min-h-[420px] rounded-md border border-border bg-card">
         <ScrollArea className="h-[520px]">
           <div className="p-3 space-y-2">
             {items.length === 0 ? (
               <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-14 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
-                  <Sparkles className="h-6 w-6" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+                  <BookOpen className="h-6 w-6" />
                 </div>
                 <h2 className="mt-4 text-lg font-semibold text-foreground">
                   {loading
                     ? t('common.loading')
                     : isZh
-                      ? '记忆中心还在等待第一条可用记忆'
-                      : 'Memory Center is waiting for its first useful memory'}
+                      ? '还没有保存的学习记录'
+                      : 'No saved learning records yet'}
                 </h2>
                 {!loading && (
                   <>
                     <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
                       {isZh
-                        ? '这里不会展示随意生成的内容，只会沉淀目标、薄弱点、偏好和错误轨迹，用来让 Today、Practice 和答疑更懂你的学习状态。'
-                        : 'This page does not fabricate entries. It only stores goals, weaknesses, preferences, and error traces that can personalize Today, Practice, and Help.'}
+                        ? '完成练习、复习或答疑后，这里会保存目标、薄弱点、偏好和错误轨迹。'
+                        : 'After practice, review, or help sessions, this page stores goals, weaknesses, preferences, and error traces.'}
                     </p>
                     <div className="mt-5 grid w-full gap-2 sm:grid-cols-3">
                       {[

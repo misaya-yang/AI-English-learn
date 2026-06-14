@@ -74,7 +74,7 @@ export function ExamReviewPanel({
               <p className="text-sm text-muted-foreground">未发现明显问题，建议继续做下一次模拟巩固稳定性。</p>
             ) : (
               feedback.issues.map((issue, index) => (
-                <div key={`${issue.tag}-${index}`} className="rounded-xl border border-border/60 bg-background/50 p-3">
+                <div key={`${issue.tag}-${index}`} className="rounded-md border border-border/60 bg-background/50 p-3">
                   <p className="text-sm font-medium">[{ISSUE_LABELS[issue.tag] || issue.tag}] {issue.message}</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{issue.suggestion}</p>
                 </div>
@@ -103,7 +103,7 @@ export function ExamReviewPanel({
                 <p className="text-sm text-muted-foreground">完成更多评分后，这里会给出更具体的练习建议。</p>
               ) : (
                 latestNextActions.map((action, index) => (
-                  <div key={`${action}-${index}`} className="rounded-xl border border-border/60 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
+                  <div key={`${action}-${index}`} className="rounded-md border border-border/60 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
                     {action}
                   </div>
                 ))
@@ -115,7 +115,7 @@ export function ExamReviewPanel({
             <p className="text-sm font-semibold text-emerald-500">把这次错因立即转成动作</p>
             <div className="mt-3 grid gap-2">
               <Button onClick={() => void onGenerateMicroLesson()} disabled={isBusy || !feedback}>
-                <Brain className="mr-1.5 h-4 w-4" /> 一键错题转课程
+                <Brain className="mr-1.5 h-4 w-4" /> 错题练习
               </Button>
               <Button variant="outline" onClick={onJumpToVocabulary}>
                 <BookOpen className="mr-1.5 h-4 w-4" /> 跳转词库补强

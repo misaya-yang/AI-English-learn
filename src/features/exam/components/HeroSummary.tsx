@@ -60,14 +60,14 @@ export function HeroSummary({
     <motion.header
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-xl border border-border bg-card text-card-foreground p-4 sm:p-5 lg:p-6"
+      className="relative overflow-hidden rounded-md border border-border bg-card text-card-foreground p-4 sm:p-5"
     >
       <div className="space-y-4">
         {/* Status badges row */}
         <div className="flex flex-wrap items-center gap-2">
-          <Badge className={cn('rounded-full border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-emerald-600 text-white' : '')}>
+          <Badge className={cn('rounded-md border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-emerald-600 text-white' : '')}>
             {plan === 'pro' ? <Crown className="mr-1 h-3.5 w-3.5" /> : <BookOpen className="mr-1 h-3.5 w-3.5" />}
-            Plan {plan.toUpperCase()}
+            {plan === 'pro' ? 'Pro' : '免费版'}
           </Badge>
           <Badge variant="outline" className="rounded-md">
             <Flame className="mr-1 h-3.5 w-3.5" /> 连续学习 {streakDays} 天
@@ -88,7 +88,7 @@ export function HeroSummary({
         {/* Key metrics row */}
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Band progress */}
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
+          <div className="rounded-md border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">目标 Band</p>
@@ -98,7 +98,7 @@ export function HeroSummary({
                   {targetBand.toFixed(1)}
                 </p>
               </div>
-              <span className="rounded-full border border-emerald-500/25 bg-emerald-500/[0.12] px-3 py-1 text-sm font-semibold text-emerald-500">
+              <span className="rounded-md border border-emerald-500/25 bg-emerald-500/[0.12] px-3 py-1 text-sm font-semibold text-emerald-500">
                 {targetProgress}%
               </span>
             </div>
@@ -107,7 +107,7 @@ export function HeroSummary({
           </div>
 
           {/* Current route */}
-          <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+          <div className="rounded-md border border-border/70 bg-muted/20 p-4">
             <p className="text-xs text-muted-foreground">当前路线</p>
             <p className="mt-2 text-base font-semibold">{selectedTrackTitle || '先选择一个目标轨道'}</p>
             <p className="mt-1 text-sm text-muted-foreground">

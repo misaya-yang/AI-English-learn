@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Sparkles } from 'lucide-react';
+import { AlertTriangle, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -25,8 +25,8 @@ export const DatabaseStatusBanner = ({ language, dbStatus }: DatabaseStatusBanne
   return (
     <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 max-w-lg shadow-lg">
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-          <Sparkles className="h-4 w-4 text-amber-600" />
+        <div className="w-8 h-8 rounded-md bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
         </div>
         <div className="flex-1">
           <h4 className="font-medium text-sm">{language.startsWith('zh') ? '需要初始化数据库表' : 'Database tables need initialization'}</h4>

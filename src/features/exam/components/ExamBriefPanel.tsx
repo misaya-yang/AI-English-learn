@@ -76,7 +76,7 @@ export function ExamBriefPanel({
 
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => void onGenerateSimulation()} disabled={isBusy}>
-            <Target className="mr-1.5 h-4 w-4" /> 生成仿真题
+            <Target className="mr-1.5 h-4 w-4" /> 准备仿真题
           </Button>
           <Button variant="outline" onClick={onOpenDraft}>
             开始写作
@@ -97,7 +97,7 @@ export function ExamBriefPanel({
               {simItem?.attribution && <Badge variant="outline" className="rounded-md">{simItem.attribution}</Badge>}
             </div>
           </div>
-          <p className="mt-4 text-sm leading-7 text-foreground/90">{simItem?.prompt || writingPrompt || '先生成题目或选择单元。'}</p>
+          <p className="mt-4 text-sm leading-7 text-foreground/90">{simItem?.prompt || writingPrompt || '先准备题目或选择单元。'}</p>
         </div>
 
         {isSimulationMode && (
@@ -126,7 +126,7 @@ export function ExamBriefPanel({
         {unitObjectives.length > 0 && (
           <div className="mt-4 space-y-2">
             {unitObjectives.map((objective, index) => (
-              <div key={`${objective}-${index}`} className="rounded-xl border border-border/60 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
+              <div key={`${objective}-${index}`} className="rounded-md border border-border/60 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
                 {objective}
               </div>
             ))}

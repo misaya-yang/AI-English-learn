@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers3, Sparkles } from 'lucide-react';
+import { BookOpen, Layers3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ChatMode, ChatArtifact } from '@/types/chatAgent';
@@ -122,8 +122,8 @@ export function QuizArtifactCard({
           {language.startsWith('zh') ? '加入复习卡' : 'Add to review'}
         </Button>
         <Button variant="outline" size="sm" onClick={() => onGenerateLesson(artifact)}>
-          <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-          {language.startsWith('zh') ? '生成补救微课' : 'Generate micro lesson'}
+          <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+          {language.startsWith('zh') ? '补救练习' : 'Remedial practice'}
         </Button>
         <span className="self-center text-xs text-muted-foreground">
           {mode.toUpperCase()} · {artifact.payload.estimatedSeconds}s

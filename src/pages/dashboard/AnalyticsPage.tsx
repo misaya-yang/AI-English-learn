@@ -1112,7 +1112,7 @@ export default function AnalyticsPage() {
                   <p className="text-xs text-muted-foreground">
                     {isZh ? '平均可回忆率' : 'Avg. retrievability'}
                   </p>
-                  <p className="text-[3rem] font-bold text-emerald-500 leading-none">
+                  <p className="text-[2.25rem] font-semibold text-emerald-500 leading-none">
                     {Math.round(fsrsStats.avgR * 100)}%
                   </p>
                   <p className="text-xs text-muted-foreground text-center">

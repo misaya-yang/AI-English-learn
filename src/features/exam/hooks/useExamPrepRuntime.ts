@@ -184,11 +184,11 @@ export function useExamPrepRuntime({
     setLoadingStage('idle');
 
     if (suggestions.length === 0) {
-      toast.info('暂未检测到可升级表达，建议写到 120 词以上再试。');
+      toast.info('暂未检测到需要改写的表达，建议写到 120 词以上再试。');
       return;
     }
 
-    toast.success(`已生成 ${suggestions.length} 条词汇升级建议`);
+    toast.success(`已整理 ${suggestions.length} 条词汇改写建议`);
   }, [writingAnswer, writingPrompt]);
 
   const handleAskTutor = useCallback(async () => {

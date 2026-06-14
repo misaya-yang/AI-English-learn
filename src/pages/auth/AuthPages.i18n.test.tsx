@@ -115,10 +115,10 @@ describe('auth pages i18n surfaces', () => {
   it('renders the magic-link page in English without Chinese success copy', () => {
     renderPage(<MagicLinkPage />);
 
-    expect(screen.getByRole('heading', { name: 'Sign in with magic link' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Sign in with email link' })).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send login link' })).toBeInTheDocument();
-    expect(screen.queryByText('使用魔法链接登录')).not.toBeInTheDocument();
+    expect(screen.queryByText('邮箱链接登录')).not.toBeInTheDocument();
   });
 
   it('renders onboarding step one in English without bilingual helper text', () => {

@@ -6,7 +6,6 @@ import {
   HelpCircle,
   Lightbulb,
   RotateCcw,
-  Sparkles,
   Timer,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,7 +31,7 @@ const iconFor = (icon: CoachActionDisplay['icon']) => {
     case 'thinker':
       return HelpCircle;
     case 'celebrate':
-      return Sparkles;
+      return CheckCircle2;
     case 'reflection':
     default:
       return Lightbulb;

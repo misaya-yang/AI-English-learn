@@ -326,7 +326,7 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/vocabulary',
         label: t('nav.vocabulary'),
-        description: pickLocalized({ en: 'Word books and lexical assets', zh: '词书与词汇资产' }, isZh),
+        description: pickLocalized({ en: 'Word books and review words', zh: '词书与复习词' }, isZh),
         icon: Library,
       },
       {

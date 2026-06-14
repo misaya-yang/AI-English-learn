@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, AlertTriangle, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, AlertTriangle, BookOpen, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -25,14 +25,14 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
       className={cn(
-        'rounded-xl border border-[hsl(var(--accent-memory)/0.2)] bg-[hsl(var(--accent-memory)/0.06)] p-5 sm:p-6',
+        'rounded-md border border-[hsl(var(--accent-memory)/0.2)] bg-[hsl(var(--accent-memory)/0.06)] p-4 sm:p-5',
         className,
       )}
       data-testid="session-recap-card"
       data-kind={recap.kind}
     >
       <div className="flex items-center gap-2 text-[hsl(var(--accent-memory))]">
-        <Sparkles className="h-4 w-4" />
+        <CheckCircle2 className="h-4 w-4" />
         <p className="text-[11px] font-semibold">{heading}</p>
       </div>
 
@@ -54,7 +54,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         )}
 
         {recap.needsReview && (
-          <div className="rounded-xl border border-amber-500/25 bg-amber-50 p-3">
+          <div className="rounded-md border border-amber-500/25 bg-amber-50 p-3">
             <p className="text-[10px] font-semibold text-amber-700">
               {isZh ? '仍需再练' : 'Needs review'}
             </p>
@@ -66,7 +66,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         )}
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 rounded-xl border border-border bg-muted p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-5 flex flex-col gap-3 rounded-md border border-border bg-muted p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <p className="text-[10px] font-semibold text-muted-foreground">
             {isZh ? '下一步' : 'Next step'}

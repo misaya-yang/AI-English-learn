@@ -14,7 +14,6 @@ import {
   Clock,
   GraduationCap,
   Target,
-  Sparkles,
   Check,
   Loader2,
 } from 'lucide-react';
@@ -260,7 +259,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => setPreferences((prev) => ({ ...prev, cefrLevel: level.level }))}
                   className={cn(
-                    'flex items-center gap-4 rounded-lg border-2 p-4 text-left transition-all',
+                    'flex items-center gap-4 rounded-md border-2 p-4 text-left transition-all',
                     preferences.cefrLevel === level.level
                       ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
                       : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
@@ -269,7 +268,7 @@ export default function OnboardingPage() {
                 >
                   <div
                     className={cn(
-                      'flex h-12 w-12 items-center justify-center rounded-xl text-base font-bold',
+                      'flex h-12 w-12 items-center justify-center rounded-md text-base font-bold',
                       preferences.cefrLevel === level.level
                         ? 'bg-emerald-500 text-white'
                         : 'bg-muted text-muted-foreground',
@@ -416,7 +415,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-6">
               <div className="text-center">
-                <span className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="text-3xl font-semibold text-emerald-600 dark:text-emerald-400">
                   {preferences.dailyGoal}
                 </span>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -485,7 +484,7 @@ export default function OnboardingPage() {
           <div className="space-y-6">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <Sparkles className="h-7 w-7" />
+                <Target className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
                 {isZh ? '你对哪些主题感兴趣？' : 'What topics interest you?'}
@@ -554,7 +553,7 @@ export default function OnboardingPage() {
                 >
                   <div
                     className={cn(
-                      'flex h-10 w-10 items-center justify-center rounded-xl',
+                      'flex h-10 w-10 items-center justify-center rounded-md',
                       preferences.learningStyle === style.id
                         ? 'bg-emerald-500 text-white'
                         : 'bg-muted text-muted-foreground',

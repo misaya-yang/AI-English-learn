@@ -252,8 +252,8 @@ export default function VocabularyBankPage() {
           <h1 className="text-2xl font-bold">{isZh ? '词典' : 'Lexicon'}</h1>
           <p className="text-muted-foreground">
             {isZh
-              ? `词典内核、词书与可复习词汇资产 · ${filteredVocabulary.length} 个词条`
-              : `Dictionary kernel, word books, and review-ready lexical assets · ${filteredVocabulary.length} words`}
+              ? `词典、词书与复习词 · ${filteredVocabulary.length} 个词条`
+              : `Dictionary, word books, and review words · ${filteredVocabulary.length} words`}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -317,13 +317,13 @@ export default function VocabularyBankPage() {
         </div>
       </div>
 
-      <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+      <section className="rounded-md border border-border bg-card p-4 sm:p-5">
         {featuredEntry && featuredSense ? (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_320px] lg:items-stretch">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="rounded-md border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))] hover:bg-[hsl(var(--accent-memory)/0.1)]">
-                  {isZh ? '词汇资产焦点' : 'Lexical asset focus'}
+                  {isZh ? '当前词条' : 'Current entry'}
                 </Badge>
                 <Badge variant="outline" className="rounded-md">
                   {isZh ? (statusLabelsZh[featuredStatus] || featuredStatus) : (statusLabels[featuredStatus] || featuredStatus)}
@@ -335,7 +335,7 @@ export default function VocabularyBankPage() {
 
               <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <h2 className="text-4xl font-semibold text-foreground sm:text-5xl">
+                  <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
                     {featuredEntry.headword}
                   </h2>
                   <p className="mt-2 font-mono text-sm text-muted-foreground">
@@ -354,7 +354,7 @@ export default function VocabularyBankPage() {
               </div>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="rounded-lg border border-border bg-background/70 p-4">
+                <div className="rounded-md border border-border bg-background p-4">
                   <p className="text-xs text-muted-foreground">{isZh ? '核心释义' : 'Core meaning'}</p>
                   <p className="mt-2 text-sm leading-6 text-foreground">
                     {featuredSense.definition || (isZh ? '暂无英文释义' : 'No English definition yet')}
@@ -363,7 +363,7 @@ export default function VocabularyBankPage() {
                     {featuredSense.definitionZh || (isZh ? '暂无中文释义' : 'No Chinese definition yet')}
                   </p>
                 </div>
-                <div className="rounded-lg border border-border bg-background/70 p-4">
+                <div className="rounded-md border border-border bg-background p-4">
                   <p className="text-xs text-muted-foreground">{isZh ? '可练例句' : 'Practice example'}</p>
                   {featuredExample ? (
                     <>
@@ -400,7 +400,7 @@ export default function VocabularyBankPage() {
                 { label: isZh ? '词条总数' : 'Total words', value: totalWords },
                 { label: isZh ? '待复习' : 'In review', value: reviewCount },
               ].map((item) => (
-                <div key={item.label} className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+                <div key={item.label} className="rounded-md border border-border bg-background p-4">
                   <p className="text-xs text-muted-foreground">{item.label}</p>
                   <p className="mt-2 truncate text-lg font-semibold text-foreground">{item.value}</p>
                 </div>
@@ -413,12 +413,12 @@ export default function VocabularyBankPage() {
               <BookOpen className="h-6 w-6" />
             </div>
             <h2 className="mt-4 text-xl font-semibold text-foreground">
-              {isZh ? '先建立你的第一个词汇资产' : 'Create your first lexical asset'}
+              {isZh ? '先添加第一个词' : 'Add your first word'}
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {isZh
-                ? '导入词书或添加一个自定义词后，这里会展示可学习的词条预览、例句和下一步练习入口。'
-                : 'Import a word book or add a custom word, then this area will show a learnable preview and next action.'}
+                ? '导入词书或添加自定义词后，这里会显示释义、例句和练习入口。'
+                : 'Import a word book or add a custom word to see definitions, examples, and practice actions.'}
             </p>
           </div>
         )}

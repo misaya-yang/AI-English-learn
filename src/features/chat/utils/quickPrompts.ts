@@ -5,7 +5,6 @@ import {
   MessageSquare,
   NotebookPen,
   RotateCcw,
-  Sparkles,
 } from 'lucide-react';
 
 import type { QuickPromptOption } from '@/features/chat/types';
@@ -69,7 +68,7 @@ export const buildQuickPrompts = (t: Translator, ctx?: QuickPromptContext): Quic
     { icon: BookOpen, text: 'Explain the difference between "affect" and "effect"', textZh: t('chat.quickPrompts.affectEffect') },
     { icon: Lightbulb, text: 'Give me 5 collocations with "make"', textZh: t('chat.quickPrompts.collocations') },
     { icon: MessageSquare, text: 'Create a short dialogue at a restaurant', textZh: t('chat.quickPrompts.dialogue') },
-    { icon: Sparkles, text: 'Help me practice using "serendipity"', textZh: t('chat.quickPrompts.practice') },
+    { icon: NotebookPen, text: 'Help me practice using "serendipity"', textZh: t('chat.quickPrompts.practice') },
   ];
 
   // Fill up to 4 prompts

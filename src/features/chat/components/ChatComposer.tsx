@@ -2,12 +2,12 @@ import type { ChangeEvent, KeyboardEvent, RefObject } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronUp,
+  BookmarkPlus,
   FlaskConical,
   Globe,
   Mic,
   MicOff,
   Send,
-  Sparkles,
   StopCircle,
   Trash2,
   Wand2,
@@ -204,7 +204,7 @@ export function ChatComposer({
                     onClick={onRememberInput}
                     disabled={isLoading || !canRememberInput}
                   >
-                    <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                    <BookmarkPlus className="mr-1.5 h-3.5 w-3.5" />
                     {language.startsWith('zh') ? '记住这条输入' : 'Remember this input'}
                   </Button>
 
@@ -321,7 +321,7 @@ export function ChatComposer({
 
         <p className="mt-2 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Sparkles className="h-3 w-3" />
+            <FlaskConical className="h-3 w-3" />
             {poweredByLabel}
           </span>
           <span>·</span>

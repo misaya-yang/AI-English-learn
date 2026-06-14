@@ -9,7 +9,6 @@ import {
   Circle,
   Clock,
   MapPin,
-  Sparkles,
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -283,7 +282,7 @@ export default function LearningPathPage() {
 
           <Card className="border-primary/15 bg-primary/5">
             <CardContent className="flex items-start gap-3 p-4">
-              <Sparkles className="mt-0.5 h-4 w-4 text-primary" />
+              <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
               <div className="space-y-1">
                 <p className="text-sm font-medium">
                   {isZh ? '下一步建议' : 'Suggested next step'}
@@ -376,7 +375,7 @@ export default function LearningPathPage() {
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-muted-foreground">
             <span>{isZh ? '点击课程名称打开具体任务；勾选后会记录课程完成。' : 'Click a lesson to open the exact task; checking it records completion.'}</span>
             <Badge variant="secondary">{progressPercent}%</Badge>
           </div>

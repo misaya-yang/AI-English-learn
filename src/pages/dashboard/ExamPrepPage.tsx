@@ -263,7 +263,7 @@ export default function ExamPrepPage() {
     {
       id: 'draft',
       label: '写作输出',
-      description: runtime.writingPrompt ? '题目已就绪，继续完成正文' : '生成题目或进入模拟',
+      description: runtime.writingPrompt ? '题目已就绪，继续完成正文' : '准备题目或进入模拟',
       metric: `${activeWordCount} words`,
     },
     {

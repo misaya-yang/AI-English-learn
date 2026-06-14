@@ -417,7 +417,7 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
 
   return (
     <div className={cn(
-      'rounded-xl border p-4 transition-all duration-300',
+      'rounded-md border p-4 transition-all duration-300',
       !submitted
         ? 'border-border bg-card'
         : isCorrect
@@ -426,7 +426,7 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
     )}>
       {/* Question header */}
       <div className="flex items-start gap-3 mb-3">
-        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
+        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-muted text-[11px] font-bold text-muted-foreground">
           {index + 1}
         </span>
         <p className="text-sm font-medium text-foreground leading-5">{q.question}</p>
@@ -576,11 +576,10 @@ export default function ListeningPage() {
   };
 
   const featuredListening = SEED_PASSAGES[0];
-  const waveformBars = [36, 56, 42, 76, 48, 88, 62, 44, 72, 52, 82, 40, 68, 58, 46, 78];
   const listeningFlow = [
-    isZh ? '先完整听一遍，不急着看文字稿' : 'Listen once before opening the transcript',
-    isZh ? '进入题目后凭记忆定位关键信息' : 'Answer from memory and key details',
-    isZh ? '复盘时再对照文字稿修正误听点' : 'Review the transcript after submission',
+    isZh ? '先完整听一遍' : 'Listen once first',
+    isZh ? '答题时不看文字稿' : 'Answer without the transcript',
+    isZh ? '提交后对照文字稿' : 'Check the transcript after submission',
   ];
 
   const handleReset = () => {
@@ -598,22 +597,22 @@ export default function ListeningPage() {
   if (phase === 'select') {
     return (
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+        <section className="rounded-md border border-border bg-card p-4 sm:p-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-medium text-primary">{isZh ? '听力专项' : 'Listening module'}</p>
+                <p className="text-xs font-medium text-muted-foreground">{isZh ? '听力' : 'Listening'}</p>
                 <h1 className="mt-2 text-2xl font-bold text-foreground">
                   {isZh ? '听力练习' : 'Listening Practice'}
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '按 IELTS 听力节奏练习：先听、再答、最后用文字稿修正误听。'
-                    : 'Practice the IELTS listening loop: listen, answer, then repair mistakes with the transcript.'}
+                    ? '先听音频，答题后再看文字稿。'
+                    : 'Listen first, answer, then use the transcript to fix missed details.'}
                 </p>
               </div>
 
-              <div className="rounded-lg border border-border bg-background/70 p-4">
+              <div className="rounded-md border border-border bg-background p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <LevelBadge level={featuredListening.level} />
                   <span className="text-xs text-muted-foreground">{featuredListening.topic}</span>
@@ -624,16 +623,16 @@ export default function ListeningPage() {
               </div>
 
               <Button onClick={() => handleSelect(featuredListening)} className="rounded-md bg-primary text-primary-foreground">
-                {isZh ? '开始推荐听力' : 'Start recommended audio'}
+                {isZh ? '开始这段' : 'Start this clip'}
                 <ChevronRight className="ml-1.5 h-4 w-4" />
               </Button>
             </div>
 
-            <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+            <div className="rounded-md border border-border bg-background p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
-                    {isZh ? '音频训练面板' : 'Audio training panel'}
+                    {isZh ? '音频信息' : 'Audio details'}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {featuredListening.questions.length} {isZh ? '题 · 约' : 'questions ·'} {featuredListening.durationLabel}
@@ -643,19 +642,22 @@ export default function ListeningPage() {
                   <Headphones className="h-5 w-5" />
                 </div>
               </div>
-              <div className="mt-5 flex h-24 items-center gap-1.5 rounded-lg border border-border bg-card px-4">
-                {waveformBars.map((height, index) => (
-                  <span
-                    key={index}
-                    className="flex-1 rounded-full bg-primary/50"
-                    style={{ height: `${height}%` }}
-                  />
+              <div className="mt-5 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+                {[
+                  { label: isZh ? '时长' : 'Duration', value: featuredListening.durationLabel },
+                  { label: isZh ? '题量' : 'Questions', value: featuredListening.questions.length },
+                  { label: isZh ? '主题' : 'Topic', value: featuredListening.topic },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-md border border-border bg-card px-3 py-2">
+                    <p className="text-[11px] text-muted-foreground">{item.label}</p>
+                    <p className="mt-1 truncate text-sm font-semibold text-foreground">{item.value}</p>
+                  </div>
                 ))}
               </div>
               <div className="mt-4 space-y-2">
                 {listeningFlow.map((item, index) => (
                   <div key={item} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-border bg-card text-[11px] font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
                     <span>{item}</span>
@@ -678,7 +680,7 @@ export default function ListeningPage() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleSelect(passage)}
-              className="w-full rounded-lg border border-border bg-card p-5 text-left transition-all hover:border-primary/30 hover:bg-muted/70 hover:shadow-sm"
+              className="w-full rounded-md border border-border bg-card p-4 text-left transition-all hover:border-primary/30 hover:bg-muted/70 hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -733,7 +735,7 @@ export default function ListeningPage() {
         </button>
 
         {/* Passage info */}
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-md border border-border bg-card p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <LevelBadge level={selected.level} />
             <span className="text-xs text-muted-foreground">{selected.topic}</span>
@@ -817,7 +819,7 @@ export default function ListeningPage() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 rounded-xl border border-border bg-muted p-4">
+                <div className="mt-3 rounded-md border border-border bg-muted p-4">
                   <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                     {selected.transcript}
                   </p>
@@ -946,7 +948,7 @@ export default function ListeningPage() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="rounded-xl border border-border bg-muted p-4">
+                      <div className="rounded-md border border-border bg-muted p-4">
                         <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                           {selected.transcript}
                         </p>

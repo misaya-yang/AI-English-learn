@@ -65,7 +65,7 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the empty-state with a Reinforce in Practice CTA when no FSRS cards are due', () => {
+  it('renders the empty-state with a Reinforce in Practice CTA when no review cards are due', () => {
     useUserDataMock.mockReturnValue({ ...baseUserData });
 
     render(
@@ -74,7 +74,7 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText(/No FSRS-due cards right now/i)).toBeInTheDocument();
+    expect(screen.getByText(/No review cards due right now/i)).toBeInTheDocument();
     const cta = screen.getByRole('link', { name: /Reinforce in Practice/i });
     expect(cta).toHaveAttribute('href', '/dashboard/practice');
 

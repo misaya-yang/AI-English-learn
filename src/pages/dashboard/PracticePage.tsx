@@ -295,7 +295,7 @@ export default function PracticePage() {
     () => ({
       quiz: {
         label: 'Recommended for today',
-        labelZh: '今日推荐',
+        labelZh: '建议练习',
         focus: '快速检查词义匹配与基础理解，最适合先把今天的薄弱点扫一遍。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 5), 10),
         estimatedMinutes: 6,
@@ -695,7 +695,7 @@ export default function PracticePage() {
                     </span>
                     {mode.id === recommendedModeId ? (
                       <span className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-2 py-0.5 text-[10px] font-medium text-[hsl(var(--accent-practice))]">
-                        {isZh ? '推荐' : 'Recommended'}
+                        {isZh ? '建议' : 'Suggested'}
                       </span>
                     ) : null}
                   </span>
@@ -805,7 +805,7 @@ export default function PracticePage() {
           secondaryActions,
         }}
         metrics={[
-          { label: isZh ? '推荐' : 'Recommended', value: focusedModeLabel, accent: 'emerald' },
+          { label: isZh ? '当前模式' : 'Mode', value: focusedModeLabel, accent: 'emerald' },
           ...(hasStarted && timedMode ? [{ label: isZh ? '剩余时间' : 'Time left', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
           ...(hasStarted && combo > 0 ? [{ label: isZh ? '连击' : 'Streak', value: `${combo}x`, accent: 'emerald' as const }] : []),
           ...(!hasStarted ? [
@@ -832,7 +832,7 @@ export default function PracticePage() {
   if (!selectedMode) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow={isZh ? '今日推荐' : 'Recommended for today'}
+        eyebrow={isZh ? '练习' : 'Practice'}
         title={focusedModeLabel}
       >
         <div className="space-y-6">
@@ -853,7 +853,7 @@ export default function PracticePage() {
           {renderFactStrip([
             { label: isZh ? '训练目标' : 'Objective', value: focusedModeDescription, hint: '' },
             {
-              label: isZh ? '推荐依据' : 'Why',
+              label: isZh ? '依据' : 'Why',
               value: isStyleRecommended
                 ? (isZh ? stylePersonalization.label.zh : stylePersonalization.label.en)
                 : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label),

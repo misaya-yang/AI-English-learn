@@ -117,9 +117,9 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
         </Button>
       </div>
 
-      <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
+      <div className="space-y-5 py-6 text-center flex-1 flex flex-col justify-center">
         <p className="text-xs text-muted-foreground">当前单词</p>
-        <h2 className="text-[2.8rem] font-semibold leading-none text-foreground sm:text-[3.8rem] lg:text-[4.2rem]">
+        <h2 className="text-[2.5rem] font-semibold leading-none text-foreground sm:text-[3.4rem] lg:text-[3.8rem]">
           {word.word}
         </h2>
         <div className="space-y-2">
@@ -129,8 +129,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent-practice))]" />
+        <div className="flex items-center justify-center text-sm text-muted-foreground">
           释义 / 例句 / 搭配
         </div>
         <LearningActionCluster className="justify-center">

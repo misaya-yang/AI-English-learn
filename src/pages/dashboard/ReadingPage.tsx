@@ -286,7 +286,7 @@ export default function ReadingPage() {
 
   const handleGenerateNew = useCallback(async () => {
     setIsGenerating(true);
-    toast.info(isZh ? '正在生成新文章，大约需要 10-15 秒' : 'Generating a new passage… this may take 10-15 seconds');
+    toast.info(isZh ? '正在准备新文章，大约需要 10-15 秒' : 'Preparing a new passage. This may take 10-15 seconds.');
     try {
       // AI generation via edge function (graceful fallback to random seed)
       await new Promise((r) => setTimeout(r, 500)); // Simulate latency
@@ -390,20 +390,20 @@ export default function ReadingPage() {
   if (phase === 'select') {
     return (
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+        <section className="rounded-md border border-border bg-card p-4 sm:p-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:items-stretch">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-medium text-primary">{isZh ? '阅读专项' : 'Reading module'}</p>
+                <p className="text-xs font-medium text-muted-foreground">{isZh ? '阅读' : 'Reading'}</p>
                 <h1 className="mt-2 text-2xl font-semibold text-foreground">{isZh ? 'IELTS 学术阅读' : 'IELTS Academic Reading'}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '先读一段真实风格文章，再用判断、选择和短答题训练定位证据的能力。'
-                    : 'Train evidence location with IELTS-style passages, T/F/NG, MCQ, and short-answer questions.'}
+                    ? '读文章，做题，复盘证据句。'
+                    : 'Read a passage, answer questions, then review the evidence lines.'}
                 </p>
               </div>
 
-              <div className="rounded-lg border border-border bg-background/70 p-4">
+              <div className="rounded-md border border-border bg-background p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{featuredPassage.level}</Badge>
                   <span className="text-xs text-muted-foreground">{featuredPassage.topic}</span>
@@ -417,7 +417,7 @@ export default function ReadingPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button onClick={() => startPassage(featuredPassage)} className="rounded-md bg-primary text-primary-foreground">
-                  {isZh ? '开始推荐文章' : 'Start recommended passage'}
+                  {isZh ? '开始这篇' : 'Start this passage'}
                   <ChevronRight className="ml-1.5 h-4 w-4" />
                 </Button>
                 <Button
@@ -427,21 +427,21 @@ export default function ReadingPage() {
                   variant="outline"
                 >
                   {isGenerating ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {isZh ? '生成中' : 'Generating'}</>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {isZh ? '准备中' : 'Preparing'}</>
                   ) : (
-                    <><RefreshCw className="mr-2 h-4 w-4" /> {isZh ? '生成新文章' : 'Generate passage'}</>
+                    <><RefreshCw className="mr-2 h-4 w-4" /> {isZh ? '换一篇新文章' : 'Try a new passage'}</>
                   )}
                 </Button>
               </div>
             </div>
 
-            <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+            <div className="rounded-md border border-border bg-background p-4">
               <p className="text-xs font-medium text-muted-foreground">
-                {isZh ? '本轮训练结构' : 'Session structure'}
+                {isZh ? '题目结构' : 'Question mix'}
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {featuredQuestionMix.map((item) => (
-                  <div key={item.label} className="rounded-lg border border-border bg-card p-3 text-center">
+                  <div key={item.label} className="rounded-md border border-border bg-card p-3 text-center">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -450,7 +450,7 @@ export default function ReadingPage() {
               <div className="mt-4 space-y-3">
                 {readingStages.map((stage, index) => (
                   <div key={stage} className="flex items-start gap-3">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md border border-border bg-card text-xs font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
                     <p className="text-sm leading-6 text-muted-foreground">{stage}</p>
@@ -470,7 +470,7 @@ export default function ReadingPage() {
             <button
               key={p.id}
               onClick={() => startPassage(p)}
-              className="w-full rounded-lg border border-border bg-card p-5 text-left shadow-sm transition hover:border-primary/30 hover:bg-muted/70 active:scale-[0.99]"
+              className="w-full rounded-md border border-border bg-card p-4 text-left shadow-sm transition hover:border-primary/30 hover:bg-muted/70 active:scale-[0.99]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -539,7 +539,7 @@ export default function ReadingPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left: passage */}
-          <div className="rounded-xl border border-border bg-card p-6 max-h-[72vh] overflow-y-auto shadow-sm">
+          <div className="rounded-md border border-border bg-card p-5 max-h-[72vh] overflow-y-auto shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4 text-primary" />
               <span className="text-xs font-medium text-muted-foreground">文章</span>
@@ -561,7 +561,7 @@ export default function ReadingPage() {
             </div>
 
             {current.questions.map((q) => (
-              <div key={q.id} className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-sm">
+              <div key={q.id} className="rounded-md border border-border bg-card p-4 space-y-3 shadow-sm">
                 <p className="text-sm font-medium text-foreground leading-6">
                   <span className="text-muted-foreground mr-2">Q{q.id}.</span>
                   {q.question}
@@ -692,7 +692,7 @@ export default function ReadingPage() {
             <div
               key={q.id}
               className={cn(
-                'rounded-xl border p-4 space-y-2',
+                'rounded-md border p-4 space-y-2',
                 isCorrect ? 'border-green-500/30 bg-green-50' : 'border-destructive/20 bg-destructive/5',
               )}
             >

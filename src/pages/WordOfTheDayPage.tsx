@@ -17,7 +17,6 @@ import {
   Volume2,
   Share2,
   Calendar,
-  Sparkles,
   ChevronLeft,
   ChevronRight,
   History,
@@ -507,7 +506,7 @@ export default function WordOfTheDayPage() {
                 </Button>
                 <Button asChild size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
                   <Link to={practiceHref} onClick={handlePracticeWord}>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <BookOpen className="h-4 w-4 mr-2" />
                     {copy.practiceWord}
                   </Link>
                 </Button>
@@ -528,7 +527,7 @@ export default function WordOfTheDayPage() {
                 </Button>
                 <Button asChild size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
                   <Link to={buildAuthRedirect(practiceHref, '/register')}>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <BookOpen className="h-4 w-4 mr-2" />
                     {copy.startFree}
                   </Link>
                 </Button>

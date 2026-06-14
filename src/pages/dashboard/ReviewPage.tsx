@@ -67,7 +67,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn(learningFrameClassName, 'min-h-[520px] p-6 sm:p-8')}
+      className={cn(learningFrameClassName, 'min-h-[360px] p-5 sm:p-6')}
     >
       {!isRevealed ? (
         <div
@@ -80,13 +80,13 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
             {word.level} · 第 {item.reviewCount + 1} 次复习
           </Badge>
-          <p className="mt-8 text-[11px] text-muted-foreground">先回忆</p>
-          <h2 className="mt-5 text-[3.8rem] font-semibold leading-[0.92] text-foreground sm:text-[5.2rem]">
+          <p className="mt-6 text-[11px] text-muted-foreground">先回忆</p>
+          <h2 className="mt-4 text-[2.9rem] font-semibold leading-none text-foreground sm:text-[4rem]">
             {word.word}
           </h2>
           <p className="mt-4 font-mono text-lg text-muted-foreground">{word.partOfSpeech} · {word.phonetic}</p>
 
-          <div className="mt-10 flex items-center gap-3">
+          <div className="mt-8 flex items-center gap-3">
             <Button
               variant="outline"
               size="icon"
@@ -121,14 +121,14 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 
           <div className="mt-6 grid flex-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_0.8fr]">
             <div className="space-y-4">
-              <section className="rounded-xl border border-border bg-card p-4">
+              <section className="rounded-md border border-border bg-card p-4">
                 <p className="text-[11px] text-muted-foreground">释义</p>
                 <p className="mt-3 text-base leading-7 text-foreground">{word.definition}</p>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
               </section>
 
               {word.examples[0] ? (
-                <section className="rounded-xl border border-border bg-card p-4">
+                <section className="rounded-md border border-border bg-card p-4">
                   <p className="text-[11px] text-muted-foreground">例句</p>
                   <p className="mt-3 text-sm leading-7 text-foreground">{word.examples[0].en}</p>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p>
@@ -136,7 +136,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
               ) : null}
             </div>
 
-            <section className="rounded-xl border border-border bg-card p-4">
+            <section className="rounded-md border border-border bg-card p-4">
               <p className="text-[11px] text-muted-foreground">提示</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.synonyms.slice(0, 5).map((synonym) => (
@@ -360,15 +360,15 @@ export default function ReviewPage() {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <LearningEmptyState
             icon={Check}
-            eyebrow={isZh ? 'FSRS 复习队列' : 'FSRS review queue'}
-            title={isZh ? '当前没有到期 FSRS 复习' : 'No FSRS-due cards right now'}
+            eyebrow={isZh ? '复习队列' : 'Review queue'}
+            title={isZh ? '当前没有到期复习' : 'No review cards due right now'}
             description={
               isZh
                 ? '今天没有必须复习的卡片。可以去 Practice 做一次短练习；如果有补充复习，会显示在右侧。'
                 : 'No cards are due right now. You can do a short Practice session; extra review items appear on the right.'
             }
             metrics={[
-              { label: isZh ? '到期 FSRS 卡' : 'Due FSRS cards', value: 0, accent: 'emerald' },
+              { label: isZh ? '到期卡片' : 'Due cards', value: 0, accent: 'emerald' },
             ]}
             actions={
               <>
@@ -391,7 +391,7 @@ export default function ReviewPage() {
                 ]}
                 className="border-t-0 pt-0"
               />
-              <div className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+              <div className="rounded-md border border-border bg-card p-4">
                 <p className="text-sm font-semibold text-foreground">
                   {isZh ? '没有到期卡是正常状态。' : 'No due cards is normal.'}
                 </p>
@@ -451,7 +451,7 @@ export default function ReviewPage() {
   return (
     <LearningCockpitShell
       language={language}
-      eyebrow={language.startsWith('zh') ? 'FSRS 复习回合' : 'FSRS review round'}
+      eyebrow={language.startsWith('zh') ? '词汇复习' : 'Vocabulary review'}
       progress={Math.round(reviewedProgress)}
       progressLabel={language.startsWith('zh') ? '回合进度' : 'Round progress'}
       mission={{
@@ -463,7 +463,7 @@ export default function ReviewPage() {
           : 'This round shows cards due today. Extra review items are listed on the right.',
       }}
       metrics={[
-        { label: language.startsWith('zh') ? '剩余 FSRS 卡' : 'FSRS remaining', value: remainingCount, accent: 'emerald' },
+        { label: language.startsWith('zh') ? '剩余卡片' : 'Remaining', value: remainingCount, accent: 'emerald' },
         { label: language.startsWith('zh') ? '任务目标' : 'Mission target', value: reviewTaskTarget },
         { label: language.startsWith('zh') ? '当前卡片' : 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
         ...(isCurrentCardStubborn ? [{ label: language.startsWith('zh') ? '强化路径' : 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
@@ -472,7 +472,7 @@ export default function ReviewPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <LearningWorkspaceSurface
-            eyebrow="FSRS 复习"
+            eyebrow={isZh ? '词汇卡片' : 'Vocabulary card'}
             title={isRevealed ? '答案已揭晓，给这次回忆打分' : '先在脑中回忆，再决定是否揭晓'}
             description={isRevealed ? '直接评分，然后继续。' : undefined}
           >
@@ -482,7 +482,7 @@ export default function ReviewPage() {
               {currentRecoveryPlan && isRevealed ? (
                 <section
                   data-testid="stubborn-recovery-panel"
-                  className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4 shadow-sm"
+                  className="rounded-md border border-amber-500/25 bg-amber-500/[0.06] p-4 shadow-sm"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -610,34 +610,34 @@ export default function ReviewPage() {
               className="border-t-0 pt-0"
             />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-xl border border-border bg-card p-4">
+              <div className="rounded-md border border-border bg-card p-4">
                 <p className="text-[11px] text-muted-foreground">已完成</p>
                 <p className="mt-2 text-2xl font-semibold text-foreground">{totalReviewed} / {reviewItems.length}</p>
               </div>
-              <div className="rounded-xl border border-border bg-card p-4">
+              <div className="rounded-md border border-border bg-card p-4">
                 <p className="text-[11px] text-muted-foreground">当前阶段</p>
-                <p className="mt-2 text-2xl font-semibold text-green-700">{isRevealed ? '打分' : '先回忆'}</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground">{isRevealed ? '打分' : '先回忆'}</p>
               </div>
             </div>
           </LearningRailSection>
 
           <LearningRailSection title={isZh ? '评分指南' : 'Rating guide'}>
             <div className="space-y-3">
-              <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+              <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4">
                 <div className="flex items-center gap-2 text-destructive">
                   <X className="h-4 w-4" />
                   <p className="text-sm font-semibold">{isZh ? '遗忘' : 'Again'}</p>
                 </div>
                   <p className="mt-2 text-sm text-muted-foreground">马上重见</p>
                 </div>
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
+              <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] p-4">
                 <div className="flex items-center gap-2 text-amber-600">
                   <Zap className="h-4 w-4" />
                   <p className="text-sm font-semibold">{isZh ? '较难' : 'Hard'}</p>
                 </div>
                   <p className="mt-2 text-sm text-muted-foreground">短间隔复现</p>
                 </div>
-              <div className="rounded-xl border border-green-500/30 bg-green-50 p-4">
+              <div className="rounded-md border border-green-500/30 bg-green-50 p-4">
                 <div className="flex items-center gap-2 text-green-700">
                   <Check className="h-4 w-4" />
                   <p className="text-sm font-semibold">{isZh ? '良好 / 简单' : 'Good / Easy'}</p>
@@ -645,7 +645,7 @@ export default function ReviewPage() {
                   <p className="mt-2 text-sm text-muted-foreground">拉长间隔</p>
                 </div>
               {isCurrentCardStubborn ? (
-                <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
+                <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] p-4">
                   <div className="flex items-center gap-2 text-amber-600">
                     <Zap className="h-4 w-4" />
                     <p className="text-sm font-semibold">{isZh ? '强化路径' : 'Reinforcement path'}</p>
@@ -671,7 +671,7 @@ export default function ReviewPage() {
 
           {currentItem ? (
             <LearningRailSection title={isZh ? '当前卡片' : 'Current card'}>
-              <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+              <div className="rounded-md border border-border bg-card p-4 space-y-4">
                 <div className="flex items-center gap-2 text-foreground">
                   <Clock3 className="h-4 w-4 text-green-600" />
                   <p className="text-sm font-medium">第 {currentItem.reviewCount + 1} 次复习</p>
@@ -711,21 +711,21 @@ export default function ReviewPage() {
                     ? `上次复习：${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('zh-CN')}`
                     : '今日首次接触这张卡'}
                 </p>
-                <div className="rounded-xl border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
-                  FSRS stability: {currentItem.fsrs.stability.toFixed(1)} 天 · 难度 {currentItem.fsrs.difficulty.toFixed(1)}
+                <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                  复习间隔参数：{currentItem.fsrs.stability.toFixed(1)} 天 · 难度 {currentItem.fsrs.difficulty.toFixed(1)}
                 </div>
               </div>
             </LearningRailSection>
           ) : null}
 
-          {/* AI Mnemonic hint */}
+          {/* Memory cue */}
           {currentItem && isRevealed && !currentRecoveryPlan && (currentItem.word.memoryTip || currentItem.word.etymology) ? (
             <LearningRailSection title={isZh ? '记忆线索' : 'Memory cue'}>
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="rounded-xl border border-[hsl(var(--accent-memory)/0.2)] bg-[hsl(var(--accent-memory)/0.08)] p-4"
+                className="rounded-md border border-[hsl(var(--accent-memory)/0.2)] bg-[hsl(var(--accent-memory)/0.08)] p-4"
               >
                 <div className="flex items-center gap-2 text-[hsl(var(--accent-memory))] mb-2">
                   <Lightbulb className="h-4 w-4" />

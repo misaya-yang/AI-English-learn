@@ -27,7 +27,6 @@ import {
   Shield,
   Target,
   Trophy,
-  WandSparkles,
 } from 'lucide-react';
 
 export type DashboardRouteId =
@@ -99,7 +98,7 @@ const ROUTES: DashboardRouteMeta[] = [
     path: '/dashboard/practice',
     label: { en: 'Practice', zh: '练习' },
     description: { en: 'Quiz / listening / writing micro drills.', zh: '测验、听力、写作短练习。' },
-    icon: WandSparkles,
+    icon: Target,
     group: 'practice',
     mobilePriority: 5,
     pageTitle: { en: 'Practice · VocabDaily', zh: '练习 · VocabDaily' },

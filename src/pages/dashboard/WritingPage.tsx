@@ -104,23 +104,23 @@ export default function WritingPage() {
 
       <motion.section
         {...motionPresets.fadeIn}
-        className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5"
+        className="rounded-md border border-border bg-card p-4 sm:p-5"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-medium text-primary">
-                {isZh ? '写作专项' : 'Writing module'}
+              <p className="text-xs font-medium text-muted-foreground">
+                {isZh ? '写作' : 'Writing'}
               </p>
               <h1 className="mt-2 text-2xl font-bold">
                 {isZh ? '写作练习' : 'Writing Practice'}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                {isZh ? '先写一版，再用评分维度和修改建议进入下一轮修订。' : 'Draft once, then use scoring dimensions and suggestions to revise deliberately.'}
+                {isZh ? '写一版，按维度改一版。' : 'Draft once, then revise by score dimension.'}
               </p>
             </div>
 
-            <div className="rounded-lg border border-border bg-background/70 p-4">
+            <div className="rounded-md border border-border bg-background p-4">
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-md border border-primary/20 bg-primary/10 text-primary">
                   <CurrentTypeIcon className="h-5 w-5" />
@@ -143,28 +143,28 @@ export default function WritingPage() {
             </div>
           </div>
 
-          <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-md border border-border bg-background p-4">
             <p className="text-xs font-medium text-muted-foreground">
-              {isZh ? '评分与修改' : 'Scoring and revision'}
+              {isZh ? '修改维度' : 'Revision dimensions'}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {rubricPreview.map((item) => (
-                <div key={item.label} className="rounded-lg border border-border bg-card p-3">
+                <div key={item.label} className="rounded-md border border-border bg-card p-3">
                   <p className="text-sm font-semibold text-foreground">{item.label}</p>
                   <p className="mt-2 text-xs text-muted-foreground">{item.value}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-lg border border-primary/20 bg-primary/10 p-4">
+            <div className="mt-4 rounded-md border border-primary/20 bg-primary/10 p-4">
               <p className="text-sm font-semibold text-foreground">
                 {gradeResult
                   ? (isZh ? `当前得分 ${gradeResult.overallScore}/100` : `Current score ${gradeResult.overallScore}/100`)
-                  : (isZh ? '提交后会生成可执行修改建议' : 'Submit to get actionable revision notes')}
+                  : (isZh ? '提交后查看修改建议' : 'Submit to review edits')}
               </p>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
                 {isZh
-                  ? '结果页会展示总分、维度评分、可替换句子和下一次重写重点。'
-                  : 'Results show overall score, dimensions, replacement sentences, and the next rewrite focus.'}
+                  ? '结果页会列出分数、句子替换和下一次重点。'
+                  : 'Results list the score, sentence replacements, and next focus.'}
               </p>
             </div>
           </div>

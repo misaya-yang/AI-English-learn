@@ -73,7 +73,6 @@ export default function PronunciationPage() {
   const targetText = item ? (mode === 'word' ? item.word : item.exampleSentence) : '';
   const completedCount = session.records.length;
   const progressPercent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
-  const waveformBars = [42, 64, 38, 82, 58, 74, 46, 88, 52, 68, 44, 78, 60, 48];
 
   const handleNext = () => {
     session.reset();
@@ -151,13 +150,13 @@ export default function PronunciationPage() {
 
       <motion.section
         {...motionPresets.fadeIn}
-        className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5"
+        className="rounded-md border border-border bg-card p-4 sm:p-5"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-medium text-primary">
-                {isZh ? '发音专项' : 'Pronunciation module'}
+              <p className="text-xs font-medium text-muted-foreground">
+                {isZh ? '发音' : 'Pronunciation'}
               </p>
               <h1 className="mt-2 text-2xl font-bold">
                 {t('pronunciation.title')}
@@ -167,9 +166,9 @@ export default function PronunciationPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-border bg-background/70 p-4">
+            <div className="rounded-md border border-border bg-background p-4">
               <p className="text-xs font-medium text-muted-foreground">
-                {isZh ? '当前目标音' : 'Current target'}
+                {isZh ? '当前内容' : 'Current item'}
               </p>
               <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -189,29 +188,20 @@ export default function PronunciationPage() {
             </div>
           </div>
 
-          <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-md border border-border bg-background p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">
-                  {isZh ? '录音反馈预期' : 'Feedback preview'}
+                  {isZh ? '录音反馈' : 'Recording feedback'}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {isZh ? '读完后会看到准确度、流利度和语调反馈。' : 'After recording, review accuracy, fluency, and intonation.'}
+                  {isZh ? '录完后查看准确度、流利度和语调。' : 'Record once, then check accuracy, fluency, and intonation.'}
                 </p>
               </div>
-              <div className="rounded-lg border border-border bg-card px-4 py-3 text-right">
+              <div className="rounded-md border border-border bg-card px-4 py-3 text-right">
                 <span className="block text-lg font-semibold text-foreground">80+</span>
                 <span className="block text-[11px] text-muted-foreground">{isZh ? '目标分' : 'goal'}</span>
               </div>
-            </div>
-            <div className="mt-5 flex h-20 items-center gap-1.5 rounded-lg border border-border bg-card px-4">
-              {waveformBars.map((height, index) => (
-                <span
-                  key={index}
-                  className="flex-1 rounded-full bg-primary/45"
-                  style={{ height: `${height}%` }}
-                />
-              ))}
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
@@ -219,7 +209,7 @@ export default function PronunciationPage() {
                 { label: isZh ? '进度' : 'Progress', value: `${completedCount}/${items.length}` },
                 { label: isZh ? '记录' : 'Records', value: session.records.length },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-lg border border-border bg-card p-3 text-center">
+                <div key={stat.label} className="rounded-md border border-border bg-card p-3 text-center">
                   <p className="text-base font-semibold text-foreground">{stat.value}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{stat.label}</p>
                 </div>

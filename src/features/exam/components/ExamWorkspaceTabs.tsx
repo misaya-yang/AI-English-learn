@@ -1,4 +1,4 @@
-import { BookOpen, Sparkles } from 'lucide-react';
+import { BookOpen, ListChecks } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { Badge } from '@/components/ui/badge';
@@ -315,7 +315,7 @@ function InsightPanel({
             <p className="text-sm font-semibold">建议先做</p>
             {selectedErrorNode ? (
               <>
-                <div className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.08] p-3">
+                <div className="mt-3 rounded-md border border-emerald-500/25 bg-emerald-500/[0.08] p-3">
                   <p className="text-sm font-medium text-emerald-500">优先修复：{ISSUE_LABELS[selectedErrorNode.tag]}</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     近期出现 {selectedErrorNode.count} 次。先做一个小练习，再重写一段。
@@ -323,7 +323,7 @@ function InsightPanel({
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button onClick={() => void onGenerateMicroLesson()} disabled={isBusy || !feedback}>
-                    <Sparkles className="mr-1.5 h-4 w-4" /> 一键错题转课程
+                    <ListChecks className="mr-1.5 h-4 w-4" /> 错题练习
                   </Button>
                   <Button variant="outline" onClick={onJumpToVocabulary}>
                     <BookOpen className="mr-1.5 h-4 w-4" /> 跳转词库补强
@@ -335,7 +335,7 @@ function InsightPanel({
             )}
 
             {microUnit && (
-              <div className="mt-4 rounded-xl border border-border/60 bg-background/50 p-3">
+              <div className="mt-4 rounded-md border border-border/60 bg-background/50 p-3">
                 <p className="text-sm font-medium">最新补救微课</p>
                 <p className="mt-1 text-sm text-foreground">{microUnit.title}</p>
                 <p className="mt-1 text-xs text-muted-foreground">预计 {microUnit.estimatedMinutes} 分钟 · {microUnit.cefrLevel}</p>

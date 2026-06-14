@@ -9,11 +9,11 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import {
   ArrowRight,
+  Bell,
   Check,
   Crown,
   HelpCircle,
   ShieldAlert,
-  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -477,7 +477,7 @@ export default function PricingPage() {
                               </>
                             ) : (
                               <>
-                                <Sparkles className="mr-2 h-4 w-4" />
+                                <Bell className="mr-2 h-4 w-4" />
                                 {isZh ? 'Pro 开放时通知我' : 'Notify me when Pro opens'}
                               </>
                             )}
@@ -576,8 +576,8 @@ export default function PricingPage() {
             className="mt-5 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
           >
             <Link to="/register">
-              <Sparkles className="mr-2 h-5 w-5" />
               {isZh ? '免费开始' : 'Start free'}
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
         </div>

@@ -24,7 +24,7 @@ export default function MagicLinkPage() {
         sentBodyBefore: '登录链接已发送至',
         sentBodyAfter: '，点击链接即可登录。',
         backToLogin: '返回登录',
-        title: '使用魔法链接登录',
+        title: '邮箱链接登录',
         subtitle: '无需密码，我们会发送安全登录链接到你的邮箱。',
         preferPassword: '更喜欢密码登录？',
         passwordLogin: '密码登录',
@@ -40,7 +40,7 @@ export default function MagicLinkPage() {
         sentBodyBefore: 'We sent a sign-in link to',
         sentBodyAfter: '. Open it to finish signing in.',
         backToLogin: 'Back to sign in',
-        title: 'Sign in with magic link',
+        title: 'Sign in with email link',
         subtitle: "No password needed. We'll send a secure sign-in link to your email.",
         preferPassword: 'Prefer using a password?',
         passwordLogin: 'Password sign in',
@@ -112,8 +112,8 @@ export default function MagicLinkPage() {
 
   return (
     <AuthShell
-      title="Sign in with magic link"
-      titleZh="使用魔法链接登录"
+      title="Sign in with email link"
+      titleZh="邮箱链接登录"
       subtitle="No password needed. We'll send a secure sign-in link to your email."
       subtitleZh="无需密码，我们会发送安全登录链接到你的邮箱。"
       footer={
