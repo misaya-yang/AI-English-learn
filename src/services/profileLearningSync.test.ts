@@ -25,6 +25,7 @@ describe('profileLearningSync', () => {
     expect(updates.target).toBe('IELTS 7.0');
     expect(updates.tracks).toEqual(['exam_boost', 'workplace_english']);
     expect(updates.dailyMinutes).toBe(36);
+    expect(updates.learningStyle).toBe('auditory');
     expect(updates.languagePreference).toBe('bilingual');
   });
 
@@ -59,6 +60,7 @@ describe('profileLearningSync', () => {
       target: 'IELTS 7.5',
       tracks: ['exam_boost'],
       dailyMinutes: 20,
+      learningStyle: 'reading',
       languagePreference: 'bilingual',
     });
   });

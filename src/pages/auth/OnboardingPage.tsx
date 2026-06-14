@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import {
   BookOpen,
+  Calendar,
   ChevronRight,
   ChevronLeft,
+  Clock,
   GraduationCap,
   Target,
   Sparkles,
@@ -20,6 +23,12 @@ import { buildAuthRedirect, resolveAuthRedirect } from '@/lib/authRedirect';
 import { PlacementTest } from '@/components/PlacementTest';
 import { AuthShell } from '@/features/marketing/AuthShell';
 import type { CEFRLevel, Topic, LearningStyle } from '@/types';
+import {
+  buildOnboardingPlacement,
+  type OnboardingDeadline,
+  type OnboardingExamTarget,
+  type OnboardingPlacementInput,
+} from '@/services/onboardingPlacement';
 import { toast } from 'sonner';
 
 const cefrLevels: { level: CEFRLevel; label: string; labelZh: string; description: string; descriptionZh: string }[] = [
@@ -51,15 +60,35 @@ const learningStyles: { id: LearningStyle; label: string; labelZh: string; descr
   { id: 'reading', label: 'Reading/Writing', labelZh: '读写型', description: 'Learn best by reading and taking notes', descriptionZh: '通过阅读和整理笔记学习更高效' },
 ];
 
+const examTargets: { id: OnboardingExamTarget; label: string; labelZh: string; description: string; descriptionZh: string }[] = [
+  { id: 'general', label: 'General fluency', labelZh: '综合提升', description: 'Build a steady vocabulary and practice habit', descriptionZh: '建立稳定的词汇和练习习惯' },
+  { id: 'ielts', label: 'IELTS target', labelZh: 'IELTS 备考', description: 'Prioritize academic vocabulary and output practice', descriptionZh: '优先学术词汇和输出练习' },
+  { id: 'toefl', label: 'TOEFL target', labelZh: 'TOEFL 备考', description: 'Focus on academic reading, listening, and structure', descriptionZh: '聚焦学术阅读、听力和结构表达' },
+];
+
+const ieltsBands = ['IELTS 6.0', 'IELTS 6.5', 'IELTS 7.0', 'IELTS 7.5', 'IELTS 8.0'];
+const toeflTargets = ['TOEFL 75+', 'TOEFL 90+', 'TOEFL 100+', 'TOEFL 105+', 'TOEFL 110+'];
+const dailyMinuteOptions = [15, 25, 35, 45];
+
+const deadlines: { id: OnboardingDeadline; label: string; labelZh: string }[] = [
+  { id: 'lt_1_month', label: '< 1 month', labelZh: '1 个月内' },
+  { id: '1_3_months', label: '1-3 months', labelZh: '1-3 个月' },
+  { id: '3_6_months', label: '3-6 months', labelZh: '3-6 个月' },
+  { id: '6_plus_months', label: '6+ months', labelZh: '6 个月以上' },
+  { id: 'none', label: 'No date yet', labelZh: '暂未确定' },
+];
+
 const stepCopy: Record<number, { en: string; zh: string }> = {
   1: { en: 'Tell us your level', zh: '告诉我们你的英语水平' },
-  2: { en: 'Set a daily goal', zh: '设定每日目标' },
-  3: { en: 'Pick what you care about', zh: '选择你感兴趣的主题' },
-  4: { en: 'How do you learn best?', zh: '你最喜欢的学习方式' },
+  2: { en: 'Choose your learning target', zh: '选择你的学习目标' },
+  3: { en: 'Set a daily rhythm', zh: '设定每日节奏' },
+  4: { en: 'Pick what you care about', zh: '选择你感兴趣的主题' },
+  5: { en: 'Confirm your starter plan', zh: '确认你的起始方案' },
 };
 
 export default function OnboardingPage() {
   const { updateUserProfile, isAuthenticated } = useAuth();
+  const { setActiveBook, updateLearningProfile, refreshDailyMission } = useUserData();
   const navigate = useNavigate();
   const location = useLocation();
   const { i18n } = useTranslation();
@@ -69,18 +98,23 @@ export default function OnboardingPage() {
   const [showPlacementTest, setShowPlacementTest] = useState(false);
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
 
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<OnboardingPlacementInput>({
     cefrLevel: 'B1' as CEFRLevel,
+    examTarget: 'general',
+    targetBand: undefined,
+    deadline: 'none',
     dailyGoal: 10,
+    dailyMinutes: 25,
     preferredTopics: ['Daily Life', 'Business'] as Topic[],
     learningStyle: 'visual' as LearningStyle,
   });
+  const placement = useMemo(() => buildOnboardingPlacement(preferences), [preferences]);
 
   if (!isAuthenticated) {
     return <Navigate to={buildAuthRedirect('/onboarding')} replace />;
   }
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
   const currentCopy = stepCopy[step];
 
@@ -109,7 +143,14 @@ export default function OnboardingPage() {
       });
 
       if (success) {
-        toast.success(isZh ? '学习档案已设置完成！' : 'Profile setup complete!');
+        setActiveBook(placement.starterBookId);
+        updateLearningProfile(placement.learningProfile);
+        refreshDailyMission();
+        toast.success(
+          isZh
+            ? `已为你选择《${placement.starterBookName}》。`
+            : `${placement.starterBookName} is ready for you.`,
+        );
         navigate(redirectTarget, { replace: true });
       } else {
         toast.error(isZh ? '保存档案失败，请重试。' : 'Failed to save profile. Please try again.');
@@ -128,6 +169,33 @@ export default function OnboardingPage() {
         ? prev.preferredTopics.filter((t) => t !== topic)
         : [...prev.preferredTopics, topic],
     }));
+  };
+
+  const updateExamTarget = (examTarget: OnboardingExamTarget) => {
+    setPreferences((prev) => {
+      const targetBand =
+        examTarget === 'ielts'
+          ? prev.targetBand?.startsWith('IELTS')
+            ? prev.targetBand
+            : 'IELTS 7.0'
+          : examTarget === 'toefl'
+            ? prev.targetBand?.startsWith('TOEFL')
+              ? prev.targetBand
+              : 'TOEFL 90+'
+            : undefined;
+      const preferredTopics: Topic[] =
+        examTarget === 'general' || prev.preferredTopics.includes('Academic')
+          ? prev.preferredTopics
+          : ['Academic', ...prev.preferredTopics];
+
+      return {
+        ...prev,
+        examTarget,
+        targetBand,
+        deadline: examTarget === 'general' ? 'none' : prev.deadline === 'none' ? '3_6_months' : prev.deadline,
+        preferredTopics,
+      };
+    });
   };
 
   const renderStep = () => {
@@ -230,10 +298,119 @@ export default function OnboardingPage() {
                 <Target className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                {isZh ? '设定每日目标' : 'Set your daily goal'}
+                {isZh ? '你这次学习的主要目标是？' : 'What are you learning for?'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {isZh ? '设定每日学习目标' : 'Choose a pace you can keep every day'}
+                {isZh ? '目标会影响起始词书、任务和练习路径' : 'Your target shapes the starter book, mission, and path'}
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {examTargets.map((target) => (
+                <button
+                  key={target.id}
+                  type="button"
+                  onClick={() => updateExamTarget(target.id)}
+                  className={cn(
+                    'flex items-start gap-4 rounded-lg border-2 p-4 text-left transition-all',
+                    preferences.examTarget === target.id
+                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
+                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
+                  )}
+                  aria-pressed={preferences.examTarget === target.id}
+                >
+                  <div
+                    className={cn(
+                      'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
+                      preferences.examTarget === target.id
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-muted text-muted-foreground',
+                    )}
+                  >
+                    {preferences.examTarget === target.id ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Target className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground">{isZh ? target.labelZh : target.label}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {isZh ? target.descriptionZh : target.description}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {preferences.examTarget !== 'general' ? (
+              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {isZh ? '目标分数' : 'Target score'}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(preferences.examTarget === 'ielts' ? ieltsBands : toeflTargets).map((band) => (
+                      <Button
+                        key={band}
+                        type="button"
+                        variant={preferences.targetBand === band ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setPreferences((prev) => ({ ...prev, targetBand: band }))}
+                        className="rounded-md"
+                      >
+                        {band}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {isZh ? '考试时间' : 'Exam date'}
+                  </p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-5">
+                    {deadlines.map((deadline) => (
+                      <button
+                        key={deadline.id}
+                        type="button"
+                        onClick={() => setPreferences((prev) => ({ ...prev, deadline: deadline.id }))}
+                        className={cn(
+                          'rounded-md border px-3 py-2 text-sm transition-colors',
+                          preferences.deadline === deadline.id
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-card text-foreground hover:bg-muted',
+                        )}
+                        aria-pressed={preferences.deadline === deadline.id}
+                      >
+                        {isZh ? deadline.labelZh : deadline.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                {isZh
+                  ? '如果之后切换到 IELTS/TOEFL，系统会自动改用学术词书和考试练习。'
+                  : 'If you switch to IELTS or TOEFL later, the app will move you to academic vocabulary and exam practice.'}
+              </div>
+            )}
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <Clock className="h-7 w-7" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">
+                {isZh ? '设定每日节奏' : 'Set your daily rhythm'}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {isZh ? '选择每天能稳定完成的词量和时间' : 'Choose a pace you can consistently finish'}
               </p>
             </div>
 
@@ -275,11 +452,35 @@ export default function OnboardingPage() {
                   {isZh ? '每天 10–15 个新词以获得最佳记忆效果。' : '10-15 words per day for optimal retention.'}
                 </p>
               </div>
+
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {isZh ? '每天可投入时间' : 'Daily study time'}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {dailyMinuteOptions.map((minutes) => (
+                    <button
+                      key={minutes}
+                      type="button"
+                      onClick={() => setPreferences((prev) => ({ ...prev, dailyMinutes: minutes }))}
+                      className={cn(
+                        'rounded-md border px-3 py-3 text-sm font-medium transition-colors',
+                        preferences.dailyMinutes === minutes
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-card text-foreground hover:bg-muted',
+                      )}
+                      aria-pressed={preferences.dailyMinutes === minutes}
+                    >
+                      {minutes} {isZh ? '分钟' : 'min'}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         );
 
-      case 3:
+      case 4:
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -322,7 +523,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 4:
+      case 5:
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -370,6 +571,44 @@ export default function OnboardingPage() {
                 </button>
               ))}
             </div>
+
+            <div className="rounded-lg border border-border bg-muted/30 p-4" aria-live="polite">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Calendar className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">
+                    {isZh ? '你的起始方案' : 'Your starter plan'}
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                    <div>
+                      <p className="text-xs uppercase text-muted-foreground">{isZh ? '词书' : 'Book'}</p>
+                      <p className="mt-1 text-sm font-medium text-foreground">{placement.starterBookName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase text-muted-foreground">{isZh ? '路径' : 'Path'}</p>
+                      <p className="mt-1 text-sm font-medium text-foreground">{placement.learningPathName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase text-muted-foreground">{isZh ? '首个任务' : 'First mission'}</p>
+                      <p className="mt-1 text-sm font-medium text-foreground">
+                        {isZh ? placement.firstMission.titleZh : placement.firstMission.title}
+                      </p>
+                    </div>
+                  </div>
+
+                  <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                    {placement.reasons.map((reason) => (
+                      <li key={reason.en} className="flex gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
+                        <span>{isZh ? reason.zh : reason.en}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -416,7 +655,7 @@ export default function OnboardingPage() {
             onClick={handleNext}
             disabled={
               isLoading ||
-              (step === 3 && preferences.preferredTopics.length < 2)
+              (step === 4 && preferences.preferredTopics.length < 2)
             }
             className="rounded-md bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >

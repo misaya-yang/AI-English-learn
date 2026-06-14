@@ -22,6 +22,21 @@ import { getSubscriptionEntitlement } from '@/services/billingGateway';
 import { toast } from 'sonner';
 import { BrandMark } from '@/features/marketing/BrandMark';
 import { getCheckoutStatus } from '@/features/marketing/pricingAvailability';
+import {
+  hasProWaitlistIntent,
+  saveProWaitlistIntent,
+  type ProBillingCycle,
+} from '@/features/marketing/proWaitlist';
+import {
+  FREE_JOB,
+  FREE_PLAN_FEATURES,
+  FREE_PLAN_LIMITATIONS,
+  PRO_JOB,
+  PRO_PLAN_FEATURES,
+  PRO_WAITLIST_PROMISE,
+  pickLocalized,
+  type LocalizedLine,
+} from '@/features/marketing/proPackaging';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -35,8 +50,8 @@ interface Plan {
   descriptionZh: string;
   monthlyPrice: number;
   yearlyPrice: number;
-  features: Array<{ en: string; zh: string }>;
-  notIncluded?: Array<{ en: string; zh: string }>;
+  features: LocalizedLine[];
+  notIncluded?: LocalizedLine[];
   cta: string;
   ctaZh: string;
   highlighted: boolean;
@@ -47,23 +62,12 @@ const plans: Plan[] = [
     id: 'free',
     name: 'Free',
     nameZh: '免费版',
-    description: 'Build the daily habit.',
-    descriptionZh: '从每日学习习惯开始。',
+    description: 'Build the daily learning loop.',
+    descriptionZh: '跑通每日学习闭环。',
     monthlyPrice: 0,
     yearlyPrice: 0,
-    features: [
-      { en: 'Daily mission with new words + review', zh: '每日任务：新词 + 复习' },
-      { en: 'Core quiz, listening, and chat usage', zh: '核心测验、听力与教练对话' },
-      { en: 'Limited IELTS simulation and AI feedback', zh: '有限 IELTS 仿真与 AI 反馈' },
-      { en: 'Smart spaced-review queue', zh: '智能间隔复习队列' },
-      { en: 'Basic progress tracking', zh: '基础进度追踪' },
-    ],
-    notIncluded: [
-      { en: 'Deep AI writing feedback', zh: '深度 AI 写作反馈' },
-      { en: 'All practice modes unlocked', zh: '全部练习模式' },
-      { en: 'Priority generation queue', zh: '优先生成队列' },
-      { en: 'Export to CSV / Anki', zh: '导出 CSV / Anki' },
-    ],
+    features: FREE_PLAN_FEATURES,
+    notIncluded: FREE_PLAN_LIMITATIONS,
     cta: 'Start with Free',
     ctaZh: '免费开始',
     highlighted: false,
@@ -72,22 +76,11 @@ const plans: Plan[] = [
     id: 'pro',
     name: 'Pro',
     nameZh: '专业版',
-    description: 'For learners who want depth and speed.',
-    descriptionZh: '面向需要深度反馈与高效学习的用户。',
+    description: 'For exam-grade feedback and planning.',
+    descriptionZh: '面向考试级反馈与学习规划。',
     monthlyPrice: 9.99,
     yearlyPrice: 7.99,
-    features: [
-      { en: 'Unlimited daily words', zh: '每日新词不限量' },
-      { en: 'Advanced AI feedback', zh: '进阶 AI 反馈' },
-      { en: 'IELTS Writing Coach (structured scoring)', zh: 'IELTS 写作教练（结构化评分）' },
-      { en: 'IELTS micro courses + simulation items', zh: 'IELTS 微课程与仿真题' },
-      { en: 'Error graph & one-click remediation lessons', zh: '错因图谱与一键补强课' },
-      { en: 'All practice modes', zh: '全部练习模式' },
-      { en: 'Priority word generation', zh: '优先词汇生成' },
-      { en: 'Export to CSV / Anki', zh: '导出 CSV / Anki' },
-      { en: 'Ad-free experience', zh: '无广告体验' },
-      { en: 'Detailed analytics', zh: '详细学习分析' },
-    ],
+    features: PRO_PLAN_FEATURES,
     cta: 'Upgrade to Pro',
     ctaZh: '升级到专业版',
     highlighted: true,
@@ -138,6 +131,10 @@ export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
   const [subscriptionStatus, setSubscriptionStatus] = useState<'inactive' | 'active' | 'unknown'>('unknown');
+  const [waitlistedCycles, setWaitlistedCycles] = useState<Record<ProBillingCycle, boolean>>(() => ({
+    monthly: hasProWaitlistIntent('monthly'),
+    yearly: hasProWaitlistIntent('yearly'),
+  }));
 
   // Hardcoded against the env. Today this returns `coming_soon` because no
   // real Stripe/Alipay secret is wired into the deploy. The PricingPage MUST
@@ -146,6 +143,7 @@ export default function PricingPage() {
   // honest "not yet available" notice.
   const checkoutStatus = getCheckoutStatus();
   const isCheckoutLive = checkoutStatus.kind === 'available';
+  const billingCycle: ProBillingCycle = isYearly ? 'yearly' : 'monthly';
 
   useEffect(() => {
     let cancelled = false;
@@ -195,6 +193,44 @@ export default function PricingPage() {
     }
   }, [isZh, location.search]);
 
+  const handleProWaitlist = () => {
+    const result = saveProWaitlistIntent({
+      billingCycle,
+      goal: currentPlan === 'pro' ? 'pro_plan_interest_review' : 'upgrade_from_free',
+      userId: user?.id,
+      language: isZh ? 'zh' : 'en',
+    });
+
+    if (result.status === 'failed') {
+      toast.error(
+        isZh
+          ? '暂时无法保存你的意向，请稍后再试。'
+          : 'We could not save your interest yet. Please try again.',
+      );
+      return;
+    }
+
+    setWaitlistedCycles((previous) => ({
+      ...previous,
+      [result.intent.billingCycle]: true,
+    }));
+
+    if (result.status === 'duplicate') {
+      toast.info(
+        isZh
+          ? '已经记录过这个 Pro 意向了。'
+          : 'You are already on the Pro interest list for this billing option.',
+      );
+      return;
+    }
+
+    toast.success(
+      isZh
+        ? '已记录：Pro 开放时会提醒你。'
+        : 'Saved. We will use this signal for the Pro launch.',
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header reuses the shared brand mark so Pricing matches Home / Auth. */}
@@ -207,11 +243,11 @@ export default function PricingPage() {
               <LanguageSwitcher />
             </div>
             {isAuthenticated ? (
-              <Link to="/dashboard/today">
-                <Button className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+              <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+                <Link to="/dashboard/today">
                   {isZh ? '进入控制台' : 'Go to dashboard'}
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             ) : (
               <>
                 <Link
@@ -220,11 +256,11 @@ export default function PricingPage() {
                 >
                   {isZh ? '登录' : 'Sign in'}
                 </Link>
-                <Link to="/register">
-                  <Button className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+                <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+                  <Link to="/register">
                     {isZh ? '免费开始' : 'Get started'}
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </>
             )}
           </div>
@@ -244,12 +280,30 @@ export default function PricingPage() {
             {isZh ? '选择你的学习方案' : 'Choose your learning plan'}
           </h1>
           <p className="mt-3 text-lg text-muted-foreground">
-            {isZh ? '选择适合你的学习方案' : 'Choose the plan that fits your practice rhythm.'}
+            {isZh ? '免费版跑闭环，Pro 做深度输出、诊断和周计划。' : 'Free runs the loop. Pro adds scored output, diagnostics, and weekly planning.'}
           </p>
           <p className="mt-3 text-base text-muted-foreground">
             {isZh ? '免费开始，Pro 上线后再升级。' : 'Start free, upgrade when Pro is live.'}
           </p>
         </div>
+
+        <section
+          aria-label={isZh ? '方案任务分工' : 'Plan jobs to be done'}
+          className="mx-auto mt-8 grid max-w-4xl gap-3 sm:grid-cols-2"
+        >
+          <div className="rounded-lg border border-border bg-card/60 p-4">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">
+              {isZh ? 'Free 负责什么' : 'Free job'}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(FREE_JOB, i18n.language || 'en')}</p>
+          </div>
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <p className="text-xs font-semibold uppercase text-primary">
+              {isZh ? 'Pro 负责什么' : 'Pro job'}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(PRO_JOB, i18n.language || 'en')}</p>
+          </div>
+        </section>
 
         {/* Fail-closed banner — visible whenever live checkout is disabled. */}
         {!isCheckoutLive && (
@@ -332,6 +386,7 @@ export default function PricingPage() {
             const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
             const isPaid = plan.id !== 'free';
             const showFailClosedNotice = isPaid && !isCheckoutLive;
+            const isWaitlistedForCycle = isPaid && waitlistedCycles[billingCycle];
 
             return (
               <motion.div
@@ -407,19 +462,20 @@ export default function PricingPage() {
 
                     <div className="mt-7">
                       {plan.id === 'free' ? (
-                        <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
-                          <Button
-                            className="h-11 w-full rounded-md"
-                            variant="outline"
-                          >
+                        <Button
+                          asChild
+                          className="h-11 w-full rounded-md"
+                          variant="outline"
+                        >
+                          <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
                             {isZh ? plan.ctaZh : plan.cta}
                             <ArrowRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       ) : showFailClosedNotice ? (
                         // Fail-closed UI: do NOT mount any onClick that
-                        // attempts to start a real checkout. Render a clearly
-                        // labelled status state and link to support instead.
+                        // attempts to start a real checkout. This only stores
+                        // local product intent so we can measure Pro demand.
                         <div
                           data-testid="pricing-pro-coming-soon"
                           className="rounded-lg border border-dashed border-amber-300/70 bg-amber-50/60 p-4 text-center dark:border-amber-400/30 dark:bg-amber-500/[0.08]"
@@ -429,11 +485,37 @@ export default function PricingPage() {
                           </p>
                           <p className="mt-1 text-xs leading-relaxed text-amber-800/85 dark:text-amber-200/85">
                             {isZh
-                              ? '付费版本暂未开放，免费版可正常使用。'
-                              : "Pro subscription isn't available on this deploy yet."}
+                              ? 'Pro 将围绕 IELTS 评分、进阶分析、自定义词书和周计划开放；免费版可正常使用。'
+                              : "Pro will focus on IELTS scoring, advanced analytics, custom wordbooks, and weekly planning. Free stays available."}
                           </p>
                           <p className="mt-3 text-xs font-medium text-amber-900 dark:text-amber-200">
                             {isZh ? '结账入口会在真实支付服务接好后出现。' : 'Checkout appears here once a real provider is connected.'}
+                          </p>
+                          <Button
+                            type="button"
+                            data-testid="pricing-pro-waitlist-button"
+                            variant={isWaitlistedForCycle ? 'secondary' : 'default'}
+                            className="mt-4 h-10 w-full rounded-md"
+                            onClick={handleProWaitlist}
+                          >
+                            {isWaitlistedForCycle ? (
+                              <>
+                                <Check className="mr-2 h-4 w-4" />
+                                {isZh ? '已记录意向' : "You're on the list"}
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                {isZh ? 'Pro 开放时通知我' : 'Notify me when Pro opens'}
+                              </>
+                            )}
+                          </Button>
+                          <p className="mt-2 text-[11px] leading-relaxed text-amber-800/80 dark:text-amber-200/75">
+                            {isWaitlistedForCycle
+                              ? (isZh
+                                ? `已保存${billingCycle === 'yearly' ? '按年' : '按月'}方案意向；不会创建支付会话。`
+                                : `${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} Pro interest saved. No checkout session was created.`)
+                              : pickLocalized(PRO_WAITLIST_PROMISE, i18n.language || 'en')}
                           </p>
                         </div>
                       ) : (
@@ -488,15 +570,16 @@ export default function PricingPage() {
           <p className="text-sm text-muted-foreground">
             {isZh ? '需要企业或学校方案？请先使用免费版完成学习闭环验证。' : 'Need an enterprise or school plan? Start with the free learning loop while checkout is being prepared.'}
           </p>
-          <Link to="/register">
-            <Button
-              size="lg"
-              className="mt-5 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-            >
+          <Button
+            asChild
+            size="lg"
+            className="mt-5 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+          >
+            <Link to="/register">
               <Sparkles className="mr-2 h-5 w-5" />
               {isZh ? '免费开始' : 'Start free'}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </main>
 
@@ -508,6 +591,15 @@ export default function PricingPage() {
               ? '© 2026 VocabDaily · 英语学习工作台'
               : '© 2026 VocabDaily · A learning workbench for English.'}
           </p>
+          <nav className="flex items-center gap-3 text-xs text-muted-foreground" aria-label={isZh ? '法律链接' : 'Legal links'}>
+            <Link to="/terms" className="transition-colors hover:text-foreground">
+              {isZh ? '服务条款' : 'Terms'}
+            </Link>
+            <span className="text-border" aria-hidden="true">/</span>
+            <Link to="/privacy" className="transition-colors hover:text-foreground">
+              {isZh ? '隐私政策' : 'Privacy'}
+            </Link>
+          </nav>
         </div>
       </footer>
     </div>

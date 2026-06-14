@@ -2,22 +2,26 @@ import { createClient } from '@supabase/supabase-js';
 import type { FSRSState, Rating } from '@/types/core';
 import { buildWordProgressSyncPayload, normalizeWordUuid } from '@/lib/wordProgressSync';
 
-// Dev fallbacks let `npm run dev` boot without a `.env`. In production we
-// MUST refuse to silently use these — a misconfigured Vercel deploy that
-// silently used the dev project would mix prod users into the dev DB and let
-// anyone with the dev anon key read prod traffic.
+// Local-only fallback credentials. They are intentionally gated behind
+// VITE_ALLOW_SUPABASE_DEV_FALLBACK=true so preview/prod deployments and fresh
+// clones do not silently write to the shared development project.
 const DEFAULT_SUPABASE_URL = 'https://zjkbktdmwencnouwfrij.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_0_pU0AO93wz-7Bmt6xROJg_stLwrT0h';
 
 export function resolveSupabaseEnv(env: {
   VITE_SUPABASE_URL?: string;
   VITE_SUPABASE_ANON_KEY?: string;
+  VITE_ALLOW_SUPABASE_DEV_FALLBACK?: string | boolean;
   PROD?: boolean;
   MODE?: string;
 }): { url: string; anonKey: string } {
   const url = env.VITE_SUPABASE_URL?.trim();
   const anonKey = env.VITE_SUPABASE_ANON_KEY?.trim();
   const isProd = Boolean(env.PROD) || env.MODE === 'production';
+  const allowDevFallback =
+    env.MODE === 'test' ||
+    env.VITE_ALLOW_SUPABASE_DEV_FALLBACK === true ||
+    env.VITE_ALLOW_SUPABASE_DEV_FALLBACK === 'true';
 
   if (isProd) {
     const missing: string[] = [];
@@ -32,15 +36,34 @@ export function resolveSupabaseEnv(env: {
     return { url: url!, anonKey: anonKey! };
   }
 
+  if (!url && !anonKey && allowDevFallback) {
+    return {
+      url: DEFAULT_SUPABASE_URL,
+      anonKey: DEFAULT_SUPABASE_ANON_KEY,
+    };
+  }
+
+  const missing: string[] = [];
+  if (!url) missing.push('VITE_SUPABASE_URL');
+  if (!anonKey) missing.push('VITE_SUPABASE_ANON_KEY');
+  if (missing.length > 0) {
+    throw new Error(
+      `[supabase] Missing required env: ${missing.join(', ')}. ` +
+        'Create a local .env from .env.example. For local-only experiments, ' +
+        'set VITE_ALLOW_SUPABASE_DEV_FALLBACK=true to use the shared dev project intentionally.',
+    );
+  }
+
   return {
-    url: url || DEFAULT_SUPABASE_URL,
-    anonKey: anonKey || DEFAULT_SUPABASE_ANON_KEY,
+    url: url!,
+    anonKey: anonKey!,
   };
 }
 
 const resolved = resolveSupabaseEnv({
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
   VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+  VITE_ALLOW_SUPABASE_DEV_FALLBACK: import.meta.env.VITE_ALLOW_SUPABASE_DEV_FALLBACK,
   PROD: import.meta.env.PROD,
   MODE: import.meta.env.MODE,
 });

@@ -77,6 +77,22 @@ function buildTrainingTemplates(word: WordData): LexicalTrainingTemplate[] {
   return templates;
 }
 
+function buildCommonMistakes(word: WordData): string[] {
+  const mistakes: string[] = [];
+  const firstCollocation = (word.collocations || [])[0];
+  const firstSynonym = (word.synonyms || [])[0];
+
+  if (firstCollocation) {
+    mistakes.push(`Avoid learning "${word.word}" alone; attach it to "${firstCollocation}".`);
+  }
+
+  if (firstSynonym) {
+    mistakes.push(`Do not treat "${word.word}" and "${firstSynonym}" as always interchangeable.`);
+  }
+
+  return mistakes;
+}
+
 export function toLexicalEntry(word: WordData): LexicalEntry {
   return {
     id: word.id,
@@ -99,7 +115,7 @@ export function toLexicalEntry(word: WordData): LexicalEntry {
     ],
     memoryTip: word.memoryTip,
     etymology: word.etymology,
-    commonMistakes: [],
+    commonMistakes: buildCommonMistakes(word),
     trainingTemplates: buildTrainingTemplates(word),
     source: 'word_data',
   };

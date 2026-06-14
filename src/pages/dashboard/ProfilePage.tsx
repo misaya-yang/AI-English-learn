@@ -4,6 +4,7 @@ import { useUserData } from '@/contexts/UserDataContext';
 import { useQuota } from '@/hooks/useQuota';
 import type { QuotaFeature } from '@/hooks/useQuota';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,8 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { computeLevel, getLevelName } from '@/services/gamification';
+import { PRO_JOB, pickLocalized } from '@/features/marketing/proPackaging';
 
 const AVATAR_STORAGE_KEY = 'vocabdaily-avatar-url-';
 
@@ -39,6 +42,24 @@ const cefrLevels: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 const topics = ['daily', 'business', 'technology', 'travel', 'academic', 'science', 'health', 'arts'];
 
+const CEFR_LEVEL_LABELS: Record<CEFRLevel, string> = {
+  A1: 'Beginner',
+  A2: 'Elementary',
+  B1: 'Intermediate',
+  B2: 'Upper Intermediate',
+  C1: 'Advanced',
+  C2: 'Proficiency',
+};
+
+const CEFR_LEVEL_LABELS_ZH: Record<CEFRLevel, string> = {
+  A1: '入门',
+  A2: '基础',
+  B1: '中级',
+  B2: '中高级',
+  C1: '高级',
+  C2: '精通',
+};
+
 const learningStyles: { id: LearningStyle; label: string; labelZh: string }[] = [
   { id: 'visual', label: 'Visual', labelZh: '视觉型' },
   { id: 'auditory', label: 'Auditory', labelZh: '听觉型' },
@@ -46,20 +67,23 @@ const learningStyles: { id: LearningStyle; label: string; labelZh: string }[] = 
   { id: 'reading', label: 'Reading/Writing', labelZh: '读写型' },
 ];
 
-/** XP thresholds for each rank title — used to derive the displayed level name */
-const LEVEL_THRESHOLDS: [string, number][] = [
-  ['Language Master', 15000],
-  ['Word Wizard',      7000],
-  ['Expert',           3500],
-  ['Journeyman',       1500],
-  ['Apprentice',        500],
-  ['Novice',              0],
-];
+const TOPIC_LABELS: Record<string, { en: string; zh: string }> = {
+  daily: { en: 'Daily', zh: '日常' },
+  business: { en: 'Business', zh: '商务' },
+  technology: { en: 'Technology', zh: '科技' },
+  travel: { en: 'Travel', zh: '旅行' },
+  academic: { en: 'Academic', zh: '学术' },
+  science: { en: 'Science', zh: '科学' },
+  health: { en: 'Health', zh: '健康' },
+  arts: { en: 'Arts', zh: '艺术' },
+};
 
 export default function ProfilePage() {
   const { user, profile, updateUserProfile, updateDisplayName } = useAuth();
   const { xp, streak, stats, streakFreezes, achievements, allAchievementDefs, dailyMultiplier, purchaseStreakFreeze } = useUserData();
   const { plan, allStatuses } = useQuota();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh') ?? false;
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -93,9 +117,9 @@ export default function ProfilePage() {
       // Cache locally so it persists across refreshes
       localStorage.setItem(`${AVATAR_STORAGE_KEY}${user.id}`, publicUrl);
       setAvatarUrl(publicUrl);
-      toast.success('头像已更新！');
+      toast.success(isZh ? '头像已更新' : 'Avatar updated');
     } catch {
-      toast.error('头像上传失败，请重试');
+      toast.error(isZh ? '头像上传失败，请重试' : 'Avatar upload failed. Please try again.');
     } finally {
       setIsUploading(false);
       // Reset file input so same file can be re-selected
@@ -120,9 +144,9 @@ export default function ProfilePage() {
       const [profileOk, nameOk] = await Promise.all([profilePromise, namePromise]);
       if (profileOk && nameOk) {
         setIsEditing(false);
-        toast.success('Profile updated successfully!');
+        toast.success(isZh ? '个人资料已更新' : 'Profile updated successfully');
       } else {
-        toast.error('Failed to update profile');
+        toast.error(isZh ? '个人资料更新失败' : 'Failed to update profile');
       }
     } finally {
       setIsSaving(false);
@@ -138,23 +162,32 @@ export default function ProfilePage() {
     }));
   };
 
-  // Calculate level progress
-  const currentLevel = Math.floor(xp.total / 100) + 1;
+  // Calculate level progress with the canonical gamification helpers.
+  const currentLevel = computeLevel(xp.total);
   const currentThreshold = (currentLevel - 1) * 100;
   const nextThreshold = currentLevel * 100;
   const xpInCurrentLevel = xp.total - currentThreshold;
   const xpNeededForNext = nextThreshold - currentThreshold;
   const progressPercent = Math.min(100, Math.max(0, (xpInCurrentLevel / xpNeededForNext) * 100));
-
-  const levelName = (LEVEL_THRESHOLDS.find(([, threshold]) => xp.total >= threshold) ?? ['Novice'])[0];
+  const levelName = getLevelName(xp.total);
+  const cefrLevel = (profile?.cefrLevel as CEFRLevel | undefined) || 'B1';
+  const cefrLevelLabel = isZh
+    ? (CEFR_LEVEL_LABELS_ZH[cefrLevel] ?? CEFR_LEVEL_LABELS_ZH.B1)
+    : (CEFR_LEVEL_LABELS[cefrLevel] ?? CEFR_LEVEL_LABELS.B1);
+  const currentLearningStyle = learningStyles.find((s) => s.id === (profile?.learningStyle || 'visual')) || learningStyles[0];
+  const topicLabel = (topic: string) => {
+    const labels = TOPIC_LABELS[topic] || { en: topic, zh: topic };
+    return isZh ? labels.zh : labels.en;
+  };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
+    <div className="mx-auto max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">个人资料</h1>
-          <p className="text-muted-foreground">个人资料 • Manage your account</p>
+          <h1 className="text-2xl font-bold">{isZh ? '个人资料' : 'Profile'}</h1>
+          <p className="text-muted-foreground">
+            {isZh ? '管理学习画像、目标和账号身份。' : 'Manage your learner identity, goals, and account profile.'}
+          </p>
         </div>
         <Button
           variant={isEditing ? 'default' : 'outline'}
@@ -165,29 +198,28 @@ export default function ProfilePage() {
           {isSaving ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Saving...
+              {isZh ? '保存中...' : 'Saving...'}
             </>
           ) : isEditing ? (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Save Changes
+              {isZh ? '保存更改' : 'Save changes'}
             </>
           ) : (
             <>
               <Edit2 className="h-4 w-4 mr-2" />
-              Edit Profile
+              {isZh ? '编辑资料' : 'Edit profile'}
             </>
           )}
         </Button>
       </div>
 
-      {/* Profile Header Card */}
       <Card className="mb-6">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="relative">
               <Avatar className="w-24 h-24">
-                {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" className="object-cover" />}
+	                {avatarUrl && <AvatarImage src={avatarUrl} alt={isZh ? '头像' : 'Avatar'} className="object-cover" />}
                 <AvatarFallback className="text-2xl bg-emerald-100 text-emerald-600">
                   {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
@@ -219,27 +251,32 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex-1 text-center md:text-left">
-              {isEditing ? (
-                <div className="grid gap-2 max-w-sm">
-                  <Label>Display Name</Label>
-                  <Input
-                    value={formData.displayName}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, displayName: e.target.value }))}
-                    placeholder="Your display name"
-                  />
-                </div>
-              ) : (
-                <>
-                  <h2 className="text-2xl font-bold">{user?.displayName || 'Learner'}</h2>
-                  <p className="text-muted-foreground">{user?.email}</p>
-                  <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                    <Badge variant="secondary">{profile?.cefrLevel || 'B1'}</Badge>
-                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                      Level {currentLevel}
-                    </Badge>
-                  </div>
-                </>
-              )}
+	              {isEditing ? (
+	                <div className="grid gap-2 max-w-sm">
+	                  <Label>{isZh ? '显示名称' : 'Display name'}</Label>
+	                  <Input
+	                    value={formData.displayName}
+	                    onChange={(e) => setFormData((prev) => ({ ...prev, displayName: e.target.value }))}
+	                    placeholder={isZh ? '输入你的显示名称' : 'Your display name'}
+	                  />
+	                </div>
+	              ) : (
+	                <>
+	                  <h2 className="text-2xl font-bold">{user?.displayName || (isZh ? '学习者' : 'Learner')}</h2>
+	                  <p className="text-muted-foreground">{user?.email}</p>
+	                  <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
+	                    <Badge variant="secondary">{cefrLevel}</Badge>
+	                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+	                      {isZh ? `等级 ${currentLevel}` : `Level ${currentLevel}`}
+	                    </Badge>
+	                  </div>
+	                  <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+	                    {isZh
+                        ? `学习画像：${cefrLevel} ${cefrLevelLabel} · 每日 ${profile?.dailyGoal || 10} 个词 · ${currentLearningStyle.labelZh}`
+                        : `Learner profile: ${cefrLevel} ${cefrLevelLabel} · ${profile?.dailyGoal || 10} words/day · ${currentLearningStyle.label}`}
+	                  </p>
+	                </>
+	              )}
             </div>
 
             <div className="flex gap-4">
@@ -247,23 +284,23 @@ export default function ProfilePage() {
                 <p className="text-2xl font-bold">{xp.total.toLocaleString()}</p>
                 <p className="text-sm text-muted-foreground">XP</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold">{streak.current}</p>
-                <p className="text-sm text-muted-foreground">Streak</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold">{stats.masteredWords}</p>
-                <p className="text-sm text-muted-foreground">Mastered</p>
-              </div>
+	              <div className="text-center">
+	                <p className="text-2xl font-bold">{streak.current}</p>
+	                <p className="text-sm text-muted-foreground">{isZh ? '连续' : 'Streak'}</p>
+	              </div>
+	              <div className="text-center">
+	                <p className="text-2xl font-bold">{stats.masteredWords}</p>
+	                <p className="text-sm text-muted-foreground">{isZh ? '已掌握' : 'Mastered'}</p>
+	              </div>
             </div>
           </div>
 
           {/* Level Progress */}
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">
-                {levelName} → Level {currentLevel + 1}
-              </span>
+	              <span className="text-sm font-medium">
+	                {levelName} → {isZh ? `等级 ${currentLevel + 1}` : `Level ${currentLevel + 1}`}
+	              </span>
               <span className="text-sm text-muted-foreground">
                 {xpInCurrentLevel} / {xpNeededForNext} XP
               </span>
@@ -273,13 +310,12 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Learning Preferences */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
-              学习等级
+	              {isZh ? '学习等级' : 'Learning level'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -304,17 +340,11 @@ export default function ProfilePage() {
             ) : (
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <span className="font-bold text-emerald-600">{profile?.cefrLevel || 'B1'}</span>
+                  <span className="font-bold text-emerald-600">{cefrLevel}</span>
                 </div>
                 <div>
-                  <p className="font-medium">CEFR Level</p>
-                  <p className="text-sm text-muted-foreground">
-                    {(profile?.cefrLevel || 'B1') === 'A1' && 'Beginner'}
-                    {(profile?.cefrLevel || 'B1') === 'A2' && 'Elementary'}
-                    {(profile?.cefrLevel || 'B1') === 'B1' && 'Intermediate'}
-                    {(profile?.cefrLevel || 'B1') === 'B2' && 'Upper Intermediate'}
-                    {(profile?.cefrLevel || 'B1') === 'C1' && 'Advanced'}
-                  </p>
+	                  <p className="font-medium">{isZh ? '当前 CEFR 等级' : 'CEFR level'}</p>
+                  <p className="text-sm text-muted-foreground">{cefrLevelLabel}</p>
                 </div>
               </div>
             )}
@@ -325,7 +355,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
-              每日目标
+	              {isZh ? '每日目标' : 'Daily goal'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -340,7 +370,9 @@ export default function ProfilePage() {
                   max={50}
                   step={5}
                 />
-                <p className="text-center font-medium">{formData.dailyGoal} words/day</p>
+	                <p className="text-center font-medium">
+                    {formData.dailyGoal} {isZh ? '词 / 天' : 'words/day'}
+                  </p>
               </div>
             ) : (
               <div className="flex items-center gap-3">
@@ -360,7 +392,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
-              感兴趣的话题
+	              {isZh ? '感兴趣的话题' : 'Preferred topics'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -371,22 +403,22 @@ export default function ProfilePage() {
                     key={topic}
                     onClick={() => toggleTopic(topic)}
                     className={cn(
-                      'px-3 py-1 rounded-full text-sm transition-colors capitalize',
+	                      'rounded-md px-3 py-1 text-sm transition-colors',
                       formData.preferredTopics.includes(topic)
                         ? 'bg-emerald-600 text-white'
                         : 'bg-muted hover:bg-muted/80'
                     )}
                   >
-                    {topic}
-                  </button>
+	                    {topicLabel(topic)}
+	                  </button>
                 ))}
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {(profile?.preferredTopics || ['daily']).map((topic) => (
-                  <Badge key={topic} variant="secondary" className="capitalize">
-                    {topic}
-                  </Badge>
+	                  <Badge key={topic} variant="secondary">
+	                    {topicLabel(topic)}
+	                  </Badge>
                 ))}
               </div>
             )}
@@ -397,7 +429,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5" />
-              学习风格
+	              {isZh ? '学习风格' : 'Learning style'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -412,11 +444,11 @@ export default function ProfilePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {learningStyles.map((style) => (
-                    <SelectItem key={style.id} value={style.id}>
-                      {style.label} ({style.labelZh})
-                    </SelectItem>
-                  ))}
+	                  {learningStyles.map((style) => (
+	                    <SelectItem key={style.id} value={style.id}>
+	                      {isZh ? style.labelZh : style.label}
+	                    </SelectItem>
+	                  ))}
                 </SelectContent>
               </Select>
             ) : (
@@ -425,10 +457,10 @@ export default function ProfilePage() {
                   <Zap className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="font-medium capitalize">{profile?.learningStyle || 'visual'}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {learningStyles.find((s) => s.id === (profile?.learningStyle || 'visual'))?.labelZh}
-                  </p>
+	                  <p className="font-medium">{isZh ? currentLearningStyle.labelZh : currentLearningStyle.label}</p>
+	                  <p className="text-sm text-muted-foreground">
+	                    {isZh ? '用于调整练习推荐和素材呈现方式' : 'Used to tune practice recommendations and presentation'}
+	                  </p>
                 </div>
               </div>
             )}
@@ -436,12 +468,11 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      {/* Stats Overview */}
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            学习统计
+	            {isZh ? '学习统计' : 'Learning stats'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -449,40 +480,39 @@ export default function ProfilePage() {
             <div className="text-center p-4 bg-muted rounded-lg">
               <Flame className="h-6 w-6 text-orange-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{streak.current}</p>
-              <p className="text-sm text-muted-foreground">当前连续</p>
+	              <p className="text-sm text-muted-foreground">{isZh ? '当前连续' : 'Current streak'}</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <Star className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{streak.longest}</p>
-              <p className="text-sm text-muted-foreground">最长连续</p>
+	              <p className="text-sm text-muted-foreground">{isZh ? '最长连续' : 'Longest streak'}</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <BookOpen className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{stats.totalWords}</p>
-              <p className="text-sm text-muted-foreground">累计词汇</p>
+	              <p className="text-sm text-muted-foreground">{isZh ? '累计词汇' : 'Total words'}</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <Target className="h-6 w-6 text-blue-500 mx-auto mb-2" />
               <p className="text-2xl font-bold">{stats.masteredWords}</p>
-              <p className="text-sm text-muted-foreground">已掌握</p>
+	              <p className="text-sm text-muted-foreground">{isZh ? '已掌握' : 'Mastered'}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Streak Protection & Achievements */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Flame className="h-5 w-5 text-orange-500" />
-              打卡保护
+	              {isZh ? '打卡保护' : 'Streak protection'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm text-muted-foreground">可用冻结次数</p>
+	                <p className="text-sm text-muted-foreground">{isZh ? '可用冻结次数' : 'Available freezes'}</p>
                 <p className="text-3xl font-bold">{streakFreezes}</p>
               </div>
               {dailyMultiplier > 1 && (
@@ -492,7 +522,9 @@ export default function ProfilePage() {
               )}
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              打卡冻结可在你忘记学习的一天自动保护连续天数。
+	              {isZh
+                  ? '打卡冻结可在你忘记学习的一天自动保护连续天数。'
+                  : 'A streak freeze can protect your streak for one missed study day.'}
             </p>
             <Button
               variant="outline"
@@ -507,7 +539,7 @@ export default function ProfilePage() {
               }}
             >
               <Zap className="h-4 w-4 mr-1" />
-              购买冻结（50 XP）
+	              {isZh ? '购买冻结（50 XP）' : 'Buy freeze (50 XP)'}
             </Button>
           </CardContent>
         </Card>
@@ -516,7 +548,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5 text-yellow-500" />
-              成就徽章（{achievements.length}/{allAchievementDefs.length}）
+	              {isZh ? '成就徽章' : 'Achievement badges'}（{achievements.length}/{allAchievementDefs.length}）
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -542,13 +574,12 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      {/* Daily AI Quota */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-amber-500" />
-              今日 AI 额度
+	              {isZh ? '今日 AI 额度' : 'Today AI quota'}
             </div>
             <span className={cn(
               'text-sm rounded-full px-3 py-1 font-semibold',
@@ -596,23 +627,22 @@ export default function ProfilePage() {
             })}
           </div>
           {plan === 'free' && (
-            <div className="mt-4 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3">
-              <p className="text-sm text-amber-600 dark:text-amber-400">升级 Pro 解锁无限 AI 功能</p>
-              <Link to="/pricing">
-                <Button size="sm" className="rounded-full bg-amber-500 text-black hover:bg-amber-400 h-7 text-xs px-3 font-semibold">
-                  查看方案
-                </Button>
-              </Link>
+	            <div className="mt-4 flex flex-col gap-3 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+	              <p className="text-sm leading-relaxed text-amber-600 dark:text-amber-400">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
+	              <Button asChild size="sm" className="h-8 flex-shrink-0 rounded-md bg-amber-500 px-3 text-xs font-semibold text-black hover:bg-amber-400">
+	                <Link to="/pricing">
+	                  {isZh ? '查看 Pro 等待名单' : 'View Pro waitlist'}
+	                </Link>
+	              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Cancel button when editing */}
       {isEditing && (
         <div className="mt-6 flex justify-end">
           <Button variant="outline" onClick={() => setIsEditing(false)}>
-            Cancel
+            {isZh ? '取消' : 'Cancel'}
           </Button>
         </div>
       )}

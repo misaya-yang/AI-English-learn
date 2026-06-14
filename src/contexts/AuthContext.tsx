@@ -5,6 +5,7 @@ import {
   getAuthSession,
   loginUser,
   registerUser,
+  startDemoSession as startLocalDemoSession,
   logoutUser,
   getCurrentUser,
   getUserProfile,
@@ -23,6 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string | null }>;
   register: (email: string, password: string, displayName: string) => Promise<{ success: boolean; error?: string | null }>;
+  startDemoSession: () => Promise<{ success: boolean; error?: string | null }>;
   logout: () => Promise<void>;
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<boolean>;
   updateDisplayName: (displayName: string) => Promise<boolean>;
@@ -133,6 +135,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false, error: error || null };
   };
 
+  const startDemoSession = async (): Promise<{ success: boolean; error?: string | null }> => {
+    try {
+      const demoUser = startLocalDemoSession();
+      setUser(demoUser);
+      const userProfile = await getUserProfile(demoUser.id);
+      setProfile(userProfile);
+      void syncLearningProfileSafely(demoUser.id, userProfile);
+      return { success: true };
+    } catch (error: unknown) {
+      console.error('AuthContext: demo session failed:', error);
+      return { success: false, error: getErrorMessage(error, '演示模式暂时不可用') };
+    }
+  };
+
   const logout = async () => {
     await logoutUser();
     setUser(null);
@@ -177,6 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         login,
         register,
+        startDemoSession,
         logout,
         updateUserProfile: updateUserProfileFn,
         updateDisplayName,

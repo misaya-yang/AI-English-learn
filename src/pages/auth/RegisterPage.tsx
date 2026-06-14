@@ -313,14 +313,14 @@ export default function RegisterPage() {
           >
             {copy.agreePrefix}{' '}
             <Link
-              to="#"
+              to="/terms"
               className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
               {copy.terms}
             </Link>{' '}
             {copy.and}{' '}
             <Link
-              to="#"
+              to="/privacy"
               className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
             >
               {copy.privacy}

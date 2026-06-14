@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, startDemoSession, isAuthenticated } = useAuth();
   const { i18n } = useTranslation();
   const isZh = i18n.language?.startsWith('zh');
   const [email, setEmail] = useState('');
@@ -41,7 +41,8 @@ export default function LoginPage() {
         signingIn: '登录中...',
         signIn: '登录',
         divider: '或',
-        demo: '体验演示',
+        demo: '体验本地演示',
+        demoHint: '不会创建真实账号，演示数据仅保存在当前浏览器。',
         resetTitle: '重置密码',
         resetBody: '我们会向你的邮箱发送重置链接。',
         sending: '发送中...',
@@ -53,7 +54,7 @@ export default function LoginPage() {
         invalidCredentials: '电子邮箱或密码错误',
         networkError: '网络连接失败，请检查网络后重试',
         loginFailed: '登录失败，请稍后重试',
-        demoSuccess: '欢迎使用演示账号！',
+        demoSuccess: '演示学习空间已准备好',
         demoUnavailable: '演示账号暂时不可用，请尝试注册新账号',
         missingEmail: '请输入电子邮箱',
         resetSuccess: '重置密码邮件已发送，请检查您的邮箱',
@@ -73,7 +74,8 @@ export default function LoginPage() {
         signingIn: 'Signing in...',
         signIn: 'Sign in',
         divider: 'or',
-        demo: 'Try demo',
+        demo: 'Try local demo',
+        demoHint: 'No real account will be created. Demo data stays in this browser.',
         resetTitle: 'Reset password',
         resetBody: "We'll send a reset link to your email.",
         sending: 'Sending...',
@@ -85,8 +87,8 @@ export default function LoginPage() {
         invalidCredentials: 'Incorrect email or password',
         networkError: 'Network connection failed. Check your connection and try again.',
         loginFailed: 'Sign-in failed. Please try again later.',
-        demoSuccess: 'Demo account ready!',
-        demoUnavailable: 'Demo account is unavailable. Try creating a new account.',
+        demoSuccess: 'Demo workspace ready!',
+        demoUnavailable: 'Demo mode is unavailable. Try creating a new account.',
         missingEmail: 'Enter your email',
         resetSuccess: 'Password reset email sent. Check your inbox.',
         sendFailed: 'Could not send the email. Please try again later.',
@@ -137,35 +139,20 @@ export default function LoginPage() {
     }
   };
 
-  // Demo login — try login, if no account create one and retry (max 2 API calls)
   const handleDemoLogin = async () => {
     setIsLoading(true);
-    const demoEmail = (import.meta.env.VITE_DEMO_EMAIL as string | undefined) || 'demo@example.com';
-    const demoPassword = (import.meta.env.VITE_DEMO_PASSWORD as string | undefined) || 'Demo@123456';
 
     try {
-      // Step 1: try login
-      const first = await login(demoEmail, demoPassword);
-      if (first.success) {
+      const result = await startDemoSession();
+      if (result.success) {
         toast.success(copy.demoSuccess);
         navigate(redirectTarget, { replace: true });
         return;
       }
 
-      // Step 2: create account then login
-      await register(demoEmail, demoPassword, 'Demo User');
-      const retry = await login(demoEmail, demoPassword);
-      if (retry.success) {
-        toast.success(copy.demoSuccess);
-        navigate(redirectTarget, { replace: true });
-        return;
-      }
-
-      toast.error(copy.demoUnavailable);
+      toast.error(result.error || copy.demoUnavailable);
     } catch (err) {
-      toast.error(err instanceof TypeError
-        ? copy.networkError
-        : copy.demoUnavailable);
+      toast.error(err instanceof TypeError ? copy.networkError : copy.demoUnavailable);
     } finally {
       setIsLoading(false);
     }
@@ -309,6 +296,9 @@ export default function LoginPage() {
           <Sparkles className="mr-2 h-4 w-4 text-primary" />
           {copy.demo}
         </Button>
+        <p className="mt-2 text-center text-xs leading-relaxed text-muted-foreground">
+          {copy.demoHint}
+        </p>
       </AuthShell>
 
       {/* Forgot Password Overlay — kept lightweight; reuses same focus model. */}

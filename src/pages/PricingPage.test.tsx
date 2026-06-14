@@ -68,6 +68,9 @@ vi.mock('sonner', () => ({
 }));
 
 import PricingPage from './PricingPage';
+import { PRO_WAITLIST_STORAGE_KEY } from '@/features/marketing/proWaitlist';
+import { FREE_JOB, PRO_JOB } from '@/features/marketing/proPackaging';
+import { toast } from 'sonner';
 
 const renderPricingPage = () =>
   render(
@@ -127,12 +130,63 @@ describe('PricingPage — fail-closed pro checkout', () => {
     expect(screen.queryByRole('button', { name: /^Upgrade to Pro$/ })).not.toBeInTheDocument();
   });
 
-  it('does not expose mailto waitlist links when Pro is not yet launchable', async () => {
+  it('captures Pro waitlist intent locally without exposing mailto or checkout', async () => {
     renderPricingPage();
 
     const proCard = await screen.findByTestId('pricing-pro-coming-soon');
     expect(proCard.querySelector('a[href^="mailto:"]')).toBeNull();
-    expect(screen.queryByText(/Notify me when it launches/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('pricing-pro-waitlist-button'));
+
+    const stored = JSON.parse(localStorage.getItem(PRO_WAITLIST_STORAGE_KEY) ?? '[]');
+    expect(stored).toEqual([
+      expect.objectContaining({
+        planId: 'pro',
+        billingCycle: 'monthly',
+        source: 'pricing',
+        goal: 'upgrade_from_free',
+        language: 'en',
+      }),
+    ]);
+    expect(screen.getByRole('button', { name: /You're on the list/i })).toBeInTheDocument();
+    expect(toast.success).toHaveBeenCalledWith('Saved. We will use this signal for the Pro launch.');
+    expect(createBillingCheckoutMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('pricing-pro-waitlist-button'));
+
+    expect(JSON.parse(localStorage.getItem(PRO_WAITLIST_STORAGE_KEY) ?? '[]')).toHaveLength(1);
+    expect(toast.info).toHaveBeenCalledWith(
+      'You are already on the Pro interest list for this billing option.',
+    );
+    expect(createBillingCheckoutMock).not.toHaveBeenCalled();
+  });
+
+  it('separates Free and Pro jobs-to-be-done and shows the Pro launch package', async () => {
+    renderPricingPage();
+
+    expect(screen.getByText(FREE_JOB.en)).toBeInTheDocument();
+    expect(screen.getByText(PRO_JOB.en)).toBeInTheDocument();
+    expect(await screen.findByText(/IELTS Writing and Speaking scoring rubrics/i)).toBeInTheDocument();
+    expect(screen.getByText(/Advanced analytics: review debt, skill trends, error graph/i)).toBeInTheDocument();
+    expect(screen.getByText(/Custom wordbook imports plus Anki \/ CSV export/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Priority support/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Join the Pro interest list/i)).toBeInTheDocument();
+  });
+
+  it('records yearly Pro interest when the yearly billing toggle is selected', async () => {
+    renderPricingPage();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Toggle yearly pricing' }));
+    fireEvent.click(await screen.findByTestId('pricing-pro-waitlist-button'));
+
+    const stored = JSON.parse(localStorage.getItem(PRO_WAITLIST_STORAGE_KEY) ?? '[]');
+    expect(stored).toEqual([
+      expect.objectContaining({
+        planId: 'pro',
+        billingCycle: 'yearly',
+        source: 'pricing',
+      }),
+    ]);
   });
 
   it('keeps the Free plan CTA interactive (sends users to /register when logged out)', async () => {

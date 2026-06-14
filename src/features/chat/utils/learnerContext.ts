@@ -7,6 +7,7 @@ import type {
 import type { LearnerModel } from '@/services/learnerModel';
 import type { MistakeEntry } from '@/services/mistakeCollector';
 import type { LearningMission, LearningProfile, LearningTrack } from '@/types/examContent';
+import { getLearningStylePersonalization } from '@/features/learning/learningStylePersonalization';
 
 interface BuildChatLearnerContextArgs {
   learningProfile: LearningProfile;
@@ -81,12 +82,14 @@ export const buildChatGoalContext = ({
   const trackSummary = learningProfile.tracks.length > 0
     ? learningProfile.tracks.map((track) => TRACK_LABELS[track]).join(', ')
     : 'general English';
+  const style = getLearningStylePersonalization(learningProfile.learningStyle);
   const nextTask = dailyMission?.tasks.find((task) => !task.done);
   const parts = [
     `Learner level: ${learningProfile.level}.`,
     `Primary goal: ${learningProfile.target || 'Improve practical English'}.`,
     `Active learning tracks: ${trackSummary}.`,
     `Daily study time target: ${learningProfile.dailyMinutes} minutes.`,
+    `Preferred learning style: ${style.label.en}; ${style.coachInstruction}`,
     `Preferred explanation language: ${learningProfile.languagePreference}.`,
   ];
 

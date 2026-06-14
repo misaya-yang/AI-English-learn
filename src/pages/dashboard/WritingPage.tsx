@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Send, Loader2, RefreshCw, BookOpen, Briefcase, PenLine, Notebook } from 'lucide-react';
+import { FileText, Send, Loader2, RefreshCw, BookOpen, Briefcase, PenLine, Notebook, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ import {
   gradeWithAi,
   gradeLocally,
 } from '@/services/writingAnalytics';
+import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
 const WRITING_TYPES: { id: WritingType; label: string; labelZh: string; icon: typeof FileText; prompt: string; promptZh: string }[] = [
   { id: 'free', label: 'Free Writing', labelZh: '自由写作', icon: PenLine, prompt: 'Write about any topic you like.', promptZh: '随心写作，不限主题。' },
@@ -28,14 +29,23 @@ const WRITING_TYPES: { id: WritingType; label: string; labelZh: string; icon: ty
 
 export default function WritingPage() {
   const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language.startsWith('zh');
   const [writingType, setWritingType] = useState<WritingType>('free');
   const [content, setContent] = useState('');
   const [isGrading, setIsGrading] = useState(false);
   const [gradeResult, setGradeResult] = useState<WritingGradeResult | null>(null);
 
   const currentType = WRITING_TYPES.find((t) => t.id === writingType) ?? WRITING_TYPES[0];
+  const CurrentTypeIcon = currentType.icon;
   const wordCount = countWords(content);
+  const targetWords = writingType === 'ielts' ? 250 : writingType === 'business' ? 120 : 80;
+  const wordProgress = Math.min(100, Math.round((wordCount / targetWords) * 100));
+  const rubricPreview = [
+    { label: isZh ? '任务回应' : 'Task response', value: writingType === 'ielts' ? 'Band' : 'Focus' },
+    { label: isZh ? '结构连贯' : 'Coherence', value: isZh ? '段落' : 'Flow' },
+    { label: isZh ? '词汇资源' : 'Lexical range', value: isZh ? '表达' : 'Range' },
+    { label: isZh ? '语法准确' : 'Grammar', value: isZh ? '准确' : 'Accuracy' },
+  ];
 
   const handleGrade = useCallback(async () => {
     if (wordCount < 10) return;
@@ -56,16 +66,110 @@ export default function WritingPage() {
     setGradeResult(null);
   };
 
+  const writingRecap = gradeResult && !isGrading ? (
+    <LearningCompletionState
+      icon={Trophy}
+      eyebrow={isZh ? '写作复盘' : 'Writing recap'}
+      title={isZh ? `本轮写作 ${gradeResult.overallScore}/100` : `Writing score ${gradeResult.overallScore}/100`}
+      description={
+        gradeResult.overallScore >= 80
+          ? (isZh ? '表达已经比较稳，下一轮重点是精修句式和更高级词汇。' : 'The draft is strong. Next, polish sentence variety and lexical range.')
+          : gradeResult.overallScore >= 60
+            ? (isZh ? '结构和表达有基础，建议优先处理评分维度里最低的一项。' : 'The structure is workable. Start with the lowest scoring dimension.')
+            : (isZh ? '先把核心观点和段落结构稳住，再做语言层面的修饰。' : 'Stabilize the core idea and paragraph structure before polishing language.')
+      }
+      metrics={[
+        { label: isZh ? '总分' : 'Score', value: `${gradeResult.overallScore}/100`, accent: gradeResult.overallScore >= 80 ? 'emerald' : gradeResult.overallScore >= 60 ? 'warm' : undefined },
+        { label: isZh ? '词数' : 'Words', value: gradeResult.wordCount },
+        { label: isZh ? '句数' : 'Sentences', value: gradeResult.sentenceCount },
+        ...(gradeResult.bandScore !== null ? [{ label: isZh ? 'IELTS Band' : 'IELTS Band', value: gradeResult.bandScore }] : []),
+      ]}
+      actions={
+        <>
+          <Button variant="outline" onClick={() => setGradeResult(null)} className="rounded-md border-border bg-card">
+            {isZh ? '回到草稿修改' : 'Revise this draft'}
+          </Button>
+          <Button onClick={handleReset} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {isZh ? '重新写一篇' : 'Start a new draft'}
+          </Button>
+        </>
+      }
+    />
+  ) : null;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <motion.div {...motionPresets.fadeIn}>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {isZh ? '写作练习' : 'Writing Practice'}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {isZh ? '练习写作，获得 AI 详细批改和评分' : 'Practice writing and get detailed AI feedback'}
-        </p>
-      </motion.div>
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+      {writingRecap}
+
+      <motion.section
+        {...motionPresets.fadeIn}
+        className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5"
+      >
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-primary">
+                {isZh ? '写作专项' : 'Writing module'}
+              </p>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight">
+                {isZh ? '写作练习' : 'Writing Practice'}
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                {isZh ? '先写一版，再用评分维度和修改建议进入下一轮修订。' : 'Draft once, then use scoring dimensions and suggestions to revise deliberately.'}
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background/70 p-4">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-md border border-primary/20 bg-primary/10 text-primary">
+                  <CurrentTypeIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{isZh ? currentType.labelZh : currentType.label}</p>
+                  <p className="text-xs text-muted-foreground">{targetWords}+ {isZh ? '词目标' : 'word target'}</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                {isZh ? currentType.promptZh : currentType.prompt}
+              </p>
+              <div className="mt-4">
+                <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{isZh ? '当前字数' : 'Current words'}</span>
+                  <span>{wordCount}/{targetWords}</span>
+                </div>
+                <Progress value={wordProgress} className="h-2" />
+              </div>
+            </div>
+          </div>
+
+          <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+            <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+              {isZh ? '评分与修订闭环' : 'Scoring loop'}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {rubricPreview.map((item) => (
+                <div key={item.label} className="rounded-lg border border-border bg-card p-3">
+                  <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{item.value}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 rounded-lg border border-primary/20 bg-primary/10 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                {gradeResult
+                  ? (isZh ? `当前得分 ${gradeResult.overallScore}/100` : `Current score ${gradeResult.overallScore}/100`)
+                  : (isZh ? '提交后会生成可执行修改建议' : 'Submit to get actionable revision notes')}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                {isZh
+                  ? '结果页会展示总分、维度评分、可替换句子和下一次重写重点。'
+                  : 'Results show overall score, dimensions, replacement sentences, and the next rewrite focus.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.section>
 
       {/* Writing type selector */}
       <Tabs value={writingType} onValueChange={(v) => { setWritingType(v as WritingType); setGradeResult(null); }}>
@@ -82,7 +186,7 @@ export default function WritingPage() {
           <Card className="mt-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <currentType.icon className="h-4 w-4" />
+                <CurrentTypeIcon className="h-4 w-4" />
                 {isZh ? '写作题目' : 'Writing Prompt'}
               </CardTitle>
             </CardHeader>
@@ -149,23 +253,6 @@ export default function WritingPage() {
           <AnimatePresence>
             {gradeResult && !isGrading && (
               <motion.div {...motionPresets.fadeInUp} className="mt-6 space-y-4">
-                {/* Overall score */}
-                <Card>
-                  <CardContent className="pt-6 text-center">
-                    <div className="text-4xl font-bold">{gradeResult.overallScore}</div>
-                    <p className="text-sm text-muted-foreground">/ 100</p>
-                    {gradeResult.bandScore !== null && (
-                      <Badge className="mt-2">
-                        {isZh ? 'IELTS 分段' : 'IELTS Band'} {gradeResult.bandScore}
-                      </Badge>
-                    )}
-                    <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground">
-                      <span>{gradeResult.wordCount} {isZh ? '词' : 'words'}</span>
-                      <span>{gradeResult.sentenceCount} {isZh ? '句' : 'sentences'}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Dimensions */}
                 <Card>
                   <CardHeader className="pb-2">

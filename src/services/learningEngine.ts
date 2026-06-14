@@ -1,6 +1,7 @@
 import type { LearningMission, LearningProfile } from '@/types/examContent';
 import type { LearnerModel } from '@/services/learnerModel';
 import type { LearningEventRecord, WeeklyActivityPoint } from '@/services/learningEvents';
+import { CEFR_TODAY_COPY, getCefrBand, isUpperIntermediateOrAbove } from '@/features/learning/cefrPersonalization';
 import type {
   ActivitySparkPoint,
   AdaptiveDifficultyState,
@@ -40,6 +41,9 @@ const missionProgress = (mission: LearningMission | null): number => {
 const isExamFocused = (profile: LearningProfile, recommendedUnitTitle?: string | null): boolean =>
   profile.target.toLowerCase().includes('ielts') || Boolean(recommendedUnitTitle);
 
+const hasExamPriority = (profile: LearningProfile, recommendedUnitTitle?: string | null): boolean =>
+  isExamFocused(profile, recommendedUnitTitle) && isUpperIntermediateOrAbove(profile.level);
+
 const toWeakness = (tag: string, count: number): WeaknessSnapshot => {
   const catalog = weaknessCatalog[tag] || { title: tag, titleZh: tag };
   return {
@@ -73,6 +77,22 @@ export const deriveWeaknessesFromEvents = (events: LearningEventRecord[]): Weakn
           scores.set('retention', (scores.get('retention') || 0) + 2);
         } else if (rating === 'hard') {
           scores.set('retention', (scores.get('retention') || 0) + 1);
+        }
+        break;
+      }
+      case 'evidence.review.rated': {
+        const rating = event.payload.rating;
+        if (rating === 'again') {
+          scores.set('retention', (scores.get('retention') || 0) + 2);
+        } else if (rating === 'hard') {
+          scores.set('retention', (scores.get('retention') || 0) + 1);
+        }
+        break;
+      }
+      case 'evidence.review.recovery_marked':
+      case 'review.stubborn_recovery': {
+        if (event.payload.outcome === 'still_confusing') {
+          scores.set('retention', (scores.get('retention') || 0) + 2);
         }
         break;
       }
@@ -145,6 +165,8 @@ export const buildMissionCard = (args: {
   const hasDailyWordsLeft = args.learnedTodayCount < args.dailyWordsCount;
   const topWeakness = args.weaknesses[0] ?? null;
   const examFocused = isExamFocused(args.profile, args.recommendedUnitTitle);
+  const examPriority = hasExamPriority(args.profile, args.recommendedUnitTitle);
+  const cefrCopy = CEFR_TODAY_COPY[getCefrBand(args.profile.level)];
   const recoveryMode = args.learnerModel?.mode === 'recovery' || burnoutRisk >= 0.75;
   const sprintMode = args.learnerModel?.mode === 'sprint';
   const stretchMode = args.learnerModel?.mode === 'stretch';
@@ -166,7 +188,7 @@ export const buildMissionCard = (args: {
         priority: 'high',
         reason: 'recovery_mode',
       })
-    : examFocused && (sprintMode || topWeakness?.emphasis === 'urgent')
+    : examPriority && (sprintMode || topWeakness?.emphasis === 'urgent' || !hasDailyWordsLeft)
       ? buildAction({
           id: 'primary-exam-boost',
           surface: 'exam',
@@ -204,10 +226,10 @@ export const buildMissionCard = (args: {
       ? buildAction({
           id: 'primary-today',
           surface: 'today',
-          title: 'Finish today\'s new words',
-          titleZh: '完成今日新词任务',
-          description: `${Math.max(vocabTarget - args.learnedTodayCount, 0)} words are still pending in ${args.activeBookName || 'your active book'}.`,
-          descriptionZh: `当前词书${args.activeBookName ? `《${args.activeBookName}》` : ''}里还有 ${Math.max(vocabTarget - args.learnedTodayCount, 0)} 个建议新词待推进。`,
+          title: cefrCopy.title.en,
+          titleZh: cefrCopy.title.zh,
+          description: `${cefrCopy.descriptionPrefix.en} ${Math.max(vocabTarget - args.learnedTodayCount, 0)} words are still pending in ${args.activeBookName || 'your active book'}.`,
+          descriptionZh: `${cefrCopy.descriptionPrefix.zh} 当前词书${args.activeBookName ? `《${args.activeBookName}》` : ''}里还有 ${Math.max(vocabTarget - args.learnedTodayCount, 0)} 个建议新词待推进。`,
           cta: 'Continue today',
           ctaZh: '继续今日任务',
           href: '/dashboard/today',

@@ -2,6 +2,8 @@
 
 > This is the source of truth for Claude long-running development. Pick the highest priority incomplete item. Do one vertical slice per loop.
 
+> 2026-06-13 upgrade route: use `docs/claude/VOCABDAILY_UPGRADE_TODO_2026-06-13.md` for the next product upgrade wave. It expands the PM audit into detailed P0-P4 TODOs, acceptance criteria, and per-item regression checks.
+
 ## Status Legend
 
 - `todo`: not started

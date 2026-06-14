@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Pin, PinOff, RefreshCw, Trash2, Search, Sparkles, Shield, Clock3 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { AuthRequiredError, EdgeFunctionError } from '@/services/aiGateway';
+import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
 import {
   clearExpiredMemoryItems,
   deleteMemoryItems,
@@ -47,7 +50,10 @@ const formatDate = (value?: string): string => {
 
 export default function MemoryCenterPage() {
   const { t, i18n } = useTranslation();
+  const { user } = useAuth();
   const language = i18n.language;
+  const isZh = language.startsWith('zh');
+  const isLocalDemo = Boolean(user?.id && isLocalAuthUserId(user.id));
 
   const [items, setItems] = useState<MemoryItemView[]>([]);
   const [loading, setLoading] = useState(false);
@@ -87,11 +93,15 @@ export default function MemoryCenterPage() {
       });
       setItems(data);
     } catch (err) {
+      if (err instanceof AuthRequiredError && isLocalDemo) {
+        setItems([]);
+        return;
+      }
       setError(toFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, [kind, query, toFriendlyErrorMessage]);
+  }, [isLocalDemo, kind, query, toFriendlyErrorMessage]);
 
   useEffect(() => {
     void load();
@@ -159,23 +169,23 @@ export default function MemoryCenterPage() {
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline" className="gap-1">
-            <Pin className="h-3.5 w-3.5" /> {language.startsWith('zh') ? `置顶 ${pinnedCount}` : `Pinned ${pinnedCount}`}
+            <Pin className="h-3.5 w-3.5" /> {isZh ? `置顶 ${pinnedCount}` : `Pinned ${pinnedCount}`}
           </Badge>
           <Badge variant="outline" className="gap-1">
-            <Clock3 className="h-3.5 w-3.5" /> {language.startsWith('zh') ? `总计 ${items.length}` : `Total ${items.length}`}
+            <Clock3 className="h-3.5 w-3.5" /> {isZh ? `总计 ${items.length}` : `Total ${items.length}`}
           </Badge>
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card p-3">
+      <div className="premium-panel-soft rounded-lg border border-border bg-card p-3">
         <div className="flex flex-wrap gap-2">
           <div className="relative min-w-[260px] flex-1">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="pl-9"
+              className="rounded-md pl-9"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={language.startsWith('zh') ? '搜索记忆内容或标签...' : 'Search memory content or tags...'}
+              placeholder={isZh ? '搜索记忆内容或标签...' : 'Search memory content or tags...'}
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -184,9 +194,10 @@ export default function MemoryCenterPage() {
                 key={option.value}
                 variant={kind === option.value ? 'default' : 'outline'}
                 size="sm"
+                className="rounded-md"
                 onClick={() => setKind(option.value)}
               >
-                {language.startsWith('zh') ? option.labelZh : option.labelEn}
+                {isZh ? option.labelZh : option.labelEn}
               </Button>
             ))}
           </div>
@@ -195,11 +206,11 @@ export default function MemoryCenterPage() {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => void load()} disabled={loading}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-            {language.startsWith('zh') ? '刷新' : 'Refresh'}
+            {isZh ? '刷新' : 'Refresh'}
           </Button>
           <Button size="sm" variant="outline" onClick={handleClearExpired} disabled={loading}>
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-            {language.startsWith('zh') ? '清理过期记忆' : 'Clear expired'}
+            {isZh ? '清理过期记忆' : 'Clear expired'}
           </Button>
           <Badge variant="secondary" className="gap-1">
             <Shield className="h-3.5 w-3.5" />
@@ -209,40 +220,76 @@ export default function MemoryCenterPage() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-300/60 bg-red-50/70 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-lg border border-red-300/60 bg-red-50/70 px-3 py-2 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      <div className="rounded-xl border bg-card min-h-[420px]">
+      <div className="premium-panel-soft min-h-[420px] rounded-lg border border-border bg-card">
         <ScrollArea className="h-[520px]">
           <div className="p-3 space-y-2">
             {items.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-60" />
-                <p>{loading ? t('common.loading') : t('dashboard.memory.empty')}</p>
+              <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-14 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <h2 className="mt-4 text-lg font-semibold text-foreground">
+                  {loading
+                    ? t('common.loading')
+                    : isZh
+                      ? '记忆中心还在等待第一条可用记忆'
+                      : 'Memory Center is waiting for its first useful memory'}
+                </h2>
+                {!loading && (
+                  <>
+                    <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                      {isZh
+                        ? '这里不会展示随意生成的内容，只会沉淀目标、薄弱点、偏好和错误轨迹，用来让 Today、Practice 和 Coach 更懂你的学习状态。'
+                        : 'This page does not fabricate entries. It only stores goals, weaknesses, preferences, and error traces that can personalize Today, Practice, and Coach.'}
+                    </p>
+                    <div className="mt-5 grid w-full gap-2 sm:grid-cols-3">
+                      {[
+                        isZh ? '目标' : 'Goals',
+                        isZh ? '薄弱点' : 'Weaknesses',
+                        isZh ? '错误轨迹' : 'Error traces',
+                      ].map((label) => (
+                        <div key={label} className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-6 flex flex-wrap justify-center gap-2">
+                      <Button asChild className="rounded-md">
+                        <Link to="/dashboard/chat">{isZh ? '打开 AI Coach' : 'Open AI Coach'}</Link>
+                      </Button>
+                      <Button asChild variant="outline" className="rounded-md">
+                        <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Start practice'}</Link>
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               items.map((item) => (
                 <div key={item.id} className="rounded-lg border bg-background p-3 space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline">{kindLabel(item.kind, language)}</Badge>
-                      {item.isPinned && (
-                        <Badge className="bg-emerald-600 text-white">
-                          {language.startsWith('zh') ? '置顶' : 'Pinned'}
-                        </Badge>
-                      )}
+	                      <Badge variant="outline">{kindLabel(item.kind, language)}</Badge>
+	                      {item.isPinned && (
+	                        <Badge className="bg-emerald-600 text-white">
+	                          {isZh ? '置顶' : 'Pinned'}
+	                        </Badge>
+	                      )}
                       <Badge variant="secondary">{Math.round(item.confidence * 100)}%</Badge>
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => void handlePinToggle(item)}>
-                        {item.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600" onClick={() => void handleDelete(item)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+	                      <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={isZh ? '切换置顶' : 'Toggle pin'} onClick={() => void handlePinToggle(item)}>
+	                        {item.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+	                      </Button>
+	                      <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600" aria-label={isZh ? '删除记忆' : 'Delete memory'} onClick={() => void handleDelete(item)}>
+	                        <Trash2 className="h-4 w-4" />
+	                      </Button>
                     </div>
                   </div>
 
@@ -259,9 +306,9 @@ export default function MemoryCenterPage() {
                   )}
 
                   <div className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
-                    <span>{language.startsWith('zh') ? '更新时间' : 'Updated'}: {formatDate(item.updatedAt)}</span>
-                    <span>{language.startsWith('zh') ? '召回次数' : 'Recall count'}: {item.recallCount}</span>
-                    {item.expiresAt && <span>{language.startsWith('zh') ? '过期时间' : 'Expires'}: {formatDate(item.expiresAt)}</span>}
+	                    <span>{isZh ? '更新时间' : 'Updated'}: {formatDate(item.updatedAt)}</span>
+	                    <span>{isZh ? '召回次数' : 'Recall count'}: {item.recallCount}</span>
+	                    {item.expiresAt && <span>{isZh ? '过期时间' : 'Expires'}: {formatDate(item.expiresAt)}</span>}
                   </div>
                 </div>
               ))

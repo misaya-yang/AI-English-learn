@@ -44,6 +44,7 @@ describe('Home i18n surface', () => {
     expect(screen.getByText('FSRS due reviews')).toBeInTheDocument();
     expect(screen.getByText('IELTS writing feedback')).toBeInTheDocument();
     expect(screen.getByText('About 15 minutes a day')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Try a sample lesson' })).toHaveAttribute('href', '/demo');
     expect(screen.queryByText('FSRS 到期复习')).not.toBeInTheDocument();
     expect(screen.queryByText('IELTS 写作反馈')).not.toBeInTheDocument();
     expect(screen.queryByText('平均每天 15 分钟')).not.toBeInTheDocument();

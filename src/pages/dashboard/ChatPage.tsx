@@ -84,10 +84,35 @@ const COACH_MODE_BY_CHAT_MODE: Record<ChatMode, CoachStudioMode> = {
   canvas: 'diagnose',
 };
 
+const COACH_DISPLAY_LABELS: Record<string, { zh: string; en: string }> = {
+  general_improvement: { zh: '综合提升', en: 'General improvement' },
+  ielts_coach: { zh: '雅思教练闭环', en: 'IELTS coaching' },
+  ielts_writing: { zh: '雅思写作', en: 'IELTS writing' },
+  grammar_accuracy: { zh: '语法准确性', en: 'Grammar accuracy' },
+  lexical: { zh: '词汇资源', en: 'Lexical resource' },
+  lexical_resource: { zh: '词汇资源', en: 'Lexical resource' },
+  coherence: { zh: '连贯衔接', en: 'Coherence' },
+  cohesion: { zh: '衔接手段', en: 'Cohesion' },
+  task_response: { zh: '任务回应', en: 'Task response' },
+  pronunciation: { zh: '发音清晰度', en: 'Pronunciation' },
+  vocabulary: { zh: '词汇巩固', en: 'Vocabulary' },
+  retention: { zh: '记忆保持', en: 'Retention' },
+};
+
+const formatCoachDisplayLabel = (value: string, isZh: boolean) => {
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, '_');
+  const mapped = COACH_DISPLAY_LABELS[normalized];
+  if (mapped) return isZh ? mapped.zh : mapped.en;
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+};
+
 // Main Chat Page Component
 export default function ChatPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
+  const isZh = language.startsWith('zh');
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const chatUserId = user?.id || 'guest';
@@ -283,8 +308,13 @@ export default function ChatPage() {
       }),
     [chatLearnerModelSnapshot, chatUserId, dueWords.length, learningProfile, recentMistakes],
   );
-  const coachFocusLabel = coachEvidence.primaryFocus.replace(/_/g, ' ');
+  const coachFocusLabel = formatCoachDisplayLabel(coachEvidence.primaryFocus, isZh);
+  const coachTargetLabel = formatCoachDisplayLabel(coachEvidence.ieltsTarget, isZh);
   const coachRetentionLabel = `${Math.round(coachEvidence.retention.predicted30d * 100)}%`;
+  const coachModeSteps = CHAT_MODE_OPTIONS.map((option) => ({
+    ...option,
+    active: option.id === chatMode,
+  }));
 
   const getChatLearnerProfile = useCallback(() => {
     return buildChatLearnerProfile({
@@ -1348,40 +1378,55 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <section className="border-b border-border bg-card/60 px-4 py-3 md:px-6 lg:px-8">
-          <div className={cn(contentWidthClass, 'mx-auto grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center')}>
+        <section className="border-b border-border bg-card/60 px-4 py-2 md:px-6 md:py-3 lg:px-8">
+          <div className={cn(contentWidthClass, 'mx-auto grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center')}>
             <div className="flex min-w-0 items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                  Coach Brief
+                <p className="text-xs font-medium text-muted-foreground">
+                  {isZh ? '教练状态' : 'Coach status'}
                 </p>
                 <h2 className="mt-1 text-sm font-semibold text-foreground sm:text-base">
-                  {language.startsWith('zh')
+                  {isZh
                     ? `${currentCoachCopy.label.zh}：先处理 ${coachFocusLabel}`
                     : `${currentCoachCopy.label.en}: focus on ${coachFocusLabel}`}
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {language.startsWith('zh')
-                    ? `${coachEvidence.ieltsTarget} · ${currentCoachCopy.description.zh}`
-                    : `${coachEvidence.ieltsTarget} · ${currentCoachCopy.description.en}`}
+                  {isZh
+                    ? `${coachTargetLabel} · ${currentCoachCopy.description.zh}`
+                    : `${coachTargetLabel} · ${currentCoachCopy.description.en}`}
                 </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {coachModeSteps.map((step) => (
+                    <span
+                      key={step.id}
+                      className={cn(
+                        'rounded-md border px-2 py-1 text-[11px] font-medium',
+                        step.active
+                          ? 'border-primary/30 bg-primary/10 text-primary'
+                          : 'border-border bg-background/70 text-muted-foreground',
+                      )}
+                    >
+                      {isZh ? step.labelZh : step.label}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="rounded-md border border-border bg-background px-3 py-2">
-                <p className="text-muted-foreground">{language.startsWith('zh') ? '到期' : 'Due'}</p>
+                <p className="text-muted-foreground">{isZh ? '到期' : 'Due'}</p>
                 <p className="mt-1 font-semibold">{coachEvidence.dueReviewCount}</p>
               </div>
               <div className="rounded-md border border-border bg-background px-3 py-2">
-                <p className="text-muted-foreground">{language.startsWith('zh') ? '错误' : 'Mistakes'}</p>
+                <p className="text-muted-foreground">{isZh ? '错误' : 'Mistakes'}</p>
                 <p className="mt-1 font-semibold">{coachEvidence.recentMistakeCount}</p>
               </div>
               <div className="rounded-md border border-border bg-background px-3 py-2">
-                <p className="text-muted-foreground">{language.startsWith('zh') ? '保持' : 'Retention'}</p>
+                <p className="text-muted-foreground">{isZh ? '保持' : 'Retention'}</p>
                 <p className="mt-1 font-semibold">{coachRetentionLabel}</p>
               </div>
             </div>
@@ -1424,10 +1469,12 @@ export default function ChatPage() {
           <div className={cn(contentWidthClass, 'mx-auto')}>
             {messages.length === 0 ? (
               <div className="space-y-4 py-4">
-                <MissionCards
-                  selected={missionCards}
-                  onLaunch={(prompt) => setInput(prompt)}
-                />
+                <div className="hidden md:block">
+                  <MissionCards
+                    selected={missionCards}
+                    onLaunch={(prompt) => setInput(prompt)}
+                  />
+                </div>
                 <ChatWelcome
                   title={t('chat.welcomeTitle')}
                   description={t('chat.welcomeDesc')}

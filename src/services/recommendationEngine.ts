@@ -4,6 +4,15 @@
  * weak topics, and user goals.
  */
 
+import type { LearningStyle } from '@/types';
+import { normalizeLearningStyle } from '@/features/learning/learningStylePersonalization';
+import {
+  getCefrBand,
+  isExamTarget,
+  isUpperIntermediateOrAbove,
+  normalizeCefrLevel,
+} from '@/features/learning/cefrPersonalization';
+
 export type RecommendationType = 'review' | 'new_words' | 'practice' | 'reading' | 'listening' | 'grammar' | 'writing' | 'pronunciation';
 
 export interface Recommendation {
@@ -26,8 +35,10 @@ export interface RecommendationInput {
   dailyGoal: number;
   wordsLearnedToday: number;
   streakDays: number;
-  cefrLevel: string;
+  cefrLevel?: string;
+  target?: string;
   recentPracticeTypes: RecommendationType[];
+  learningStyle?: LearningStyle;
 }
 
 /**
@@ -37,6 +48,9 @@ export interface RecommendationInput {
 export function generateRecommendations(input: RecommendationInput): Recommendation[] {
   const recs: Recommendation[] = [];
   let id = 0;
+  const cefrLevel = normalizeCefrLevel(input.cefrLevel);
+  const cefrBand = getCefrBand(cefrLevel);
+  const examFocused = isExamTarget(input.target);
 
   // 1. Due reviews always come first
   if (input.dueWordCount > 0) {
@@ -88,18 +102,69 @@ export function generateRecommendations(input: RecommendationInput): Recommendat
     });
   }
 
-  // 4. Skill variety — suggest a type not recently practiced
-  const allTypes: RecommendationType[] = ['reading', 'listening', 'writing', 'pronunciation', 'grammar'];
+  // 4. Exam learners at B2+ benefit from specific score-facing work before
+  // generic variety, but only after urgent review/new-word obligations.
+  if (examFocused && isUpperIntermediateOrAbove(cefrLevel) && recs.length < 3) {
+    recs.push({
+      id: `rec-${id++}`,
+      type: 'writing',
+      title: `Target ${cefrLevel} exam writing precision`,
+      titleZh: `练 ${cefrLevel} 考试写作精度`,
+      reason: 'Your level and exam target make structured IELTS-style output the highest leverage next step.',
+      reasonZh: '你的等级和考试目标说明：结构化考试输出是当前最有杠杆的练习。',
+      priority: 2,
+      icon: '🎓',
+      action: '/dashboard/exam',
+      estimatedMinutes: 18,
+    });
+  }
+
+  // 5. Skill variety — suggest a type not recently practiced, weighted by
+  // both CEFR and learning style.
+  const style = normalizeLearningStyle(input.learningStyle);
+  const cefrVarietyOrder: Record<ReturnType<typeof getCefrBand>, RecommendationType[]> = {
+    foundation: ['listening', 'reading', 'grammar', 'practice', 'pronunciation'],
+    independent: ['reading', 'listening', 'writing', 'pronunciation', 'grammar', 'practice'],
+    advanced: ['writing', 'reading', 'pronunciation', 'listening', 'grammar', 'practice'],
+  };
+  const stylePriority: Record<LearningStyle, RecommendationType[]> = {
+    visual: ['reading', 'grammar'],
+    auditory: ['listening', 'pronunciation'],
+    kinesthetic: ['practice', 'pronunciation'],
+    reading: ['reading', 'writing'],
+  };
+  const styleOrder = stylePriority[style];
+  const cefrOrder = cefrVarietyOrder[cefrBand];
+  const mergedOrder = [
+    ...styleOrder.filter((type) => cefrOrder.includes(type)),
+    ...cefrOrder,
+    ...styleOrder,
+  ].filter((type, index, arr) => arr.indexOf(type) === index);
   const recentSet = new Set(input.recentPracticeTypes);
-  const missing = allTypes.filter((t) => !recentSet.has(t));
+  const missing = mergedOrder.filter((t) => !recentSet.has(t));
   if (missing.length > 0 && recs.length < 3) {
     const suggested = missing[0];
     const labels: Record<string, { title: string; titleZh: string; icon: string; action: string }> = {
+      practice: { title: 'Run a hands-on practice drill', titleZh: '做一次动手练习', icon: '🎯', action: '/dashboard/practice' },
       reading: { title: 'Try a reading exercise', titleZh: '尝试阅读练习', icon: '📖', action: '/dashboard/reading' },
       listening: { title: 'Practice listening skills', titleZh: '练习听力技能', icon: '🎧', action: '/dashboard/listening' },
       writing: { title: 'Write a short essay', titleZh: '写一篇短文', icon: '✍️', action: '/dashboard/writing' },
       pronunciation: { title: 'Practice pronunciation', titleZh: '练习发音', icon: '🗣️', action: '/dashboard/pronunciation' },
       grammar: { title: 'Review grammar points', titleZh: '复习语法要点', icon: '📝', action: '/dashboard/grammar' },
+    };
+    const cefrReasons: Record<ReturnType<typeof getCefrBand>, { en: string; zh: string }> = {
+      foundation: {
+        en: `This fits ${cefrLevel} foundation work: concrete input before heavier output.`,
+        zh: `这符合 ${cefrLevel} 基础阶段：先做具体输入，再进入更重输出。`,
+      },
+      independent: {
+        en: `This balances ${cefrLevel} growth with your ${style} learning preference.`,
+        zh: `这会把 ${cefrLevel} 阶段成长和你的学习偏好结合起来。`,
+      },
+      advanced: {
+        en: `This fits ${cefrLevel} advanced work: precision, production, and transfer.`,
+        zh: `这符合 ${cefrLevel} 高阶阶段：精确、输出和迁移。`,
+      },
     };
     const info = labels[suggested];
     if (info) {
@@ -107,8 +172,8 @@ export function generateRecommendations(input: RecommendationInput): Recommendat
         id: `rec-${id++}`,
         type: suggested,
         ...info,
-        reason: 'Diversifying your practice improves overall language skills.',
-        reasonZh: '多样化练习有助于全面提升语言能力。',
+        reason: cefrReasons[cefrBand].en,
+        reasonZh: cefrReasons[cefrBand].zh,
         priority: 3,
         estimatedMinutes: 10,
       });

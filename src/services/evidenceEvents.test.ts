@@ -45,6 +45,30 @@ describe('createEvidenceEvent', () => {
     expect(event.createdAt).toBe(NOW);
   });
 
+  it('creates review recovery evidence with outcome and trigger metadata', () => {
+    const event = createEvidenceEvent({
+      type: 'review.recovery_marked',
+      userId: 'u1',
+      wordId: 'w1',
+      outcome: 'helped',
+      trigger: 'both',
+      lapses: 3,
+      difficulty: 8.4,
+      createdAt: NOW,
+    });
+
+    expect(event).toEqual({
+      type: 'review.recovery_marked',
+      userId: 'u1',
+      wordId: 'w1',
+      outcome: 'helped',
+      trigger: 'both',
+      lapses: 3,
+      difficulty: 8.4,
+      createdAt: NOW,
+    });
+  });
+
   it('throws when userId is missing', () => {
     expect(() =>
       // @ts-expect-error simulate bad caller

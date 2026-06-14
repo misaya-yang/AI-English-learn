@@ -30,7 +30,11 @@ import { speakEnglishText } from '@/services/tts';
 import { isStubbornWord } from '@/services/fsrs';
 import { buildReviewSession, type ReviewSessionItem } from '@/features/learning/reviewQueue';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
-import { recordEvent } from '@/services/learningEvents';
+import { recordEvent, recordLearningEvent } from '@/services/learningEvents';
+import {
+  buildStubbornRecoveryPlan,
+  type StubbornRecoveryOutcome,
+} from '@/features/learning/stubbornRecovery';
 import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
@@ -155,10 +159,38 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 }
 
 const ratingMeta = {
-  again: { label: '忘记', delay: '< 1 min', key: '1', accent: 'border-destructive/30 bg-destructive/5 text-destructive' },
-  hard:  { label: '较难', delay: '2 days',  key: '2', accent: 'border-amber-500/25 bg-amber-500/10 text-amber-600' },
-  good:  { label: '良好', delay: '5 days',  key: '3', accent: 'border-green-500/30 bg-green-50 text-green-700' },
-  easy:  { label: '简单', delay: '10 days', key: '4', accent: 'border-sky-500/25 bg-sky-500/10 text-sky-700' },
+  again: {
+    labelZh: '忘记',
+    labelEn: 'Again',
+    delayZh: '马上重见',
+    delayEn: '< 1 min',
+    key: '1',
+    accent: 'border-destructive/30 bg-destructive/5 text-destructive',
+  },
+  hard:  {
+    labelZh: '较难',
+    labelEn: 'Hard',
+    delayZh: '短间隔复现',
+    delayEn: '2 days',
+    key: '2',
+    accent: 'border-amber-500/25 bg-amber-500/10 text-amber-600',
+  },
+  good:  {
+    labelZh: '良好',
+    labelEn: 'Good',
+    delayZh: '约 5 天后复习',
+    delayEn: '5 days',
+    key: '3',
+    accent: 'border-green-500/30 bg-green-50 text-green-700',
+  },
+  easy:  {
+    labelZh: '简单',
+    labelEn: 'Easy',
+    delayZh: '约 10 天后复习',
+    delayEn: '10 days',
+    key: '4',
+    accent: 'border-sky-500/25 bg-sky-500/10 text-sky-700',
+  },
 } as const;
 
 export default function ReviewPage() {
@@ -173,6 +205,7 @@ export default function ReviewPage() {
   const [sessionStats, setSessionStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 });
   const [sessionQueue, setSessionQueue] = useState<ReviewItem[] | null>(null);
   const [dueCoachReviewCount, setDueCoachReviewCount] = useState(0);
+  const [recoveryOutcomes, setRecoveryOutcomes] = useState<Record<string, StubbornRecoveryOutcome>>({});
 
   const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
   const reviewItems = sessionQueue ?? buildReviewSession({
@@ -203,6 +236,8 @@ export default function ReviewPage() {
   const currentItem = reviewItems[currentIndex];
   const remainingCount = Math.max(reviewItems.length - totalReviewed, 0);
   const isCurrentCardStubborn = currentItem ? isStubbornWord(currentItem.fsrs) : false;
+  const currentRecoveryPlan = currentItem ? buildStubbornRecoveryPlan(currentItem) : null;
+  const currentRecoveryOutcome = currentRecoveryPlan ? recoveryOutcomes[currentRecoveryPlan.wordId] : undefined;
 
   const handleReveal = useCallback(() => {
     setIsRevealed(true);
@@ -237,14 +272,8 @@ export default function ReviewPage() {
       completeMissionTask('task_review_today');
     }
 
-    const intervals = {
-      again: '< 1 min',
-      hard: '2 days',
-      good: '5 days',
-      easy: '10 days',
-    };
-
-    toast.success(`+${rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10} XP • Next: ${intervals[rating]}`);
+    const interval = isZh ? ratingMeta[rating].delayZh : ratingMeta[rating].delayEn;
+    toast.success(`+${rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10} XP · ${isZh ? '下次' : 'Next'}: ${interval}`);
 
     if (currentIndex < reviewItems.length - 1) {
       setCurrentIndex((prev) => prev + 1);
@@ -253,7 +282,48 @@ export default function ReviewPage() {
     }
 
     setCurrentIndex(reviewItems.length);
-  }, [currentIndex, currentItem, reviewItems, reviewWord, sessionQueue, totalReviewed, reviewTaskTarget, completeMissionTask, userId]);
+  }, [currentIndex, currentItem, reviewItems, reviewWord, sessionQueue, totalReviewed, reviewTaskTarget, completeMissionTask, userId, isZh]);
+
+  const handleRecoveryOutcome = useCallback((outcome: StubbornRecoveryOutcome) => {
+    if (!currentRecoveryPlan) return;
+
+    setRecoveryOutcomes((prev) => ({
+      ...prev,
+      [currentRecoveryPlan.wordId]: outcome,
+    }));
+
+    const payload = {
+      wordId: currentRecoveryPlan.wordId,
+      outcome,
+      trigger: currentRecoveryPlan.trigger,
+      lapses: currentRecoveryPlan.metrics.lapses,
+      difficulty: currentRecoveryPlan.metrics.difficulty,
+      source: 'review_stubborn_recovery',
+    };
+
+    void recordEvidence(
+      createEvidenceEvent({
+        type: 'review.recovery_marked',
+        userId,
+        wordId: currentRecoveryPlan.wordId,
+        outcome,
+        trigger: currentRecoveryPlan.trigger,
+        lapses: currentRecoveryPlan.metrics.lapses,
+        difficulty: currentRecoveryPlan.metrics.difficulty,
+      }),
+    );
+    void recordLearningEvent({
+      userId,
+      eventName: 'review.stubborn_recovery',
+      payload,
+    });
+    void recordEvent(userId, {
+      kind: outcome === 'helped' ? 'mistake_resolved' : 'practice_wrong',
+      payload,
+    });
+
+    toast.success(outcome === 'helped' ? '已记录：这个恢复练习有帮助' : '已记录：仍然混淆，Coach 会继续加练');
+  }, [currentRecoveryPlan, userId]);
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -281,6 +351,7 @@ export default function ReviewPage() {
     setCurrentIndex(0);
     setIsRevealed(false);
     setSessionStats({ again: 0, hard: 0, good: 0, easy: 0 });
+    setRecoveryOutcomes({});
   };
 
   if (reviewItems.length === 0) {
@@ -311,6 +382,26 @@ export default function ReviewPage() {
             }
           />
           <div className="space-y-6">
+            <LearningRailSection title={isZh ? '队列为什么为空' : 'Why the queue is empty'}>
+              <LearningMetricStrip
+                items={[
+                  { label: isZh ? '到期卡' : 'Due cards', value: 0, accent: 'emerald' },
+                  { label: isZh ? '今日新词' : 'Today words', value: dailyWords.length },
+                  { label: isZh ? '任务目标' : 'Mission target', value: reviewTaskTarget },
+                ]}
+                className="border-t-0 pt-0"
+              />
+              <div className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+                <p className="text-sm font-semibold text-foreground">
+                  {isZh ? '这是正常的好状态，不是没有内容。' : 'This is a healthy state, not missing content.'}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {isZh
+                    ? 'FSRS 队列只在词真的需要复习时出现。现在更适合去 Practice 做一次主动提取，或者让 Coach 根据弱项补一题。'
+                    : 'FSRS only opens cards when they are worth reviewing. Use Practice for active recall, or ask Coach for one focused drill.'}
+                </p>
+              </div>
+            </LearningRailSection>
             <CoachReviewRail language={language} />
           </div>
         </div>
@@ -388,6 +479,84 @@ export default function ReviewPage() {
             <div className="space-y-5">
               {currentItem ? <ReviewCard item={currentItem} isRevealed={isRevealed} onReveal={handleReveal} /> : null}
 
+              {currentRecoveryPlan && isRevealed ? (
+                <section
+                  data-testid="stubborn-recovery-panel"
+                  className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4 shadow-sm"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <Badge className="rounded-md border border-amber-500/20 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10">
+                        {isZh ? '顽固词恢复' : 'Stubborn recovery'}
+                      </Badge>
+                      <h3 className="mt-3 text-lg font-semibold text-foreground">
+                        {isZh ? currentRecoveryPlan.titleZh : currentRecoveryPlan.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {isZh ? currentRecoveryPlan.reasonZh : currentRecoveryPlan.reason}
+                      </p>
+                    </div>
+                    {currentRecoveryOutcome ? (
+                      <Badge variant="secondary" className="rounded-md">
+                        {currentRecoveryOutcome === 'helped'
+                          ? (isZh ? '已标记有帮助' : 'Marked helpful')
+                          : (isZh ? '已标记仍混淆' : 'Marked still confusing')}
+                      </Badge>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    {[
+                      {
+                        label: isZh ? '助记钩子' : 'Mnemonic hook',
+                        body: isZh ? currentRecoveryPlan.mnemonicZh : currentRecoveryPlan.mnemonic,
+                      },
+                      {
+                        label: isZh ? '搭配替换' : 'Collocation swap',
+                        body: isZh ? currentRecoveryPlan.collocationDrillZh : currentRecoveryPlan.collocationDrill,
+                      },
+                      {
+                        label: isZh ? '混淆提醒' : 'Confusion guard',
+                        body: isZh ? currentRecoveryPlan.confusingNoteZh : currentRecoveryPlan.confusingNote,
+                      },
+                      {
+                        label: isZh ? '短句产出' : 'Production task',
+                        body: isZh ? currentRecoveryPlan.productionTaskZh : currentRecoveryPlan.productionTask,
+                      },
+                    ].map((block) => (
+                      <div key={block.label} className="rounded-lg border border-border bg-card p-3">
+                        <p className="text-[11px] font-medium text-amber-700">{block.label}</p>
+                        <p className="mt-2 text-sm leading-6 text-foreground">{block.body}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Button
+                      variant={currentRecoveryOutcome === 'helped' ? 'default' : 'outline'}
+                      className="rounded-md"
+                      onClick={() => handleRecoveryOutcome('helped')}
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      {isZh ? '这个练法有帮助' : 'This helped'}
+                    </Button>
+                    <Button
+                      variant={currentRecoveryOutcome === 'still_confusing' ? 'default' : 'outline'}
+                      className="rounded-md"
+                      onClick={() => handleRecoveryOutcome('still_confusing')}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      {isZh ? '还是容易混淆' : 'Still confusing'}
+                    </Button>
+                    <Button variant="outline" className="rounded-md" asChild>
+                      <Link to={`/dashboard/chat?focus=stubborn-recovery&word=${encodeURIComponent(currentRecoveryPlan.wordId)}`}>
+                        {isZh ? '找 Coach 加练' : 'Ask Coach for a drill'}
+                      </Link>
+                    </Button>
+                  </div>
+                </section>
+              ) : null}
+
               {isRevealed ? (
                 <div className="grid gap-3 lg:grid-cols-4">
                   {(Object.entries(ratingMeta) as Array<[keyof typeof ratingMeta, (typeof ratingMeta)[keyof typeof ratingMeta]]>).map(([rating, meta]) => (
@@ -395,24 +564,26 @@ export default function ReviewPage() {
                       key={rating}
                       variant="outline"
                       aria-keyshortcuts={meta.key}
-                      className={cn(
-                        'h-auto flex-col items-start gap-1 rounded-xl border px-4 py-4 text-left hover:text-current hover-lift',
-                        meta.accent,
-                      )}
+	                className={cn(
+	                        'h-auto flex-col items-start gap-1 rounded-lg border px-4 py-4 text-left hover:text-current hover-lift',
+	                        meta.accent,
+	                      )}
                       onClick={() => handleRate(rating)}
                     >
                       <div className="flex w-full items-center justify-between gap-2">
-                        <span className="text-base font-semibold">{meta.label}</span>
+	                        <span className="text-base font-semibold">{isZh ? meta.labelZh : meta.labelEn}</span>
                         <kbd className="rounded border border-current/20 bg-current/10 px-1.5 py-0.5 font-mono text-[10px] font-bold opacity-70">
                           {meta.key}
                         </kbd>
                       </div>
-                      <span className="text-xs opacity-80">Next: {meta.delay}</span>
+	                      <span className="text-xs opacity-80">
+                          {isZh ? '下次' : 'Next'}: {isZh ? meta.delayZh : meta.delayEn}
+                        </span>
                     </Button>
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+	                <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm leading-6 text-muted-foreground">先回忆，再揭晓。</p>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={handleReveal}>
                     {isZh ? '揭示答案' : 'Reveal answer'}
@@ -480,8 +651,19 @@ export default function ReviewPage() {
                     <p className="text-sm font-semibold">{isZh ? '强化路径' : 'Reinforcement path'}</p>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    这张卡已经遗忘 {currentItem?.fsrs.lapses || 0} 次，系统会把它放进更短的强化复习回路。
+                    {currentRecoveryPlan
+                      ? (isZh
+                        ? `先完成恢复练习，再评分。结果会同步给 Coach 和后续复习。`
+                        : 'Complete the recovery drill before rating. The result feeds Coach and later reviews.')
+                      : `这张卡已经遗忘 ${currentItem?.fsrs.lapses || 0} 次，系统会把它放进更短的强化复习回路。`}
                   </p>
+                  {currentRecoveryOutcome ? (
+                    <p className="mt-2 text-xs font-medium text-amber-700">
+                      {currentRecoveryOutcome === 'helped'
+                        ? (isZh ? '恢复反馈：有帮助' : 'Recovery feedback: helpful')
+                        : (isZh ? '恢复反馈：仍混淆' : 'Recovery feedback: still confusing')}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -537,7 +719,7 @@ export default function ReviewPage() {
           ) : null}
 
           {/* AI Mnemonic hint */}
-          {currentItem && isRevealed && (currentItem.word.memoryTip || currentItem.word.etymology) ? (
+          {currentItem && isRevealed && !currentRecoveryPlan && (currentItem.word.memoryTip || currentItem.word.etymology) ? (
             <LearningRailSection title={isZh ? '记忆线索' : 'Memory cue'}>
               <motion.div
                 initial={{ opacity: 0, y: 8 }}

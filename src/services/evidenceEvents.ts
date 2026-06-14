@@ -19,6 +19,7 @@ export type EvidenceEventType =
   | 'practice.correct'
   | 'practice.incorrect'
   | 'review.rated'
+  | 'review.recovery_marked'
   | 'lesson.completed';
 
 export interface EvidenceEventBase {
@@ -46,6 +47,15 @@ export interface ReviewEvidenceEvent extends EvidenceEventBase {
   rating: 'again' | 'hard' | 'good' | 'easy';
 }
 
+export interface ReviewRecoveryEvidenceEvent extends EvidenceEventBase {
+  type: 'review.recovery_marked';
+  wordId: string;
+  outcome: 'helped' | 'still_confusing';
+  trigger: 'lapse' | 'difficulty' | 'both';
+  lapses: number;
+  difficulty: number;
+}
+
 export interface LessonEvidenceEvent extends EvidenceEventBase {
   type: 'lesson.completed';
   lessonId: string;
@@ -56,6 +66,7 @@ export type EvidenceEvent =
   | VocabEvidenceEvent
   | PracticeEvidenceEvent
   | ReviewEvidenceEvent
+  | ReviewRecoveryEvidenceEvent
   | LessonEvidenceEvent;
 
 // ── Construction ────────────────────────────────────────────────────────────
@@ -64,6 +75,7 @@ type EvidenceInput =
   | (Omit<VocabEvidenceEvent, 'createdAt'> & { createdAt?: string })
   | (Omit<PracticeEvidenceEvent, 'createdAt'> & { createdAt?: string })
   | (Omit<ReviewEvidenceEvent, 'createdAt'> & { createdAt?: string })
+  | (Omit<ReviewRecoveryEvidenceEvent, 'createdAt'> & { createdAt?: string })
   | (Omit<LessonEvidenceEvent, 'createdAt'> & { createdAt?: string });
 
 export function createEvidenceEvent<T extends EvidenceInput>(input: T): EvidenceEvent {

@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:ui-regression": "node scripts/ui-regression.mjs",
     "test:e2e:smoke": "node scripts/e2e-smoke.mjs",
     "smoke:prod": "node scripts/prod-smoke.mjs"
   },

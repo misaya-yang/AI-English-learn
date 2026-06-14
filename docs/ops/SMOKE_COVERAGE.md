@@ -7,6 +7,9 @@ This audit compares the contract in OPS-03 against the actual checks in
 public-route smoke (`scripts/e2e-smoke.mjs`, `npm run test:e2e:smoke`) is a
 secondary signal and is referenced where relevant.
 
+For product/UI route matrices, seeded personas, screenshot conventions, and the
+theme/language smoke matrix, use `docs/ops/PRODUCT_REGRESSION_RUNBOOK.md`.
+
 ## Acceptance vs implementation
 
 | OPS-03 acceptance | Where covered | Status |

@@ -199,6 +199,18 @@ function createLocalFallbackUser(email: string, displayName?: string): AuthUser 
   return user;
 }
 
+export function startDemoSession(): AuthUser {
+  const demoEmail =
+    typeof import.meta !== 'undefined' && import.meta.env?.VITE_DEMO_EMAIL
+      ? String(import.meta.env.VITE_DEMO_EMAIL)
+      : DEFAULT_DEMO_EMAIL;
+  const user = buildLocalAuthUser(demoEmail, 'Demo Learner');
+
+  clearStoredAuthCache(true);
+  persistLocalAuthUser(user);
+  return user;
+}
+
 // Password validation according to i18n best practices
 export interface PasswordValidation {
   isValid: boolean;

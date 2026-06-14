@@ -1,15 +1,29 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Skeleton placeholder shown while dashboard pages are lazy-loading.
  * Mimics the typical dashboard page layout: header + cards grid.
  */
 export function DashboardSkeleton() {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
+
   return (
-    <div className="space-y-6 p-4 sm:p-6 animate-in fade-in duration-300">
+    <div
+      role="status"
+      aria-live="polite"
+      className="space-y-6 p-4 sm:p-6 animate-in fade-in duration-300"
+    >
       {/* Page header */}
       <div className="space-y-2">
+        <p className="text-sm font-medium text-foreground">
+          {isZh ? '正在加载学习工作台' : 'Loading your learning workspace'}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {isZh ? '读取词书、复习队列和今日任务。' : 'Reading your word book, review queue, and today mission.'}
+        </p>
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-72" />
       </div>
@@ -38,13 +52,21 @@ export function DashboardSkeleton() {
  * Shows VocabDaily logo + emerald progress animation.
  */
 export function PageSkeleton() {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
+
   return (
-    <div className="flex min-h-[50vh] flex-col items-center justify-center bg-background animate-in fade-in duration-300">
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex min-h-[50vh] flex-col items-center justify-center bg-background animate-in fade-in duration-300"
+    >
       <div className="flex flex-col items-center gap-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
           <BookOpen className="h-5 w-5" />
         </div>
         <p className="text-sm font-medium tracking-tight text-foreground">VocabDaily</p>
+        <p className="text-xs text-muted-foreground">{isZh ? '正在打开页面' : 'Opening page'}</p>
         <div className="h-0.5 w-32 overflow-hidden rounded-full bg-muted">
           <div className="h-full w-1/2 rounded-full bg-primary/60 animate-shimmer" />
         </div>

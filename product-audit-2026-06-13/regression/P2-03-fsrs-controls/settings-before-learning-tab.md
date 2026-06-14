@@ -1,0 +1,41 @@
+- generic [active] [ref=e1] [box=0,0,390,844]:
+  - link "Skip to content" [ref=e2] [cursor=pointer] [box=-9999,0,1,1]:
+    - /url: "#main-content"
+  - generic [ref=e3] [box=0,0,390,844]:
+    - generic [ref=e4] [box=0,0,390,844]:
+      - main [ref=e5] [box=0,0,390,844]:
+        - generic [ref=e7] [box=0,0,390,60]:
+          - generic [ref=e8] [box=16,12,258,36]:
+            - button "打开导航菜单" [ref=e9] [cursor=pointer] [box=16,12,36,36]
+            - generic [ref=e10] [box=64,12,210,36]
+          - generic [ref=e14] [box=294,12,80,36]:
+            - button "切换外观" [ref=e15] [cursor=pointer] [box=294,12,36,36]
+            - button "切换语言" [ref=e17] [cursor=pointer] [box=338,12,36,36]
+        - generic [ref=e21] [box=20,85,350,497]:
+          - generic [ref=e22] [box=20,85,350,57]:
+            - heading "设置" [level=1] [ref=e23] [box=20,85,350,32]
+            - paragraph [ref=e24] [box=20,117,350,25]: 设定 • Customize your learning experience
+          - generic [ref=e25] [box=20,166,350,416]:
+            - tablist [ref=e26] [box=20,166,350,36]
+            - tabpanel "通用" [ref=e31] [box=20,234,350,348]
+      - navigation [ref=e59] [box=0,780,390,64]:
+        - link "今日" [ref=e60] [cursor=pointer] [box=15,788,44,50]:
+          - /url: /dashboard/today
+          - img [ref=e62] [box=27,794,20,20]
+          - generic [ref=e64] [box=27,816,20,16]: 今日
+        - link "教练" [ref=e65] [cursor=pointer] [box=89,788,44,50]:
+          - /url: /dashboard/chat
+          - img [ref=e67] [box=101,794,20,20]
+          - generic [ref=e69] [box=101,816,20,16]: 教练
+        - link "考试冲刺" [ref=e70] [cursor=pointer] [box=163,788,64,50]:
+          - /url: /dashboard/exam
+          - img [ref=e72] [box=185,794,20,20]
+          - generic [ref=e76] [box=175,816,40,16]: 考试冲刺
+        - link "复习" [ref=e77] [cursor=pointer] [box=257,788,44,50]:
+          - /url: /dashboard/review
+          - img [ref=e79] [box=269,794,20,20]
+          - generic [ref=e87] [box=269,816,20,16]: 复习
+        - button "更多" [ref=e88] [cursor=pointer] [box=331,788,44,50]:
+          - img [ref=e89] [box=343,794,20,20]
+          - generic [ref=e93] [box=343,816,20,16]: 更多
+    - region "Notifications alt+T" [box=0,844,390,0]

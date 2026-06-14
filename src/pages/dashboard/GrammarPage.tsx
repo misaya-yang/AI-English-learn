@@ -18,7 +18,6 @@ import {
   Trophy,
   RotateCcw,
   Play,
-  Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -26,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { incrementReviewCount } from '@/services/gamification';
 import { toast } from 'sonner';
+import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -400,11 +400,11 @@ interface RuleCardProps {
 function RuleCard({ rule, onPractice }: RuleCardProps) {
   const [expanded, setExpanded] = useState(false);
   const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language.startsWith('zh');
   const catMeta = CATEGORY_META[rule.category];
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="overflow-hidden rounded-lg border border-border bg-card">
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full px-5 py-4 text-left flex items-center gap-3 hover:bg-muted transition-colors"
@@ -434,7 +434,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
           >
             <div className="border-t border-border px-5 py-4 space-y-4">
               {/* Explanation */}
-              <div className="rounded-xl bg-muted p-4 space-y-2">
+              <div className="rounded-lg bg-muted p-4 space-y-2">
                 <p className="text-sm leading-6 text-foreground">{rule.explanation}</p>
                 <p className="text-sm leading-6 text-muted-foreground">{rule.explanationZh}</p>
               </div>
@@ -444,7 +444,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
                 <p className="text-[11px] text-muted-foreground mb-2">{isZh ? '例句' : 'Examples'}</p>
                 <div className="space-y-2">
                   {rule.examples.map((ex, i) => (
-                    <div key={i} className="rounded-xl border border-border px-4 py-2.5">
+                    <div key={i} className="rounded-lg border border-border px-4 py-2.5">
                       <p className="text-sm text-foreground">{ex.en}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{ex.zh}</p>
                     </div>
@@ -458,7 +458,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
                 <ul className="space-y-1.5">
                   {rule.commonErrors.map((err, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                      <span className="mt-0.5 flex-shrink-0 text-amber-400">⚠</span>
+                      <XCircle className="mt-0.5 h-3 w-3 flex-shrink-0 text-amber-500" />
                       {err}
                     </li>
                   ))}
@@ -492,6 +492,8 @@ interface PracticeCardProps {
 }
 
 function PracticeCard({ item, index, userAnswer, onChange, submitted }: PracticeCardProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const isCorrect = submitted
     ? userAnswer.trim().toLowerCase() === item.answer.toLowerCase()
     : false;
@@ -550,7 +552,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
             type="text"
             value={userAnswer}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Fill in the blank…"
+            placeholder={isZh ? '填入答案...' : 'Fill in the blank…'}
             className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
           />
         </div>
@@ -561,7 +563,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
         <div className="ml-8 space-y-1.5">
           {!isCorrect && (
             <p className="text-xs font-semibold text-green-700">
-              ✓ Correct: <span className="font-bold">{item.answer}</span>
+              {isZh ? '正确答案' : 'Correct'}: <span className="font-bold">{item.answer}</span>
             </p>
           )}
           <div className="rounded-xl bg-muted px-3 py-2 space-y-1">
@@ -582,7 +584,7 @@ export default function GrammarPage() {
   const { addStudySession } = useUserData();
   const { user } = useAuth();
   const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language.startsWith('zh');
   const [phase, setPhase] = useState<Phase>('browse');
   const [activeRule, setActiveRule] = useState<GrammarRule | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -596,6 +598,9 @@ export default function GrammarPage() {
       : GRAMMAR_RULES.filter((r) => r.category === filterCategory),
     [filterCategory],
   );
+  const featuredRule = filteredRules[0] ?? GRAMMAR_RULES[0];
+  const featuredPractice = featuredRule.practice[0];
+  const featuredSentenceParts = featuredPractice.sentence.split('___');
 
   const handlePractice = (rule: GrammarRule) => {
     setActiveRule(rule);
@@ -651,13 +656,74 @@ export default function GrammarPage() {
 
   if (phase === 'browse') {
     return (
-      <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{isZh ? '语法' : 'Grammar'}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {isZh ? '语法规则、例句与填空练习' : 'Rules, examples, and fill-in-the-blank practice'}
-          </p>
-        </div>
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
+        <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)]">
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-primary">{isZh ? '语法专项' : 'Grammar module'}</p>
+                <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground">{isZh ? '语法' : 'Grammar'}</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  {isZh
+                    ? '把常见错误拆成规则、例句和填空题，练到能在写作里自然用对。'
+                    : 'Turn common mistakes into rules, examples, and fill-in drills you can reuse in writing.'}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border bg-background/70 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={cn('rounded-md border px-2.5 py-1 text-[11px] font-semibold', CATEGORY_META[featuredRule.category].color)}>
+                    {isZh ? CATEGORY_META[featuredRule.category].labelZh : CATEGORY_META[featuredRule.category].label}
+                  </span>
+                  <span className={cn('rounded-md border px-2.5 py-1 text-[11px] font-semibold', LEVEL_COLORS[featuredRule.level])}>
+                    {featuredRule.level}
+                  </span>
+                </div>
+                <h2 className="mt-3 text-lg font-semibold text-foreground">
+                  {isZh ? featuredRule.titleZh : featuredRule.title}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {isZh ? featuredRule.explanationZh : featuredRule.explanation}
+                </p>
+              </div>
+
+              <Button onClick={() => handlePractice(featuredRule)} className="rounded-md bg-primary text-primary-foreground">
+                <Play className="mr-2 h-4 w-4" />
+                {isZh ? '开始推荐规则练习' : 'Start recommended drill'}
+              </Button>
+            </div>
+
+            <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+              <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+                {isZh ? '填空预演' : 'Drill preview'}
+              </p>
+              <div className="mt-4 rounded-lg border border-border bg-card p-4">
+                <p className="text-sm leading-7 text-foreground">
+                  {featuredSentenceParts[0]}
+                  <span className="mx-1 inline-block min-w-[86px] rounded-md border-b-2 border-primary/50 bg-primary/10 px-2 text-center text-primary">
+                    {isZh ? '填空' : 'blank'}
+                  </span>
+                  {featuredSentenceParts[1]}
+                </p>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {isZh ? featuredPractice.explanationZh : featuredPractice.explanation}
+                </p>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[
+                  { label: isZh ? '规则' : 'Rules', value: GRAMMAR_RULES.length },
+                  { label: isZh ? '类别' : 'Categories', value: Object.keys(CATEGORY_META).length },
+                  { label: isZh ? '本轮题' : 'Items', value: featuredRule.practice.length },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-lg border border-border bg-card p-3 text-center">
+                    <p className="text-xl font-semibold text-foreground">{item.value}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Category filter */}
         <div className="flex flex-wrap gap-2">
@@ -683,7 +749,7 @@ export default function GrammarPage() {
                   : 'border-border text-muted-foreground hover:bg-muted',
               )}
             >
-              {meta.labelZh}
+              {isZh ? meta.labelZh : meta.label}
             </button>
           ))}
         </div>
@@ -726,8 +792,8 @@ export default function GrammarPage() {
                 {activeRule.level}
               </span>
             </div>
-            <h2 className="text-lg font-bold text-foreground">{activeRule.title}</h2>
-            <p className="text-sm text-muted-foreground">{activeRule.titleZh}</p>
+            <h2 className="text-lg font-bold text-foreground">{isZh ? activeRule.titleZh : activeRule.title}</h2>
+            <p className="text-sm text-muted-foreground">{isZh ? activeRule.title : activeRule.titleZh}</p>
           </div>
           {submitted && (
             <div className={cn(
@@ -741,6 +807,41 @@ export default function GrammarPage() {
             </div>
           )}
         </div>
+
+        {submitted && (
+          <LearningCompletionState
+            icon={Trophy}
+            eyebrow={isZh ? '语法复盘' : 'Grammar recap'}
+            title={isZh ? `本轮语法 ${score}/${totalQ}` : `Grammar score ${score}/${totalQ}`}
+            description={
+              score / totalQ >= 0.8
+                ? (isZh ? '这个规则已经比较稳，下一步可以把它迁移到写作句子里。' : 'This rule is stable. Next, transfer it into your own writing.')
+                : score / totalQ >= 0.5
+                  ? (isZh ? '规则理解基本建立了，错题需要再看提示和解释。' : 'The rule is taking shape. Revisit hints and explanations for the missed items.')
+                  : (isZh ? '先回到规则小结和例句，再重新做一遍填空。' : 'Go back to the rule summary and examples, then retry the blanks.')
+            }
+            metrics={[
+              { label: isZh ? '答对' : 'Correct', value: `${score}/${totalQ}`, accent: score / totalQ >= 0.8 ? 'emerald' : undefined },
+              { label: isZh ? '规则' : 'Rule', value: isZh ? activeRule.titleZh : activeRule.title },
+              { label: isZh ? '等级' : 'Level', value: activeRule.level },
+            ]}
+            actions={
+              <>
+                <Button
+                  onClick={() => { setAnswers({}); setSubmitted(false); setPhase('practice'); }}
+                  variant="outline"
+                  className="rounded-md border-border bg-card"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {isZh ? '重练这条规则' : 'Retry this rule'}
+                </Button>
+                <Button onClick={handleBack} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                  {isZh ? '换一个规则' : 'Choose another rule'}
+                </Button>
+              </>
+            }
+          />
+        )}
 
         {/* Rule quick-reference */}
         {!submitted && (
@@ -776,24 +877,7 @@ export default function GrammarPage() {
           >
             {isZh ? '检查答案' : 'Check Answers'}
           </Button>
-        ) : (
-          <div className="space-y-3">
-            <Button
-              onClick={() => { setAnswers({}); setSubmitted(false); setPhase('practice'); }}
-              variant="outline"
-              className="w-full rounded-md border-border hover:bg-muted"
-            >
-              <RotateCcw className="mr-2 h-4 w-4" /> {isZh ? '再试一次' : 'Try Again'}
-            </Button>
-            <Button
-              onClick={handleBack}
-              variant="outline"
-              className="w-full rounded-md border-border hover:bg-muted"
-            >
-              <Layers className="mr-2 h-4 w-4" /> {isZh ? '更多规则' : 'More Rules'}
-            </Button>
-          </div>
-        )}
+        ) : null}
       </div>
     );
   }

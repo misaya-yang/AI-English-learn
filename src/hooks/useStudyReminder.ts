@@ -5,23 +5,36 @@
  * – Schedules a one-shot Notification for the next occurrence of that hour
  */
 import { useState, useEffect, useCallback } from 'react';
+import { getNextReminderDelayMs } from '@/features/learning/lifecycleNotifications';
 
 const STORAGE_KEY = 'vocabdaily-reminder-hour';
 
-function getNextOccurrence(hour: number): number {
-  const now = new Date();
-  const next = new Date();
-  next.setHours(hour, 0, 0, 0);
-  if (next.getTime() <= now.getTime()) {
-    next.setDate(next.getDate() + 1);
-  }
-  return next.getTime() - now.getTime();
+export interface StudyReminderNotification {
+  title: string;
+  body: string;
+  tag?: string;
+  href?: string;
 }
+
+interface UseStudyReminderOptions {
+  schedule?: boolean;
+}
+
+const DEFAULT_REMINDER: StudyReminderNotification = {
+  title: 'VocabDaily — 该复习了！',
+  body: '今天的词汇任务等着你，保持连续学习势头！',
+  tag: 'vocabdaily-reminder',
+  href: '/dashboard/today',
+};
 
 export type ReminderPermission = 'granted' | 'denied' | 'default' | 'unsupported';
 
-export function useStudyReminder() {
+export function useStudyReminder(
+  reminder: StudyReminderNotification | null | undefined = DEFAULT_REMINDER,
+  options: UseStudyReminderOptions = {},
+) {
   const isSupported = typeof window !== 'undefined' && 'Notification' in window;
+  const shouldSchedule = options.schedule ?? true;
   const [permission, setPermission] = useState<ReminderPermission>(
     isSupported ? (Notification.permission as ReminderPermission) : 'unsupported',
   );
@@ -48,19 +61,21 @@ export function useStudyReminder() {
 
   // Schedule the next notification whenever hour or permission changes
   useEffect(() => {
-    if (!isSupported || permission !== 'granted' || reminderHour === null) return;
+    if (!shouldSchedule || !isSupported || permission !== 'granted' || reminderHour === null || reminder === null) return;
 
-    const delay = getNextOccurrence(reminderHour);
+    const notification = reminder ?? DEFAULT_REMINDER;
+    const delay = getNextReminderDelayMs(new Date(), reminderHour);
     const timerId = window.setTimeout(() => {
-      new Notification('VocabDaily — 该复习了！🔥', {
-        body: '今天的词汇任务等着你，保持连续学习势头！',
+      new Notification(notification.title, {
+        body: notification.body,
         icon: '/favicon.svg',
-        tag: 'vocabdaily-reminder',
+        tag: notification.tag ?? 'vocabdaily-reminder',
+        data: notification.href ? { href: notification.href } : undefined,
       });
     }, delay);
 
     return () => window.clearTimeout(timerId);
-  }, [isSupported, permission, reminderHour]);
+  }, [isSupported, permission, reminder, reminderHour, shouldSchedule]);
 
   return {
     isSupported,

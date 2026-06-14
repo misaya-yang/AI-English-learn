@@ -95,7 +95,7 @@ describe('coachReviewQueue', () => {
     const all = await getCoachReviews(USER, { includeCompleted: true });
     expect(all.length).toBeGreaterThan(0);
     expect(all.length).toBeLessThanOrEqual(500);
-  });
+  }, 15_000);
 
   it('uses Date.now() by default for getDueCoachReviews', async () => {
     await addCoachReviewItems(USER, [

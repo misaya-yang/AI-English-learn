@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type ComponentType } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { wordsDatabase } from '@/data/words';
@@ -9,7 +11,16 @@ import { computeReviewWindows } from '@/services/reviewWindows';
 import type { UserProgress } from '@/data/localStorage';
 import type { FSRSState } from '@/types/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -55,23 +66,366 @@ import {
 } from '@/services/learningEvents';
 import { getStudySessions } from '@/data/localStorage';
 import { computeLevel, getLevelName } from '@/services/gamification';
-
-const TOPIC_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'];
+import { buildWeeklyLearningRecap } from '@/features/learning/weeklyRecap';
 
 // ── Theme-aware chart color hook ─────────────────────────────────────────────
+function readHslToken(style: CSSStyleDeclaration, token: string, alpha?: number): string {
+  const value = style.getPropertyValue(token).trim();
+  return alpha === undefined ? `hsl(${value})` : `hsl(${value} / ${alpha})`;
+}
+
 function useChartColors() {
   // Reads the current theme tokens from :root CSS vars
   const style = getComputedStyle(document.documentElement);
+  const primary = readHslToken(style, '--primary');
+  const practice = readHslToken(style, '--accent-practice');
+  const coach = readHslToken(style, '--accent-coach');
+  const exam = readHslToken(style, '--accent-exam');
+  const memory = readHslToken(style, '--accent-memory');
+  const error = readHslToken(style, '--accent-error');
+  const success = readHslToken(style, '--success');
+  const warning = readHslToken(style, '--warning');
+  const muted = readHslToken(style, '--muted');
+  const mutedForeground = readHslToken(style, '--muted-foreground');
+
   return {
-    border: `hsl(${style.getPropertyValue('--border').trim()})`,
-    foreground: `hsl(${style.getPropertyValue('--foreground').trim()})`,
-    mutedForeground: `hsl(${style.getPropertyValue('--muted-foreground').trim()})`,
-    card: `hsl(${style.getPropertyValue('--card').trim()})`,
+    border: readHslToken(style, '--border'),
+    foreground: readHslToken(style, '--foreground'),
+    mutedForeground,
+    muted,
+    card: readHslToken(style, '--card'),
+    primary,
+    practice,
+    coach,
+    exam,
+    memory,
+    error,
+    success,
+    warning,
+    words: memory,
+    xp: practice,
+    minutes: coach,
+    baseline: error,
+    topicPalette: [memory, practice, exam, coach, success, warning],
+    heatmap: [
+      readHslToken(style, '--muted', 0.7),
+      readHslToken(style, '--accent-memory', 0.18),
+      readHslToken(style, '--accent-memory', 0.35),
+      readHslToken(style, '--accent-memory', 0.55),
+      readHslToken(style, '--accent-memory', 0.78),
+    ],
+    retentionLow: error,
+    retentionMedium: warning,
+    retentionHigh: success,
+    vocabNew: mutedForeground,
+    vocabLearning: practice,
+    vocabReview: warning,
+    vocabMastered: success,
   };
 }
 const ANALYTICS_NOW = Date.now();
 
-const generateTopicData = (wordIds: string[]) => {
+const analyticsCopy = {
+  en: {
+    headerTitle: 'Learning progress',
+    headerSubtitle: 'Track real learning evidence, not decorative charts.',
+    timeRanges: { week: 'This week', month: 'This month', year: 'This year', all: 'All time' },
+    stats: {
+      totalWords: 'Total Words',
+      mastered: 'Mastered',
+      streak: 'Current Streak',
+      xp: 'Total XP',
+      streakUnit: 'days',
+      streakActive: 'On fire',
+      streakStart: 'Start today',
+      levelPrefix: 'Level',
+      xpTotal: 'XP total',
+      xpNeeded: 'XP needed for level',
+    },
+    tabs: {
+      overview: 'Overview',
+      words: 'Words',
+      retention: 'Retention',
+      coach: 'Coach Impact',
+      insights: 'AI Insights',
+      badges: 'Badges',
+    },
+    charts: {
+      activity: {
+        week: 'Weekly activity',
+        month: 'Monthly activity',
+        year: 'Yearly activity',
+        all: 'Historical activity',
+        subtitleWeek: 'This week',
+        subtitleMonth: 'This month',
+        subtitleYear: 'This year',
+        subtitleAll: 'All history',
+      },
+      topics: 'Topic breakdown',
+      topicsSubtitle: 'Topics from completed learning evidence',
+      studyTime: 'Study time',
+      studyTimeSubtitle: 'Minutes practiced',
+      wordsTrend: 'Vocabulary trend',
+      wordsTrendSubtitle: 'Words learned over time',
+      heatmap: 'Learning heatmap',
+      heatmapSubtitle: 'Activity heatmap',
+      heatmapLow: 'Less',
+      heatmapHigh: 'More',
+      retentionDistribution: 'Current memory-retention distribution',
+      retentionWindow: 'Recommended review window',
+      risk: 'Highest forgetting risk',
+    },
+    empty: {
+      activity: {
+        title: 'No activity trend yet',
+        description: 'Complete a Today, Review, or Practice task before showing a real activity trend.',
+        action: 'Open Today',
+      },
+      topics: {
+        title: 'No topic evidence yet',
+        description: 'Topic breakdown only uses words you actually studied or reviewed, not today\'s candidate list.',
+        action: 'Start today\'s words',
+      },
+      duration: {
+        title: 'No study duration yet',
+        description: 'Complete one short task and the time spent will start appearing here.',
+        action: 'Do a short practice',
+      },
+      wordsTrend: {
+        title: 'No vocabulary trend yet',
+        description: 'This trend waits for real learning records instead of counting unfinished candidate words.',
+        action: 'Study today\'s words',
+      },
+      heatmap: {
+        title: 'No streak heatmap yet',
+        description: 'After a few completed study days, this heatmap will show your real rhythm.',
+        action: 'Open today\'s mission',
+      },
+      retention: {
+        title: 'No retention estimate yet',
+        description: 'Review a few cards first so FSRS has enough evidence to estimate retention and forgetting curves.',
+        action: 'Go to Review',
+      },
+      window: {
+        title: 'No reliable review window yet',
+        description: 'Log a few sessions at different times before the app recommends a trustworthy review window.',
+        action: 'Record a study session',
+      },
+      risk: {
+        title: 'No forgetting-risk ranking yet',
+        description: 'Complete a few review rounds before the app ranks the words most likely to be forgotten.',
+        action: 'Open review queue',
+      },
+      coach: {
+        title: 'No Coach loop evidence yet',
+        description: 'Start a chat or complete a practice task before this page shows whether AI diagnosis turned into reinforcement.',
+        action: 'Open AI Coach',
+      },
+      vocabulary: {
+        title: 'No vocabulary mastery evidence yet',
+        description: 'After learning or reviewing words, they will enter New, Learning, Review, and Mastered buckets.',
+        action: 'Start today\'s words',
+      },
+      radar: {
+        title: 'No skill radar yet',
+        description: 'The radar needs vocabulary, review, and consistency signals. Complete one trackable task first.',
+        action: 'Open Today',
+      },
+    },
+    coach: {
+      description: 'Closed-loop signals from AI diagnosis, completed reinforcement, repeated errors, and FSRS retention.',
+      diagnosed: 'AI diagnosis signals',
+      completed: 'Completed reinforcement',
+      repeatedErrors: 'Repeated error risk',
+      retention: 'Predicted retention',
+      focus: 'Next coaching focus',
+      focusDescription: 'The next Today and Coach Studio actions will prioritize this weak signal.',
+    },
+    insights: {
+      weeklyReport: 'Evidence weekly report',
+      wordsStrengthened: 'Words strengthened',
+      activeDays: 'Active days',
+      reviewDebt: 'Review debt signals',
+      insufficient: 'Not enough evidence yet. Complete a Today, Review, or Practice task and the weekly report will start forming here.',
+      strongestWaiting: 'Strongest signal: waiting for more evidence',
+      weakestPrefix: 'Needs attention',
+      strongestPrefix: 'Strongest signal',
+      openNext: 'Open next step',
+      vocabDistribution: 'Vocabulary mastery distribution',
+      skillRadar: 'Skill radar',
+    },
+  },
+  zh: {
+    headerTitle: '学习进度',
+    headerSubtitle: '查看真实学习数据，而不是随机生成的好看图表。',
+    timeRanges: { week: '本周', month: '本月', year: '今年', all: '全部' },
+    stats: {
+      totalWords: '总单词数',
+      mastered: '已掌握',
+      streak: '连续学习',
+      xp: '总经验值',
+      streakUnit: '天',
+      streakActive: '保持火热',
+      streakStart: '从今天开始',
+      levelPrefix: '等级',
+      xpTotal: '总 XP',
+      xpNeeded: 'XP 升到等级',
+    },
+    tabs: {
+      overview: '概览',
+      words: '词汇',
+      retention: '记忆保留',
+      coach: '教练闭环',
+      insights: 'AI 洞察',
+      badges: '成就',
+    },
+    charts: {
+      activity: {
+        week: '本周活跃度',
+        month: '本月活跃度',
+        year: '年度活跃度',
+        all: '历史活跃度',
+        subtitleWeek: '本周活动',
+        subtitleMonth: '月度活动',
+        subtitleYear: '年度活动',
+        subtitleAll: '全部历史活动',
+      },
+      topics: '主题分布',
+      topicsSubtitle: '来自已完成学习证据的主题',
+      studyTime: '学习时长',
+      studyTimeSubtitle: '学习时间',
+      wordsTrend: '词汇积累趋势',
+      wordsTrendSubtitle: '单词学习趋势',
+      heatmap: '学习热力图',
+      heatmapSubtitle: '活动热图',
+      heatmapLow: '少',
+      heatmapHigh: '多',
+      retentionDistribution: '各单词当前记忆保留率分布',
+      retentionWindow: '推荐复习时间窗口',
+      risk: '未来最容易忘记的词',
+    },
+    empty: {
+      activity: {
+        title: '还没有活动曲线',
+        description: '完成一次 Today、Review 或 Practice 后，这里才会显示真实活动趋势。',
+        action: '打开 Today',
+      },
+      topics: {
+        title: '还没有主题证据',
+        description: '主题分布只使用你真正学过或复习过的词，不会用今日候选词伪装成历史。',
+        action: '开始今日词汇',
+      },
+      duration: {
+        title: '还没有学习时长',
+        description: '完成一个短任务后，系统会把用时沉淀到这里。',
+        action: '做一次短练习',
+      },
+      wordsTrend: {
+        title: '还没有词汇趋势',
+        description: '趋势图只在真实学习记录出现后展示，避免把未完成的候选词算进进步。',
+        action: '学习今日单词',
+      },
+      heatmap: {
+        title: '还没有连续学习热力',
+        description: '完成几天任务后，热力图会显示你真正坚持下来的节奏。',
+        action: '打开今日任务',
+      },
+      retention: {
+        title: '还没有可计算的记忆保留率',
+        description: '先完成几张复习卡，FSRS 才有足够证据估算当前保持率和遗忘曲线。',
+        action: '去做复习',
+      },
+      window: {
+        title: '还没有可靠复习时段',
+        description: '再积累几次不同时段的学习记录，系统就能开始推荐更可信的复习时间窗口。',
+        action: '记录一次学习',
+      },
+      risk: {
+        title: '还没有遗忘风险排序',
+        description: '先完成几轮复习，系统才会开始给出更可信的遗忘风险排序。',
+        action: '打开复习队列',
+      },
+      coach: {
+        title: '还没有 Coach 闭环证据',
+        description: '开始一次对话或完成一次练习后，这里会展示 AI 诊断是否真的变成了补强动作。',
+        action: '打开 AI Coach',
+      },
+      vocabulary: {
+        title: '还没有词汇掌握证据',
+        description: '完成学习或复习后，词汇会进入新学、学习中、复习中和已掌握分布。',
+        action: '开始今日词汇',
+      },
+      radar: {
+        title: '还没有能力雷达',
+        description: '雷达图需要词汇、复习和连续性信号；先完成一个可记录任务。',
+        action: '打开 Today',
+      },
+    },
+    coach: {
+      description: '本周 AI 诊断、补强完成、重复错误和 FSRS 保持率的闭环信号。',
+      diagnosed: 'AI 诊断信号',
+      completed: '已完成补强',
+      repeatedErrors: '重复错误风险',
+      retention: '预测保持率',
+      focus: '下一步教练重点',
+      focusDescription: '下一轮 Today 与 Coach Studio 会优先围绕这个弱项生成诊断、训练和复盘动作。',
+    },
+    insights: {
+      weeklyReport: '证据周报',
+      wordsStrengthened: '强化词数',
+      activeDays: '活跃天数',
+      reviewDebt: '复习债信号',
+      insufficient: '暂时没有足够证据生成进步结论。完成一次 Today、Review 或 Practice 后，这里会开始沉淀周报。',
+      strongestWaiting: '最强信号：等待更多证据',
+      weakestPrefix: '最需要处理',
+      strongestPrefix: '最强信号',
+      openNext: '打开下一步',
+      vocabDistribution: '词汇掌握分布',
+      skillRadar: '能力雷达图',
+    },
+  },
+} as const;
+
+const getAnalyticsCopy = (language: string) => (
+  language.startsWith('zh') ? analyticsCopy.zh : analyticsCopy.en
+);
+
+interface AnalyticsEmptyCardProps {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  actionLabel: string;
+  actionHref: string;
+  className?: string;
+}
+
+function AnalyticsEmptyCard({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  actionHref,
+  className,
+}: AnalyticsEmptyCardProps) {
+  return (
+    <Empty className={cn('min-h-[220px] border border-dashed border-border bg-muted/20', className)}>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Icon className="h-5 w-5" />
+        </EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button size="sm" className="rounded-md" asChild>
+          <Link to={actionHref}>{actionLabel}</Link>
+        </Button>
+      </EmptyContent>
+    </Empty>
+  );
+}
+
+const generateTopicData = (wordIds: string[], palette: string[]) => {
   const topicCounts: Record<string, number> = {};
   wordIds.forEach((id) => {
     const word = wordsDatabase.find((w) => w.id === id);
@@ -84,14 +438,35 @@ const generateTopicData = (wordIds: string[]) => {
     .map(([name, value], index) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
       value,
-      color: TOPIC_COLORS[index % TOPIC_COLORS.length],
+      color: palette[index % palette.length],
     }));
 };
 
 export default function AnalyticsPage() {
   const { stats, xp, streak, dailyWords, customWords, progress } = useUserData();
   const { user } = useAuth();
+  const { i18n } = useTranslation();
+  const language = i18n.language || 'en';
+  const copy = getAnalyticsCopy(language);
+  const isZh = language.startsWith('zh');
   const colors = useChartColors();
+  const tooltipContentStyle = useMemo(
+    () => ({
+      background: colors.card,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '8px',
+      color: colors.foreground,
+    }),
+    [colors.border, colors.card, colors.foreground],
+  );
+  const tooltipLabelStyle = useMemo(
+    () => ({ color: colors.foreground }),
+    [colors.foreground],
+  );
+  const tooltipItemStyle = useMemo(
+    () => ({ color: colors.foreground }),
+    [colors.foreground],
+  );
   const [timeRange, setTimeRange] = useState('week');
   const [weeklyData, setWeeklyData] = useState<WeeklyActivityPoint[]>([]);
   const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
@@ -109,21 +484,17 @@ export default function AnalyticsPage() {
 
   // Derive topic data filtered by the selected time range
   const topicData = useMemo(() => {
-    let ids: string[];
-    if (progress.length > 0) {
-      const filtered = cutoffDate
-        ? progress.filter((p) => {
-            const ts = p.updatedAt ?? p.firstSeenAt;
-            if (!ts) return false;
-            return new Date(ts) >= cutoffDate;
-          })
-        : progress;
-      ids = (filtered.length > 0 ? filtered : progress).map((p) => p.wordId);
-    } else {
-      ids = dailyWords.map((w) => w.id);
-    }
-    return generateTopicData(ids);
-  }, [progress, dailyWords, cutoffDate]);
+    if (progress.length === 0) return [];
+    const filtered = cutoffDate
+      ? progress.filter((p) => {
+          const ts = p.updatedAt ?? p.firstSeenAt;
+          if (!ts) return false;
+          return new Date(ts) >= cutoffDate;
+        })
+      : progress;
+    const ids = filtered.map((p) => p.wordId);
+    return generateTopicData(ids, colors.topicPalette);
+  }, [progress, cutoffDate, colors.topicPalette]);
 
   const riskWords = useMemo(
     () => computeHighRiskWords(progress, [...customWords, ...dailyWords, ...wordsDatabase]),
@@ -161,7 +532,7 @@ export default function AnalyticsPage() {
             d.setDate(d.getDate() - i);
             d.setHours(0, 0, 0, 0);
             const iso = d.toISOString().slice(0, 10);
-            const label = d.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+            const label = d.toLocaleDateString(isZh ? 'zh-CN' : 'en-US', { month: 'numeric', day: 'numeric' });
             dayMap.set(iso, { day: label, date: iso, words: 0, xp: 0, minutes: 0, events: 0 });
           }
           sessions.forEach((s) => {
@@ -181,7 +552,9 @@ export default function AnalyticsPage() {
             const monthKey = s.date.slice(0, 7); // YYYY-MM
             if (!monthMap.has(monthKey)) {
               const [y, m] = monthKey.split('-');
-              const label = `${y}年${parseInt(m)}月`;
+              const label = isZh
+                ? `${y}年${parseInt(m)}月`
+                : new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
               monthMap.set(monthKey, { day: label, date: monthKey, words: 0, xp: 0, minutes: 0, events: 0 });
             }
             const pt = monthMap.get(monthKey)!;
@@ -200,7 +573,7 @@ export default function AnalyticsPage() {
     };
 
     void loadAnalytics();
-  }, [stats.totalWords, user?.id, timeRange]);
+  }, [isZh, stats.totalWords, user?.id, timeRange]);
 
   // Calculate level based on XP using the canonical helpers from gamification.ts
   const level = computeLevel(xp.total);
@@ -213,7 +586,7 @@ export default function AnalyticsPage() {
   const statCards = [
     {
       title: 'Total Words',
-      titleZh: '总单词数',
+      label: copy.stats.totalWords,
       value: stats.totalWords.toString(),
       change: `+${stats.weeklyWords}`,
       icon: BookOpen,
@@ -222,7 +595,7 @@ export default function AnalyticsPage() {
     },
     {
       title: 'Mastered',
-      titleZh: '已掌握',
+      label: copy.stats.mastered,
       value: stats.masteredWords.toString(),
       change: `${Math.round((stats.masteredWords / Math.max(1, stats.totalWords)) * 100)}%`,
       icon: Target,
@@ -231,18 +604,18 @@ export default function AnalyticsPage() {
     },
     {
       title: 'Current Streak',
-      titleZh: '连续学习',
-      value: `${streakCurrent} days`,
-      change: streakCurrent > 0 ? 'On fire!' : 'Start today',
+      label: copy.stats.streak,
+      value: `${streakCurrent} ${copy.stats.streakUnit}`,
+      change: streakCurrent > 0 ? copy.stats.streakActive : copy.stats.streakStart,
       icon: Flame,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
     },
     {
       title: 'Total XP',
-      titleZh: '总经验值',
+      label: copy.stats.xp,
       value: xp.total.toString(),
-      change: `Level ${level}`,
+      change: `${copy.stats.levelPrefix} ${level}`,
       icon: Zap,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
@@ -278,7 +651,7 @@ export default function AnalyticsPage() {
     const histData = ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'].map((label, i) => ({
       label,
       count: buckets[i],
-      fill: i >= 3 ? '#10b981' : i === 2 ? '#f59e0b' : '#ef4444',
+      fill: i >= 3 ? colors.retentionHigh : i === 2 ? colors.retentionMedium : colors.retentionLow,
     }));
 
     // Forgetting curves: FSRS (target 90%) vs naive baseline (no SRS)
@@ -298,7 +671,7 @@ export default function AnalyticsPage() {
     }));
 
     return { avgR, histData, curvePoints, total: retrievabilities.length };
-  }, [progress]);
+  }, [progress, colors.retentionHigh, colors.retentionLow, colors.retentionMedium]);
 
   // Vocabulary status distribution
   const vocabDistribution = useMemo(() => {
@@ -308,12 +681,12 @@ export default function AnalyticsPage() {
       if (status in counts) counts[status]++;
     });
     return [
-      { name: 'New', nameZh: '新学', count: counts.new, fill: '#6b7280' },
-      { name: 'Learning', nameZh: '学习中', count: counts.learning, fill: '#3b82f6' },
-      { name: 'Review', nameZh: '复习中', count: counts.review, fill: '#f59e0b' },
-      { name: 'Mastered', nameZh: '已掌握', count: counts.mastered, fill: '#10b981' },
+      { name: 'New', nameZh: '新学', count: counts.new, fill: colors.vocabNew },
+      { name: 'Learning', nameZh: '学习中', count: counts.learning, fill: colors.vocabLearning },
+      { name: 'Review', nameZh: '复习中', count: counts.review, fill: colors.vocabReview },
+      { name: 'Mastered', nameZh: '已掌握', count: counts.mastered, fill: colors.vocabMastered },
     ];
-  }, [progress]);
+  }, [progress, colors.vocabLearning, colors.vocabMastered, colors.vocabNew, colors.vocabReview]);
 
   // Skill radar data (multi-dimensional profile)
   const radarData = useMemo(() => {
@@ -333,34 +706,10 @@ export default function AnalyticsPage() {
     ];
   }, [stats, streakCurrent, weeklyData, fsrsStats]);
 
-  // AI Weekly Report
-  const weeklyReport = useMemo(() => {
-    const totalWordsThisWeek = weeklyData.reduce((s, d) => s + d.words, 0);
-    const totalXpThisWeek = weeklyData.reduce((s, d) => s + d.xp, 0);
-    const activeDays = weeklyData.filter((d) => d.words > 0).length;
-    const avgRetention = fsrsStats ? Math.round(fsrsStats.avgR * 100) : 0;
-
-    const highlights: string[] = [];
-    if (totalWordsThisWeek >= 30) highlights.push(`学习了 ${totalWordsThisWeek} 个单词，超过平均水平！`);
-    else if (totalWordsThisWeek > 0) highlights.push(`本周学习了 ${totalWordsThisWeek} 个单词。`);
-
-    if (activeDays >= 5) highlights.push(`${activeDays}/7 天保持学习，一致性很好。`);
-    else if (activeDays > 0) highlights.push(`本周活跃 ${activeDays} 天，尝试每天至少学习一点。`);
-
-    if (avgRetention >= 80) highlights.push(`记忆保留率 ${avgRetention}%，复习节奏掌握得不错。`);
-    else if (avgRetention >= 50) highlights.push(`记忆保留率 ${avgRetention}%，建议增加复习频率。`);
-    else if (avgRetention > 0) highlights.push(`记忆保留率偏低 (${avgRetention}%)，优先处理到期复习。`);
-
-    if (streakCurrent >= 7) highlights.push(`连续学习 ${streakCurrent} 天🔥，保持住！`);
-
-    const suggestion = avgRetention < 60
-      ? '本周建议：优先做到期复习，间隔重复是记忆的核心。'
-      : activeDays < 4
-        ? '本周建议：提高学习频率，每天哪怕 5 分钟也比集中突击更有效。'
-        : '本周建议：保持当前节奏，可以尝试提升练习难度。';
-
-    return { totalWordsThisWeek, totalXpThisWeek, activeDays, highlights, suggestion };
-  }, [weeklyData, fsrsStats, streakCurrent]);
+  const weeklyReport = useMemo(
+    () => buildWeeklyLearningRecap({ events: eventHistory, weeklyActivity: weeklyData, progress }),
+    [eventHistory, progress, weeklyData],
+  );
 
   const coachImpact = useMemo(() => {
     const coachEvents = eventHistory.filter((event) =>
@@ -375,7 +724,7 @@ export default function AnalyticsPage() {
     );
     const repeatedErrors = riskWords.filter((item) => item.isStubborn).length;
     const retentionPct = fsrsStats ? Math.round(fsrsStats.avgR * 100) : 0;
-    const primaryFocus = riskWords[0]?.topic || reviewWindowInsight?.primary.label || 'IELTS writing';
+    const primaryFocus = riskWords[0]?.topic || reviewWindowInsight?.primary.label || null;
 
     return {
       diagnosed: coachEvents.length,
@@ -385,6 +734,20 @@ export default function AnalyticsPage() {
       primaryFocus,
     };
   }, [eventHistory, fsrsStats, reviewWindowInsight, riskWords]);
+
+  const hasActivitySignal = weeklyData.some((point) =>
+    point.words > 0 || point.xp > 0 || point.minutes > 0 || point.events > 0,
+  );
+  const hasHeatmapSignal = heatmapData.some((point) => point.value > 0);
+  const hasVocabularyEvidence = progress.length > 0;
+  const hasRetentionEvidence = Boolean(fsrsStats && fsrsStats.total > 0);
+  const hasCoachEvidence =
+    coachImpact.diagnosed > 0 ||
+    coachImpact.completedReinforcements > 0 ||
+    coachImpact.repeatedErrors > 0 ||
+    coachImpact.retentionPct > 0 ||
+    Boolean(coachImpact.primaryFocus);
+  const hasAnyLearningEvidence = hasActivitySignal || hasHeatmapSignal || hasVocabularyEvidence || hasCoachEvidence;
 
   const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
   const badges = [
@@ -396,6 +759,12 @@ export default function AnalyticsPage() {
   ];
 
   const formatRiskDueLabel = (hoursUntilDue: number): string => {
+    if (isZh) {
+      if (hoursUntilDue <= 0) return '已到期';
+      if (hoursUntilDue <= 12) return '今天稍后到期';
+      if (hoursUntilDue <= 48) return '1-2 天内到期';
+      return `${Math.ceil(hoursUntilDue / 24)} 天后到期`;
+    }
     if (hoursUntilDue <= 0) return 'Overdue now';
     if (hoursUntilDue <= 12) return 'Due later today';
     if (hoursUntilDue <= 48) return 'Due in 1-2 days';
@@ -404,31 +773,71 @@ export default function AnalyticsPage() {
 
   const reviewWindowSummary = reviewWindowInsight
     ? reviewWindowInsight.primary.share >= 0.45
-      ? 'This block is already your most reliable study rhythm.'
-      : 'This block has the strongest recent signal for getting reviews done.'
+      ? (isZh ? '这个时段已经是你最稳定的学习节奏。' : 'This block is already your most reliable study rhythm.')
+      : (isZh ? '这个时段最近最容易完成复习。' : 'This block has the strongest recent signal for getting reviews done.')
     : null;
+  const activityTitle =
+    timeRange === 'year' ? copy.charts.activity.year :
+    timeRange === 'month' ? copy.charts.activity.month :
+    timeRange === 'all' ? copy.charts.activity.all :
+    copy.charts.activity.week;
+  const activitySubtitle =
+    timeRange === 'year' ? copy.charts.activity.subtitleYear :
+    timeRange === 'month' ? copy.charts.activity.subtitleMonth :
+    timeRange === 'all' ? copy.charts.activity.subtitleAll :
+    copy.charts.activity.subtitleWeek;
 
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">学习进度</h1>
-          <p className="text-muted-foreground">追踪你的词汇学习历程</p>
+          <h1 className="text-2xl font-bold">{copy.headerTitle}</h1>
+          <p className="text-muted-foreground">{copy.headerSubtitle}</p>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[150px]">
             <Calendar className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="时间范围" />
+            <SelectValue placeholder={copy.timeRanges.week} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="week">本周</SelectItem>
-            <SelectItem value="month">本月</SelectItem>
-            <SelectItem value="year">今年</SelectItem>
-            <SelectItem value="all">全部</SelectItem>
+            <SelectItem value="week">{copy.timeRanges.week}</SelectItem>
+            <SelectItem value="month">{copy.timeRanges.month}</SelectItem>
+            <SelectItem value="year">{copy.timeRanges.year}</SelectItem>
+            <SelectItem value="all">{copy.timeRanges.all}</SelectItem>
           </SelectContent>
         </Select>
       </div>
+
+      {!hasAnyLearningEvidence && (
+        <div className="premium-panel-soft mb-6 rounded-lg border border-border bg-card p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
+                <Target className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">
+                  {isZh ? '还没有真实学习证据，所以这里先不伪造趋势。' : 'No real learning evidence yet, so trends stay empty.'}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {isZh
+                    ? '完成一次 Today、Review 或 Practice 后，图表会开始展示可追溯的学习记录、复习窗口和遗忘风险。'
+                    : 'Complete Today, Review, or Practice once and charts will start using traceable learning records.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button asChild className="rounded-md">
+                <Link to="/dashboard/today">{isZh ? '开始今日任务' : 'Start Today'}</Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-md">
+                <Link to="/dashboard/practice">{isZh ? '做一次短练习' : 'Short practice'}</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -437,8 +846,7 @@ export default function AnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-xs text-muted-foreground">{stat.titleZh}</p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
                   <div className="flex items-center gap-1 mt-1">
                     <ChevronUp className="h-3 w-3 text-emerald-500" />
@@ -460,10 +868,10 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Award className="h-5 w-5 text-yellow-500" />
-              <span className="font-medium">Level {level} - {levelName}</span>
+              <span className="font-medium">{copy.stats.levelPrefix} {level} - {levelName}</span>
             </div>
             <span className="text-sm text-muted-foreground">
-              {xp.total} XP total
+              {xp.total} {copy.stats.xpTotal}
             </span>
           </div>
           <div className="w-full bg-muted rounded-full h-2">
@@ -473,7 +881,7 @@ export default function AnalyticsPage() {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {xpInCurrentLevel} / 100 XP &mdash; {xpToNextLevel} XP needed for level {level + 1}
+            {xpInCurrentLevel} / 100 XP &mdash; {xpToNextLevel} {copy.stats.xpNeeded} {level + 1}
           </p>
         </CardContent>
       </Card>
@@ -481,36 +889,42 @@ export default function AnalyticsPage() {
       {/* Charts */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="overview">概览</TabsTrigger>
-          <TabsTrigger value="words">词汇</TabsTrigger>
-          <TabsTrigger value="retention">记忆保留</TabsTrigger>
-          <TabsTrigger value="coach-impact">Coach Impact</TabsTrigger>
-          <TabsTrigger value="insights">AI 洞察</TabsTrigger>
-          <TabsTrigger value="badges">成就</TabsTrigger>
+          <TabsTrigger value="overview">{copy.tabs.overview}</TabsTrigger>
+          <TabsTrigger value="words">{copy.tabs.words}</TabsTrigger>
+          <TabsTrigger value="retention">{copy.tabs.retention}</TabsTrigger>
+          <TabsTrigger value="coach-impact">{copy.tabs.coach}</TabsTrigger>
+          <TabsTrigger value="insights">{copy.tabs.insights}</TabsTrigger>
+          <TabsTrigger value="badges">{copy.tabs.badges}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           {/* Activity Chart — title follows the selected time range */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">
-                {timeRange === 'year' ? '年度活跃度' : timeRange === 'month' ? '本月活跃度' : timeRange === 'all' ? '历史活跃度' : '本周活跃度'}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {timeRange === 'year' ? '年度活动' : timeRange === 'month' ? '月度活动' : timeRange === 'all' ? '全部历史活动' : '本周活动'}
-              </p>
+              <CardTitle className="text-lg">{activityTitle}</CardTitle>
+              <p className="text-sm text-muted-foreground">{activitySubtitle}</p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="words" fill="#10b981" name="Words Learned" />
-                  <Bar dataKey="xp" fill="#3b82f6" name="XP Earned" />
-                </BarChart>
-              </ResponsiveContainer>
+              {hasActivitySignal ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={weeklyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+                    <XAxis dataKey="day" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                    <YAxis stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                    <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
+                    <Bar dataKey="words" fill={colors.words} name="Words Learned" />
+                    <Bar dataKey="xp" fill={colors.xp} name="XP Earned" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <AnalyticsEmptyCard
+                  icon={Calendar}
+                  title={copy.empty.activity.title}
+                  description={copy.empty.activity.description}
+                  actionLabel={copy.empty.activity.action}
+                  actionHref="/dashboard/today"
+                />
+              )}
             </CardContent>
           </Card>
 
@@ -518,8 +932,8 @@ export default function AnalyticsPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">主题分布</CardTitle>
-                <p className="text-sm text-muted-foreground">主题分布</p>
+                <CardTitle className="text-lg">{copy.charts.topics}</CardTitle>
+                <p className="text-sm text-muted-foreground">{copy.charts.topicsSubtitle}</p>
               </CardHeader>
               <CardContent>
                 {topicData.length > 0 ? (
@@ -539,7 +953,7 @@ export default function AnalyticsPage() {
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="flex flex-wrap gap-2 justify-center mt-4">
@@ -555,34 +969,48 @@ export default function AnalyticsPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    暂无主题数据
-                  </div>
+                  <AnalyticsEmptyCard
+                    icon={BookOpen}
+                    title={copy.empty.topics.title}
+                    description={copy.empty.topics.description}
+                    actionLabel={copy.empty.topics.action}
+                    actionHref="/dashboard/today"
+                  />
                 )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">学习时长</CardTitle>
-                <p className="text-sm text-muted-foreground">学习时间</p>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={weeklyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area
-                      type="monotone"
-                      dataKey="minutes"
-                      stroke="#8b5cf6"
-                      fill="#8b5cf6"
-                      fillOpacity={0.3}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <CardTitle className="text-lg">{copy.charts.studyTime}</CardTitle>
+                <p className="text-sm text-muted-foreground">{copy.charts.studyTimeSubtitle}</p>
+            </CardHeader>
+            <CardContent>
+                {hasActivitySignal ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={weeklyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+                      <XAxis dataKey="day" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                      <YAxis stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                      <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
+                      <Area
+                        type="monotone"
+                        dataKey="minutes"
+                        stroke={colors.minutes}
+                        fill={colors.minutes}
+                        fillOpacity={0.3}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <AnalyticsEmptyCard
+                    icon={Clock3}
+                    title={copy.empty.duration.title}
+                    description={copy.empty.duration.description}
+                    actionLabel={copy.empty.duration.action}
+                    actionHref="/dashboard/practice"
+                  />
+                )}
               </CardContent>
             </Card>
           </div>
@@ -591,87 +1019,104 @@ export default function AnalyticsPage() {
         <TabsContent value="words" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">词汇积累趋势</CardTitle>
-              <p className="text-sm text-muted-foreground">单词学习趋势</p>
+              <CardTitle className="text-lg">{copy.charts.wordsTrend}</CardTitle>
+              <p className="text-sm text-muted-foreground">{copy.charts.wordsTrendSubtitle}</p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="words"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    dot={{ fill: '#10b981' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {hasActivitySignal ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={weeklyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+                    <XAxis dataKey="day" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                    <YAxis stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                    <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
+                    <Line
+                      type="monotone"
+                      dataKey="words"
+                      stroke={colors.words}
+                      strokeWidth={2}
+                      dot={{ fill: colors.words }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <AnalyticsEmptyCard
+                  icon={BookOpen}
+                  title={copy.empty.wordsTrend.title}
+                  description={copy.empty.wordsTrend.description}
+                  actionLabel={copy.empty.wordsTrend.action}
+                  actionHref="/dashboard/today"
+                />
+              )}
             </CardContent>
           </Card>
 
           {/* Activity Heatmap */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">学习热力图</CardTitle>
-              <p className="text-sm text-muted-foreground">活动热图</p>
+              <CardTitle className="text-lg">{copy.charts.heatmap}</CardTitle>
+              <p className="text-sm text-muted-foreground">{copy.charts.heatmapSubtitle}</p>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-1">
-                {Array.from({ length: 52 }).map((_, weekIndex) => (
-                  <div key={weekIndex} className="flex flex-col gap-1">
-                    {Array.from({ length: 7 }).map((_, dayIndex) => {
-                      const dataPoint = heatmapData.find(
-                        (d) => d.week === weekIndex && d.day === dayIndex
-                      );
-                      const intensity = dataPoint?.value || 0;
-                      return (
-                        <div
-                          key={dayIndex}
-                          className={cn(
-                            'w-3 h-3 rounded-sm',
-                            intensity === 0 && 'bg-gray-100 dark:bg-gray-800',
-                            intensity === 1 && 'bg-emerald-200 dark:bg-emerald-900',
-                            intensity === 2 && 'bg-emerald-300 dark:bg-emerald-800',
-                            intensity === 3 && 'bg-emerald-400 dark:bg-emerald-700',
-                            intensity >= 4 && 'bg-emerald-500 dark:bg-emerald-600'
-                          )}
-                        />
-                      );
-                    })}
+              {hasHeatmapSignal ? (
+                <>
+                  <div className="flex flex-wrap gap-1">
+                    {Array.from({ length: 52 }).map((_, weekIndex) => (
+                      <div key={weekIndex} className="flex flex-col gap-1">
+                        {Array.from({ length: 7 }).map((_, dayIndex) => {
+                          const dataPoint = heatmapData.find(
+                            (d) => d.week === weekIndex && d.day === dayIndex
+                          );
+                          const intensity = dataPoint?.value || 0;
+                          const heatmapColor = colors.heatmap[Math.min(4, Math.max(0, intensity))];
+                          return (
+                            <div
+                              key={dayIndex}
+                              className="w-3 h-3 rounded-sm"
+                              style={{ backgroundColor: heatmapColor }}
+                            />
+                          );
+                        })}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 mt-4">
-                <span className="text-xs text-muted-foreground">少</span>
-                <div className="flex gap-1">
-                  <div className="w-3 h-3 bg-gray-100 dark:bg-gray-800 rounded-sm" />
-                  <div className="w-3 h-3 bg-emerald-200 dark:bg-emerald-900 rounded-sm" />
-                  <div className="w-3 h-3 bg-emerald-300 dark:bg-emerald-800 rounded-sm" />
-                  <div className="w-3 h-3 bg-emerald-400 dark:bg-emerald-700 rounded-sm" />
-                  <div className="w-3 h-3 bg-emerald-500 dark:bg-emerald-600 rounded-sm" />
-                </div>
-                <span className="text-xs text-muted-foreground">多</span>
-              </div>
+                  <div className="flex items-center gap-2 mt-4">
+                    <span className="text-xs text-muted-foreground">{copy.charts.heatmapLow}</span>
+                    <div className="flex gap-1">
+                      {colors.heatmap.map((color, index) => (
+                        <div key={index} className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground">{copy.charts.heatmapHigh}</span>
+                  </div>
+                </>
+              ) : (
+                <AnalyticsEmptyCard
+                  icon={Calendar}
+                  title={copy.empty.heatmap.title}
+                  description={copy.empty.heatmap.description}
+                  actionLabel={copy.empty.heatmap.action}
+                  actionHref="/dashboard/today"
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="retention" className="space-y-6">
           {/* Average retrievability gauge */}
-          {fsrsStats && (
+          {hasRetentionEvidence && fsrsStats ? (
             <div className="grid md:grid-cols-3 gap-4">
               <Card className="col-span-1">
                 <CardContent className="p-5 flex flex-col items-center justify-center h-full gap-2">
-                  <p className="text-xs tracking-wide text-muted-foreground">Avg. Retrievability</p>
+                  <p className="text-xs tracking-wide text-muted-foreground">
+                    {isZh ? '平均可回忆率' : 'Avg. retrievability'}
+                  </p>
                   <p className="text-[3rem] font-bold text-emerald-500 leading-none">
                     {Math.round(fsrsStats.avgR * 100)}%
                   </p>
                   <p className="text-xs text-muted-foreground text-center">
-                    {fsrsStats.total} active words tracked by FSRS-5
+                    {isZh ? `${fsrsStats.total} 个词正在由 FSRS-5 跟踪` : `${fsrsStats.total} active words tracked by FSRS-5`}
                   </p>
                   <div className="w-full bg-muted rounded-full h-2 mt-1">
                     <div
@@ -679,23 +1124,30 @@ export default function AnalyticsPage() {
                       style={{ width: `${Math.round(fsrsStats.avgR * 100)}%` }}
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground">Target: ≥ 85%</p>
+                  <p className="text-[10px] text-muted-foreground">{isZh ? '目标：不低于 85%' : 'Target: >= 85%'}</p>
                 </CardContent>
               </Card>
 
               {/* Retrievability histogram */}
               <Card className="col-span-2">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Current Retrievability Distribution</CardTitle>
-                  <p className="text-xs text-muted-foreground">各单词当前记忆保留率分布</p>
+                  <CardTitle className="text-base">
+                    {isZh ? '当前可回忆率分布' : 'Current retrievability distribution'}
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">{copy.charts.retentionDistribution}</p>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={160}>
                     <BarChart data={fsrsStats.histData} barSize={36}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                      <Tooltip formatter={(v: number) => [`${v} words`, 'Count']} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={colors.border} />
+                      <XAxis dataKey="label" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 11 }} />
+                      <YAxis allowDecimals={false} stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 11 }} />
+                      <Tooltip
+                        contentStyle={tooltipContentStyle}
+                        labelStyle={tooltipLabelStyle}
+                        itemStyle={tooltipItemStyle}
+                        formatter={(v: number) => [isZh ? `${v} 个词` : `${v} words`, isZh ? '数量' : 'Count']}
+                      />
                       <Bar dataKey="count" name="Words">
                         {fsrsStats.histData.map((entry, i) => (
                           <Cell key={i} fill={entry.fill} />
@@ -706,68 +1158,89 @@ export default function AnalyticsPage() {
                 </CardContent>
               </Card>
             </div>
+          ) : (
+            <AnalyticsEmptyCard
+              icon={Target}
+              title={copy.empty.retention.title}
+              description={copy.empty.retention.description}
+              actionLabel={copy.empty.retention.action}
+              actionHref="/dashboard/review"
+            />
           )}
 
           {/* FSRS forgetting curve vs baseline */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">FSRS-5 vs. Baseline Forgetting Curve</CardTitle>
-              <p className="text-sm text-muted-foreground">FSRS 算法 vs. 基础遗忘曲线对比</p>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={fsrsStats?.curvePoints ?? []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis domain={[0, 100]} unit="%" />
-                  <Tooltip formatter={(v: number) => [`${v}%`]} />
-                  <Line
-                    type="monotone" dataKey="fsrs" name="FSRS-5 (your avg stability)"
-                    stroke="#10b981" strokeWidth={2.5} dot={{ fill: '#10b981', r: 3 }}
-                  />
-                  <Line
-                    type="monotone" dataKey="baseline" name="No SRS (Ebbinghaus)"
-                    stroke="#ef4444" strokeWidth={1.5} strokeDasharray="4 3"
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex gap-2">
-                <span className="text-emerald-400 text-lg">✓</span>
-                <p className="text-sm text-emerald-200/80">
-                  FSRS-5 targets <strong>90% retention</strong> at each review interval, scheduling your next review just before you would forget.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {hasRetentionEvidence && fsrsStats ? (
+            <Card>
+              <CardHeader>
+	                <CardTitle className="text-lg">
+                    {isZh ? 'FSRS-5 与基础遗忘曲线对比' : 'FSRS-5 vs. baseline forgetting curve'}
+                  </CardTitle>
+	                <p className="text-sm text-muted-foreground">
+                    {isZh ? '对比当前复习算法和没有间隔复习时的遗忘速度。' : 'Compare the current review model with a no-SRS baseline.'}
+                  </p>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={fsrsStats.curvePoints}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+                    <XAxis dataKey="day" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                    <YAxis domain={[0, 100]} unit="%" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={tooltipContentStyle}
+                      labelStyle={tooltipLabelStyle}
+                      itemStyle={tooltipItemStyle}
+                      formatter={(v: number) => [`${v}%`]}
+                    />
+                    <Line
+	                      type="monotone" dataKey="fsrs" name={isZh ? 'FSRS-5（你的平均稳定度）' : 'FSRS-5 (your avg stability)'}
+                      stroke={colors.retentionHigh} strokeWidth={2.5} dot={{ fill: colors.retentionHigh, r: 3 }}
+                    />
+                    <Line
+	                      type="monotone" dataKey="baseline" name={isZh ? '无间隔复习（艾宾浩斯）' : 'No SRS (Ebbinghaus)'}
+                      stroke={colors.baseline} strokeWidth={1.5} strokeDasharray="4 3"
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+	                <div className="mt-3 flex gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3">
+	                  <span className="text-lg text-emerald-400">✓</span>
+	                  <p className="text-sm text-[hsl(var(--success))]">
+	                    {isZh
+                        ? 'FSRS-5 会围绕每次复习后的目标保持率安排下一次复习，尽量在遗忘前提醒你。'
+                        : 'FSRS-5 targets strong retention at each review interval, scheduling your next review just before you would forget.'}
+	                  </p>
+	                </div>
+              </CardContent>
+            </Card>
+          ) : null}
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock3 className="h-5 w-5 text-emerald-500" />
-                  Best Review Window
+	                  {isZh ? '最佳复习窗口' : 'Best review window'}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">推荐复习时间窗口</p>
+                <p className="text-sm text-muted-foreground">{copy.charts.retentionWindow}</p>
               </CardHeader>
               <CardContent>
                 {reviewWindowInsight ? (
                   <div className="space-y-4">
-                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+	                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-xs tracking-wide text-green-700">
-                            Primary window
+	                            {isZh ? '主复习时段' : 'Primary window'}
                           </p>
                           <p className="mt-2 text-xl font-semibold">
-                            {reviewWindowInsight.primary.label}
+	                            {isZh ? reviewWindowInsight.primary.labelZh : reviewWindowInsight.primary.label}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {reviewWindowInsight.primary.labelZh} · {reviewWindowInsight.primary.hours}
+	                            {reviewWindowInsight.primary.hours}
                           </p>
                         </div>
-                        <Badge className="rounded-full bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-300">
-                          {Math.round(reviewWindowInsight.primary.share * 100)}% of recent activity
+	                        <Badge className="rounded-md bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-300">
+	                          {Math.round(reviewWindowInsight.primary.share * 100)}% {isZh ? '近期学习' : 'of recent activity'}
                         </Badge>
                       </div>
                       <p className="mt-4 text-sm text-muted-foreground">
@@ -776,28 +1249,34 @@ export default function AnalyticsPage() {
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-                        <p className="text-xs tracking-wide text-muted-foreground">Days observed</p>
+	                      <div className="rounded-lg border border-border/70 bg-card/60 p-4">
+	                        <p className="text-xs tracking-wide text-muted-foreground">{isZh ? '观察到的学习日' : 'Days observed'}</p>
                         <p className="mt-2 text-2xl font-semibold">{reviewWindowInsight.activeDays}</p>
                         <p className="text-sm text-muted-foreground">最近 30 天里有学习行为的天数</p>
                       </div>
-                      <div className="rounded-2xl border border-border/70 bg-card/60 p-4">
-                        <p className="text-xs tracking-wide text-muted-foreground">Backup window</p>
+	                      <div className="rounded-lg border border-border/70 bg-card/60 p-4">
+	                        <p className="text-xs tracking-wide text-muted-foreground">{isZh ? '备用时段' : 'Backup window'}</p>
                         <p className="mt-2 text-lg font-semibold">
-                          {reviewWindowInsight.secondary?.label || 'Keep current rhythm'}
+	                          {reviewWindowInsight.secondary
+                              ? (isZh ? reviewWindowInsight.secondary.labelZh : reviewWindowInsight.secondary.label)
+                              : (isZh ? '先稳定当前节奏' : 'Keep current rhythm')}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {reviewWindowInsight.secondary
-                            ? `${reviewWindowInsight.secondary.labelZh} · ${reviewWindowInsight.secondary.hours}`
-                            : '先把主时段稳定下来，再扩展第二时段。'}
+	                            ? reviewWindowInsight.secondary.hours
+	                            : (isZh ? '先把主时段稳定下来，再扩展第二时段。' : 'Stabilize the primary block before expanding to a second one.')}
                         </p>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-                    再积累几次不同时段的学习记录，系统就能开始推荐更可信的复习时间窗口。
-                  </div>
+                  <AnalyticsEmptyCard
+                    icon={Clock3}
+                    title={copy.empty.window.title}
+                    description={copy.empty.window.description}
+                    actionLabel={copy.empty.window.action}
+                    actionHref="/dashboard/today"
+                  />
                 )}
               </CardContent>
             </Card>
@@ -806,16 +1285,16 @@ export default function AnalyticsPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  Highest Forgetting Risk
+	                  {isZh ? '最高遗忘风险' : 'Highest forgetting risk'}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">未来最容易忘记的词</p>
+                <p className="text-sm text-muted-foreground">{copy.charts.risk}</p>
               </CardHeader>
               <CardContent className="space-y-3">
                 {riskWords.length > 0 ? (
                   riskWords.map((item, index) => (
                     <div
                       key={item.wordId}
-                      className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/60 px-4 py-3 md:flex-row md:items-center md:justify-between"
+	                      className="flex flex-col gap-3 rounded-lg border border-border/70 bg-card/60 px-4 py-3 md:flex-row md:items-center md:justify-between"
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
@@ -828,7 +1307,7 @@ export default function AnalyticsPage() {
                           </Badge>
                           {item.isStubborn ? (
                             <Badge variant="secondary" className="rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                              Reinforce
+	                              {isZh ? '需要补强' : 'Reinforce'}
                             </Badge>
                           ) : null}
                         </div>
@@ -847,15 +1326,19 @@ export default function AnalyticsPage() {
                                 : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
                           )}
                         >
-                          {item.riskScore}% risk
+	                          {item.riskScore}% {isZh ? '风险' : 'risk'}
                         </Badge>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-                    先完成几轮复习，系统才会开始给出更可信的遗忘风险排序。
-                  </div>
+                  <AnalyticsEmptyCard
+                    icon={AlertTriangle}
+                    title={copy.empty.risk.title}
+                    description={copy.empty.risk.description}
+                    actionLabel={copy.empty.risk.action}
+                    actionHref="/dashboard/review"
+                  />
                 )}
               </CardContent>
             </Card>
@@ -863,84 +1346,122 @@ export default function AnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="coach-impact" className="space-y-6">
-          <Card className="border-primary/20 bg-primary/[0.03]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <MessageCircleMore className="h-5 w-5 text-primary" />
-                Coach Impact
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                本周 AI 诊断、补强完成、重复错误和 FSRS 保持率的闭环信号。
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl border border-border bg-background p-4">
-                  <p className="text-xs text-muted-foreground">AI 诊断信号</p>
-                  <p className="mt-2 text-2xl font-semibold">{coachImpact.diagnosed}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">chat / quiz / practice events</p>
+          {hasCoachEvidence ? (
+            <Card className="border-primary/20 bg-primary/[0.03]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <MessageCircleMore className="h-5 w-5 text-primary" />
+                  {copy.tabs.coach}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {copy.coach.description}
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+	                  <div className="rounded-lg border border-border bg-background p-4">
+	                    <p className="text-xs text-muted-foreground">{copy.coach.diagnosed}</p>
+	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.diagnosed}</p>
+	                    <p className="mt-1 text-xs text-muted-foreground">
+                        {isZh ? '对话 / 测验 / 练习事件' : 'chat / quiz / practice events'}
+                      </p>
+	                  </div>
+	                  <div className="rounded-lg border border-border bg-background p-4">
+	                    <p className="text-xs text-muted-foreground">{copy.coach.completed}</p>
+	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.completedReinforcements}</p>
+	                    <p className="mt-1 text-xs text-muted-foreground">
+                        {isZh ? '复习卡片 + 任务完成' : 'review cards + mission tasks'}
+                      </p>
+	                  </div>
+	                  <div className="rounded-lg border border-border bg-background p-4">
+	                    <p className="text-xs text-muted-foreground">{copy.coach.repeatedErrors}</p>
+	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.repeatedErrors}</p>
+	                    <p className="mt-1 text-xs text-muted-foreground">
+                        {isZh ? '反复遗忘词' : 'stubborn FSRS items'}
+                      </p>
+	                  </div>
+	                  <div className="rounded-lg border border-border bg-background p-4">
+	                    <p className="text-xs text-muted-foreground">{copy.coach.retention}</p>
+	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.retentionPct}%</p>
+	                    <p className="mt-1 text-xs text-muted-foreground">
+                        {isZh ? '活跃词平均保持率' : 'active FSRS average'}
+                      </p>
+	                  </div>
                 </div>
-                <div className="rounded-xl border border-border bg-background p-4">
-                  <p className="text-xs text-muted-foreground">已完成补强</p>
-                  <p className="mt-2 text-2xl font-semibold">{coachImpact.completedReinforcements}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">review cards + mission tasks</p>
-                </div>
-                <div className="rounded-xl border border-border bg-background p-4">
-                  <p className="text-xs text-muted-foreground">重复错误风险</p>
-                  <p className="mt-2 text-2xl font-semibold">{coachImpact.repeatedErrors}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">stubborn FSRS items</p>
-                </div>
-                <div className="rounded-xl border border-border bg-background p-4">
-                  <p className="text-xs text-muted-foreground">预测保持率</p>
-                  <p className="mt-2 text-2xl font-semibold">{coachImpact.retentionPct}%</p>
-                  <p className="mt-1 text-xs text-muted-foreground">active FSRS average</p>
-                </div>
-              </div>
 
-              <div className="rounded-xl border border-border bg-background p-4">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                  Next coaching focus
-                </p>
-                <p className="mt-2 text-lg font-semibold capitalize">{coachImpact.primaryFocus}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  下一轮 Today 与 Coach Studio 会优先围绕这个弱项生成诊断、训练和复盘动作。
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                {coachImpact.primaryFocus ? (
+	                  <div className="rounded-lg border border-border bg-background p-4">
+                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {copy.coach.focus}
+                    </p>
+                    <p className="mt-2 text-lg font-semibold capitalize">{coachImpact.primaryFocus}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {copy.coach.focusDescription}
+                    </p>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : (
+            <AnalyticsEmptyCard
+              icon={MessageCircleMore}
+              title={copy.empty.coach.title}
+              description={copy.empty.coach.description}
+              actionLabel={copy.empty.coach.action}
+              actionHref="/dashboard/chat"
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="insights" className="space-y-6">
-          {/* AI Weekly Report */}
+          {/* Evidence-backed Weekly Report */}
           <Card className="bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-emerald-500" />
-                AI 周报
+                {copy.insights.weeklyReport}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="rounded-xl bg-background/50 p-3">
-                  <p className="text-2xl font-bold text-emerald-500">{weeklyReport.totalWordsThisWeek}</p>
-                  <p className="text-xs text-muted-foreground">本周单词</p>
+	                <div className="rounded-lg bg-background/50 p-3">
+                  <p className="text-2xl font-bold text-emerald-500">{weeklyReport.wordsStrengthened}</p>
+                  <p className="text-xs text-muted-foreground">{copy.insights.wordsStrengthened}</p>
                 </div>
-                <div className="rounded-xl bg-background/50 p-3">
+	                <div className="rounded-lg bg-background/50 p-3">
                   <p className="text-2xl font-bold text-blue-500">{weeklyReport.activeDays}/7</p>
-                  <p className="text-xs text-muted-foreground">活跃天数</p>
+                  <p className="text-xs text-muted-foreground">{copy.insights.activeDays}</p>
                 </div>
-                <div className="rounded-xl bg-background/50 p-3">
-                  <p className="text-2xl font-bold text-purple-500">{weeklyReport.totalXpThisWeek}</p>
-                  <p className="text-xs text-muted-foreground">本周 XP</p>
+	                <div className="rounded-lg bg-background/50 p-3">
+                  <p className="text-2xl font-bold text-purple-500">{weeklyReport.reviewDebtTrend.count}</p>
+                  <p className="text-xs text-muted-foreground">{copy.insights.reviewDebt}</p>
                 </div>
               </div>
               <div className="space-y-2">
-                {weeklyReport.highlights.map((h, i) => (
-                  <p key={i} className="text-sm text-muted-foreground">• {h}</p>
-                ))}
+                {weeklyReport.highlights.length > 0 ? weeklyReport.highlights.map((h, i) => (
+                  <p key={i} className="text-sm text-muted-foreground">• {h.zh}</p>
+                )) : (
+                  <p className="text-sm text-muted-foreground">
+                    {copy.insights.insufficient}
+                  </p>
+                )}
               </div>
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
-                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{weeklyReport.suggestion}</p>
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+                <p className="text-xs text-muted-foreground">
+                  {weeklyReport.strongestSkill
+                    ? `${copy.insights.strongestPrefix}: ${isZh ? weeklyReport.strongestSkill.labelZh : weeklyReport.strongestSkill.label}`
+                    : copy.insights.strongestWaiting}
+                  {' · '}
+                  {weeklyReport.weakestPattern
+                    ? `${copy.insights.weakestPrefix}: ${isZh ? weeklyReport.weakestPattern.labelZh : weeklyReport.weakestPattern.label}`
+                    : (isZh ? weeklyReport.reviewDebtTrend.labelZh : weeklyReport.reviewDebtTrend.label)}
+                </p>
+                <p className="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                  {isZh ? weeklyReport.nextRecommendation.zh : weeklyReport.nextRecommendation.en}
+                </p>
+                <Button size="sm" className="mt-3 rounded-md" asChild>
+                  <Link to={weeklyReport.nextRecommendation.href}>{copy.insights.openNext}</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -949,51 +1470,71 @@ export default function AnalyticsPage() {
             {/* Vocabulary Status Distribution */}
             <Card>
               <CardHeader>
-                <CardTitle>词汇掌握分布</CardTitle>
+                <CardTitle>{copy.insights.vocabDistribution}</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={vocabDistribution} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
-                    <XAxis type="number" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
-                    <YAxis type="category" dataKey="nameZh" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} width={60} />
-                    <Tooltip
-                      contentStyle={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '8px', color: colors.foreground }}
-                    />
-                    <Bar dataKey="count" radius={[0, 6, 6, 0]}>
-                      {vocabDistribution.map((entry, i) => (
-                        <Cell key={i} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                {hasVocabularyEvidence ? (
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={vocabDistribution} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+                      <XAxis type="number" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
+                      <YAxis type="category" dataKey="nameZh" stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} width={60} />
+                      <Tooltip
+                        contentStyle={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '8px', color: colors.foreground }}
+                      />
+                      <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                        {vocabDistribution.map((entry, i) => (
+                          <Cell key={i} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <AnalyticsEmptyCard
+                    icon={BookOpen}
+                    title={copy.empty.vocabulary.title}
+                    description={copy.empty.vocabulary.description}
+                    actionLabel={copy.empty.vocabulary.action}
+                    actionHref="/dashboard/today"
+                  />
+                )}
               </CardContent>
             </Card>
 
             {/* Skill Radar Chart */}
             <Card>
               <CardHeader>
-                <CardTitle>能力雷达图</CardTitle>
+                <CardTitle>{copy.insights.skillRadar}</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={260}>
-                  <RadarChart data={radarData} outerRadius="75%">
-                    <PolarGrid stroke={colors.border} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: colors.mutedForeground, fontSize: 11 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: colors.mutedForeground, fontSize: 10 }} />
-                    <Radar
-                      name="Score"
-                      dataKey="value"
-                      stroke="#10b981"
-                      fill="#10b981"
-                      fillOpacity={0.25}
-                      strokeWidth={2}
-                    />
-                    <Tooltip
-                      contentStyle={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '8px', color: colors.foreground }}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+                {hasVocabularyEvidence || hasActivitySignal ? (
+                  <ResponsiveContainer width="100%" height={260}>
+                    <RadarChart data={radarData} outerRadius="75%">
+                      <PolarGrid stroke={colors.border} />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: colors.mutedForeground, fontSize: 11 }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: colors.mutedForeground, fontSize: 10 }} />
+                      <Radar
+                        name="Score"
+                        dataKey="value"
+                        stroke={colors.retentionHigh}
+                        fill={colors.retentionHigh}
+                        fillOpacity={0.25}
+                        strokeWidth={2}
+                      />
+                      <Tooltip
+                        contentStyle={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '8px', color: colors.foreground }}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <AnalyticsEmptyCard
+                    icon={Target}
+                    title={copy.empty.radar.title}
+                    description={copy.empty.radar.description}
+                    actionLabel={copy.empty.radar.action}
+                    actionHref="/dashboard/today"
+                  />
+                )}
               </CardContent>
             </Card>
           </div>

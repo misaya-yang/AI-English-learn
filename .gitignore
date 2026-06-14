@@ -8,6 +8,15 @@ functional-report*.json
 codex-skill-build/
 .playwright-mcp/
 .superpowers/
+.claude/
+product-audit-*/**/*.png
+product-audit-*/**/*.jpg
+product-audit-*/**/*.jpeg
+product-audit-*/**/*.webp
+product-ui-audit-*/**/*.png
+product-ui-audit-*/**/*.jpg
+product-ui-audit-*/**/*.jpeg
+product-ui-audit-*/**/*.webp
 /home-desktop.png
 /login-desktop.png
 /login-mobile.png

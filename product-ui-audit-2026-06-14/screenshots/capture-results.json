@@ -1,0 +1,934 @@
+[
+  {
+    "slug": "01-home",
+    "route": "/",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/01-home-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/",
+      "title": "VocabDaily",
+      "h1": "把英语练到真正记得住。",
+      "body": "Skip to content\nVocabDaily\n如何运作\n每日单词\n定价\n切换外观\n切换语言\n登录\n面向英语学习者的每日工作台\n把英语练到真正记得住。\n\n每天 15 分钟，把词汇、写作、口语整合到一个学习节奏里。\n\nVocabDaily 每天告诉你该复习什么、接下来学什么，并用 AI 教练反馈你真正练过的写作和口语。\n\n开始今天的学习\n试一节样课\n\n免费开始 · 无需信用卡\n\nFSRS 到期复习\nIELTS 写作反馈\n平均每天 15 分钟\n\n今日\n\n典型学习日\n\n示例任务：登录后会看到你的真实队列\n\n12 个到期复习\n\n到期复习\n\n约 6 分钟\n\n5 个新词\n\n新词学习\n\n约 5 分钟\n\n1 个教练任务\n\n教练任务\n\n约 4 分钟\n\n预计 15 分钟\n\n试样课\n\n本周可能学到的词汇\n\nnevertheless\nadv.\n\n\"The exam was tough; nevertheless, she passed with flying colors.\"\n\nmitigate\nv.\n\n\"Small daily habits mitigate the stress of exam season.\"\n\ncompelling\nadj.\n\n\"A compelling argument needs evidence, not adjectives.\"\n\nVocabDaily 如何运作\n\n三步把零散学习变成稳定节奏。\n\n复习到期内容\n\n基于 FSRS 的间隔重复告诉你今天该复测哪些词，不靠猜。\n\n用任务练习\n\n短测、听力、写作任务会围绕你刚学过的词和弱项生成。\n\n获得教练反馈\n\nAI 教练复盘答案、安排重练，并把错误转成后续复习。\n\nFSRS 间隔记忆算法\nAI 教练实时反馈\nIELTS 考试专项训练\n本地数据可用\n\nFSRS 间隔记忆·教练评分重练·错题驱动练习\n\n建立一个能坚持的每日英语习惯。\n\n从今天开始，用一个清晰的工作流学英语。\n\n开始今天的学习\nVocabDaily\n\n© 2026 VocabDaily。保留所有权利。\n\n服务条款\n/\n隐私政策",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 1706,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "02-word-of-the-day",
+    "route": "/word-of-the-day",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/02-word-of-the-day-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/word-of-the-day",
+      "title": "VocabDaily",
+      "h1": "2026年6月14日星期日",
+      "body": "Skip to content\nVocabDaily\n开始学习\n切换外观\n切换语言\n每日单词\n2026年6月14日星期日\n\n每天一个高价值词，练完再进入你的真实复习队列。\n\nB2\nv.\nreinforce\n\n/ˌriːɪnˈfɔːs/\n\n定义\n例句\n相关\n更多\n定义\n\nto make something stronger or more effective\n\n加强；巩固；强化\n\n保存到我的词库\n免费开始\n让教练讲这个词\n\n注册后可以保存单词、追踪进度，并让 AI 教练安排复习。\n\n公开词库样例\n\n这些是公开样例词，不是你的个人学习历史。\n\n2026-06-12\n\naccommodate\n\nB2\n\n2026-06-11\n\nadjust\n\nB1\n\n2026-06-10\n\nadvertise\n\nB1\n\n2026-06-09\n\nafternoon\n\nA1\n\n2026-06-08\n\naggressive\n\nB2\n\n2026-06-07\n\nair\n\nA1\n\n2026-06-06\n\nalive\n\nA2\n\n2026-06-05\n\nalso\n\nA1\n\n2026-06-04\n\namong\n\nB1\n\n2026-06-03\n\nangry\n\nA1\n第 1 页，共 3\nVocabDaily\n\n© 2026 VocabDaily。保留所有权利。\n\n服务条款\n/\n隐私政策",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 1640,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "03-sample-lesson",
+    "route": "/demo",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/03-sample-lesson-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/demo",
+      "title": "VocabDaily",
+      "h1": "先体验一次真实学习循环",
+      "body": "Skip to content\nVocabDaily\n切换外观\n切换语言\n返回首页\n60 秒样课\n先体验一次真实学习循环\n\n先看词义，再做一次回想。答完后你会看到 VocabDaily 如何把结果转成后续复习。\n\n今日样词\n\nmitigate\nv.\n/ˈmɪtɪɡeɪt/\n\n减轻；缓和；降低严重性\n\n每天的小习惯可以减轻考试压力。\n\nmitigate risk\n\n回想练习\n\nSmall daily habits can ___ exam stress.\n\n输入缺失的单词\n检查答案",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "04-pricing",
+    "route": "/pricing",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/04-pricing-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/pricing",
+      "title": "VocabDaily",
+      "h1": "选择你的学习方案",
+      "body": "Skip to content\nVocabDaily\n学习工作台\n切换外观\n切换语言\n登录\n免费开始\n定价与会员\n选择你的学习方案\n\n免费版跑闭环，Pro 做深度输出、诊断和周计划。\n\n免费开始，Pro 上线后再升级。\n\nFREE 负责什么\n\n免费版用于跑通每日闭环：今日任务、复习队列、核心练习和基础进度。\n\nPRO 负责什么\n\nPro 用于需要考试级反馈、深度诊断、自定义材料和周计划的学习者。\n\nPro 订阅暂未开放\n\n我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用， 支付服务真实可用后，本页会显示明确的升级入口。\n\n当前方案\n\n免费版\n\n免费版\n按月\n按年省 20%\n免费版\n\n跑通每日学习闭环。\n\n$0\n/ 月\n每日任务：新词 + 复习\nFSRS 复习队列与基础分析\n有限 AI 教练与考试反馈额度\n核心词库、练习与每日单词\n基于证据的周报预览\n–\n不限量 AI 教练\n–\nIELTS 写作与口语评分\n–\n进阶分析与错因图谱\n–\n自定义词书导入\n–\n自动周计划\n免费开始\n最受欢迎\n专业版\n\n面向考试级反馈与学习规划。\n\n$9.99\n/ 月\n不限量 AI 教练与错题恢复接力\nIELTS 写作与口语评分量表\n进阶分析：复习债、技能趋势、错因图谱\n自定义词书导入 + Anki / CSV 导出\n下一周期周计划与证据周报\n全部练习模式与优先生成\n\n暂未开放\n\nPro 将围绕 IELTS 评分、进阶分析、自定义词书和周计划开放；免费版可正常使用。\n\n结账入口会在真实支付服务接好后出现。\n\nPro 开放时通知我\n\n加入 Pro 意向名单。这里只记录产品意向，不会发起支付。\n\n常见问题\n为什么现在还不能订阅？\n\n我们正在完成支付服务的配置。在此之前，免费版完全可用；只有真实支付服务准备好后，本页才会开放结账入口。\n\nPro 上线后我现在的数据会保留吗？\n\n会保留。您的学习记录、词汇和历史数据与订阅方案无关，升级后仅权益发生变化。\n\n订阅功能上线后可以随时取消吗？\n\n可以。您可以随时取消，并在当前计费周期结束前继续享有 Pro 权益。\n\n将支持哪些支付方式？\n\nStripe 将作为主要的国际支付通道，支付宝已在路线图上。我们只会在某种方式能完整完成真实扣款后才启用。\n\n需要企业或学校方案？请先使用免费版完成学习闭环验证。\n\n免费开始\nVocabDaily\n\n© 2026 VocabDaily · 英语学习工作台\n\n服务条款\n/\n隐私政策",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 2558,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "05-terms",
+    "route": "/terms",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/05-terms-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/terms",
+      "title": "VocabDaily",
+      "h1": "服务条款",
+      "body": "Skip to content\nVocabDaily\n学习工作台\n切换外观\n切换语言\n返回注册\n发布前需复核\n服务条款\n\n这是一份上线前可读草稿，用来替换注册流程中的占位链接。正式发布前仍需法务复核。\n\n产品\nVocabDaily\n生效日期\n2026-06-13\n联系占位\n[support contact pending legal review]\n产品状态\n\nVocabDaily 是一款英语学习应用，覆盖词汇复习、每日练习、AI 教练反馈和考试备考流程。\n\n产品中展示的部分付费或 Pro 功能尚未开放。只有在真实支付服务、价格配置和发布检查完成后，结账入口才可以开启。\n\n账号责任\n\n你需要妥善保管登录凭据，并以合法、尊重他人的方式使用本应用。\n\n请不要上传无权使用的内容，也不要使用本应用生成攻击性、欺骗性或违法内容。\n\n学习与 AI 输出\n\nAI 反馈用于辅助学习，可能不完整或不准确。涉及重要语言表达或考试判断时，学习者应自行判断并核实。\n\n进度、复习时间和推荐结果会依赖已有学习数据，并可能随产品迭代而调整。\n\n订阅与取消\n\n在付费方案准备期间，免费版仍可使用。\n\n付费方案上线后，订阅价格、续费周期、取消方式、退款处理和方案限制必须在结账前清楚展示。\n\n在最终账单支持文案通过前，订阅问题应指向联系占位：[support contact pending legal review]。\n\n发布阻断：这份文本必须在生产发布前由法务、安全和运营负责人复核。",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 1184,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "06-privacy",
+    "route": "/privacy",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/06-privacy-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/privacy",
+      "title": "VocabDaily",
+      "h1": "隐私政策",
+      "body": "Skip to content\nVocabDaily\n学习工作台\n切换外观\n切换语言\n返回注册\n发布前需复核\n隐私政策\n\n这是一份上线前可读草稿，用来替换注册流程中的占位链接。正式发布前仍需法务复核。\n\n产品\nVocabDaily\n生效日期\n2026-06-13\n联系占位\n[support contact pending legal review]\n我们使用的数据\n\nVocabDaily 可能使用账号信息、个人设置、学习目标、词书数据、复习记录、练习答案、错题和 AI 教练对话来提供学习体验。\n\n导入词汇、生成练习内容和本地离线数据可能用于个性化复习队列和推荐。\n\n使用目的\n\n数据用于用户认证、保存进度、安排间隔重复、推荐下一步行动、提供 AI 反馈、排查可靠性问题以及支持产品安全。\n\n付费结账开启后，支付相关数据应只由已配置的支付服务商处理。\n\n存储与控制\n\n本应用支持本地/离线学习数据，也可能在配置后使用云端账号数据。\n\n学习者应能在设置中清除本地学习数据。云端删除和导出流程需要在生产发布前明确最终运营负责人。\n\n联系方式与复核状态\n\n隐私请求在最终支持渠道获批前，应指向联系占位：[support contact pending legal review]。\n\n本政策是产品可用草稿，在法务、安全和运营负责人批准前仍属于发布阻断项。\n\n发布阻断：这份文本必须在生产发布前由法务、安全和运营负责人复核。",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 1172,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "07-login",
+    "route": "/login",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/07-login-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/login",
+      "title": "VocabDaily",
+      "h1": "欢迎回来",
+      "body": "Skip to content\n切换外观\n切换语言\n欢迎回来\n\n登录后继续你今天的学习节奏。\n\n邮箱\n密码\n忘记密码？\n登录\n或\n体验本地演示\n\n不会创建真实账号，演示数据仅保存在当前浏览器。\n\n还没有账号？ 注册\n返回首页\nVocabDaily\n学习工作台\n把每天的复习、练习、教练反馈整合到一个学习工作台。\n\nVocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。\n\n· 基于 FSRS 的间隔重复\n· 教练批改的写作与口语重练\n· 基于错题的每日学习任务",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "08-register",
+    "route": "/register",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/08-register-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/register",
+      "title": "VocabDaily",
+      "h1": "创建账号",
+      "body": "Skip to content\n切换外观\n切换语言\n创建账号\n\n免费开始，几分钟就能养成每天学英语的习惯。\n\n昵称\n邮箱\n密码\n至少 8 个字符\n包含大写字母\n包含小写字母\n包含数字\n包含特殊字符\n确认密码\n同意\n服务条款\n与\n隐私政策\n创建账号\n已有账号？ 立即登录\n返回首页\nVocabDaily\n学习工作台\n把每天的复习、练习、教练反馈整合到一个学习工作台。\n\nVocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。\n\n· 基于 FSRS 的间隔重复\n· 教练批改的写作与口语重练\n· 基于错题的每日学习任务",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 998,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "09-magic-link",
+    "route": "/magic-link",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/09-magic-link-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/magic-link",
+      "title": "VocabDaily",
+      "h1": "使用魔法链接登录",
+      "body": "Skip to content\n切换外观\n切换语言\n使用魔法链接登录\n\n无需密码，我们会发送安全登录链接到你的邮箱。\n\n邮箱\n发送登录链接\n更喜欢密码登录？ 密码登录\n返回首页\nVocabDaily\n学习工作台\n把每天的复习、练习、教练反馈整合到一个学习工作台。\n\nVocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。\n\n· 基于 FSRS 的间隔重复\n· 教练批改的写作与口语重练\n· 基于错题的每日学习任务",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "10-onboarding",
+    "route": "/onboarding",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/10-onboarding-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/login?redirect=%2Fonboarding",
+      "title": "VocabDaily",
+      "h1": "欢迎回来",
+      "body": "Skip to content\n切换外观\n切换语言\n欢迎回来\n\n登录后继续你今天的学习节奏。\n\n邮箱\n密码\n忘记密码？\n登录\n或\n体验本地演示\n\n不会创建真实账号，演示数据仅保存在当前浏览器。\n\n还没有账号？ 注册\n返回首页\nVocabDaily\n学习工作台\n把每天的复习、练习、教练反馈整合到一个学习工作台。\n\nVocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。\n\n· 基于 FSRS 的间隔重复\n· 教练批改的写作与口语重练\n· 基于错题的每日学习任务",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "viewport": "desktop",
+    "slug": "login-demo-state",
+    "route": "/login?redirect=%2Fdashboard%2Ftoday",
+    "loggedIn": true,
+    "url": "http://127.0.0.1:5174/dashboard/today"
+  },
+  {
+    "slug": "11-today",
+    "route": "/dashboard/today",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/11-today-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/today",
+      "title": "VocabDaily",
+      "h1": "完成今日新词任务",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n今日\n\n任务\n\n0%\n\n到期\n\n0\n\n连续\n\n0\n\n核心学习\n\n今日单词\n\n复习\n\n练习\n\n专项技能\n\n阅读\n\n听力\n\n语法\n\n发音练习\n\n写作练习\n\n工具\n\nCoach\n\n考试冲分\n\n我的词库\n\n0\nLv 1\n0 / 200 XP\nLv 1\n\nDemo Learner\n\n演示\n\nLevel 1\n\nD\n今日\n\n今天最值得做的一步，从这里开始。\n\nEN\n中\n开始练习\n切换外观\nD\n为什么是这一步\n今日新词\n\n趁状态还在，把今日新词学完再休息。\n\n今日任务 · 6月14日周日\n完成今日新词任务\n\n教练会把今日词汇控制在可完成、可复习的范围内。 今天重点是在新词推进和复习压力之间保持平衡。 当前词书《A1基础》里还有 10 个建议新词待推进。 练习时优先使用例句、结构模式和对比线索。\n\n继续今日任务\n打开家教\n前往考试冲分\n\n任务进度\n\n0%\n\n保持节奏\n\n信号来源\n\n考试目标\n\n预计用时\n\n20 min\n\n今日剩余\n\n10 / 10\n\n到期复习\n\n0\n目标: general_improvement\n偏好: 视觉线索\n到期复习: 0\n今日词汇: 0/10\n词典: after · A1\n\n词汇工作区\n\nafter · 当前主练单词\n\n今日进度\n\n0%\n\n词汇完成度\n\n0 / 10\n\n0/10\n\n今日已学 / 今日计划\n\n还需 20 分钟\n\n已学会\n\n0\n\n较难\n\n0\n\n已收藏\n\n0\nA1\n\n当前单词\n\nafter\n\nprep./conj.\n\n/ˈæftər/\n\n点击翻面，查看释义、例句和搭配\n标记较难\n标记学会\n收藏\n分享\n\n词典焦点\n\n今日词汇知识点\n\nafter\nA1\n\nafter · A1 · 在…之后\n\ndaily\nIELTS general\n打开词典条目\n\n学习背景\n\n当前词书\n\nA1基础\n\n今日词量 10 / 10\n\n到期复习\n\n0 个到期复习\n\n今日节奏\n\n稳步期\n\nSteady\n\nBuild depth with a balanced mix of new words, review, and one targeted practice.\n\n弱项地图\n\n先完成一次练习或写作反馈，系统才会生成更可信的弱项图谱。\n\n推荐补强微课：Task 2 Argument Paragraph Basics\n\n18 分钟\n\n去补强\n\n7日活跃度\n\nMon\nTue\nWed\nThu\nFri\nSat\nSun",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "12-review",
+    "route": "/dashboard/review",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/12-review-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/review",
+      "title": "VocabDaily",
+      "h1": null,
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n复习\n\n任务\n\n0%\n\n到期\n\n0\n\n连续\n\n0\n\n核心学习\n\n今日单词\n\n复习\n\n练习\n\n专项技能\n\n阅读\n\n听力\n\n语法\n\n发音练习\n\n写作练习\n\n工具\n\nCoach\n\n考试冲分\n\n我的词库\n\n0\nLv 1\n0 / 200 XP\nLv 1\n\nDemo Learner\n\n演示\n\nLevel 1\n\nD\n复习\n\n清掉到期复习，别让遗忘继续堆积。\n\nEN\n中\n继续复习\n切换外观\nD\n\nFSRS 复习队列\n\n当前没有到期 FSRS 复习\n\n记忆曲线说今天不需要再回头看这些词。建议去 Practice 做一次轻量巩固，把今天学的内容固化下来；如果有教练复习也会显示在右侧。\n\n到期 FSRS 卡\n\n0\n回到 Today\n做巩固练习",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "13-practice",
+    "route": "/dashboard/practice",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/13-practice-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/practice",
+      "title": "VocabDaily",
+      "h1": "先锁定今天最值得练的一种模式。",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n练习\n\n任务\n\n0%\n\n到期\n\n0\n\n连续\n\n0\n\n核心学习\n\n今日单词\n\n复习\n\n练习\n\n专项技能\n\n阅读\n\n听力\n\n语法\n\n发音练习\n\n写作练习\n\n工具\n\nCoach\n\n考试冲分\n\n我的词库\n\n0\nLv 1\n0 / 200 XP\nLv 1\n\nDemo Learner\n\n演示\n\nLevel 1\n\nD\n练习\n\n把弱项转成短练习，稳定补强。\n\nEN\n中\n返回今日\n切换外观\nD\n练习\n先锁定今天最值得练的一种模式。\n查看此模式\n\n推荐\n\n选择题\n\n预计\n\n6 分钟\n\n题量\n\n10\n\n练习模式\n\nMultiple Choice\n推荐\n选择题\nFill in the Blank\n填空题\nListening Quiz\n听力测验\nWriting Practice\n写作练习\n\n今日推荐\n\nMultiple Choice · 选择题\n视觉优先\n10 题\n6 分钟\n\n训练目标\n\nTest your knowledge with multiple choice questions\n\n推荐依据\n\n视觉线索\n\n预计时长\n\n6 分钟\n\n今日素材\n\n10 个词\n查看此模式\n\n课程进度\n\n到期\n\n0\n\n待练\n\n10\n\n连续\n\n0\n\n当前模式\n\n选择题\n\n适合先热身，进入成本最低。\n\n当前阶段\n\n先选模式",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "14-chat",
+    "route": "/dashboard/chat",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/14-chat-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/chat",
+      "title": "VocabDaily",
+      "h1": "雅思教练工作室",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n教练\n\n做一轮带上下文的引导学习，把问题讲透。\n\n切换外观\n切换语言\n历史对话\n\n暂无历史对话\n\n点击 + 开始新对话\n\n删除所有对话\n雅思教练工作室\n\n诊断 / 训练 / 复盘 · 准备就绪\n\n新对话\n\nCOACH BRIEF\n\n诊断：先处理 ielts coach\n\ngeneral_improvement · 先找出现在最值得训练的雅思弱项。\n\n到期\n\n0\n\n错误\n\n0\n\n保持\n\n0%\n\nPractice your weak spot: workplace_English, daily_communication\nTargeting recent mistake patterns compounds faster than random drills.\nPlan today around B1 level\nA two-minute plan beats an hour of unfocused practice.\nQuick memory boost\nFive flashcards now, durable recall later.\nAI English Tutor\n\n我是你的 AI 英语家教，由 DeepSeek 驱动。我可以帮助你学习词汇、语法、发音等等。\n\n今日任务\n~8 min\n\n学习今天的新词\n\n今日新词任务还没完成。\n\n让教练带我做\n今日任务\n~8 min\n\n做一组 5 题快速测验\n\n检索式测验是把今天学到的内容固化下来最快的方式。\n\n让教练带我做\n今日任务\n~8 min\n\n完成今日间隔复习\n\n今日任务里有一段间隔复习还没完成。\n\n让教练带我做\n\n解释 \"affect\" 和 \"effect\" 的区别\n\nExplain the difference between \"affect\" and \"effect\"\n\n给我 5 个 \"make\" 的搭配词\n\nGive me 5 collocations with \"make\"\n\n创建一个餐厅的简短对话\n\nCrea",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "15-exam",
+    "route": "/dashboard/exam",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/15-exam-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/exam",
+      "title": "VocabDaily",
+      "h1": "考试冲分 · IELTS Exam Prep",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n考试冲分\n\n冲分路线、仿真题和结构化反馈都在这里。\n\n继续\n切换外观\n切换语言\nPlan FREE\n连续学习 0 天\n本周模拟 0 次\n考试冲分 · IELTS Exam Prep\n\n先确定当前回合，再进入写作工作台，最后根据反馈做补救和再练。\n\n目标 Band\n\n0.0/6.5\n\n0%\n\n先完成一次写作评分，建立你的弱项图谱和下一步训练路径。\n\n当前路线\n\nIELTS Writing Foundation\n\nTask 2 Argument Paragraph Basics\n\n当前单元完成度\n0%\n本轮建议任务\nTask 2\n今日用量：\n评分反馈 0/2\n仿真题 0/2\n补救微课 0/1\n升级会员\n继续今日写作\n开始一次完整仿真\n查看弱项图谱\n\n路线选择\n\n选择冲分轨道\n\n先定 Band 区间和 skill，再决定这轮写作应该站在哪个单元。\n\nIELTS Writing Foundation\n\n6.0-6.5 · writing\n\n0%\n\nIELTS Writing Advanced\n\n7.0-7.5 · writing\n\n0%\n\n练习单元\n\n按单元推进，不要一口气全练\n\nTask 2 Argument Paragraph Basics\n\nB1 · 18 min · 0% 完成\n\nTask 2 Argument Paragraph Basics\n\nB1 · 18 min\n\n0%\n\nTask 1 Trends and Comparisons\n\nB1 · 16 min\n\n0%\n\n策略规划\n\n先把这次冲分回合排清楚\n\n从轨道、题型、话题和时间预算开始。先确定这次要练什么，再进入写作工作台，避免一上来就被所有工具打断。\n\n概览\n写作\n结果\n洞察\nMedium\n随机题\n生成仿真题\n进入写作工作台\n\n当前题目\n\n当前为手动训练模式\n\nTask 2\n\nSome people think governments should invest more in public transpor",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "16-vocabulary",
+    "route": "/dashboard/vocabulary",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/16-vocabulary-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/vocabulary",
+      "title": "VocabDaily",
+      "h1": "词典",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n词汇\n\n管理词书、导入 deck、维护你的底层词汇资产。\n\n继续\n切换外观\n切换语言\n词典\n\n词典内核、词书与可复习词汇资产 · 177 个词条\n\nAdd Word\n导入 Anki (.apkg)\n导入词书\n导出\n词典与词书管理\n\nA1基础\n\n内置\n当前词书\n\n20 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\nA2高频\n\n内置\n\n21 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\nB1核心\n\n内置\n\n55 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\n商务英语\n\n内置\n\n27 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\n科技英语\n\n内置\n\n3 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\nIELTS学术核心\n\n内置\n\n73 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\nAll Status\nAll Topics\n\n177\n\n总词数\n\n0\n\n已掌握\n\n0\n\n复习中\n\n0\n\n学",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "17-analytics",
+    "route": "/dashboard/analytics",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/17-analytics-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/analytics",
+      "title": "VocabDaily",
+      "h1": "学习进度",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n数据分析\n\n查看真实学习数据，而不是随机生成的好看图表。\n\n继续\n切换外观\n切换语言\n学习进度\n\n查看真实学习数据，而不是随机生成的好看图表。\n\n本周\n\n总单词数\n\n0\n\n+0\n\n已掌握\n\n0\n\n0%\n\n连续学习\n\n0 天\n\n从今天开始\n\n总经验值\n\n0\n\n等级 1\n等级 1 - Novice\n0 总 XP\n\n0 / 100 XP — 100 XP 升到等级 2\n\n概览\n词汇\n记忆保留\nCoach Impact\nAI 洞察\n成就\n本周活跃度\n\n本周活动\n\n还没有活动曲线\n完成一次 Today、Review 或 Practice 后，这里才会显示真实活动趋势。\n打开 Today\n主题分布\n\n来自已完成学习证据的主题\n\n还没有主题证据\n主题分布只使用你真正学过或复习过的词，不会用今日候选词伪装成历史。\n开始今日词汇\n学习时长\n\n学习时间\n\n还没有学习时长\n完成一个短任务后，系统会把用时沉淀到这里。\n做一次短练习",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "18-memory",
+    "route": "/dashboard/memory",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/18-memory-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/memory",
+      "title": "VocabDaily",
+      "h1": "记忆中心",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n记忆\n\n管理长期记忆，决定 AI 该记住什么。\n\n继续\n切换外观\n切换语言\n记忆中心\n\n管理 AI 对你学习状态的长期记忆\n\n置顶 0\n总计 0\n全部\n目标\n薄弱点\n偏好\n用户画像\n工具事实\n错误轨迹\n刷新\n清理过期记忆\n隐私优先，可查可删\n登录状态已失效，请重新登录后再试。\n\n暂无记忆数据",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "19-reading",
+    "route": "/dashboard/reading",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/19-reading-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/reading",
+      "title": "VocabDaily",
+      "h1": "IELTS 学术阅读",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n阅读\n\nIELTS 阅读理解精读训练，提升阅读速度与准确率。\n\n继续\n切换外观\n切换语言\n\n阅读模块\n\nIELTS 学术阅读\n\n选择文章或用 AI 生成新文章\n\nThe Psychology of Memory\n\nPsychology\n\nB2\n12 min\n6 questions\n·\n3 T/F/NG\n·\n2 MCQ\n·\n1 Short answer\n\nRenewable Energy Transitions\n\nEnvironment & Technology\n\nC1\n14 min\n6 questions\n·\n3 T/F/NG\n·\n2 MCQ\n·\n1 Short answer\n\nThe Rise of Urban Farming\n\nSociety & Environment\n\nB1\n10 min\n6 questions\n·\n3 T/F/NG\n·\n2 MCQ\n·\n1 Short answer\n用 AI 生成新文章",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "20-listening",
+    "route": "/dashboard/listening",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/20-listening-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/listening",
+      "title": "VocabDaily",
+      "h1": "听力练习",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n听力\n\nIELTS 听力理解训练，练习不同口音和题型。\n\n继续\n切换外观\n切换语言\n听力练习\n\nIELTS 学术听力 — 音频片段与理解题\n\nB2\nEnvironment & Society\n\nUrban Green Spaces\n\nA lecture excerpt on the psychological benefits of parks in cities\n\n~90 sec\n5 questions\nB1\nHealth & Science\n\nThe Science of Sleep\n\nAn interview excerpt with a sleep researcher\n\n~80 sec\n4 questions\nC1\nTechnology & Medicine\n\nArtificial Intelligence in Healthcare\n\nA seminar presentation on diagnostic AI systems\n\n~2 min\n5 questions",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "21-grammar",
+    "route": "/dashboard/grammar",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/21-grammar-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/grammar",
+      "title": "VocabDaily",
+      "h1": "语法",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n语法\n\n语法规则讲解与填空练习，系统巩固语法基础。\n\n继续\n切换外观\n切换语言\n语法\n\n语法规则、例句与填空练习\n\n全部\n冠词\n时态\n介词\n条件句\n被动语态\n情态动词\n冠词\nB1\n\nDefinite vs Indefinite Articles\n\n定冠词与不定冠词\n\n时态\nB2\n\nPresent Perfect vs Simple Past\n\n现在完成时 vs 一般过去时\n\n介词\nB1\n\nPrepositions of Time: in / on / at\n\n时间介词：in / on / at\n\n条件句\nB2\n\nSecond Conditional\n\n第二条件句\n\n被动语态\nB2\n\nPassive Voice — Present and Past\n\n被动语态——现在时与过去时\n\n情态动词\nC1\n\nModal Verbs for Deduction\n\n情态动词表推断",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "22-leaderboard",
+    "route": "/dashboard/leaderboard",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/22-leaderboard-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/leaderboard",
+      "title": "VocabDaily",
+      "h1": "排行榜",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n排行榜\n\n查看学习排行榜，和其他学习者比较进度。\n\n继续\n切换外观\n切换语言\n排行榜\n\n青铜联赛 · 本周 30 名学习者\n\n当前联赛\n\n🥉 青铜联赛\n\nDL\n\nDemo Learner\n\n第 30 名 · 本周 0 XP\n\n本周状态\n\n距离晋级区还差 20 名。\n\n稳定保持\n\n名次\n\n#30\n\n晋级线\n\n前 10\n\n安全线\n\n安全\n\n好友动态\n\nST\n\nSophia Tan\n\n50 XP · 连续1天\n\nLW\n\nLeo Wang\n\n50 XP · 连续1天\n\nEL\n\nEmma Lin\n\n50 XP · 连续1天\n\nRW\n\nRyan Wu\n\n50 XP · 连续1天\n\n本周 XP\n连续天数\n累计词量\nLM\n\nLucas\n\n254\n\nXP\n\nEX\n\nElla\n\n206\n\nXP\n\nNG\n\nNoah\n\n202\n\nXP\n\n完整排名\n\nLM\n\nLucas Ma\n\n0天\n\n254\n\nXP\n\nEX\n\nElla Xie\n\n0天\n\n206\n\nXP\n\nNG\n\nNoah Gao\n\nB1\n6天\n\n202\n\nXP\n\n4\nID\n\nIsabella Dong\n\n2天\n\n186\n\nXP\n\n5\nAF\n\nAiden Feng\n\n2天\n\n149\n\nXP\n\n6\nHW\n\nHarper Wei\n\nB1\n8天\n\n148\n\nXP\n\n7\nJZ\n\nJack Zhou\n\n4天\n\n123\n\nXP\n\n8\nLH\n\nLily Huang\n\nA2\n0天\n\n114\n\nXP\n\n9\nJS\n\nJames Shi\n\n0天\n\n114\n\nXP\n\n10\nEX\n\nEthan Xu\n\n0天\n\n88\n\nXP\n\n11\nAL\n\nAria Liu\n\n0天\n\n65\n\nXP\n\n12\nGL\n\nGrace Li\n\n9天\n\n46\n\nXP\n\n13\nAK\n\nAlex Kim\n\n6天\n\n40\n\nXP\n\n14\nML\n\nMason Lu\n\n5天\n\n40\n\nXP\n\n15\nST\n\nSophia Tan\n\nB1\n4天\n\n40\n\nXP\n\n16\nCY\n\nChloe Yang\n\nB1\n0天",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "23-pronunciation",
+    "route": "/dashboard/pronunciation",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/23-pronunciation-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/pronunciation",
+      "title": "VocabDaily",
+      "h1": "发音实验室",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n发音练习\n\n发音评估与口语训练，精准到音素级别。\n\n继续\n切换外观\n切换语言\n发音实验室\n\n借助 AI 反馈练习你的发音\n\n0/10\n单词\n句子\n1 / 10\n\nafter\n\n/ˈæftər/\n\n在…之后\n\n上一个\n下一个",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "24-writing",
+    "route": "/dashboard/writing",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/24-writing-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/writing",
+      "title": "VocabDaily",
+      "h1": "写作练习",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n写作练习\n\n写作练习与 AI 批改，提升书面表达。\n\n继续\n切换外观\n切换语言\n写作练习\n\n练习写作，获得 AI 详细批改和评分\n\n自由写作\nIELTS 大作文\n商务邮件\n日记\n写作题目\n\n随心写作，不限主题。\n\n0 词\n提交评分\n重写",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "25-learning-path",
+    "route": "/dashboard/learning-path",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/25-learning-path-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/learning-path",
+      "title": "VocabDaily",
+      "h1": "挑一条路径，让今天的努力沿着一个方向累积。",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n学习路径\n\n结构化学习路线，按阶段推进你的英语能力。\n\n继续\n切换外观\n切换语言\n学习路径\n挑一条路径，让今天的努力沿着一个方向累积。\n\n选择一条路径，系统化提升你的英语能力。每条路径都把词汇、语法和练习串成可追踪的进度。\n\n继续：日常英语\n回到 Today\n\n可选路径\n\n5\n\n已开启\n\n0\n🏠\n日常英语\nbeginner\n\n掌握日常对话和互动\n\n0/16\n💼\n商务英语\nintermediate\n\n职场专业沟通能力\n\n0/16\n🎯\nIELTS 备考\nadvanced\n\n全面的 IELTS 考试准备\n\n0/16\n🎓\n学术英语\nadvanced\n\n大学级别英语必备技能\n\n0/12\n✈️\n旅行英语\nbeginner\n\n出国旅行必备短语和技能\n\n0/16",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "26-settings",
+    "route": "/dashboard/settings",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/26-settings-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/settings",
+      "title": "VocabDaily",
+      "h1": "设置",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n设置\n\n调整偏好、反馈风格和系统行为。\n\n继续\n切换外观\n切换语言\n设置\n\n设定 • Customize your learning experience\n\n通用\n通知\n学习\n账号\n外观\n自定义应用外观\nTheme\n\n主题\n\nSystem\nFont Size\n\n字体大小\n\nMedium\nLanguage\n\n介面语言\n\n中文\nSave Changes",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "27-profile",
+    "route": "/dashboard/profile",
+    "viewport": "desktop",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/27-profile-desktop.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/profile",
+      "title": "VocabDaily",
+      "h1": "个人资料",
+      "body": "Skip to content\n\nVocabDaily\n\n学习\n\n继续今日任务\n\n先完成主任务，再用一次短练习把今天的弱项补上。\n\n任务进度\n0/3\n今日计划\n0\nLv 1\n0 / 200 XP\nLv 1\n\n核心学习\n\n今日单词\n\n今日主任务与下一步动作\n\n复习\n\n到期复习与稳态记忆\n\n练习\n\n测验、听力、写作短练习\n\n阅读\n\nIELTS 阅读理解精读训练\n\n听力\n\nIELTS 听力理解训练\n\n语法\n\n语法规则与填空练习\n\n发音练习\n\n发音评估与口语练习\n\n写作练习\n\n写作训练与 AI 批改\n\nCoach\n\n解释、引导和短测都从这里进入\n\n考试冲分\n\nIELTS 冲分与高价值反馈\n\n工具\n\n我的词库\n\n学习进度\n\n记忆中心\n\n排行榜\n\n设置\n\nDemo Learner\n\n演示\n\n学习者\n\nD\n个人资料\n\n查看账号信息和学习身份。\n\n继续\n切换外观\n切换语言\n个人资料\n\n个人资料 • Manage your account\n\nEdit Profile\nD\nDemo Learner\n\ndemo@example.com\n\nB1\nLevel 1\n\n0\n\nXP\n\n0\n\nStreak\n\n0\n\nMastered\n\nNovice → Level 2\n0 / 100 XP\n学习等级\nB1\n\nCEFR Level\n\nIntermediate\n\n每日目标\n10\n\n每日词量\n\n每日学习目标\n\n感兴趣的话题\nDaily Life\nBusiness\n学习风格\n\nVisual\n\n视觉型\n\n学习统计\n\n0\n\n当前连续\n\n0\n\n最长连续\n\n0\n\n累计词汇\n\n0\n\n已掌握\n\n打卡保护\n\n可用冻结次数\n\n1\n\n打卡冻结可在你忘记学习的一天自动保护连续天数。\n\n购买冻结（50 XP）\n成就徽章（0/14）\n🌱\n初始之种\n📚\n初露锋芒\n🎯\n单词收集者\n💯\n百词斩\n🏆\n词汇大师\n🔥\n连续七天\n⚡\n势不可挡\n👑\n百日传奇\n⭐\n记忆达人\n🌟\n记忆冠军\n🔁\n复习机器\n🎖️\n冉冉新星\n🏅\n学习老兵\n💎\n经验富翁\n今日 AI 额度\nFree\n\nAI 写作批改\n\n0/3\n\nAI 阅读生成\n\n0/2\n\nAI 教练对话\n\n0/10\n\n考试反馈\n\n0/2\n\nAI 听力生成\n\n0/2\n\nPro 用于需要考试级反馈、深度诊断、自定义材料和周计划的学习者。\n\n查看 Pro 等待名单",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "scrollHeight": 960,
+      "clientHeight": 960,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "01-home",
+    "route": "/",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/01-home-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/",
+      "title": "VocabDaily",
+      "h1": "把英语练到真正记得住。",
+      "body": "Skip to content\nVocabDaily\n面向英语学习者的每日工作台\n把英语练到真正记得住。\n\n每天 15 分钟，把词汇、写作、口语整合到一个学习节奏里。\n\nVocabDaily 每天告诉你该复习什么、接下来学什么，并用 AI 教练反馈你真正练过的写作和口语。\n\n开始今天的学习\n试一节样课\n\n免费开始 · 无需信用卡\n\nFSRS 到期复习\nIELTS 写作反馈\n平均每天 15 分钟\n\n今日\n\n典型学习日\n\n示例任务：登录后会看到你的真实队列\n\n12 个到期复习\n\n到期复习\n\n约 6 分钟\n\n5 个新词\n\n新词学习\n\n约 5 分钟\n\n1 个教练任务\n\n教练任务\n\n约 4 分钟\n\n预计 15 分钟\n\n试样课\n\n本周可能学到的词汇\n\nnevertheless\nadv.\n\n\"The exam was tough; nevertheless, she passed with flying colors.\"\n\nmitigate\nv.\n\n\"Small daily habits mitigate the stress of exam season.\"\n\ncompelling\nadj.\n\n\"A compelling argument needs evidence, not adjectives.\"\n\nVocabDaily 如何运作\n\n三步把零散学习变成稳定节奏。\n\n复习到期内容\n\n基于 FSRS 的间隔重复告诉你今天该复测哪些词，不靠猜。\n\n用任务练习\n\n短测、听力、写作任务会围绕你刚学过的词和弱项生成。\n\n获得教练反馈\n\nAI 教练复盘答案、安排重练，并把错误转成后续复习。\n\nFSRS 间隔记忆算法\nAI 教练实时反馈\nIELTS 考试专项训练\n本地数据可用\n\nFSRS 间隔记忆·教练评分重练·错题驱动练习\n\n建立一个能坚持的每日英语习惯。\n\n从今天开始，用一个清晰的工作流学英语。\n\n开始今天的学习\nVocabDaily\n\n© 2026 VocabDaily。保留所有权利。\n\n服务条款\n/\n隐私政策",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 2745,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "02-word-of-the-day",
+    "route": "/word-of-the-day",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/02-word-of-the-day-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/word-of-the-day",
+      "title": "VocabDaily",
+      "h1": "2026年6月14日星期日",
+      "body": "Skip to content\nVocabDaily\n开始学习\n每日单词\n2026年6月14日星期日\n\n每天一个高价值词，练完再进入你的真实复习队列。\n\nB2\nv.\nreinforce\n\n/ˌriːɪnˈfɔːs/\n\n定义\n例句\n相关\n更多\n定义\n\nto make something stronger or more effective\n\n加强；巩固；强化\n\n保存到我的词库\n免费开始\n让教练讲这个词\n\n注册后可以保存单词、追踪进度，并让 AI 教练安排复习。\n\n公开词库样例\n\n这些是公开样例词，不是你的个人学习历史。\n\n2026-06-12\n\naccommodate\n\nB2\n\n2026-06-11\n\nadjust\n\nB1\n\n2026-06-10\n\nadvertise\n\nB1\n\n2026-06-09\n\nafternoon\n\nA1\n\n2026-06-08\n\naggressive\n\nB2\n\n2026-06-07\n\nair\n\nA1\n\n2026-06-06\n\nalive\n\nA2\n\n2026-06-05\n\nalso\n\nA1\n\n2026-06-04\n\namong\n\nB1\n\n2026-06-03\n\nangry\n\nA1\n第 1 页，共 3\nVocabDaily\n\n© 2026 VocabDaily。保留所有权利。\n\n服务条款\n/\n隐私政策",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 2272,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "03-sample-lesson",
+    "route": "/demo",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/03-sample-lesson-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/demo",
+      "title": "VocabDaily",
+      "h1": "先体验一次真实学习循环",
+      "body": "Skip to content\nVocabDaily\n切换外观\n切换语言\n60 秒样课\n先体验一次真实学习循环\n\n先看词义，再做一次回想。答完后你会看到 VocabDaily 如何把结果转成后续复习。\n\n今日样词\n\nmitigate\nv.\n/ˈmɪtɪɡeɪt/\n\n减轻；缓和；降低严重性\n\n每天的小习惯可以减轻考试压力。\n\nmitigate risk\n\n回想练习\n\nSmall daily habits can ___ exam stress.\n\n输入缺失的单词\n检查答案",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "04-pricing",
+    "route": "/pricing",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/04-pricing-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/pricing",
+      "title": "VocabDaily",
+      "h1": "选择你的学习方案",
+      "body": "Skip to content\nVocabDaily\n学习工作台\n切换外观\n切换语言\n免费开始\n定价与会员\n选择你的学习方案\n\n免费版跑闭环，Pro 做深度输出、诊断和周计划。\n\n免费开始，Pro 上线后再升级。\n\nFREE 负责什么\n\n免费版用于跑通每日闭环：今日任务、复习队列、核心练习和基础进度。\n\nPRO 负责什么\n\nPro 用于需要考试级反馈、深度诊断、自定义材料和周计划的学习者。\n\nPro 订阅暂未开放\n\n我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用， 支付服务真实可用后，本页会显示明确的升级入口。\n\n当前方案\n\n免费版\n\n免费版\n按月\n按年省 20%\n免费版\n\n跑通每日学习闭环。\n\n$0\n/ 月\n每日任务：新词 + 复习\nFSRS 复习队列与基础分析\n有限 AI 教练与考试反馈额度\n核心词库、练习与每日单词\n基于证据的周报预览\n–\n不限量 AI 教练\n–\nIELTS 写作与口语评分\n–\n进阶分析与错因图谱\n–\n自定义词书导入\n–\n自动周计划\n免费开始\n最受欢迎\n专业版\n\n面向考试级反馈与学习规划。\n\n$9.99\n/ 月\n不限量 AI 教练与错题恢复接力\nIELTS 写作与口语评分量表\n进阶分析：复习债、技能趋势、错因图谱\n自定义词书导入 + Anki / CSV 导出\n下一周期周计划与证据周报\n全部练习模式与优先生成\n\n暂未开放\n\nPro 将围绕 IELTS 评分、进阶分析、自定义词书和周计划开放；免费版可正常使用。\n\n结账入口会在真实支付服务接好后出现。\n\nPro 开放时通知我\n\n加入 Pro 意向名单。这里只记录产品意向，不会发起支付。\n\n常见问题\n为什么现在还不能订阅？\n\n我们正在完成支付服务的配置。在此之前，免费版完全可用；只有真实支付服务准备好后，本页才会开放结账入口。\n\nPro 上线后我现在的数据会保留吗？\n\n会保留。您的学习记录、词汇和历史数据与订阅方案无关，升级后仅权益发生变化。\n\n订阅功能上线后可以随时取消吗？\n\n可以。您可以随时取消，并在当前计费周期结束前继续享有 Pro 权益。\n\n将支持哪些支付方式？\n\nStripe 将作为主要的国际支付通道，支付宝已在路线图上。我们只会在某种方式能完整完成真实扣款后才启用。\n\n需要企业或学校方案？请先使用免费版完成学习闭环验证。\n\n免费开始\nVocabDaily\n\n© 2026 VocabDaily · 英语学习工作台\n\n服务条款\n/\n隐私政策",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 3561,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "05-terms",
+    "route": "/terms",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/05-terms-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/terms",
+      "title": "VocabDaily",
+      "h1": "服务条款",
+      "body": "Skip to content\nVocabDaily\n学习工作台\n切换外观\n切换语言\n返回注册\n发布前需复核\n服务条款\n\n这是一份上线前可读草稿，用来替换注册流程中的占位链接。正式发布前仍需法务复核。\n\n产品\nVocabDaily\n生效日期\n2026-06-13\n联系占位\n[support contact pending legal review]\n产品状态\n\nVocabDaily 是一款英语学习应用，覆盖词汇复习、每日练习、AI 教练反馈和考试备考流程。\n\n产品中展示的部分付费或 Pro 功能尚未开放。只有在真实支付服务、价格配置和发布检查完成后，结账入口才可以开启。\n\n账号责任\n\n你需要妥善保管登录凭据，并以合法、尊重他人的方式使用本应用。\n\n请不要上传无权使用的内容，也不要使用本应用生成攻击性、欺骗性或违法内容。\n\n学习与 AI 输出\n\nAI 反馈用于辅助学习，可能不完整或不准确。涉及重要语言表达或考试判断时，学习者应自行判断并核实。\n\n进度、复习时间和推荐结果会依赖已有学习数据，并可能随产品迭代而调整。\n\n订阅与取消\n\n在付费方案准备期间，免费版仍可使用。\n\n付费方案上线后，订阅价格、续费周期、取消方式、退款处理和方案限制必须在结账前清楚展示。\n\n在最终账单支持文案通过前，订阅问题应指向联系占位：[support contact pending legal review]。\n\n发布阻断：这份文本必须在生产发布前由法务、安全和运营负责人复核。",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 1471,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "06-privacy",
+    "route": "/privacy",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/06-privacy-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/privacy",
+      "title": "VocabDaily",
+      "h1": "隐私政策",
+      "body": "Skip to content\nVocabDaily\n学习工作台\n切换外观\n切换语言\n返回注册\n发布前需复核\n隐私政策\n\n这是一份上线前可读草稿，用来替换注册流程中的占位链接。正式发布前仍需法务复核。\n\n产品\nVocabDaily\n生效日期\n2026-06-13\n联系占位\n[support contact pending legal review]\n我们使用的数据\n\nVocabDaily 可能使用账号信息、个人设置、学习目标、词书数据、复习记录、练习答案、错题和 AI 教练对话来提供学习体验。\n\n导入词汇、生成练习内容和本地离线数据可能用于个性化复习队列和推荐。\n\n使用目的\n\n数据用于用户认证、保存进度、安排间隔重复、推荐下一步行动、提供 AI 反馈、排查可靠性问题以及支持产品安全。\n\n付费结账开启后，支付相关数据应只由已配置的支付服务商处理。\n\n存储与控制\n\n本应用支持本地/离线学习数据，也可能在配置后使用云端账号数据。\n\n学习者应能在设置中清除本地学习数据。云端删除和导出流程需要在生产发布前明确最终运营负责人。\n\n联系方式与复核状态\n\n隐私请求在最终支持渠道获批前，应指向联系占位：[support contact pending legal review]。\n\n本政策是产品可用草稿，在法务、安全和运营负责人批准前仍属于发布阻断项。\n\n发布阻断：这份文本必须在生产发布前由法务、安全和运营负责人复核。",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 1459,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "07-login",
+    "route": "/login",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/07-login-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/login",
+      "title": "VocabDaily",
+      "h1": "欢迎回来",
+      "body": "Skip to content\n切换外观\n切换语言\nVocabDaily\n学习工作台\n欢迎回来\n\n登录后继续你今天的学习节奏。\n\n邮箱\n密码\n忘记密码？\n登录\n或\n体验本地演示\n\n不会创建真实账号，演示数据仅保存在当前浏览器。\n\n还没有账号？ 注册\n返回首页",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "08-register",
+    "route": "/register",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/08-register-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/register",
+      "title": "VocabDaily",
+      "h1": "创建账号",
+      "body": "Skip to content\n切换外观\n切换语言\nVocabDaily\n学习工作台\n创建账号\n\n免费开始，几分钟就能养成每天学英语的习惯。\n\n昵称\n邮箱\n密码\n至少 8 个字符\n包含大写字母\n包含小写字母\n包含数字\n包含特殊字符\n确认密码\n同意\n服务条款\n与\n隐私政策\n创建账号\n已有账号？ 立即登录\n返回首页",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 971,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "09-magic-link",
+    "route": "/magic-link",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/09-magic-link-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/magic-link",
+      "title": "VocabDaily",
+      "h1": "使用魔法链接登录",
+      "body": "Skip to content\n切换外观\n切换语言\nVocabDaily\n学习工作台\n使用魔法链接登录\n\n无需密码，我们会发送安全登录链接到你的邮箱。\n\n邮箱\n发送登录链接\n更喜欢密码登录？ 密码登录\n返回首页",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "slug": "10-onboarding",
+    "route": "/onboarding",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/10-onboarding-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/login?redirect=%2Fonboarding",
+      "title": "VocabDaily",
+      "h1": "欢迎回来",
+      "body": "Skip to content\n切换外观\n切换语言\nVocabDaily\n学习工作台\n欢迎回来\n\n登录后继续你今天的学习节奏。\n\n邮箱\n密码\n忘记密码？\n登录\n或\n体验本地演示\n\n不会创建真实账号，演示数据仅保存在当前浏览器。\n\n还没有账号？ 注册\n返回首页",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 0
+    }
+  },
+  {
+    "viewport": "mobile",
+    "slug": "login-demo-state",
+    "route": "/login?redirect=%2Fdashboard%2Ftoday",
+    "loggedIn": true,
+    "url": "http://127.0.0.1:5174/dashboard/today"
+  },
+  {
+    "slug": "11-today",
+    "route": "/dashboard/today",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/11-today-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/today",
+      "title": "VocabDaily",
+      "h1": "完成今日新词任务",
+      "body": "Skip to content\n今日\n\n今天最值得做的一步，从这里开始。\n\n切换外观\nD\n为什么是这一步\n今日新词\n\n趁状态还在，把今日新词学完再休息。\n\n今日任务 · 6月14日周日\n完成今日新词任务\n\n教练会把今日词汇控制在可完成、可复习的范围内。 今天重点是在新词推进和复习压力之间保持平衡。 当前词书《A1基础》里还有 10 个建议新词待推进。 练习时优先使用例句、结构模式和对比线索。\n\n继续今日任务\n打开家教\n前往考试冲分\n目标: general_improvement\n偏好: 视觉线索\n到期复习: 0\n今日词汇: 0/10\n词典: always · A1\n\n词汇工作区\n\nalways · 当前主练单词\n\n今日进度\n\n0%\n\n词汇完成度\n\n0 / 10\n\n0/10\n\n今日已学 / 今日计划\n\n还需 20 分钟\n\n已学会\n\n0\n\n较难\n\n0\n\n已收藏\n\n0\nA1\n\n当前单词\n\nalways\n\nadv.\n\n/ˈɔːlweɪz/\n\n点击翻面，查看释义、例句和搭配\n标记较难\n标记学会\n收藏\n分享\n\n词典焦点\n\n今日词汇知识点\n\nalways\nA1\n\nalways · A1 · 总是，一直\n\ndaily\nIELTS general\n打开词典条目\n\n学习背景\n\n当前词书\n\nA1基础\n\n今日词量 10 / 10\n\n到期复习\n\n0 个到期复习\n\n今日节奏\n\n稳步期\n\nSteady\n\nBuild depth with a balanced mix of new words, review, and one targeted practice.\n\n弱项地图\n\n先完成一次练习或写作反馈，系统才会生成更可信的弱项图谱。\n\n推荐补强微课：Task 2 Argument Paragraph Basics\n\n18 分钟\n\n去补强\n\n7日活跃度\n\nMon\nTue\nWed\nThu\nFri\nSat\nSun\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "12-review",
+    "route": "/dashboard/review",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/12-review-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/review",
+      "title": "VocabDaily",
+      "h1": null,
+      "body": "Skip to content\n复习\n\n清掉到期复习，别让遗忘继续堆积。\n\n切换外观\nD\n\nFSRS 复习队列\n\n当前没有到期 FSRS 复习\n\n记忆曲线说今天不需要再回头看这些词。建议去 Practice 做一次轻量巩固，把今天学的内容固化下来；如果有教练复习也会显示在右侧。\n\n到期 FSRS 卡\n\n0\n回到 Today\n做巩固练习\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "13-practice",
+    "route": "/dashboard/practice",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/13-practice-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/practice",
+      "title": "VocabDaily",
+      "h1": "先锁定今天最值得练的一种模式。",
+      "body": "Skip to content\n练习\n\n把弱项转成短练习，稳定补强。\n\n切换外观\nD\n练习\n先锁定今天最值得练的一种模式。\n查看此模式\n\n练习模式\n\nMultiple Choice\n推荐\n选择题\nFill in the Blank\n填空题\nListening Quiz\n听力测验\nWriting Practice\n写作练习\n\n今日推荐\n\nMultiple Choice · 选择题\n视觉优先\n10 题\n6 分钟\n\n训练目标\n\nTest your knowledge with multiple choice questions\n\n推荐依据\n\n视觉线索\n\n预计时长\n\n6 分钟\n\n今日素材\n\n10 个词\n查看此模式\n\n课程进度\n\n到期\n\n0\n\n待练\n\n10\n\n连续\n\n0\n\n当前模式\n\n选择题\n\n适合先热身，进入成本最低。\n\n当前阶段\n\n先选模式\n\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "14-chat",
+    "route": "/dashboard/chat",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/14-chat-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/chat",
+      "title": "VocabDaily",
+      "h1": "雅思教练工作室",
+      "body": "Skip to content\n教练\n\n做一轮带上下文的引导学习，把问题讲透。\n\n切换外观\n切换语言\n雅思教练工作室\n\n诊断 / 训练 / 复盘 · 准备就绪\n\n新对话\n\nCOACH BRIEF\n\n诊断：先处理 ielts coach\n\ngeneral_improvement · 先找出现在最值得训练的雅思弱项。\n\n到期\n\n0\n\n错误\n\n0\n\n保持\n\n0%\n\nPractice your weak spot: workplace_English, daily_communication\nTargeting recent mistake patterns compounds faster than random drills.\nPlan today around B1 level\nA two-minute plan beats an hour of unfocused practice.\nQuick memory boost\nFive flashcards now, durable recall later.\nAI English Tutor\n\n我是你的 AI 英语家教，由 DeepSeek 驱动。我可以帮助你学习词汇、语法、发音等等。\n\n今日任务\n~8 min\n\n学习今天的新词\n\n今日新词任务还没完成。\n\n让教练带我做\n今日任务\n~8 min\n\n做一组 5 题快速测验\n\n检索式测验是把今天学到的内容固化下来最快的方式。\n\n让教练带我做\n今日任务\n~8 min\n\n完成今日间隔复习\n\n今日任务里有一段间隔复习还没完成。\n\n让教练带我做\n\n解释 \"affect\" 和 \"effect\" 的区别\n\nExplain the difference between \"affect\" and \"effect\"\n\n给我 5 个 \"make\" 的搭配词\n\nGive me 5 collocations with \"make\"\n\n创建一个餐厅的简短对话\n\nCreate a short dialogue at a restaurant\n\n帮我练习使用 \"serendipity\"\n\nHelp me practice using \"serendipity\"\n\n解释 \"affect\" 和 \"effect\" 的区别\n给我 5 个 \"make\" 的搭配词\n创建一个餐厅的简短对话\n\nPowered by DeepSeek AI\n·\n模式: 诊断\n·\n检索: 自动\n·\n支持 Markdown 格式\n·\n实时流式输出\n\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "15-exam",
+    "route": "/dashboard/exam",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/15-exam-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/exam",
+      "title": "VocabDaily",
+      "h1": "考试冲分 · IELTS Exam Prep",
+      "body": "Skip to content\n考试冲分\n\n冲分路线、仿真题和结构化反馈都在这里。\n\n切换外观\n切换语言\nPlan FREE\n连续学习 0 天\n本周模拟 0 次\n考试冲分 · IELTS Exam Prep\n\n先确定当前回合，再进入写作工作台，最后根据反馈做补救和再练。\n\n目标 Band\n\n0.0/6.5\n\n0%\n\n先完成一次写作评分，建立你的弱项图谱和下一步训练路径。\n\n当前路线\n\nIELTS Writing Foundation\n\nTask 2 Argument Paragraph Basics\n\n当前单元完成度\n0%\n本轮建议任务\nTask 2\n今日用量：\n评分反馈 0/2\n仿真题 0/2\n补救微课 0/1\n升级会员\n继续今日写作\n开始一次完整仿真\n查看弱项图谱\n\n路线选择\n\n选择冲分轨道\n\n先定 Band 区间和 skill，再决定这轮写作应该站在哪个单元。\n\nIELTS Writing Foundation\n\n6.0-6.5 · writing\n\n0%\n\nIELTS Writing Advanced\n\n7.0-7.5 · writing\n\n0%\n\n练习单元\n\n按单元推进，不要一口气全练\n\nTask 2 Argument Paragraph Basics\n\nB1 · 18 min · 0% 完成\n\nTask 2 Argument Paragraph Basics\n\nB1 · 18 min\n\n0%\n\nTask 1 Trends and Comparisons\n\nB1 · 16 min\n\n0%\n\n策略规划\n\n先把这次冲分回合排清楚\n\n从轨道、题型、话题和时间预算开始。先确定这次要练什么，再进入写作工作台，避免一上来就被所有工具打断。\n\n概览\n写作\n结果\n洞察\nMedium\n随机题\n生成仿真题\n进入写作工作台\n\n当前题目\n\n当前为手动训练模式\n\nTask 2\n\nSome people think governments should invest more in public transport than in building new roads. To what extent do you agree or disagree?\n\n本轮目标\n\nTask 2 Argument Paragraph Basics\n\nIELTS Writing Foundation\n\nBuild one clear argument paragraph with claim-reason-example\nUse cohesive devices without overuse\nAvoid common lexical and grammar mistakes in IELTS Task 2\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "16-vocabulary",
+    "route": "/dashboard/vocabulary",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/16-vocabulary-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/vocabulary",
+      "title": "VocabDaily",
+      "h1": "词典",
+      "body": "Skip to content\n词汇\n\n管理词书、导入 deck、维护你的底层词汇资产。\n\n切换外观\n切换语言\n词典\n\n词典内核、词书与可复习词汇资产 · 177 个词条\n\nAdd Word\n导入 Anki (.apkg)\n导入词书\n导出\n词典与词书管理\n\nA1基础\n\n内置\n当前词书\n\n20 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\nA2高频\n\n内置\n\n21 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\nB1核心\n\n内置\n\n55 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\n商务英语\n\n内置\n\n27 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\n科技英语\n\n内置\n\n3 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\n\nIELTS学术核心\n\n内置\n\n73 words • Source: VocabDaily Open Word Set • License: Project dataset (open-source repository)\n\n设为当前\nAll Status\nAll Topics\n\n177\n\n总词数\n\n0\n\n已掌握\n\n0\n\n复习中\n\n0\n\n学习中\n\nafraid\n\nadj. • /əˈfreɪd/\n\nNew\n\nafraid · A1 · 害怕的，担心的\n\n搭配: afraid of / be afraid\n\ndaily\nA1\nIELTS general\nafter\n\nprep./conj. • /ˈæftər/\n\nNew\n\nafter · A1 · 在…之后\n\n搭配: after all / day after day\n\ndaily\nA1\nIELTS general\nafternoon\n\nn. • /ˌæftərˈnuːn/\n\nNew\n\nafternoon · A1 · 下午\n\n搭配: this afternoon / good afternoon\n\ndaily\nA1\nIELTS general\nagai",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "17-analytics",
+    "route": "/dashboard/analytics",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/17-analytics-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/analytics",
+      "title": "VocabDaily",
+      "h1": "学习进度",
+      "body": "Skip to content\n数据分析\n\n查看真实学习数据，而不是随机生成的好看图表。\n\n切换外观\n切换语言\n学习进度\n\n查看真实学习数据，而不是随机生成的好看图表。\n\n本周\n\n总单词数\n\n0\n\n+0\n\n已掌握\n\n0\n\n0%\n\n连续学习\n\n0 天\n\n从今天开始\n\n总经验值\n\n0\n\n等级 1\n等级 1 - Novice\n0 总 XP\n\n0 / 100 XP — 100 XP 升到等级 2\n\n概览\n词汇\n记忆保留\nCoach Impact\nAI 洞察\n成就\n本周活跃度\n\n本周活动\n\n还没有活动曲线\n完成一次 Today、Review 或 Practice 后，这里才会显示真实活动趋势。\n打开 Today\n主题分布\n\n来自已完成学习证据的主题\n\n还没有主题证据\n主题分布只使用你真正学过或复习过的词，不会用今日候选词伪装成历史。\n开始今日词汇\n学习时长\n\n学习时间\n\n还没有学习时长\n完成一个短任务后，系统会把用时沉淀到这里。\n做一次短练习\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "18-memory",
+    "route": "/dashboard/memory",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/18-memory-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/memory",
+      "title": "VocabDaily",
+      "h1": "记忆中心",
+      "body": "Skip to content\n记忆\n\n管理长期记忆，决定 AI 该记住什么。\n\n切换外观\n切换语言\n记忆中心\n\n管理 AI 对你学习状态的长期记忆\n\n置顶 0\n总计 0\n全部\n目标\n薄弱点\n偏好\n用户画像\n工具事实\n错误轨迹\n刷新\n清理过期记忆\n隐私优先，可查可删\n登录状态已失效，请重新登录后再试。\n\n暂无记忆数据\n\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "19-reading",
+    "route": "/dashboard/reading",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/19-reading-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/reading",
+      "title": "VocabDaily",
+      "h1": "IELTS 学术阅读",
+      "body": "Skip to content\n阅读\n\nIELTS 阅读理解精读训练，提升阅读速度与准确率。\n\n切换外观\n切换语言\n\n阅读模块\n\nIELTS 学术阅读\n\n选择文章或用 AI 生成新文章\n\nThe Psychology of Memory\n\nPsychology\n\nB2\n12 min\n6 questions\n·\n3 T/F/NG\n·\n2 MCQ\n·\n1 Short answer\n\nRenewable Energy Transitions\n\nEnvironment & Technology\n\nC1\n14 min\n6 questions\n·\n3 T/F/NG\n·\n2 MCQ\n·\n1 Short answer\n\nThe Rise of Urban Farming\n\nSociety & Environment\n\nB1\n10 min\n6 questions\n·\n3 T/F/NG\n·\n2 MCQ\n·\n1 Short answer\n用 AI 生成新文章\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "20-listening",
+    "route": "/dashboard/listening",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/20-listening-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/listening",
+      "title": "VocabDaily",
+      "h1": "听力练习",
+      "body": "Skip to content\n听力\n\nIELTS 听力理解训练，练习不同口音和题型。\n\n切换外观\n切换语言\n听力练习\n\nIELTS 学术听力 — 音频片段与理解题\n\nB2\nEnvironment & Society\n\nUrban Green Spaces\n\nA lecture excerpt on the psychological benefits of parks in cities\n\n~90 sec\n5 questions\nB1\nHealth & Science\n\nThe Science of Sleep\n\nAn interview excerpt with a sleep researcher\n\n~80 sec\n4 questions\nC1\nTechnology & Medicine\n\nArtificial Intelligence in Healthcare\n\nA seminar presentation on diagnostic AI systems\n\n~2 min\n5 questions\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "21-grammar",
+    "route": "/dashboard/grammar",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/21-grammar-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/grammar",
+      "title": "VocabDaily",
+      "h1": "语法",
+      "body": "Skip to content\n语法\n\n语法规则讲解与填空练习，系统巩固语法基础。\n\n切换外观\n切换语言\n语法\n\n语法规则、例句与填空练习\n\n全部\n冠词\n时态\n介词\n条件句\n被动语态\n情态动词\n冠词\nB1\n\nDefinite vs Indefinite Articles\n\n定冠词与不定冠词\n\n时态\nB2\n\nPresent Perfect vs Simple Past\n\n现在完成时 vs 一般过去时\n\n介词\nB1\n\nPrepositions of Time: in / on / at\n\n时间介词：in / on / at\n\n条件句\nB2\n\nSecond Conditional\n\n第二条件句\n\n被动语态\nB2\n\nPassive Voice — Present and Past\n\n被动语态——现在时与过去时\n\n情态动词\nC1\n\nModal Verbs for Deduction\n\n情态动词表推断\n\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "22-leaderboard",
+    "route": "/dashboard/leaderboard",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/22-leaderboard-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/leaderboard",
+      "title": "VocabDaily",
+      "h1": "排行榜",
+      "body": "Skip to content\n排行榜\n\n查看学习排行榜，和其他学习者比较进度。\n\n切换外观\n切换语言\n排行榜\n\n青铜联赛 · 本周 30 名学习者\n\n当前联赛\n\n🥉 青铜联赛\n\nDL\n\nDemo Learner\n\n第 30 名 · 本周 0 XP\n\n本周状态\n\n距离晋级区还差 20 名。\n\n稳定保持\n\n名次\n\n#30\n\n晋级线\n\n前 10\n\n安全线\n\n安全\n\n好友动态\n\nST\n\nSophia Tan\n\n50 XP · 连续1天\n\nLW\n\nLeo Wang\n\n50 XP · 连续1天\n\nEL\n\nEmma Lin\n\n50 XP · 连续1天\n\nRW\n\nRyan Wu\n\n50 XP · 连续1天\n\nLM\n\nLucas\n\n254\n\nXP\n\nEX\n\nElla\n\n206\n\nXP\n\nNG\n\nNoah\n\n202\n\nXP\n\n完整排名\n\nLM\n\nLucas Ma\n\n0天\n\n254\n\nXP\n\nEX\n\nElla Xie\n\n0天\n\n206\n\nXP\n\nNG\n\nNoah Gao\n\nB1\n6天\n\n202\n\nXP\n\n4\nID\n\nIsabella Dong\n\n2天\n\n186\n\nXP\n\n5\nAF\n\nAiden Feng\n\n2天\n\n149\n\nXP\n\n6\nHW\n\nHarper Wei\n\nB1\n8天\n\n148\n\nXP\n\n7\nJZ\n\nJack Zhou\n\n4天\n\n123\n\nXP\n\n8\nLH\n\nLily Huang\n\nA2\n0天\n\n114\n\nXP\n\n9\nJS\n\nJames Shi\n\n0天\n\n114\n\nXP\n\n10\nEX\n\nEthan Xu\n\n0天\n\n88\n\nXP\n\n11\nAL\n\nAria Liu\n\n0天\n\n65\n\nXP\n\n12\nGL\n\nGrace Li\n\n9天\n\n46\n\nXP\n\n13\nAK\n\nAlex Kim\n\n6天\n\n40\n\nXP\n\n14\nML\n\nMason Lu\n\n5天\n\n40\n\nXP\n\n15\nST\n\nSophia Tan\n\nB1\n4天\n\n40\n\nXP\n\n16\nCY\n\nChloe Yang\n\nB1\n0天\n\n40\n\nXP\n\n17\nMS\n\nMia Sun\n\nB1\n0天\n\n40\n\nXP\n\n18\nRW\n\nRyan Wu\n\n0天\n\n40\n\nXP\n\n19\nOZ\n\nOlivia Zhao\n\n0天\n\n40\n\nXP\n\n20\nMZ\n\nMeilin Zhang\n\n0天\n\n40\n\nXP\n\n21\nKC\n\nKai Chen\n\n0天\n\n40\n\nXP\n\n22\nDP\n\nDavid Park\n\n0天\n\n40\n\nXP\n\n23\nLW\n\nLeo Wang\n\n0天\n\n40\n\nXP\n\n24\nEL\n\nEmma Lin\n\n0天\n\n40\n\nXP\n\n25\nZJ\n\nZoe Jiang\n\n0天\n\n40\n\nXP\n\n26\nAH\n\nAva He\n\n0天\n\n40\n\nXP\n\n27\nLL\n\nLogan Liang\n\n0天\n\n40\n\nXP\n\n28\nEZ\n\nEmily ",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "23-pronunciation",
+    "route": "/dashboard/pronunciation",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/23-pronunciation-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/pronunciation",
+      "title": "VocabDaily",
+      "h1": "发音实验室",
+      "body": "Skip to content\n发音练习\n\n发音评估与口语训练，精准到音素级别。\n\n切换外观\n切换语言\n发音实验室\n\n借助 AI 反馈练习你的发音\n\n0/10\n单词\n句子\n1 / 10\n\nalways\n\n/ˈɔːlweɪz/\n\n总是，一直\n\n上一个\n下一个\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "24-writing",
+    "route": "/dashboard/writing",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/24-writing-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/writing",
+      "title": "VocabDaily",
+      "h1": "写作练习",
+      "body": "Skip to content\n写作练习\n\n写作练习与 AI 批改，提升书面表达。\n\n切换外观\n切换语言\n写作练习\n\n练习写作，获得 AI 详细批改和评分\n\n自由写作\nIELTS 大作文\n商务邮件\n日记\n写作题目\n\n随心写作，不限主题。\n\n0 词\n提交评分\n重写\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "25-learning-path",
+    "route": "/dashboard/learning-path",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/25-learning-path-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/learning-path",
+      "title": "VocabDaily",
+      "h1": "挑一条路径，让今天的努力沿着一个方向累积。",
+      "body": "Skip to content\n学习路径\n\n结构化学习路线，按阶段推进你的英语能力。\n\n切换外观\n切换语言\n学习路径\n挑一条路径，让今天的努力沿着一个方向累积。\n\n选择一条路径，系统化提升你的英语能力。每条路径都把词汇、语法和练习串成可追踪的进度。\n\n继续：日常英语\n回到 Today\n🏠\n日常英语\nbeginner\n\n掌握日常对话和互动\n\n0/16\n💼\n商务英语\nintermediate\n\n职场专业沟通能力\n\n0/16\n🎯\nIELTS 备考\nadvanced\n\n全面的 IELTS 考试准备\n\n0/16\n🎓\n学术英语\nadvanced\n\n大学级别英语必备技能\n\n0/12\n✈️\n旅行英语\nbeginner\n\n出国旅行必备短语和技能\n\n0/16\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "26-settings",
+    "route": "/dashboard/settings",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/26-settings-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/settings",
+      "title": "VocabDaily",
+      "h1": "设置",
+      "body": "Skip to content\n设置\n\n调整偏好、反馈风格和系统行为。\n\n切换外观\n切换语言\n设置\n\n设定 • Customize your learning experience\n\n通用\n通知\n学习\n账号\n外观\n自定义应用外观\nTheme\n\n主题\n\nSystem\nFont Size\n\n字体大小\n\nMedium\nLanguage\n\n介面语言\n\n中文\nSave Changes\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  },
+  {
+    "slug": "27-profile",
+    "route": "/dashboard/profile",
+    "viewport": "mobile",
+    "file": "/Users/yang/projects/app/product-ui-audit-2026-06-14/screenshots/27-profile-mobile.png",
+    "meta": {
+      "url": "http://127.0.0.1:5174/dashboard/profile",
+      "title": "VocabDaily",
+      "h1": "个人资料",
+      "body": "Skip to content\n个人资料\n\n查看账号信息和学习身份。\n\n切换外观\n切换语言\n个人资料\n\n个人资料 • Manage your account\n\nEdit Profile\nD\nDemo Learner\n\ndemo@example.com\n\nB1\nLevel 1\n\n0\n\nXP\n\n0\n\nStreak\n\n0\n\nMastered\n\nNovice → Level 2\n0 / 100 XP\n学习等级\nB1\n\nCEFR Level\n\nIntermediate\n\n每日目标\n10\n\n每日词量\n\n每日学习目标\n\n感兴趣的话题\nDaily Life\nBusiness\n学习风格\n\nVisual\n\n视觉型\n\n学习统计\n\n0\n\n当前连续\n\n0\n\n最长连续\n\n0\n\n累计词汇\n\n0\n\n已掌握\n\n打卡保护\n\n可用冻结次数\n\n1\n\n打卡冻结可在你忘记学习的一天自动保护连续天数。\n\n购买冻结（50 XP）\n成就徽章（0/14）\n🌱\n初始之种\n📚\n初露锋芒\n🎯\n单词收集者\n💯\n百词斩\n🏆\n词汇大师\n🔥\n连续七天\n⚡\n势不可挡\n👑\n百日传奇\n⭐\n记忆达人\n🌟\n记忆冠军\n🔁\n复习机器\n🎖️\n冉冉新星\n🏅\n学习老兵\n💎\n经验富翁\n今日 AI 额度\nFree\n\nAI 写作批改\n\n0/3\n\nAI 阅读生成\n\n0/2\n\nAI 教练对话\n\n0/10\n\n考试反馈\n\n0/2\n\nAI 听力生成\n\n0/2\n\nPro 用于需要考试级反馈、深度诊断、自定义材料和周计划的学习者。\n\n查看 Pro 等待名单\n今日\n教练\n考试冲刺\n复习\n更多",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fixedCount": 1
+    }
+  }
+]

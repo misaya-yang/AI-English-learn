@@ -20,20 +20,16 @@ import { Progress } from '@/components/ui/progress';
 import { motionPresets, motionStagger } from '@/lib/motion';
 import { learningPaths, type LearningPath, type LessonItem } from '@/data/learningPaths';
 import {
+  completeLearningPathLesson,
   getLearningPathProgress,
   getPathCompletionPercent,
   setLearningPathActivePath,
-  toggleLearningPathLesson,
 } from '@/services/learningPathProgress';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
-
-const LESSON_TYPE_ROUTE: Record<LessonItem['type'], string> = {
-  vocabulary: '/dashboard/today',
-  grammar: '/dashboard/grammar',
-  practice: '/dashboard/practice',
-  conversation: '/dashboard/chat',
-  review: '/dashboard/review',
-};
+import { resolveLearningPathLessonTarget } from '@/features/learning/learningPathRouting';
+import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
+import { recordEvent } from '@/services/learningEvents';
+import { toast } from 'sonner';
 
 const DIFFICULTY_COLORS = {
   beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -61,6 +57,7 @@ const getInitialProgressState = (userId: string) => {
   return {
     activePathId,
     completedLessonIds: progress.completedLessonIds,
+    lessonEvidence: progress.lessonEvidence,
   };
 };
 
@@ -74,6 +71,7 @@ export default function LearningPathPage() {
 
   const [selectedPathId, setSelectedPathId] = useState<string | null>(initialProgress.activePathId);
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(initialProgress.completedLessonIds);
+  const [lessonEvidence, setLessonEvidence] = useState(initialProgress.lessonEvidence);
 
   const completedLessonSet = useMemo(() => new Set(completedLessonIds), [completedLessonIds]);
 
@@ -96,9 +94,42 @@ export default function LearningPathPage() {
     setLearningPathActivePath(userId, pathId);
   };
 
-  const handleToggleLesson = (lessonId: string) => {
-    const next = toggleLearningPathLesson(userId, lessonId);
+  const handleCompleteLesson = (path: LearningPath, lesson: LessonItem) => {
+    if (completedLessonSet.has(lesson.id)) return;
+
+    const target = resolveLearningPathLessonTarget(path, lesson);
+    const completedAt = new Date().toISOString();
+
+    void recordEvidence(
+      createEvidenceEvent({
+        type: 'lesson.completed',
+        userId,
+        lessonId: lesson.id,
+        pathId: path.id,
+      }),
+    );
+    void recordEvent(userId, {
+      kind: 'session_ended',
+      payload: {
+        source: 'learning_path_lesson',
+        pathId: path.id,
+        lessonId: lesson.id,
+        targetHref: target.href,
+      },
+    });
+
+    const next = completeLearningPathLesson(userId, lesson.id, {
+      pathId: path.id,
+      targetHref: target.href,
+      completedAt,
+    });
     setCompletedLessonIds(next.completedLessonIds);
+    setLessonEvidence(next.lessonEvidence);
+    toast.success(isZh ? '已记录课程完成证据' : 'Lesson evidence recorded');
+  };
+
+  const handleOpenLesson = (path: LearningPath, lesson: LessonItem) => {
+    navigate(resolveLearningPathLessonTarget(path, lesson).href);
   };
 
   const nextLesson = useMemo(() => {
@@ -108,6 +139,11 @@ export default function LearningPathPage() {
       .flatMap((stage) => stage.units.flatMap((unit) => unit.lessons))
       .find((lesson) => !completedLessonSet.has(lesson.id)) || null;
   }, [completedLessonSet, selectedPath]);
+
+  const nextLessonTarget = useMemo(
+    () => (selectedPath && nextLesson ? resolveLearningPathLessonTarget(selectedPath, nextLesson) : null),
+    [nextLesson, selectedPath],
+  );
 
   if (!selectedPath) {
     // Pick the path with the highest existing progress (first non-zero).
@@ -208,6 +244,12 @@ export default function LearningPathPage() {
         mission={{
           title: pathTitle,
           description: isZh ? selectedPath.descriptionZh : selectedPath.description,
+          primaryAction: nextLesson && nextLessonTarget
+            ? {
+                label: isZh ? `打开下一课：${nextLesson.titleZh}` : `Open next: ${nextLesson.title}`,
+                onClick: () => navigate(nextLessonTarget.href),
+              }
+            : undefined,
           secondaryActions: [
             { label: isZh ? '回到 Today' : 'Back to Today', href: '/dashboard/today', variant: 'outline' },
           ],
@@ -248,7 +290,7 @@ export default function LearningPathPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {nextLesson
-                    ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${nextLesson.estimatedMinutes}m`
+                    ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${isZh ? nextLessonTarget?.labelZh : nextLessonTarget?.label} · ${nextLesson.estimatedMinutes}m`
                     : isZh
                       ? '这条路径已经完成，可以切换到下一条更高阶路径。'
                       : 'This path is complete. You can switch to a more advanced path next.'}
@@ -276,18 +318,20 @@ export default function LearningPathPage() {
                   <CardContent className="space-y-1.5 pb-3">
                     {unit.lessons.map((lesson) => {
                       const done = completedLessonSet.has(lesson.id);
-                      const targetRoute = LESSON_TYPE_ROUTE[lesson.type];
+                      const target = resolveLearningPathLessonTarget(selectedPath, lesson);
+                      const evidence = lessonEvidence[lesson.id];
 
                       return (
                         <div
                           key={lesson.id}
-                          className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
+                          className="flex w-full items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted/50"
                         >
                           <button
                             type="button"
-                            aria-label={done ? (isZh ? '取消完成' : 'Mark incomplete') : (isZh ? '标记完成' : 'Mark complete')}
-                            onClick={() => handleToggleLesson(lesson.id)}
-                            className="shrink-0"
+                            aria-label={done ? (isZh ? '已有完成证据' : 'Completion evidence recorded') : (isZh ? '记录完成证据' : 'Record completion evidence')}
+                            onClick={() => handleCompleteLesson(selectedPath, lesson)}
+                            disabled={done}
+                            className="mt-1 shrink-0 disabled:cursor-default"
                           >
                             {done ? (
                               <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -297,17 +341,31 @@ export default function LearningPathPage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => navigate(targetRoute)}
-                            className="flex flex-1 items-center gap-3 text-left"
+                            onClick={() => handleOpenLesson(selectedPath, lesson)}
+                            className="min-w-0 flex-1 text-left"
                           >
-                            <span className="text-sm">{lessonTypeIcon[lesson.type]}</span>
-                            <span className={`flex-1 text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>
-                              {isZh ? lesson.titleZh : lesson.title}
-                            </span>
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" />
-                              {lesson.estimatedMinutes}m
-                            </span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm">{lessonTypeIcon[lesson.type]}</span>
+                              <span className={`min-w-0 flex-1 text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>
+                                {isZh ? lesson.titleZh : lesson.title}
+                              </span>
+                              <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                {lesson.estimatedMinutes}m
+                              </span>
+                            </div>
+                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                              <Badge variant="secondary" className="rounded-md px-2 py-0.5">
+                                {isZh ? target.labelZh : target.label}
+                              </Badge>
+                              <span>
+                                {done && evidence
+                                  ? (isZh
+                                    ? `证据：${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('zh-CN')}`
+                                    : `Evidence: ${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('en-US')}`)
+                                  : (isZh ? '完成后需记录 lesson.completed 证据' : 'Requires lesson.completed evidence')}
+                              </span>
+                            </div>
                           </button>
                         </div>
                       );
@@ -319,7 +377,7 @@ export default function LearningPathPage() {
           ))}
 
           <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
-            <span>{isZh ? '点击课程名称跳转到对应学习内容。' : 'Click a lesson to go to its learning content.'}</span>
+            <span>{isZh ? '点击课程名称打开具体任务；勾选只在写入完成证据后生效。' : 'Click a lesson to open the exact task; completion only counts after evidence is recorded.'}</span>
             <Badge variant="secondary">{progressPercent}%</Badge>
           </div>
         </div>

@@ -1,0 +1,43 @@
+- generic [active] [ref=e1] [box=0,0,1194,2531]:
+  - link "Skip to content" [ref=e2] [cursor=pointer] [box=-9999,0,1,1]:
+    - /url: "#main-content"
+  - generic [ref=e3] [box=0,0,1194,2531]:
+    - generic [ref=e13] [box=0,0,1194,2531]:
+      - banner [ref=e14] [box=0,0,1194,57]:
+        - generic [ref=e15] [box=21,0,1152,56]:
+          - link "VocabDaily — 返回首页" [ref=e16] [cursor=pointer] [box=45,10,127,37]:
+            - /url: /
+          - generic [ref=e23] [box=923,10,226,36]
+      - main [ref=e31] [box=21,57,1152,2373]:
+        - generic [ref=e32] [box=213,121,768,169]:
+          - generic [ref=e33] [box=548,122,98,22]
+          - heading "选择你的学习方案" [level=1] [ref=e34] [box=213,166,768,48]
+          - paragraph [ref=e35] [box=213,226,768,28]: 选择适合你的学习方案
+          - paragraph [ref=e36] [box=213,266,768,24]: 免费开始，Pro 上线后再升级。
+        - status [ref=e37] [box=213,322,768,90]:
+          - img [ref=e38] [box=234,357,20,20]
+          - generic [ref=e40] [box=266,339,694,56]
+        - generic [ref=e45] [box=234,497,726,48]:
+          - generic [ref=e46] [box=234,497,54,48]
+          - generic [ref=e49] [box=898,508,62,26]: 免费版
+        - generic [ref=e50] [box=45,630,1104,22]:
+          - generic [ref=e51] [box=503,631,28,20]: 按月
+          - switch "Toggle yearly pricing" [ref=e52] [cursor=pointer] [box=547,632,32,18]
+          - generic [ref=e53] [box=595,630,96,22]
+        - generic [ref=e55] [box=149,692,896,802]:
+          - generic [ref=e58] [box=150,717,434,752]
+          - generic [ref=e102] [box=609,692,436,802]
+        - generic [ref=e161] [box=213,1558,768,672]:
+          - heading "常见问题" [level=2] [ref=e162] [box=213,1558,768,32]
+          - generic [ref=e163] [box=213,1622,768,608]
+        - generic [ref=e196] [box=45,2286,1104,80]:
+          - paragraph [ref=e197] [box=45,2286,1104,20]: 需要企业或学校方案？请先使用免费版完成学习闭环验证。
+          - link "免费开始" [ref=e198] [cursor=pointer] [box=536,2326,122,40]:
+            - /url: /register
+      - contentinfo [ref=e199] [box=0,2430,1194,101]:
+        - generic [ref=e200] [box=21,2463,1152,36]:
+          - link "VocabDaily — 返回首页" [ref=e201] [cursor=pointer] [box=45,2463,127,36]:
+            - /url: /
+          - paragraph [ref=e207] [box=495,2473,206,16]: © 2026 VocabDaily · 英语学习工作台
+          - navigation "法律链接" [ref=e208] [box=1023,2473,126,16]
+    - region "Notifications alt+T" [box=0,2531,1194,0]

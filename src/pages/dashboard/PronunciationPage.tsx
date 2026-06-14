@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, RefreshCw, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { Volume2, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import { ScoreRadial } from '@/features/pronunciation/components/ScoreRadial';
 import { PhonemeIssueList } from '@/features/pronunciation/components/PhonemeIssueList';
 import { RecordButton } from '@/features/pronunciation/components/RecordButton';
 import { useUserData } from '@/contexts/UserDataContext';
+import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
 // ─── Practice word list (curated from user's vocabulary) ────────────────────
 
@@ -61,7 +62,7 @@ type PracticeMode = 'word' | 'sentence';
 
 export default function PronunciationPage() {
   const { t, i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language.startsWith('zh');
   const items = usePracticeItems();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mode, setMode] = useState<PracticeMode>('word');
@@ -72,6 +73,7 @@ export default function PronunciationPage() {
   const targetText = item ? (mode === 'word' ? item.word : item.exampleSentence) : '';
   const completedCount = session.records.length;
   const progressPercent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
+  const waveformBars = [42, 64, 38, 82, 58, 74, 46, 88, 52, 68, 44, 78, 60, 48];
 
   const handleNext = () => {
     session.reset();
@@ -92,6 +94,41 @@ export default function PronunciationPage() {
     speakEnglishText(targetText, { rate: 0.85 });
   };
 
+  const pronunciationRecap = session.result ? (
+    <LearningCompletionState
+      icon={Trophy}
+      eyebrow={isZh ? '发音复盘' : 'Pronunciation recap'}
+      title={isZh ? `本次发音 ${session.result.overallScore}/100` : `Pronunciation score ${session.result.overallScore}/100`}
+      description={
+        session.result.overallScore >= 80
+          ? (isZh ? '目标音已经比较清楚，下一步可以切到句子模式练连读和语调。' : 'The target sound is clear. Switch to sentence mode for linking and intonation.')
+          : session.result.overallScore >= 60
+            ? (isZh ? '整体可懂度不错，继续看准确度、流利度和语调哪一项拖后腿。' : 'Overall intelligibility is workable. Check which dimension is holding the score back.')
+            : (isZh ? '先听标准音，再慢速重录一遍，重点对齐音素和重音。' : 'Listen to the model, slow down, and retry with phoneme and stress alignment.')
+      }
+      metrics={[
+        { label: isZh ? '总分' : 'Overall', value: `${session.result.overallScore}/100`, accent: session.result.overallScore >= 80 ? 'emerald' : session.result.overallScore >= 60 ? 'warm' : undefined },
+        { label: isZh ? '准确度' : 'Accuracy', value: session.result.dimensions.accuracy },
+        { label: isZh ? '流利度' : 'Fluency', value: session.result.dimensions.fluency },
+        { label: isZh ? '语调' : 'Intonation', value: session.result.dimensions.intonation },
+      ]}
+      actions={
+        <>
+          <Button variant="outline" onClick={() => session.reset()} className="rounded-md border-border bg-card">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('pronunciation.tryAgain')}
+          </Button>
+          {currentIndex < items.length - 1 && (
+            <Button onClick={handleNext} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+              {t('common.next')}
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </>
+      }
+    />
+  ) : null;
+
   if (!supported) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-6">
@@ -109,16 +146,88 @@ export default function PronunciationPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
-      {/* Header */}
-      <motion.div {...motionPresets.fadeIn}>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {t('pronunciation.title')}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t('pronunciation.subtitle')}
-        </p>
-      </motion.div>
+    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+      {pronunciationRecap}
+
+      <motion.section
+        {...motionPresets.fadeIn}
+        className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5"
+      >
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-primary">
+                {isZh ? '发音专项' : 'Pronunciation module'}
+              </p>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight">
+                {t('pronunciation.title')}
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                {t('pronunciation.subtitle')}
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background/70 p-4">
+              <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+                {isZh ? '当前目标音' : 'Current target'}
+              </p>
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-3xl font-bold tracking-tight">{targetText}</p>
+                  {mode === 'word' && item?.phonetic ? (
+                    <p className="mt-1 font-mono text-sm text-muted-foreground">{item.phonetic}</p>
+                  ) : null}
+                </div>
+                <Button variant="outline" className="rounded-md" onClick={handlePlayAudio}>
+                  <Volume2 className="mr-2 h-4 w-4" />
+                  {isZh ? '听标准音' : 'Hear model'}
+                </Button>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                {item ? (isZh ? item.definitionZh : item.definition) : ''}
+              </p>
+            </div>
+          </div>
+
+          <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+                  {isZh ? '录音反馈预期' : 'Feedback preview'}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {isZh ? '读完后会看到准确度、流利度和语调反馈。' : 'After recording, review accuracy, fluency, and intonation.'}
+                </p>
+              </div>
+              <div className="grid h-20 w-20 place-items-center rounded-full border-4 border-primary/20 bg-primary/10 text-center">
+                <span className="text-lg font-bold text-primary">80+</span>
+                <span className="-mt-2 block text-[10px] text-muted-foreground">{isZh ? '目标' : 'goal'}</span>
+              </div>
+            </div>
+            <div className="mt-5 flex h-20 items-center gap-1.5 rounded-lg border border-border bg-card px-4">
+              {waveformBars.map((height, index) => (
+                <span
+                  key={index}
+                  className="flex-1 rounded-full bg-primary/45"
+                  style={{ height: `${height}%` }}
+                />
+              ))}
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {[
+                { label: isZh ? '模式' : 'Mode', value: mode === 'word' ? (isZh ? '单词' : 'Word') : (isZh ? '句子' : 'Sentence') },
+                { label: isZh ? '进度' : 'Progress', value: `${completedCount}/${items.length}` },
+                { label: isZh ? '记录' : 'Records', value: session.records.length },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-lg border border-border bg-card p-3 text-center">
+                  <p className="text-base font-semibold text-foreground">{stat.value}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.section>
 
       {/* Progress */}
       <div className="flex items-center gap-3">
@@ -255,20 +364,6 @@ export default function PronunciationPage() {
                   )}
                 </CardContent>
               </Card>
-
-              {/* Retry / next */}
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline" onClick={() => session.reset()}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  {t('pronunciation.tryAgain')}
-                </Button>
-                {currentIndex < items.length - 1 && (
-                  <Button onClick={handleNext}>
-                    {t('common.next')}
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                )}
-              </div>
             </motion.div>
           )}
 

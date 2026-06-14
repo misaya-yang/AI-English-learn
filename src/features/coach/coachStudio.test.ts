@@ -25,6 +25,7 @@ describe('coachStudio', () => {
         target: 'IELTS 7.0',
         tracks: ['exam_boost'],
         dailyMinutes: 30,
+        learningStyle: 'visual',
         languagePreference: 'bilingual',
         updatedAt: '2026-04-30T00:00:00.000Z',
       },

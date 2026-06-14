@@ -10,6 +10,7 @@ const profile: LearningProfile = {
   target: 'IELTS 7.0',
   tracks: ['exam_boost'],
   dailyMinutes: 20,
+  learningStyle: 'auditory',
   languagePreference: 'zh',
   updatedAt: '2026-04-30T00:00:00.000Z',
 };
@@ -81,8 +82,15 @@ describe('buildDailyCoachPlan', () => {
     expect(plan.reason).toBe('review_pressure');
     expect(plan.primaryTask.href).toBe('/dashboard/review');
     expect(plan.evidence.some((item) => item.id === 'due-reviews' && item.value === '8')).toBe(true);
+    expect(plan.evidence).toContainEqual(expect.objectContaining({
+      id: 'learning-style',
+      value: 'Listening-first',
+      valueZh: '听说优先',
+    }));
     expect(plan.coachHref).toContain('dailyPlan=');
     expect(plan.coachPrompt).toContain('due review pressure');
+    expect(plan.coachPrompt).toContain('Preferred learning style: auditory');
+    expect(plan.brief.en).toContain('pronunciation or dictation');
   });
 
   it('keeps exam and weakness context visible in the coach handoff', () => {
@@ -113,7 +121,12 @@ describe('buildDailyCoachPlan', () => {
     const plan = buildDailyCoachPlan({
       userId: 'user-1',
       profile,
-      missionCard: missionCard({ reason: 'today_words', href: '/dashboard/today' }),
+      missionCard: missionCard({
+        reason: 'today_words',
+        href: '/dashboard/today',
+        description: '7 words are still pending in IELTS Core.',
+        descriptionZh: '当前词书《IELTS Core》里还有 7 个建议新词待推进。',
+      }),
       dueWordsCount: 0,
       dailyWordsCount: 10,
       learnedTodayCount: 3,
@@ -124,7 +137,10 @@ describe('buildDailyCoachPlan', () => {
 
     expect(plan.reason).toBe('daily_vocabulary');
     expect(plan.dictionaryFocus?.headword).toBe('approach');
+    expect(plan.briefTitle.en).toBe(plan.primaryTask.title);
     expect(plan.evidence.map((item) => item.id)).toContain('dictionary-focus');
+    expect(plan.evidence).toContainEqual(expect.objectContaining({ id: 'target', value: 'IELTS 7.0' }));
+    expect(plan.brief.en).toContain('IELTS Core');
     expect(plan.coachPrompt).toContain('approach');
   });
 });

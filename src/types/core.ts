@@ -153,12 +153,19 @@ export interface UserSettings {
   notifications: boolean;
   emailReminders: boolean;
   reminderTime: string;
+  lifecycleReminders: boolean;
+  quietHoursStart: string;
+  quietHoursEnd: string;
   soundEnabled: boolean;
   ttsEnabled: boolean;
   ttsVoice: string;
   autoPlayAudio: boolean;
   showPinyin: boolean;
   fontSize: FontSize;
+  dailyNewWordLimit: number;
+  maxReviewCount: number;
+  targetRetention: number;
+  examWeekBoost: boolean;
 }
 
 // ─── Study session ────────────────────────────────────────────────────────────

@@ -132,12 +132,19 @@ const DEFAULT_SETTINGS: UserSettings = {
   notifications: true,
   emailReminders: true,
   reminderTime: '20:00',
+  lifecycleReminders: false,
+  quietHoursStart: '22:00',
+  quietHoursEnd: '07:00',
   soundEnabled: true,
   ttsEnabled: true,
   ttsVoice: 'en-US',
   autoPlayAudio: false,
   showPinyin: false,
   fontSize: 'medium',
+  dailyNewWordLimit: 10,
+  maxReviewCount: 24,
+  targetRetention: 0.9,
+  examWeekBoost: false,
 };
 
 // Helper functions
@@ -162,6 +169,14 @@ const isThemePreference = (value: unknown): value is ThemePreference =>
 
 const isFontSize = (value: unknown): value is FontSize =>
   value === 'small' || value === 'medium' || value === 'large';
+
+const isTimeOfDay = (value: unknown): value is string =>
+  typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+
+const sanitizeNumberRange = (value: unknown, fallback: number, min: number, max: number): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, value));
+};
 
 const sanitizeIsoString = (value: unknown): string | null => {
   if (typeof value !== 'string' || value.trim().length === 0) return null;
@@ -237,6 +252,11 @@ const sanitizeStudySession = (userId: string, value: unknown): StudySession | nu
   };
 };
 
+const getRawStudySessions = (): unknown[] => {
+  const sessions = getItem<unknown>(KEYS.SESSIONS, []);
+  return Array.isArray(sessions) ? sessions : [];
+};
+
 const sanitizeUserSettings = (value: unknown): UserSettings => {
   if (!isRecord(value)) return DEFAULT_SETTINGS;
 
@@ -249,6 +269,16 @@ const sanitizeUserSettings = (value: unknown): UserSettings => {
       typeof value.reminderTime === 'string' && value.reminderTime.trim().length > 0
         ? value.reminderTime
         : DEFAULT_SETTINGS.reminderTime,
+    lifecycleReminders:
+      typeof value.lifecycleReminders === 'boolean'
+        ? value.lifecycleReminders
+        : DEFAULT_SETTINGS.lifecycleReminders,
+    quietHoursStart: isTimeOfDay(value.quietHoursStart)
+      ? value.quietHoursStart
+      : DEFAULT_SETTINGS.quietHoursStart,
+    quietHoursEnd: isTimeOfDay(value.quietHoursEnd)
+      ? value.quietHoursEnd
+      : DEFAULT_SETTINGS.quietHoursEnd,
     soundEnabled: typeof value.soundEnabled === 'boolean' ? value.soundEnabled : DEFAULT_SETTINGS.soundEnabled,
     ttsEnabled: typeof value.ttsEnabled === 'boolean' ? value.ttsEnabled : DEFAULT_SETTINGS.ttsEnabled,
     ttsVoice: typeof value.ttsVoice === 'string' ? value.ttsVoice : DEFAULT_SETTINGS.ttsVoice,
@@ -256,6 +286,14 @@ const sanitizeUserSettings = (value: unknown): UserSettings => {
       typeof value.autoPlayAudio === 'boolean' ? value.autoPlayAudio : DEFAULT_SETTINGS.autoPlayAudio,
     showPinyin: typeof value.showPinyin === 'boolean' ? value.showPinyin : DEFAULT_SETTINGS.showPinyin,
     fontSize: isFontSize(value.fontSize) ? value.fontSize : DEFAULT_SETTINGS.fontSize,
+    dailyNewWordLimit: Math.round(
+      sanitizeNumberRange(value.dailyNewWordLimit, DEFAULT_SETTINGS.dailyNewWordLimit, 1, 50),
+    ),
+    maxReviewCount: Math.round(
+      sanitizeNumberRange(value.maxReviewCount, DEFAULT_SETTINGS.maxReviewCount, 5, 100),
+    ),
+    targetRetention: sanitizeNumberRange(value.targetRetention, DEFAULT_SETTINGS.targetRetention, 0.8, 0.97),
+    examWeekBoost: typeof value.examWeekBoost === 'boolean' ? value.examWeekBoost : DEFAULT_SETTINGS.examWeekBoost,
   };
 };
 
@@ -336,6 +374,14 @@ const setBookSelectionMap = (selectionMap: Record<string, UserBookSelection>): v
 };
 
 const resolveDailyGoal = (userId: string): number => {
+  const rawSettings = getItem<Record<string, unknown>>(KEYS.SETTINGS, {})[userId];
+  if (isRecord(rawSettings) && rawSettings.dailyNewWordLimit !== undefined) {
+    const userSettings = sanitizeUserSettings(rawSettings);
+    if (userSettings.dailyNewWordLimit > 0) {
+      return userSettings.dailyNewWordLimit;
+    }
+  }
+
   const selection = getBookSelectionMap()[userId];
   if (selection?.dailyGoalOverride && selection.dailyGoalOverride > 0) {
     return selection.dailyGoalOverride;
@@ -1256,7 +1302,7 @@ export const recordStudySession = (
   xpEarned: number,
   duration: number,
 ): void => {
-  const sessions = getItem<StudySession[]>(KEYS.SESSIONS, []);
+  const sessions = getRawStudySessions();
 
   const session: StudySession = {
     id: `session_${Date.now()}`,
@@ -1276,8 +1322,7 @@ export const recordStudySession = (
 };
 
 export const getStudySessions = (userId: string): StudySession[] => {
-  const sessions = getItem<unknown[]>(KEYS.SESSIONS, []);
-  return sessions
+  return getRawStudySessions()
     .map((row) => sanitizeStudySession(userId, row))
     .filter((row): row is StudySession => row !== null);
 };

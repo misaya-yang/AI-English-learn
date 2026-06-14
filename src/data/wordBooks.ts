@@ -69,9 +69,18 @@ interface BuiltInBookTemplate {
   filter: (word: WordData) => boolean;
 }
 
+export const BUILT_IN_WORD_BOOK_IDS = {
+  A1_FOUNDATION: 'builtin_a1_foundation',
+  A2_HIGH_FREQUENCY: 'builtin_a2_high_frequency',
+  B1_CORE: 'builtin_b1_core',
+  BUSINESS_ENGLISH: 'builtin_business_english',
+  TECHNOLOGY_ENGLISH: 'builtin_technology_english',
+  IELTS_ACADEMIC_CORE: 'builtin_ielts_academic_core',
+} as const;
+
 const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
   {
-    id: 'builtin_a1_foundation',
+    id: BUILT_IN_WORD_BOOK_IDS.A1_FOUNDATION,
     name: 'A1基础',
     source: 'VocabDaily Open Word Set',
     license: 'Project dataset (open-source repository)',
@@ -80,7 +89,7 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
     filter: (word) => word.level === 'A1',
   },
   {
-    id: 'builtin_a2_high_frequency',
+    id: BUILT_IN_WORD_BOOK_IDS.A2_HIGH_FREQUENCY,
     name: 'A2高频',
     source: 'VocabDaily Open Word Set',
     license: 'Project dataset (open-source repository)',
@@ -89,7 +98,7 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
     filter: (word) => word.level === 'A2',
   },
   {
-    id: 'builtin_b1_core',
+    id: BUILT_IN_WORD_BOOK_IDS.B1_CORE,
     name: 'B1核心',
     source: 'VocabDaily Open Word Set',
     license: 'Project dataset (open-source repository)',
@@ -98,7 +107,7 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
     filter: (word) => word.level === 'B1',
   },
   {
-    id: 'builtin_business_english',
+    id: BUILT_IN_WORD_BOOK_IDS.BUSINESS_ENGLISH,
     name: '商务英语',
     source: 'VocabDaily Open Word Set',
     license: 'Project dataset (open-source repository)',
@@ -107,13 +116,25 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
     filter: (word) => word.topic === 'business',
   },
   {
-    id: 'builtin_technology_english',
+    id: BUILT_IN_WORD_BOOK_IDS.TECHNOLOGY_ENGLISH,
     name: '科技英语',
     source: 'VocabDaily Open Word Set',
     license: 'Project dataset (open-source repository)',
     levelRange: ['B1', 'B2'],
     topicTags: ['technology', 'science'],
     filter: (word) => word.topic === 'technology' || word.topic === 'science',
+  },
+  {
+    id: BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE,
+    name: 'IELTS学术核心',
+    source: 'VocabDaily Open Word Set',
+    license: 'Project dataset (open-source repository)',
+    levelRange: ['B1', 'B2', 'C1'],
+    topicTags: ['academic', 'ielts'],
+    filter: (word) => {
+      const topic = word.topic.toLowerCase();
+      return ['B1', 'B2', 'C1'].includes(word.level) && (topic === 'academic' || topic === 'stem');
+    },
   },
 ];
 

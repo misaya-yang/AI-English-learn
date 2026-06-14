@@ -1,3 +1,5 @@
+import type { LearningStyle } from '@/types';
+
 export type ExamType = 'IELTS' | 'TOEFL';
 export type ExamSkill = 'writing' | 'speaking' | 'reading' | 'listening';
 export type PlanTier = 'free' | 'pro';
@@ -147,6 +149,7 @@ export interface LearningProfile {
   target: string;
   tracks: LearningTrack[];
   dailyMinutes: number;
+  learningStyle: LearningStyle;
   languagePreference: 'en' | 'zh' | 'bilingual';
   updatedAt: string;
 }

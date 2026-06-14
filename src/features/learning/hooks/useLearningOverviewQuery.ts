@@ -23,6 +23,7 @@ export const useLearningOverviewQuery = (args: UseLearningOverviewArgs) =>
       args.userId,
       args.profile.level,
       args.profile.target,
+      args.profile.learningStyle,
       args.dueWordsCount,
       args.dailyWordsCount,
       args.learnedTodayCount,

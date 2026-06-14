@@ -11,7 +11,6 @@
  */
 
 import { useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import {
   BookOpen, CheckCircle2, XCircle, Loader2, RefreshCw,
   ChevronRight, Target, Lightbulb, Award, Clock,
@@ -25,6 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { incrementReviewCount } from '@/services/gamification';
+import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -265,7 +265,7 @@ export default function ReadingPage() {
   const { addStudySession } = useUserData();
   const { user } = useAuth();
   const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language.startsWith('zh');
 
   const [phase, setPhase] = useState<'select' | 'reading' | 'review'>('select');
   const [current, setCurrent] = useState<ReadingPassage | null>(null);
@@ -286,20 +286,20 @@ export default function ReadingPage() {
 
   const handleGenerateNew = useCallback(async () => {
     setIsGenerating(true);
-    toast.info('Generating a new passage… this may take 10-15 seconds');
+    toast.info(isZh ? '正在生成新文章，大约需要 10-15 秒' : 'Generating a new passage… this may take 10-15 seconds');
     try {
       // AI generation via edge function (graceful fallback to random seed)
       await new Promise((r) => setTimeout(r, 500)); // Simulate latency
       const randomSeed = SEED_PASSAGES[Math.floor(Math.random() * SEED_PASSAGES.length)];
-      toast.success('Passage ready!');
+      toast.success(isZh ? '文章已准备好' : 'Passage ready!');
       startPassage({ ...randomSeed, id: `gen-${Date.now()}`, title: randomSeed.title + ' (New)' });
     } catch {
-      toast.error('Generation failed — using a built-in passage');
+      toast.error(isZh ? '生成失败，已切换到内置文章' : 'Generation failed — using a built-in passage');
       startPassage(SEED_PASSAGES[0]);
     } finally {
       setIsGenerating(false);
     }
-  }, [startPassage]);
+  }, [isZh, startPassage]);
 
   // ── Answering ─────────────────────────────────────────────────────────────
 
@@ -313,7 +313,7 @@ export default function ReadingPage() {
     if (!current) return;
     const unanswered = current.questions.filter((q) => !answers[q.id]);
     if (unanswered.length > 0) {
-      toast.warning(`Please answer all ${unanswered.length} remaining question(s) first`);
+      toast.warning(isZh ? `还有 ${unanswered.length} 题未完成` : `Please answer all ${unanswered.length} remaining question(s) first`);
       return;
     }
 
@@ -345,9 +345,9 @@ export default function ReadingPage() {
     addStudySession(0, pct >= 0.8 ? 1 : 0, xp, elapsed);
     setPhase('review');
 
-    if (pct === 1)       toast.success('Perfect score! +25 XP 🎉');
-    else if (pct >= 0.8) toast.success(`Great work — ${correct}/${total} correct! +${xp} XP`);
-    else                 toast.info(`${correct}/${total} correct — review the answers below`);
+    if (pct === 1)       toast.success(isZh ? `满分！+${xp} XP` : `Perfect score! +${xp} XP`);
+    else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确，+${xp} XP` : `Great work — ${correct}/${total} correct! +${xp} XP`);
+    else                 toast.info(isZh ? `${correct}/${total} 正确，建议复盘解析` : `${correct}/${total} correct — review the answers below`);
 
     if (user?.id) {
       void recordLearningEvent({
@@ -365,34 +365,112 @@ export default function ReadingPage() {
       });
       incrementReviewCount(user.id, total);
     }
-  }, [current, answers, startTime, addStudySession, user]);
+  }, [current, answers, startTime, addStudySession, user, isZh]);
 
   // ── Score colour ──────────────────────────────────────────────────────────
 
   const scorePct = score ? score.correct / score.total : 0;
-  const scoreColor = scorePct >= 0.8 ? 'text-green-600' : scorePct >= 0.6 ? 'text-amber-600' : 'text-destructive';
-
   // ── TFNG options ──────────────────────────────────────────────────────────
   const tfngOptions: TFNGAnswer[] = ['True', 'False', 'Not Given'];
+  const featuredPassage = SEED_PASSAGES[0];
+  const featuredQuestionMix = [
+    { label: isZh ? '判断题' : 'T/F/NG', value: featuredPassage.questions.filter(q => q.type === 'tfng').length },
+    { label: isZh ? '选择题' : 'MCQ', value: featuredPassage.questions.filter(q => q.type === 'mcq').length },
+    { label: isZh ? '短答题' : 'Short answer', value: featuredPassage.questions.filter(q => q.type === 'short_answer').length },
+  ];
+  const readingStages = [
+    isZh ? '先扫标题与段落主题' : 'Skim topic and structure',
+    isZh ? '带着题型回到原文定位' : 'Locate evidence by question type',
+    isZh ? '提交后用解析修正阅读策略' : 'Use explanations to repair strategy',
+  ];
 
   // ────────────────────────────────────────────────────────────────────────
   // RENDER: Passage selection screen
   // ────────────────────────────────────────────────────────────────────────
   if (phase === 'select') {
     return (
-      <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
-        <div>
-          <p className="text-xs tracking-wider text-muted-foreground mb-1">阅读模块</p>
-          <h1 className="text-2xl font-semibold text-foreground">{isZh ? 'IELTS 学术阅读' : 'IELTS Academic Reading'}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{isZh ? '选择文章或用 AI 生成新文章' : 'Choose a passage or generate a new one with AI'}</p>
-        </div>
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
+        <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:items-stretch">
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-primary">{isZh ? '阅读专项' : 'Reading module'}</p>
+                <h1 className="mt-2 text-2xl font-semibold text-foreground">{isZh ? 'IELTS 学术阅读' : 'IELTS Academic Reading'}</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  {isZh
+                    ? '先读一段真实风格文章，再用判断、选择和短答题训练定位证据的能力。'
+                    : 'Train evidence location with IELTS-style passages, T/F/NG, MCQ, and short-answer questions.'}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border bg-background/70 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">{featuredPassage.level}</Badge>
+                  <span className="text-xs text-muted-foreground">{featuredPassage.topic}</span>
+                  <span className="text-xs text-muted-foreground">· {featuredPassage.estimatedMinutes} min</span>
+                </div>
+                <h2 className="mt-3 text-lg font-semibold text-foreground">{featuredPassage.title}</h2>
+                <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                  {featuredPassage.passage}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button onClick={() => startPassage(featuredPassage)} className="rounded-md bg-primary text-primary-foreground">
+                  {isZh ? '开始推荐文章' : 'Start recommended passage'}
+                  <ChevronRight className="ml-1.5 h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={handleGenerateNew}
+                  disabled={isGenerating}
+                  className="rounded-md"
+                  variant="outline"
+                >
+                  {isGenerating ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {isZh ? '生成中' : 'Generating'}</>
+                  ) : (
+                    <><RefreshCw className="mr-2 h-4 w-4" /> {isZh ? '生成新文章' : 'Generate passage'}</>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+              <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+                {isZh ? '本轮训练结构' : 'Session structure'}
+              </p>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {featuredQuestionMix.map((item) => (
+                  <div key={item.label} className="rounded-lg border border-border bg-card p-3 text-center">
+                    <p className="text-xl font-semibold text-foreground">{item.value}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 space-y-3">
+                {readingStages.map((stage, index) => (
+                  <div key={stage} className="flex items-start gap-3">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                      {index + 1}
+                    </span>
+                    <p className="text-sm leading-6 text-muted-foreground">{stage}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">{isZh ? '可选文章' : 'Available passages'}</h2>
+            <span className="text-xs text-muted-foreground">{SEED_PASSAGES.length} {isZh ? '篇' : 'passages'}</span>
+          </div>
           {SEED_PASSAGES.map((p) => (
             <button
               key={p.id}
               onClick={() => startPassage(p)}
-              className="w-full rounded-xl border border-border bg-card p-5 text-left shadow-sm transition hover:border-border hover:bg-muted active:scale-[0.99]"
+              className="w-full rounded-lg border border-border bg-card p-5 text-left shadow-sm transition hover:border-primary/30 hover:bg-muted/70 active:scale-[0.99]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -415,30 +493,17 @@ export default function ReadingPage() {
                 </div>
               </div>
               <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-                <span>{p.questions.length} questions</span>
+                <span>{p.questions.length} {isZh ? '题' : 'questions'}</span>
                 <span>·</span>
-                <span>{p.questions.filter(q => q.type === 'tfng').length} T/F/NG</span>
+                <span>{p.questions.filter(q => q.type === 'tfng').length} {isZh ? '判断' : 'T/F/NG'}</span>
                 <span>·</span>
-                <span>{p.questions.filter(q => q.type === 'mcq').length} MCQ</span>
+                <span>{p.questions.filter(q => q.type === 'mcq').length} {isZh ? '选择' : 'MCQ'}</span>
                 <span>·</span>
-                <span>{p.questions.filter(q => q.type === 'short_answer').length} Short answer</span>
+                <span>{p.questions.filter(q => q.type === 'short_answer').length} {isZh ? '短答' : 'Short answer'}</span>
               </div>
             </button>
           ))}
         </div>
-
-        <Button
-          onClick={handleGenerateNew}
-          disabled={isGenerating}
-          className="w-full rounded-md border border-border bg-muted text-foreground hover:bg-muted/80"
-          variant="ghost"
-        >
-          {isGenerating ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</>
-          ) : (
-            <><RefreshCw className="mr-2 h-4 w-4" /> {isZh ? '用 AI 生成新文章' : 'Generate a new passage with AI'}</>
-          )}
-        </Button>
       </div>
     );
   }
@@ -467,7 +532,7 @@ export default function ReadingPage() {
               variant="ghost"
               className="rounded-md border border-border text-muted-foreground hover:text-foreground text-xs"
             >
-              Change passage
+              {isZh ? '换文章' : 'Change passage'}
             </Button>
           </div>
         </div>
@@ -548,7 +613,7 @@ export default function ReadingPage() {
                     type="text"
                     value={answers[q.id] ?? ''}
                     onChange={(e) => setAnswer(q.id, e.target.value)}
-                    placeholder="Type your answer…"
+                    placeholder={isZh ? '输入答案...' : 'Type your answer…'}
                     className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                   />
                 )}
@@ -559,7 +624,7 @@ export default function ReadingPage() {
               onClick={handleSubmit}
               className="w-full rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 mt-2"
             >
-              Submit answers
+              {isZh ? '提交答案' : 'Submit answers'}
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
@@ -573,21 +638,41 @@ export default function ReadingPage() {
   // ────────────────────────────────────────────────────────────────────────
   return (
     <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
-      {/* Score banner */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-border bg-card p-6 text-center shadow-sm"
-      >
-        <Award className="mx-auto mb-2 h-8 w-8 text-amber-500" />
-        <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-1">Your score</p>
-        <p className={cn('text-5xl font-bold', scoreColor)}>
-          {score?.correct}/{score?.total}
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {scorePct >= 0.8 ? 'Excellent reading comprehension!' : scorePct >= 0.6 ? 'Good effort — review the answers below' : 'Keep practising — check the explanations'}
-        </p>
-      </motion.div>
+      <LearningCompletionState
+        icon={Award}
+        eyebrow={isZh ? '阅读复盘' : 'Reading recap'}
+        title={isZh ? `本次阅读 ${score?.correct}/${score?.total}` : `Reading score ${score?.correct}/${score?.total}`}
+        description={
+          scorePct >= 0.8
+            ? (isZh ? '定位证据和题型判断都比较稳，下一步可以挑战更高难度文章。' : 'Evidence location and question handling were strong. Try a harder passage next.')
+            : scorePct >= 0.6
+              ? (isZh ? '整体不错，建议把错题解析和原文证据再对照一遍。' : 'Solid run. Review the explanations and match them back to the passage evidence.')
+              : (isZh ? '先别急着换文章，把每道题的证据句看透再重练。' : 'Before switching passages, study each evidence line and retry the set.')
+        }
+        metrics={[
+          { label: isZh ? '答对' : 'Correct', value: `${score?.correct ?? 0}/${score?.total ?? current.questions.length}`, accent: scorePct >= 0.8 ? 'emerald' : undefined },
+          { label: isZh ? '正确率' : 'Accuracy', value: `${Math.round(scorePct * 100)}%`, accent: scorePct >= 0.8 ? 'emerald' : scorePct >= 0.6 ? 'warm' : undefined },
+          { label: isZh ? '题型' : 'Question mix', value: `${current.questions.length}` },
+        ]}
+        actions={
+          <>
+            <Button
+              onClick={() => setPhase('select')}
+              className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isZh ? '换一篇文章' : 'Choose another passage'}
+            </Button>
+            <Button
+              onClick={() => startPassage(current)}
+              variant="outline"
+              className="rounded-md border-border bg-card text-foreground hover:bg-muted"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {isZh ? '重练本篇' : 'Retry this passage'}
+            </Button>
+          </>
+        }
+      />
 
       {/* Answer review */}
       <div className="space-y-4">
@@ -623,11 +708,11 @@ export default function ReadingPage() {
 
               <div className="pl-6 space-y-1">
                 <p className="text-xs text-muted-foreground">
-                  Your answer: <span className={cn('font-medium', isCorrect ? 'text-green-700' : 'text-destructive')}>{answers[q.id] || '(no answer)'}</span>
+                  {isZh ? '你的答案' : 'Your answer'}: <span className={cn('font-medium', isCorrect ? 'text-green-700' : 'text-destructive')}>{answers[q.id] || (isZh ? '未作答' : '(no answer)')}</span>
                 </p>
                 {!isCorrect && (
                   <p className="text-xs text-muted-foreground">
-                    Correct: <span className="font-medium text-green-700">{q.answer}</span>
+                    {isZh ? '正确答案' : 'Correct'}: <span className="font-medium text-green-700">{q.answer}</span>
                   </p>
                 )}
               </div>
@@ -639,30 +724,13 @@ export default function ReadingPage() {
 
               {q.location && (
                 <div className="ml-6 rounded-lg border border-border bg-muted px-3 py-2">
-                  <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-0.5">Evidence in passage</p>
+                  <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-0.5">{isZh ? '原文证据' : 'Evidence in passage'}</p>
                   <p className="text-xs italic text-foreground">"{q.location}"</p>
                 </div>
               )}
             </div>
           );
         })}
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-3">
-        <Button
-          onClick={() => setPhase('select')}
-          className="flex-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          Choose another passage
-        </Button>
-        <Button
-          onClick={() => startPassage(current)}
-          variant="ghost"
-          className="rounded-md border border-border text-muted-foreground hover:text-foreground"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );

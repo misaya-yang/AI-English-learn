@@ -6,6 +6,7 @@ import type { MistakeEntry } from '@/services/mistakeCollector';
 import type { LearningProfile } from '@/types/examContent';
 
 import {
+  buildChatGoalContext,
   buildChatLearnerProfile,
   mapBurnoutBucket,
   mapMistakeCategoryToErrorType,
@@ -17,6 +18,7 @@ const baseProfile: LearningProfile = {
   target: 'IELTS 6.5',
   tracks: ['exam_boost'],
   dailyMinutes: 25,
+  learningStyle: 'reading',
   languagePreference: 'bilingual',
   updatedAt: '2026-04-25T00:00:00.000Z',
 };
@@ -96,6 +98,16 @@ describe('mapMistakeCategoryToErrorType', () => {
 });
 
 describe('buildChatLearnerProfile', () => {
+  it('includes learning style guidance in the coach goal context', () => {
+    const context = buildChatGoalContext({
+      learningProfile: baseProfile,
+      dueCount: 0,
+    });
+
+    expect(context).toContain('Preferred learning style: Read/write path');
+    expect(context).toContain('sentence frames');
+  });
+
   it('falls back gracefully when only the learning profile is supplied', () => {
     const result = buildChatLearnerProfile({ learningProfile: baseProfile });
     expect(result).toEqual({

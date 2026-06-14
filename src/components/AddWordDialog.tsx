@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,6 +33,8 @@ const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const TOPICS = ['daily', 'business', 'technology', 'travel', 'academic', 'science', 'health', 'arts', 'food', 'sports'];
 
 export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const [open, setOpen] = useState(false);
   const [searchWord, setSearchWord] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -51,12 +54,12 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
           ...wordData,
           ...result,
         });
-        toast.success('Word found!');
+        toast.success(isZh ? '已找到单词' : 'Word found!');
       } else {
-        toast.error('Word not found in dictionary');
+        toast.error(isZh ? '词典里暂时没有找到这个词' : 'Word not found in dictionary');
       }
     } catch {
-      toast.error('Error searching word');
+      toast.error(isZh ? '查询单词失败' : 'Error searching word');
     } finally {
       setIsSearching(false);
     }
@@ -64,7 +67,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
 
   const handleAdd = () => {
     if (!wordData.word || !wordData.definition) {
-      toast.error('Please fill in all required fields');
+      toast.error(isZh ? '请填写必填字段' : 'Please fill in all required fields');
       return;
     }
 
@@ -86,7 +89,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
     };
 
     onAddWord(newWord);
-    toast.success('Word added successfully!');
+    toast.success(isZh ? '单词已加入自定义词书' : 'Word added successfully!');
     setOpen(false);
     setSearchWord('');
     setWordData({ level: 'B1', topic: 'daily' });
@@ -97,21 +100,21 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
       <DialogTrigger asChild>
         <Button className="bg-emerald-600 hover:bg-emerald-700">
           <Plus className="h-4 w-4 mr-2" />
-          Add Word
+          {isZh ? '添加单词' : 'Add Word'}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Word</DialogTitle>
+          <DialogTitle>{isZh ? '添加新单词' : 'Add New Word'}</DialogTitle>
           <DialogDescription>
-            Search for a word from the dictionary or add it manually.
+            {isZh ? '从词典查询一个词，或手动补充到你的自定义词书。' : 'Search for a word from the dictionary or add it manually.'}
           </DialogDescription>
         </DialogHeader>
 
         {/* Search Section */}
         <div className="flex gap-2">
           <Input
-            placeholder="Search word..."
+            placeholder={isZh ? '搜索英文单词...' : 'Search word...'}
             value={searchWord}
             onChange={(e) => setSearchWord(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -132,7 +135,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="word">Word *</Label>
+              <Label htmlFor="word">{isZh ? '单词 *' : 'Word *'}</Label>
               <Input
                 id="word"
                 value={wordData.word || ''}
@@ -141,7 +144,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phonetic">Phonetic</Label>
+              <Label htmlFor="phonetic">{isZh ? '音标' : 'Phonetic'}</Label>
               <Input
                 id="phonetic"
                 value={wordData.phonetic || ''}
@@ -153,7 +156,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="partOfSpeech">Part of Speech</Label>
+              <Label htmlFor="partOfSpeech">{isZh ? '词性' : 'Part of Speech'}</Label>
               <Input
                 id="partOfSpeech"
                 value={wordData.partOfSpeech || ''}
@@ -162,7 +165,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="level">Level</Label>
+              <Label htmlFor="level">{isZh ? '等级' : 'Level'}</Label>
               <Select
                 value={wordData.level}
                 onValueChange={(value) => setWordData({ ...wordData, level: value as WordData['level'] })}
@@ -182,7 +185,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="topic">Topic</Label>
+            <Label htmlFor="topic">{isZh ? '主题' : 'Topic'}</Label>
             <Select
               value={wordData.topic}
               onValueChange={(value) => setWordData({ ...wordData, topic: value })}
@@ -201,18 +204,18 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="definition">Definition (English) *</Label>
+            <Label htmlFor="definition">{isZh ? '英文释义 *' : 'Definition (English) *'}</Label>
             <Textarea
               id="definition"
               value={wordData.definition || ''}
               onChange={(e) => setWordData({ ...wordData, definition: e.target.value })}
-              placeholder="Enter the definition..."
+              placeholder={isZh ? '输入英文释义...' : 'Enter the definition...'}
               rows={2}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="definitionZh">Definition (Chinese)</Label>
+            <Label htmlFor="definitionZh">{isZh ? '中文释义' : 'Definition (Chinese)'}</Label>
             <Textarea
               id="definitionZh"
               value={wordData.definitionZh || ''}
@@ -223,7 +226,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="examples">Example Sentences</Label>
+            <Label htmlFor="examples">{isZh ? '例句' : 'Example Sentences'}</Label>
             <Textarea
               id="examples"
               value={wordData.examples?.map(e => `${e.en}\n${e.zh}`).join('\n\n') || ''}
@@ -242,7 +245,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="synonyms">Synonyms (comma separated)</Label>
+              <Label htmlFor="synonyms">{isZh ? '近义词（逗号分隔）' : 'Synonyms (comma separated)'}</Label>
               <Input
                 id="synonyms"
                 value={wordData.synonyms?.join(', ') || ''}
@@ -251,7 +254,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="antonyms">Antonyms (comma separated)</Label>
+              <Label htmlFor="antonyms">{isZh ? '反义词（逗号分隔）' : 'Antonyms (comma separated)'}</Label>
               <Input
                 id="antonyms"
                 value={wordData.antonyms?.join(', ') || ''}
@@ -262,7 +265,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="collocations">Collocations (comma separated)</Label>
+            <Label htmlFor="collocations">{isZh ? '搭配（逗号分隔）' : 'Collocations (comma separated)'}</Label>
             <Input
               id="collocations"
               value={wordData.collocations?.join(', ') || ''}
@@ -272,12 +275,12 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="memoryTip">Memory Tip</Label>
+            <Label htmlFor="memoryTip">{isZh ? '记忆提示' : 'Memory Tip'}</Label>
             <Textarea
               id="memoryTip"
               value={wordData.memoryTip || ''}
               onChange={(e) => setWordData({ ...wordData, memoryTip: e.target.value })}
-              placeholder="A helpful tip to remember this word..."
+              placeholder={isZh ? '写一个帮助记住这个词的提示...' : 'A helpful tip to remember this word...'}
               rows={2}
             />
           </div>
@@ -285,10 +288,10 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {isZh ? '取消' : 'Cancel'}
           </Button>
           <Button onClick={handleAdd} className="bg-emerald-600 hover:bg-emerald-700">
-            Add Word
+            {isZh ? '添加单词' : 'Add Word'}
           </Button>
         </DialogFooter>
       </DialogContent>

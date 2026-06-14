@@ -51,6 +51,7 @@ import {
 import { initCard, scheduleReview } from '@/services/fsrs';
 import { ensureFSRS } from '@/services/fsrsMigration';
 import { computeLearnerModel } from '@/services/learnerModel';
+import { applyLearnerControls } from '@/services/learnerControls';
 import { buildIdempotencyKey, syncQueue } from '@/services/syncQueue';
 import type { FSRSState, UserSettings } from '@/types/core';
 import {
@@ -303,9 +304,12 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   const buildDailyLearnerModel = useCallback(
-    (userProgress: UserProgress[], streakDays: number, dailyGoal: number) => {
+    (userProgress: UserProgress[], streakDays: number, dailyGoal: number, userSettings: UserSettings) => {
       if (userProgress.length === 0) return null;
-      return computeLearnerModel(userId, userProgress, streakDays, dailyGoal);
+      return applyLearnerControls(
+        computeLearnerModel(userId, userProgress, streakDays, dailyGoal),
+        userSettings,
+      );
     },
     [userId],
   );
@@ -322,6 +326,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const userCustomWords = getCustomWords(userId);
     setCustomWords(userCustomWords);
 
+    const userSettings = getSettings(userId);
+    setSettings(userSettings);
+
     const daily = getDailyWordsFromStorage(userId, wordsDatabase);
     setDailyWords(daily);
 
@@ -332,7 +339,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     setProgress(userProgress);
     backfillIndexedProgress(userProgress);
 
-    const due = getDueWords(userId);
+    const due = getDueWords(userId).slice(0, userSettings.maxReviewCount);
     setDueWords(due);
 
     const mastered = getMasteredWords(userId);
@@ -353,7 +360,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const profile = getLearningProfile(userId);
     setLearningProfileState(profile);
 
-    const learnerModel = buildDailyLearnerModel(userProgress, userStreak.current, summary.dailyGoal);
+    const learnerModel = buildDailyLearnerModel(userProgress, userStreak.current, summary.dailyGoal, userSettings);
 
     void getOrCreateDailyMission({
       userId,
@@ -363,9 +370,6 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     }).then((mission) => {
       setDailyMission(mission);
     });
-
-    const userSettings = getSettings(userId);
-    setSettings(userSettings);
   }, [backfillIndexedProgress, buildDailyLearnerModel, user, userId]);
 
   useEffect(() => {
@@ -659,6 +663,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const saved = saveSettings(userId, newSettings);
     setSettings(saved);
+    loadData();
   };
 
   const addStudySession = (
@@ -689,7 +694,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       if (!user) return;
       void saveLearningProfile(userId, updates).then((profile) => {
         setLearningProfileState(profile);
-        const learnerModel = buildDailyLearnerModel(progress, currentStreak, activeBookSummary.dailyGoal);
+        const learnerModel = buildDailyLearnerModel(progress, currentStreak, activeBookSummary.dailyGoal, settings);
         void getOrCreateDailyMission({
           userId,
           goalWords: activeBookSummary.dailyGoal,
@@ -698,19 +703,19 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }).then((mission) => setDailyMission(mission));
       });
     },
-    [activeBookSummary.dailyGoal, buildDailyLearnerModel, currentStreak, dueWords.length, progress, user, userId],
+    [activeBookSummary.dailyGoal, buildDailyLearnerModel, currentStreak, dueWords.length, progress, settings, user, userId],
   );
 
   const refreshDailyMission = useCallback(() => {
     if (!user) return;
-    const learnerModel = buildDailyLearnerModel(progress, currentStreak, activeBookSummary.dailyGoal);
+    const learnerModel = buildDailyLearnerModel(progress, currentStreak, activeBookSummary.dailyGoal, settings);
     void getOrCreateDailyMission({
       userId,
       goalWords: activeBookSummary.dailyGoal,
       dueCount: dueWords.length,
       learnerModel,
     }).then((mission) => setDailyMission(mission));
-  }, [activeBookSummary.dailyGoal, buildDailyLearnerModel, currentStreak, dueWords.length, progress, user, userId]);
+  }, [activeBookSummary.dailyGoal, buildDailyLearnerModel, currentStreak, dueWords.length, progress, settings, user, userId]);
 
   const completeMissionTask = useCallback(
     (taskId: string) => {

@@ -48,6 +48,11 @@ import { buildPracticeMistakeRecord } from '@/services/practiceMistakes';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
+import { getLearningStylePersonalization } from '@/features/learning/learningStylePersonalization';
+import {
+  getRecommendedPracticeMode,
+  isStylePracticeRecommendation,
+} from '@/features/practice/recommendedMode';
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
 import { useTranslation } from 'react-i18next';
 import { buildListeningQueue, buildPracticeQuestions } from '@/features/practice/runtime';
@@ -58,6 +63,7 @@ const practiceModes = [
     name: 'Multiple Choice',
     nameZh: '选择题',
     description: 'Test your knowledge with multiple choice questions',
+    descriptionZh: '用选择题快速检查词义和语境判断。',
     icon: HelpCircle,
   },
   {
@@ -65,6 +71,7 @@ const practiceModes = [
     name: 'Fill in the Blank',
     nameZh: '填空题',
     description: 'Complete sentences with the correct word',
+    descriptionZh: '把单词放回句子里，练真实使用感。',
     icon: PenTool,
   },
   {
@@ -72,6 +79,7 @@ const practiceModes = [
     name: 'Listening Quiz',
     nameZh: '听力测验',
     description: 'Listen and identify the correct word',
+    descriptionZh: '听辨发音并拼写单词，强化声音记忆。',
     icon: Headphones,
   },
   {
@@ -79,6 +87,7 @@ const practiceModes = [
     name: 'Writing Practice',
     nameZh: '写作练习',
     description: 'Write sentences and get AI feedback',
+    descriptionZh: '写一段输出，获得结构化 AI 反馈。',
     icon: Zap,
   },
 ] as const;
@@ -91,10 +100,10 @@ const lightSelectContentClass = 'border-border bg-background text-foreground';
 export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, dueWords, progress, streak, addStudySession, completeMissionTask, reviewWord } = useUserData();
+  const { dailyWords, dueWords, progress, streak, learningProfile, addStudySession, completeMissionTask, reviewWord } = useUserData();
   const { i18n } = useTranslation();
   const practiceLanguage = i18n.language;
-  const isZh = practiceLanguage === 'zh';
+  const isZh = practiceLanguage.startsWith('zh');
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -248,15 +257,39 @@ export default function PracticePage() {
     });
   }, [isComplete, userId, selectedMode, score, totalQuestions]);
 
-  const recommendedModeId = useMemo(() => {
-    if (dueWords.length >= 5) return 'quiz';
-    if (dailyWords.length >= 8) return 'fill_blank';
-    if (dailyWords.length >= 4) return 'listening';
-    return 'writing';
-  }, [dailyWords.length, dueWords.length]);
+  const recommendedMode = useMemo(
+    () => getRecommendedPracticeMode({
+      dueWordCount: dueWords.length,
+      dailyWordCount: dailyWords.length,
+      learningStyle: learningProfile.learningStyle,
+    }),
+    [dailyWords.length, dueWords.length, learningProfile.learningStyle],
+  );
+  const recommendedModeId = recommendedMode.modeId;
+  const stylePersonalization = getLearningStylePersonalization(learningProfile.learningStyle);
+  const isStyleRecommended = isStylePracticeRecommendation(recommendedMode.reason);
 
   const focusedModeId = selectedMode || recommendedModeId;
   const focusedMode = practiceModes.find((mode) => mode.id === focusedModeId) || practiceModes[0];
+  const focusedModeLabel = isZh ? focusedMode.nameZh : focusedMode.name;
+  const focusedModeDescription = isZh ? focusedMode.descriptionZh : focusedMode.description;
+  const writingScoreLabels = {
+    task: isZh ? '任务回应' : 'Task',
+    coherence: isZh ? '连贯衔接' : 'Coherence',
+    lexical: isZh ? '词汇资源' : 'Lexical',
+    grammar: isZh ? '语法准确' : 'Grammar',
+    overall: isZh ? '总分' : 'Overall',
+  };
+  const issueTagLabels: Record<string, string> = {
+    grammar: isZh ? '语法' : 'grammar',
+    lexical: isZh ? '词汇' : 'lexical',
+    coherence: isZh ? '连贯' : 'coherence',
+    task_response: isZh ? '任务回应' : 'task response',
+    collocation: isZh ? '搭配' : 'collocation',
+    tense: isZh ? '时态' : 'tense',
+    logic: isZh ? '逻辑' : 'logic',
+    word_count: isZh ? '字数' : 'word count',
+  };
 
   const modeBlueprints = useMemo(
     () => ({
@@ -302,7 +335,13 @@ export default function PracticePage() {
 
   const focusedBlueprint = modeBlueprints[focusedModeId as keyof typeof modeBlueprints];
   const accuracyPct = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
-  const sessionStage = !selectedMode ? '先选模式' : !hasStarted ? '准备开始' : isComplete ? '本轮完成' : '进行中';
+  const sessionStage = !selectedMode
+    ? (isZh ? '先选模式' : 'Pick a mode')
+    : !hasStarted
+      ? (isZh ? '准备开始' : 'Ready')
+      : isComplete
+        ? (isZh ? '本轮完成' : 'Complete')
+        : (isZh ? '进行中' : 'In progress');
 
   const pickMode = (modeId: string) => {
     resetPracticeRuntime();
@@ -343,7 +382,11 @@ export default function PracticePage() {
       setCombo(newCombo);
       setMaxCombo((prev) => Math.max(prev, newCombo));
       setScore((prev) => prev + 1);
-      const comboBonus = newCombo >= 5 ? ' 🔥 Combo x5!' : newCombo >= 3 ? ' ⚡ Combo x3!' : '';
+      const comboBonus = newCombo >= 5
+        ? (isZh ? '，5 连击' : ', 5-answer streak')
+        : newCombo >= 3
+          ? (isZh ? '，3 连击' : ', 3-answer streak')
+          : '';
       toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 XP${comboBonus}`);
       // Bump per-word progress through FSRS so a correct answer is reflected
       // in the durable progress store, not just the session score.
@@ -614,8 +657,8 @@ export default function PracticePage() {
   };
 
   const renderModeSelector = () => (
-    <LearningRailSection title="练习模式">
-      <nav className="space-y-2" aria-label="Practice modes">
+    <LearningRailSection title={isZh ? '练习模式' : 'Practice modes'}>
+      <nav className="space-y-2" aria-label={isZh ? '练习模式' : 'Practice modes'}>
         {practiceModes.map((mode) => {
           const active = focusedModeId === mode.id;
           const Icon = mode.icon;
@@ -626,8 +669,8 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-xl border border-transparent px-4 py-3 text-left transition-all',
-                active ? 'bg-muted border-border' : 'hover:border-border hover:bg-muted',
+                'group relative w-full rounded-lg border border-transparent px-4 py-3 text-left transition-all',
+                active ? 'premium-panel-soft border-border shadow-sm' : 'hover:border-border hover:bg-muted/70',
               )}
             >
               <span
@@ -647,14 +690,18 @@ export default function PracticePage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-foreground">{mode.name}</span>
+                    <span className="truncate text-sm font-semibold text-foreground">
+                      {isZh ? mode.nameZh : mode.name}
+                    </span>
                     {mode.id === recommendedModeId ? (
                       <span className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-2 py-0.5 text-[10px] font-medium text-[hsl(var(--accent-practice))]">
-                        推荐
+                        {isZh ? '推荐' : 'Recommended'}
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">{mode.nameZh}</span>
+                  <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                    {isZh ? mode.descriptionZh : mode.description}
+                  </span>
                 </span>
               </div>
             </button>
@@ -675,17 +722,17 @@ export default function PracticePage() {
           ]}
           className="border-t-0 pt-0"
         />
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">当前模式</p>
-          <p className="mt-2 text-lg font-semibold text-foreground">{focusedMode.nameZh}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{focusedBlueprint.insight}</p>
+        <div className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">{isZh ? '当前模式' : 'Current mode'}</p>
+          <p className="mt-2 text-lg font-semibold text-foreground">{focusedModeLabel}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{focusedModeDescription}</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">当前阶段</p>
+        <div className="premium-panel-soft rounded-lg border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">{isZh ? '当前阶段' : 'Stage'}</p>
           <p className="mt-2 text-lg font-semibold text-foreground">{sessionStage}</p>
         </div>
         {selectedMode === 'writing' ? (
-          <div className="rounded-xl border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
+          <div className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
             <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
               <Zap className="h-4 w-4" />
               <p className="text-sm font-semibold">{isZh ? 'AI 高级反馈额度' : 'Advanced feedback quota'}</p>
@@ -702,10 +749,10 @@ export default function PracticePage() {
   const pageTitle = !selectedMode
     ? '先锁定今天最值得练的一种模式。'
     : !hasStarted
-      ? `准备进入 ${focusedMode.nameZh}`
+      ? `${isZh ? '准备进入' : 'Prepare'} ${focusedModeLabel}`
       : isComplete
         ? '这轮短练习已经完成。'
-        : `${focusedMode.nameZh} 进行中`;
+        : `${focusedModeLabel} ${isZh ? '进行中' : 'in progress'}`;
 
   const pageDescription = !selectedMode
     ? undefined
@@ -731,7 +778,7 @@ export default function PracticePage() {
     const secondaryActions: Array<{ label: string; onClick?: () => void; href?: string; variant?: 'outline' }> = [];
     if (selectedMode && !hasStarted && (selectedMode === 'quiz' || selectedMode === 'fill_blank')) {
       secondaryActions.push({
-        label: timedMode ? '⏱️ 60s 限时 ON' : '60s 限时',
+        label: timedMode ? (isZh ? '60 秒限时：开' : '60s timer on') : (isZh ? '60 秒限时' : '60s timer'),
         onClick: () => setTimedMode((prev) => !prev),
         variant: 'outline',
       });
@@ -758,9 +805,9 @@ export default function PracticePage() {
           secondaryActions,
         }}
         metrics={[
-          { label: isZh ? '推荐' : 'Recommended', value: focusedMode.nameZh, accent: 'emerald' },
-          ...(hasStarted && timedMode ? [{ label: '⏱️ Time', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
-          ...(hasStarted && combo > 0 ? [{ label: '🔥 Combo', value: `${combo}x`, accent: 'emerald' as const }] : []),
+          { label: isZh ? '推荐' : 'Recommended', value: focusedModeLabel, accent: 'emerald' },
+          ...(hasStarted && timedMode ? [{ label: isZh ? '剩余时间' : 'Time left', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
+          ...(hasStarted && combo > 0 ? [{ label: isZh ? '连击' : 'Streak', value: `${combo}x`, accent: 'emerald' as const }] : []),
           ...(!hasStarted ? [
             { label: isZh ? '预计' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}` },
             { label: isZh ? '题量' : 'Prompts', value: focusedBlueprint.estimatedQuestions },
@@ -786,12 +833,14 @@ export default function PracticePage() {
     return renderPageShell(
       <LearningWorkspaceSurface
         eyebrow={isZh ? '今日推荐' : 'Recommended for today'}
-        title={`${focusedMode.name} · ${focusedMode.nameZh}`}
+        title={focusedModeLabel}
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
-              {focusedBlueprint.labelZh}
+              {isStyleRecommended
+                ? (isZh ? stylePersonalization.practiceBadge.zh : stylePersonalization.practiceBadge.en)
+                : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label)}
             </Badge>
             <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
               {focusedBlueprint.estimatedQuestions} 题
@@ -802,9 +851,16 @@ export default function PracticePage() {
           </div>
 
           {renderFactStrip([
-            { label: isZh ? '训练目标' : 'Objective', value: isZh ? (focusedModeId === 'fill_blank' ? '用正确单词补全句子' : focusedModeId === 'listening' ? '听辨单词并拼写' : focusedMode.description) : focusedMode.description, hint: '' },
-            { label: '预计时长', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'emerald' },
-            { label: '今日素材', value: `${dailyWords.length}${isZh ? ' 个词' : ' words'}`, hint: '' },
+            { label: isZh ? '训练目标' : 'Objective', value: focusedModeDescription, hint: '' },
+            {
+              label: isZh ? '推荐依据' : 'Why',
+              value: isStyleRecommended
+                ? (isZh ? stylePersonalization.label.zh : stylePersonalization.label.en)
+                : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label),
+              hint: '',
+            },
+            { label: isZh ? '预计时长' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'emerald' },
+            { label: isZh ? '今日素材' : 'Today material', value: `${dailyWords.length}${isZh ? ' 个词' : ' words'}`, hint: '' },
           ])}
 
           <div className="border-t border-border pt-5">
@@ -822,7 +878,7 @@ export default function PracticePage() {
     return renderPageShell(
       <LearningWorkspaceSurface
         eyebrow={isZh ? '准备本轮' : 'Prepare the session'}
-        title={`${focusedMode.name} · ${focusedMode.nameZh}`}
+        title={focusedModeLabel}
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
@@ -838,17 +894,24 @@ export default function PracticePage() {
             </Badge>
             {selectedMode === 'writing' ? (
               <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-                AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
+                {isZh ? 'AI 反馈额度' : 'AI feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
               </Badge>
             ) : null}
           </div>
 
           {renderFactStrip([
-            { label: '这轮会做什么', value: focusedMode.description, hint: '' },
-            { label: '为什么现在做', value: focusedBlueprint.labelZh, hint: '', accent: 'emerald' },
+            { label: isZh ? '这轮会做什么' : 'What this trains', value: focusedModeDescription, hint: '' },
             {
-              label: '完成后得到什么',
-              value: selectedMode === 'writing' ? '结构化评分' : '正确率 + 下一步建议',
+              label: isZh ? '为什么现在做' : 'Why now',
+              value: isZh ? focusedBlueprint.labelZh : focusedBlueprint.label,
+              hint: '',
+              accent: 'emerald',
+            },
+            {
+              label: isZh ? '完成后得到什么' : 'Outcome',
+              value: selectedMode === 'writing'
+                ? (isZh ? '结构化评分' : 'Structured scoring')
+                : (isZh ? '正确率 + 下一步建议' : 'Accuracy + next step'),
               hint: '',
             },
           ])}
@@ -876,17 +939,17 @@ export default function PracticePage() {
   if (selectedMode === 'writing') {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow="Writing workspace"
-        title="IELTS Writing Coach"
+        eyebrow={isZh ? '写作工作区' : 'Writing workspace'}
+        title={isZh ? 'IELTS 写作教练' : 'IELTS Writing Coach'}
         actions={
           <div className="flex items-center gap-2">
             {writingRound > 1 && (
               <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))]">
-                Round {writingRound}
+                {isZh ? `第 ${writingRound} 轮` : `Round ${writingRound}`}
               </Badge>
             )}
             <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-              AI feedback left: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
+              {isZh ? 'AI 反馈额度' : 'AI feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
             </Badge>
           </div>
         }
@@ -894,45 +957,48 @@ export default function PracticePage() {
         <div className="space-y-6">
           <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
             <div className="space-y-3">
-              <Label className="text-foreground">Task Type</Label>
+              <Label className="text-foreground">{isZh ? '任务类型' : 'Task type'}</Label>
               <Select value={writingTaskType} onValueChange={(value: 'task1' | 'task2') => setWritingTaskType(value)}>
                 <SelectTrigger className={cn('rounded-md', lightInputClass)}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={lightSelectContentClass}>
-                  <SelectItem value="task1" className="focus:bg-muted focus:text-foreground">Task 1</SelectItem>
-                  <SelectItem value="task2" className="focus:bg-muted focus:text-foreground">Task 2</SelectItem>
+                  <SelectItem value="task1" className="focus:bg-muted focus:text-foreground">
+                    {isZh ? 'Task 1 小作文' : 'Task 1'}
+                  </SelectItem>
+                  <SelectItem value="task2" className="focus:bg-muted focus:text-foreground">
+                    {isZh ? 'Task 2 大作文' : 'Task 2'}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-foreground">Prompt</Label>
+              <Label className="text-foreground">{isZh ? '题目' : 'Prompt'}</Label>
               <Textarea
                 value={writingPrompt}
                 onChange={(event) => setWritingPrompt(event.target.value)}
-                className={cn('min-h-[140px] rounded-xl p-4', lightInputClass)}
+                className={cn('min-h-[140px] rounded-lg p-4', lightInputClass)}
               />
             </div>
           </div>
 
-          {/* Previous round summary banner shown while revising */}
           {writingRound > 1 && previousFeedback && !writingFeedback && (
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2"
+              className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-4"
             >
               <p className="text-xs font-semibold text-amber-600">
-                第 {writingRound - 1} 轮得分 · 修改后提交
+                {isZh ? `第 ${writingRound - 1} 轮得分 · 修改后提交` : `Round ${writingRound - 1} score · revise and resubmit`}
               </p>
               <div className="flex flex-wrap gap-3">
                 {[
-                  ['Task', previousFeedback.scores.taskResponse],
-                  ['Coherence', previousFeedback.scores.coherenceCohesion],
-                  ['Lexical', previousFeedback.scores.lexicalResource],
-                  ['Grammar', previousFeedback.scores.grammaticalRangeAccuracy],
-                  ['Overall', previousFeedback.scores.overallBand],
+                  [writingScoreLabels.task, previousFeedback.scores.taskResponse],
+                  [writingScoreLabels.coherence, previousFeedback.scores.coherenceCohesion],
+                  [writingScoreLabels.lexical, previousFeedback.scores.lexicalResource],
+                  [writingScoreLabels.grammar, previousFeedback.scores.grammaticalRangeAccuracy],
+                  [writingScoreLabels.overall, previousFeedback.scores.overallBand],
                 ].map(([label, value]) => (
                   <span key={label as string} className="text-xs text-muted-foreground">
                     {label}: <span className="text-foreground font-medium">{(value as number).toFixed(1)}</span>
@@ -941,19 +1007,22 @@ export default function PracticePage() {
               </div>
               {previousFeedback.issues.length > 0 && (
                 <p className="text-xs text-muted-foreground pt-1">
-                  Key issue: {previousFeedback.issues[0].message}
+                  {isZh ? '主要问题' : 'Key issue'}:{' '}
+                  {isZh && previousFeedback.issues[0].messageZh
+                    ? previousFeedback.issues[0].messageZh
+                    : previousFeedback.issues[0].message}
                 </p>
               )}
             </motion.div>
           )}
 
           <div className="space-y-3 border-t border-border pt-5">
-            <Label className="text-foreground">Your response</Label>
+            <Label className="text-foreground">{isZh ? '你的作答' : 'Your response'}</Label>
             <Textarea
               value={writingInput}
               onChange={(event) => setWritingInput(event.target.value)}
-              placeholder="Write your IELTS response here..."
-              className={cn('min-h-[300px] rounded-xl p-5 text-base leading-7', lightInputClass)}
+              placeholder={isZh ? '在这里输入你的 IELTS 作文...' : 'Write your IELTS response here...'}
+              className={cn('min-h-[300px] rounded-lg p-5 text-base leading-7', lightInputClass)}
             />
           </div>
 
@@ -971,12 +1040,12 @@ export default function PracticePage() {
               >
                 <Zap className="mr-2 h-4 w-4" />
                 {isQuotaLoading
-                  ? 'Loading quota...'
+                  ? (isZh ? '正在读取额度...' : 'Loading quota...')
                   : isWritingSubmitting
-                    ? 'Generating feedback...'
+                    ? (isZh ? '正在生成反馈...' : 'Generating feedback...')
                     : feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0
-                      ? 'Quota exhausted today'
-                      : 'Get IELTS AI Feedback'}
+                      ? (isZh ? '今日额度已用完' : 'Quota exhausted today')
+                      : (isZh ? '获取 IELTS AI 反馈' : 'Get IELTS AI Feedback')}
               </Button>
             </div>
           ) : (
@@ -988,11 +1057,13 @@ export default function PracticePage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
                   <Lightbulb className="h-4 w-4 text-yellow-500" />
-                  {writingRound > 1 ? `Round ${writingRound} Feedback` : 'Writing feedback'}
+                  {writingRound > 1
+                    ? (isZh ? `第 ${writingRound} 轮反馈` : `Round ${writingRound} feedback`)
+                    : (isZh ? '写作反馈' : 'Writing feedback')}
                 </div>
                 {previousFeedback && (
                   <span className="text-xs text-muted-foreground">
-                    vs Round {writingRound - 1}: {previousFeedback.scores.overallBand.toFixed(1)} → {writingFeedback.scores.overallBand.toFixed(1)}
+                    {isZh ? `对比第 ${writingRound - 1} 轮` : `vs Round ${writingRound - 1}`}: {previousFeedback.scores.overallBand.toFixed(1)} → {writingFeedback.scores.overallBand.toFixed(1)}
                     {writingFeedback.scores.overallBand > previousFeedback.scores.overallBand
                       ? ' ↑'
                       : writingFeedback.scores.overallBand < previousFeedback.scores.overallBand
@@ -1005,11 +1076,11 @@ export default function PracticePage() {
               <div className="grid gap-3 md:grid-cols-5">
                 {(
                   [
-                    ['Task', writingFeedback.scores.taskResponse, previousFeedback?.scores.taskResponse],
-                    ['Coherence', writingFeedback.scores.coherenceCohesion, previousFeedback?.scores.coherenceCohesion],
-                    ['Lexical', writingFeedback.scores.lexicalResource, previousFeedback?.scores.lexicalResource],
-                    ['Grammar', writingFeedback.scores.grammaticalRangeAccuracy, previousFeedback?.scores.grammaticalRangeAccuracy],
-                    ['Overall', writingFeedback.scores.overallBand, previousFeedback?.scores.overallBand],
+                    [writingScoreLabels.task, writingFeedback.scores.taskResponse, previousFeedback?.scores.taskResponse],
+                    [writingScoreLabels.coherence, writingFeedback.scores.coherenceCohesion, previousFeedback?.scores.coherenceCohesion],
+                    [writingScoreLabels.lexical, writingFeedback.scores.lexicalResource, previousFeedback?.scores.lexicalResource],
+                    [writingScoreLabels.grammar, writingFeedback.scores.grammaticalRangeAccuracy, previousFeedback?.scores.grammaticalRangeAccuracy],
+                    [writingScoreLabels.overall, writingFeedback.scores.overallBand, previousFeedback?.scores.overallBand],
                   ] as [string, number, number | undefined][]
                 ).map(([label, value, prevValue], index) => {
                   const delta = prevValue !== undefined ? value - prevValue : 0;
@@ -1017,7 +1088,7 @@ export default function PracticePage() {
                   <div
                     key={label}
                     className={cn(
-                      'rounded-xl border border-border bg-card p-4',
+                      'rounded-lg border border-border bg-card p-4',
                       index === 4 && 'border-border bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]',
                     )}
                   >
@@ -1033,22 +1104,25 @@ export default function PracticePage() {
                 })}
               </div>
 
-              {/* ── Summary ───────────────────────────────────────────── */}
               {writingFeedback.summary && (
-                <div className="rounded-xl border border-border bg-card p-4 flex gap-3">
+                <div className="flex gap-3 rounded-lg border border-border bg-card p-4">
                   <Quote className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
                   <div>
-                    <p className="text-sm leading-6 text-foreground">{writingFeedback.summary}</p>
-                    {writingFeedback.summaryZh && (
+                    <p className="text-sm leading-6 text-foreground">
+                      {isZh && writingFeedback.summaryZh ? writingFeedback.summaryZh : writingFeedback.summary}
+                    </p>
+                    {writingFeedback.summaryZh && !isZh && (
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">{writingFeedback.summaryZh}</p>
                     )}
+                    {isZh && writingFeedback.summaryZh ? (
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{writingFeedback.summary}</p>
+                    ) : null}
                   </div>
                 </div>
               )}
 
-              {/* ── Strengths ──────────────────────────────────────────── */}
               {writingFeedback.strengths && writingFeedback.strengths.length > 0 && (
-                <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4">
                   <div className="mb-2 flex items-center gap-2">
                     <ThumbsUp className="h-3.5 w-3.5 text-green-600" />
                     <span className="text-xs font-medium text-green-600">
@@ -1066,7 +1140,6 @@ export default function PracticePage() {
                 </div>
               )}
 
-              {/* ── Issues ─────────────────────────────────────────────── */}
               <div className="space-y-3">
                 {writingFeedback.issues.map((issue, index) => {
                   const severityColor =
@@ -1088,20 +1161,18 @@ export default function PracticePage() {
                   return (
                     <div
                       key={`${issue.tag}-${index}`}
-                      className={cn('rounded-xl border p-4 space-y-2', severityColor)}
+                      className={cn('space-y-2 rounded-lg border p-4', severityColor)}
                     >
-                      {/* header row */}
                       <div className="flex items-center gap-2">
                         <AlertTriangle className={cn(
                           'h-3.5 w-3.5 shrink-0',
                           issue.severity === 'high' ? 'text-destructive' : issue.severity === 'medium' ? 'text-amber-500' : 'text-muted-foreground',
                         )} />
                         <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-medium', tagColors[issue.tag] ?? 'bg-muted text-muted-foreground')}>
-                          {issue.tag.replace('_', ' ')}
+                          {issueTagLabels[issue.tag] ?? issue.tag.replace('_', ' ')}
                         </span>
                       </div>
 
-                      {/* problematic sentence (highlighted) */}
                       {issue.sentence && (
                         <div className="rounded-lg border border-border bg-muted px-3 py-2">
                           <p className="text-[11px] text-muted-foreground mb-1">原句</p>
@@ -1109,19 +1180,20 @@ export default function PracticePage() {
                         </div>
                       )}
 
-                      {/* problem description */}
-                      <p className="text-sm font-medium text-foreground">{issue.message}</p>
-                      {issue.messageZh && (
+                      <p className="text-sm font-medium text-foreground">
+                        {isZh && issue.messageZh ? issue.messageZh : issue.message}
+                      </p>
+                      {issue.messageZh && !isZh && (
                         <p className="text-xs text-muted-foreground">{issue.messageZh}</p>
                       )}
 
-                      {/* suggestion */}
-                      <p className="text-sm leading-6 text-muted-foreground">{issue.suggestion}</p>
-                      {issue.suggestionZh && (
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        {isZh && issue.suggestionZh ? issue.suggestionZh : issue.suggestion}
+                      </p>
+                      {issue.suggestionZh && !isZh && (
                         <p className="text-xs text-muted-foreground">{issue.suggestionZh}</p>
                       )}
 
-                      {/* corrected version */}
                       {issue.correction && (
                         <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2">
                           <p className="text-[11px] text-green-600 mb-1">建议改为</p>
@@ -1135,7 +1207,7 @@ export default function PracticePage() {
 
               {/* ── Improved sentence example ──────────────────────────── */}
               {writingFeedback.improvedSentence && (
-                <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 flex gap-3">
+                <div className="flex gap-3 rounded-lg border border-sky-200 bg-sky-50 p-4">
                   <Wand2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
                   <div>
                     <p className="text-[11px] text-sky-600 mb-1">Band 7+ 示范句</p>
@@ -1144,16 +1216,18 @@ export default function PracticePage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between border-t border-border pt-5">
+              <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   onClick={handleRevise}
                   disabled={feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0}
                   className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-5 disabled:opacity-50"
                 >
                   <PenTool className="mr-2 h-4 w-4" />
-                  Revise &amp; Resubmit
+                  {isZh ? '修改后再提交' : 'Revise & Resubmit'}
                   {writingRound < 3 && (
-                    <span className="ml-1.5 text-primary-foreground/60 text-xs">Round {writingRound + 1}</span>
+                    <span className="ml-1.5 text-xs text-primary-foreground/60">
+                      {isZh ? `第 ${writingRound + 1} 轮` : `Round ${writingRound + 1}`}
+                    </span>
                   )}
                 </Button>
                 <Button
@@ -1162,7 +1236,7 @@ export default function PracticePage() {
                   className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
-                  Try another
+                  {isZh ? '换一题' : 'Try another'}
                 </Button>
               </div>
             </motion.div>
@@ -1179,9 +1253,9 @@ export default function PracticePage() {
       return renderPageShell(
         <LearningEmptyState
           icon={Target}
-          eyebrow="Listening workspace"
-          title="没有可用的听辨素材"
-          description="先准备一组词。"
+          eyebrow={isZh ? '听力工作区' : 'Listening workspace'}
+          title={isZh ? '没有可用的听辨素材' : 'No listening material yet'}
+          description={isZh ? '先准备一组词。' : 'Learn a small word set first.'}
           actions={
             <Button
               variant="outline"
@@ -1197,8 +1271,8 @@ export default function PracticePage() {
 
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow="Listening workspace"
-        title="Listen, then type"
+        eyebrow={isZh ? '听力工作区' : 'Listening workspace'}
+        title={isZh ? '听后输入' : 'Listen, then type'}
       >
         <div className="space-y-6">
           <div className="space-y-2 border-b border-border pb-5">
@@ -1232,7 +1306,7 @@ export default function PracticePage() {
                       handleListeningNext();
                     }
                   }}
-                  placeholder="Type what you hear..."
+                  placeholder={isZh ? '输入你听到的单词...' : 'Type what you hear...'}
                   className={cn('h-14 rounded-md px-5 text-center text-lg', lightInputClass)}
                 />
               </div>
@@ -1250,7 +1324,7 @@ export default function PracticePage() {
                 <div className="space-y-3">
                   <div
                     className={cn(
-                      'mx-auto max-w-md rounded-xl px-4 py-3 text-sm',
+                      'mx-auto max-w-md rounded-lg px-4 py-3 text-sm',
                       listeningResult.isCorrect ? 'bg-green-50 text-green-600' : 'bg-destructive/10 text-destructive',
                     )}
                   >
@@ -1286,14 +1360,14 @@ export default function PracticePage() {
         />
         <LearningCompletionState
           icon={Trophy}
-          eyebrow="Session summary"
-          title={timedMode && timeLeft <= 0 ? '时间到!' : '这轮短练习已经完成'}
-          description={maxCombo >= 3 ? `最高连击 ${maxCombo}x! 🔥` : '这轮结果已经出来了。'}
+          eyebrow={isZh ? '练习总结' : 'Session summary'}
+          title={timedMode && timeLeft <= 0 ? (isZh ? '时间到！' : 'Time is up') : (isZh ? '这轮短练习已经完成' : 'This short practice is complete')}
+          description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x，保持这个节奏。` : `Best streak: ${maxCombo}x. Keep the rhythm.`) : (isZh ? '这轮结果已经出来了。' : 'Your result is ready.')}
           metrics={[
-            { label: 'Correct', value: `${score}/${safeTotal}`, accent: 'emerald' },
-            { label: 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
-            { label: 'Max Combo', value: `${maxCombo}x`, accent: maxCombo >= 5 ? 'emerald' : undefined },
-            { label: 'Mode', value: `${focusedMode.nameZh}${timedMode ? ' ⏱️' : ''}` },
+            { label: isZh ? '答对' : 'Correct', value: `${score}/${safeTotal}`, accent: 'emerald' },
+            { label: isZh ? '正确率' : 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
+            { label: isZh ? '最高连击' : 'Best streak', value: `${maxCombo}x`, accent: maxCombo >= 5 ? 'emerald' : undefined },
+            { label: isZh ? '模式' : 'Mode', value: `${focusedModeLabel}${timedMode ? (isZh ? ' · 限时' : ' · timed') : ''}` },
           ]}
           actions={
             <>
@@ -1303,7 +1377,7 @@ export default function PracticePage() {
                 className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
-                Try again
+                {isZh ? '再练一次' : 'Try again'}
               </Button>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={exitToPicker}>
                 {isZh ? '其他模式' : 'Other modes'}
@@ -1311,11 +1385,11 @@ export default function PracticePage() {
             </>
           }
         />
-        {/* Error notebook */}
         {errorNotebook.length > 0 && (
-          <div className="mt-6 rounded-xl border border-destructive/20 bg-destructive/5 p-6">
-            <h3 className="text-base font-semibold text-destructive mb-4">
-              📝 错题本 · {errorNotebook.length} 个需要加强
+          <div className="mt-6 rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+            <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              {isZh ? `错题本 · ${errorNotebook.length} 个需要加强` : `Mistake notebook · ${errorNotebook.length} to review`}
             </h3>
             <div className="space-y-3">
               {errorNotebook.map((item, i) => (
@@ -1325,7 +1399,9 @@ export default function PracticePage() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{item.word}</p>
-                    <p className="text-xs text-muted-foreground mt-1">正确答案: {item.correctAnswer}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {isZh ? '正确答案' : 'Correct answer'}: {item.correctAnswer}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -1349,7 +1425,7 @@ export default function PracticePage() {
             className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
             onClick={exitToPicker}
           >
-            Back to modes
+            {isZh ? '返回模式列表' : 'Back to modes'}
           </Button>
         }
       />,
@@ -1359,7 +1435,7 @@ export default function PracticePage() {
   return renderPageShell(
     <LearningWorkspaceSurface
       eyebrow={isZh ? '练习工作区' : 'Practice workspace'}
-      title={`${focusedMode.name} · ${focusedMode.nameZh}`}
+      title={focusedModeLabel}
       actions={
         <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
           {isZh ? `第 ${currentQuestionIndex + 1} / ${quizQuestions.length} 题` : `Question ${currentQuestionIndex + 1} / ${quizQuestions.length}`}
@@ -1401,7 +1477,7 @@ export default function PracticePage() {
                       : {}
                 }
                 className={cn(
-                  'flex items-center space-x-3 rounded-xl border px-4 py-4 transition-all',
+                  'flex items-center space-x-3 rounded-lg border px-4 py-4 transition-all',
                   showResult && option === currentQuestion.correctAnswer
                     ? 'border-green-200 bg-green-50 text-green-600'
                     : showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer
@@ -1435,7 +1511,9 @@ export default function PracticePage() {
           )}
 
           <div className="text-sm leading-6 text-muted-foreground">
-            {showResult ? `当前正确率 ${accuracyPct}%` : '先选一个最合适的答案，再检查。'}
+            {showResult
+              ? (isZh ? `当前正确率 ${accuracyPct}%` : `Current accuracy ${accuracyPct}%`)
+              : (isZh ? '先选一个最合适的答案，再检查。' : 'Choose the best answer, then check.')}
           </div>
         </div>
       </div>

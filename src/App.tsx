@@ -3,7 +3,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { UserDataProvider } from '@/contexts/UserDataContext';
 import { Toaster } from '@/components/ui/sonner';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -20,6 +19,12 @@ const OnboardingPage = lazyWithRetry(() => import('@/pages/auth/OnboardingPage')
 const DashboardLayout = lazyWithRetry(() => import('@/layouts/DashboardLayout'), 'dashboard-layout');
 const WordOfTheDayPage = lazyWithRetry(() => import('@/pages/WordOfTheDayPage'), 'word-of-the-day');
 const PricingPage = lazyWithRetry(() => import('@/pages/PricingPage'), 'pricing');
+const LegalPage = lazyWithRetry(() => import('@/pages/LegalPage'), 'legal');
+const SampleLessonPage = lazyWithRetry(() => import('@/pages/SampleLessonPage'), 'sample-lesson');
+const UserDataRouteProvider = lazyWithRetry(
+  () => import('@/components/routing/UserDataRouteProvider'),
+  'user-data-provider',
+);
 
 const TodayPage = lazyWithRetry(() => import('@/pages/dashboard/TodayPage'), 'today');
 const ReviewPage = lazyWithRetry(() => import('@/pages/dashboard/ReviewPage'), 'review');
@@ -45,53 +50,58 @@ const withRouteFallback = (element: React.ReactNode, skeleton?: React.ReactNode)
   </ErrorBoundary>
 );
 
+const withUserDataRoute = (element: React.ReactNode, skeleton?: React.ReactNode) => (
+  withRouteFallback(<UserDataRouteProvider>{element}</UserDataRouteProvider>, skeleton)
+);
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="vocabdaily-theme">
         <AuthProvider>
-          <UserDataProvider>
-            <Router>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={withRouteFallback(<HomePage />, <PageSkeleton />)} />
-                <Route path="/word-of-the-day" element={withRouteFallback(<WordOfTheDayPage />, <PageSkeleton />)} />
-                <Route path="/pricing" element={withRouteFallback(<PricingPage />, <PageSkeleton />)} />
+          <Router>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={withRouteFallback(<HomePage />, <PageSkeleton />)} />
+              <Route path="/word-of-the-day" element={withUserDataRoute(<WordOfTheDayPage />, <PageSkeleton />)} />
+              <Route path="/demo" element={withRouteFallback(<SampleLessonPage />, <PageSkeleton />)} />
+              <Route path="/pricing" element={withRouteFallback(<PricingPage />, <PageSkeleton />)} />
+              <Route path="/terms" element={withRouteFallback(<LegalPage />, <PageSkeleton />)} />
+              <Route path="/privacy" element={withRouteFallback(<LegalPage />, <PageSkeleton />)} />
 
-                {/* Auth Routes */}
-                <Route path="/login" element={withRouteFallback(<LoginPage />, <PageSkeleton />)} />
-                <Route path="/register" element={withRouteFallback(<RegisterPage />, <PageSkeleton />)} />
-                <Route path="/magic-link" element={withRouteFallback(<MagicLinkPage />, <PageSkeleton />)} />
-                <Route path="/auth/callback" element={withRouteFallback(<AuthCallbackPage />, <PageSkeleton />)} />
-                <Route path="/onboarding" element={withRouteFallback(<OnboardingPage />, <PageSkeleton />)} />
+              {/* Auth Routes */}
+              <Route path="/login" element={withRouteFallback(<LoginPage />, <PageSkeleton />)} />
+              <Route path="/register" element={withRouteFallback(<RegisterPage />, <PageSkeleton />)} />
+              <Route path="/magic-link" element={withRouteFallback(<MagicLinkPage />, <PageSkeleton />)} />
+              <Route path="/auth/callback" element={withRouteFallback(<AuthCallbackPage />, <PageSkeleton />)} />
+              <Route path="/onboarding" element={withUserDataRoute(<OnboardingPage />, <PageSkeleton />)} />
 
-                {/* Dashboard Routes */}
-                <Route element={<RequireAuth />}>
-                  <Route path="/dashboard" element={withRouteFallback(<DashboardLayout />)}>
-                    <Route index element={<Navigate to="/dashboard/today" replace />} />
-                    <Route path="today" element={withRouteFallback(<TodayPage />)} />
-                    <Route path="review" element={withRouteFallback(<ReviewPage />)} />
-                    <Route path="practice" element={withRouteFallback(<PracticePage />)} />
-                    <Route path="exam" element={withRouteFallback(<ExamPrepPage />)} />
-                    <Route path="vocabulary" element={withRouteFallback(<VocabularyBankPage />)} />
-                    <Route path="analytics" element={withRouteFallback(<AnalyticsPage />)} />
-                    <Route path="chat" element={withRouteFallback(<ChatPage />)} />
-                    <Route path="memory" element={withRouteFallback(<MemoryCenterPage />)} />
-                    <Route path="reading" element={withRouteFallback(<ReadingPage />)} />
-                    <Route path="listening" element={withRouteFallback(<ListeningPage />)} />
-                    <Route path="grammar" element={withRouteFallback(<GrammarPage />)} />
-                    <Route path="leaderboard" element={withRouteFallback(<LeaderboardPage />)} />
-                    <Route path="pronunciation" element={withRouteFallback(<PronunciationPage />)} />
-                    <Route path="writing" element={withRouteFallback(<WritingPage />)} />
-                    <Route path="learning-path" element={withRouteFallback(<LearningPathPage />)} />
-                    <Route path="settings" element={withRouteFallback(<SettingsPage />)} />
-                    <Route path="profile" element={withRouteFallback(<ProfilePage />)} />
-                  </Route>
+              {/* Dashboard Routes */}
+              <Route element={<RequireAuth />}>
+                <Route path="/dashboard" element={withUserDataRoute(<DashboardLayout />)}>
+                  <Route index element={<Navigate to="/dashboard/today" replace />} />
+                  <Route path="today" element={withRouteFallback(<TodayPage />)} />
+                  <Route path="review" element={withRouteFallback(<ReviewPage />)} />
+                  <Route path="practice" element={withRouteFallback(<PracticePage />)} />
+                  <Route path="exam" element={withRouteFallback(<ExamPrepPage />)} />
+                  <Route path="vocabulary" element={withRouteFallback(<VocabularyBankPage />)} />
+                  <Route path="analytics" element={withRouteFallback(<AnalyticsPage />)} />
+                  <Route path="chat" element={withRouteFallback(<ChatPage />)} />
+                  <Route path="memory" element={withRouteFallback(<MemoryCenterPage />)} />
+                  <Route path="reading" element={withRouteFallback(<ReadingPage />)} />
+                  <Route path="listening" element={withRouteFallback(<ListeningPage />)} />
+                  <Route path="grammar" element={withRouteFallback(<GrammarPage />)} />
+                  <Route path="leaderboard" element={withRouteFallback(<LeaderboardPage />)} />
+                  <Route path="pronunciation" element={withRouteFallback(<PronunciationPage />)} />
+                  <Route path="writing" element={withRouteFallback(<WritingPage />)} />
+                  <Route path="learning-path" element={withRouteFallback(<LearningPathPage />)} />
+                  <Route path="settings" element={withRouteFallback(<SettingsPage />)} />
+                  <Route path="profile" element={withRouteFallback(<ProfilePage />)} />
                 </Route>
-              </Routes>
-            </Router>
-            <Toaster position="bottom-right" richColors />
-          </UserDataProvider>
+              </Route>
+            </Routes>
+          </Router>
+          <Toaster position="bottom-right" richColors />
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

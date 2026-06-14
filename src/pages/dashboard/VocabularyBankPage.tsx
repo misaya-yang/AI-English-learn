@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { speakEnglishText } from '@/services/tts';
 import { exportToCSV, exportToAnkiTSV, downloadFile } from '@/services/wordBookExport';
 import { useTranslation } from 'react-i18next';
+import { buildLexicalSummary, toLexicalEntry } from '@/features/lexicon/lexicalEntry';
 
 interface VocabularyItem {
   word: WordData;
@@ -48,6 +49,13 @@ const statusLabels: Record<string, string> = {
   learning: 'Learning',
   review: 'Review',
   mastered: 'Mastered',
+};
+
+const statusLabelsZh: Record<string, string> = {
+  new: '新词',
+  learning: '学习中',
+  review: '复习中',
+  mastered: '已掌握',
 };
 
 export default function VocabularyBankPage() {
@@ -231,10 +239,14 @@ export default function VocabularyBankPage() {
   const masteredCount = vocabulary.filter((item) => (item.progress?.status || 'new') === 'mastered').length;
   const learningCount = vocabulary.filter((item) => (item.progress?.status || 'new') === 'learning').length;
   const reviewCount = vocabulary.filter((item) => (item.progress?.status || 'new') === 'review').length;
+  const featuredItem = filteredVocabulary[0] || vocabulary[0] || null;
+  const featuredEntry = featuredItem ? toLexicalEntry(featuredItem.word) : null;
+  const featuredSense = featuredEntry?.senses[0];
+  const featuredExample = featuredSense?.examples[0];
+  const featuredStatus = featuredItem?.progress?.status || 'new';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{isZh ? '词典' : 'Lexicon'}</h1>
@@ -305,6 +317,113 @@ export default function VocabularyBankPage() {
         </div>
       </div>
 
+      <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+        {featuredEntry && featuredSense ? (
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_320px] lg:items-stretch">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="rounded-md border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))] hover:bg-[hsl(var(--accent-memory)/0.1)]">
+                  {isZh ? '词汇资产焦点' : 'Lexical asset focus'}
+                </Badge>
+                <Badge variant="outline" className="rounded-md">
+                  {isZh ? (statusLabelsZh[featuredStatus] || featuredStatus) : (statusLabels[featuredStatus] || featuredStatus)}
+                </Badge>
+                <Badge variant="outline" className="rounded-md">
+                  {featuredEntry.cefrLevel}
+                </Badge>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                    {featuredEntry.headword}
+                  </h2>
+                  <p className="mt-2 font-mono text-sm text-muted-foreground">
+                    {featuredSense.partOfSpeech || '-'} · {featuredEntry.phonetic || '-'}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 rounded-md border-border bg-card text-foreground hover:bg-muted"
+                  onClick={() => playAudio(featuredEntry.headword)}
+                  aria-label={isZh ? '播放发音' : 'Play pronunciation'}
+                >
+                  <Volume2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <div className="rounded-lg border border-border bg-background/70 p-4">
+                  <p className="text-xs text-muted-foreground">{isZh ? '核心释义' : 'Core meaning'}</p>
+                  <p className="mt-2 text-sm leading-6 text-foreground">
+                    {featuredSense.definition || (isZh ? '暂无英文释义' : 'No English definition yet')}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {featuredSense.definitionZh || (isZh ? '暂无中文释义' : 'No Chinese definition yet')}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-background/70 p-4">
+                  <p className="text-xs text-muted-foreground">{isZh ? '可练例句' : 'Practice example'}</p>
+                  {featuredExample ? (
+                    <>
+                      <p className="mt-2 text-sm leading-6 text-foreground">{featuredExample.en}</p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{featuredExample.zh}</p>
+                    </>
+                  ) : (
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {isZh ? '这个词条还没有例句，可以先从释义回想和拼写练习开始。' : 'No example yet; start from meaning recall and spelling.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Button asChild className="rounded-md">
+                  <Link to={`/dashboard/practice?source=lexicon&wordId=${encodeURIComponent(featuredEntry.id)}&q=${encodeURIComponent(featuredEntry.headword)}`}>
+                    <Brain className="mr-2 h-4 w-4" />
+                    {isZh ? '用这个词练一次' : 'Practice this word'}
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted">
+                  <Link to={`/dashboard/review?source=lexicon&wordId=${encodeURIComponent(featuredEntry.id)}`}>
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    {isZh ? '加入复习回合' : 'Open in review'}
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {[
+                { label: isZh ? '当前词书' : 'Active book', value: activeBook?.name || '-' },
+                { label: isZh ? '词条总数' : 'Total words', value: totalWords },
+                { label: isZh ? '待复习' : 'In review', value: reviewCount },
+              ].map((item) => (
+                <div key={item.label} className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                  <p className="mt-2 truncate text-lg font-semibold text-foreground">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto flex max-w-2xl flex-col items-center py-8 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <h2 className="mt-4 text-xl font-semibold text-foreground">
+              {isZh ? '先建立你的第一个词汇资产' : 'Create your first lexical asset'}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {isZh
+                ? '导入词书或添加一个自定义词后，这里会展示可学习的词条预览、例句和下一步练习入口。'
+                : 'Import a word book or add a custom word, then this area will show a learnable preview and next action.'}
+            </p>
+          </div>
+        )}
+      </section>
+
       {/* Book Management */}
       <Card>
         <CardHeader>
@@ -340,9 +459,9 @@ export default function VocabularyBankPage() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {book.wordIds.length} words • Source: {book.source} • License: {book.license}
-                  </p>
+	                  <p className="text-xs text-muted-foreground">
+	                    {book.wordIds.length} {isZh ? '个词' : 'words'} · {isZh ? '来源' : 'Source'}: {book.source} · {isZh ? '许可' : 'License'}: {book.license}
+	                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -373,9 +492,9 @@ export default function VocabularyBankPage() {
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search words... 搜索单词..."
-            value={searchQuery}
+	          <Input
+	            placeholder={isZh ? '搜索单词、释义或中文解释...' : 'Search words, meanings, or notes...'}
+	            value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
@@ -386,11 +505,11 @@ export default function VocabularyBankPage() {
             <SelectValue placeholder="状态" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="new">New</SelectItem>
-            <SelectItem value="learning">Learning</SelectItem>
-            <SelectItem value="review">Review</SelectItem>
-            <SelectItem value="mastered">Mastered</SelectItem>
+	            <SelectItem value="all">{isZh ? '全部状态' : 'All status'}</SelectItem>
+	            <SelectItem value="new">{isZh ? '新词' : 'New'}</SelectItem>
+	            <SelectItem value="learning">{isZh ? '学习中' : 'Learning'}</SelectItem>
+	            <SelectItem value="review">{isZh ? '复习中' : 'Review'}</SelectItem>
+	            <SelectItem value="mastered">{isZh ? '已掌握' : 'Mastered'}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={selectedTopic} onValueChange={setSelectedTopic}>
@@ -399,7 +518,7 @@ export default function VocabularyBankPage() {
             <SelectValue placeholder="分类" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Topics</SelectItem>
+	            <SelectItem value="all">{isZh ? '全部主题' : 'All topics'}</SelectItem>
             {topics.map((topic) => (
               <SelectItem key={topic} value={topic}>
                 {topic.charAt(0).toUpperCase() + topic.slice(1)}
@@ -442,6 +561,9 @@ export default function VocabularyBankPage() {
         {filteredVocabulary.map((item) => {
           const status = item.progress?.status || 'new';
           const isCustomWord = !builtInWordIdSet.has(item.word.id);
+          const entry = toLexicalEntry(item.word);
+          const sense = entry.senses[0];
+          const firstExample = sense.examples[0];
 
           return (
             <Dialog key={item.word.id}>
@@ -450,33 +572,42 @@ export default function VocabularyBankPage() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold text-lg">{item.word.word}</h3>
+                        <h3 className="font-semibold text-lg">{entry.headword}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {item.word.partOfSpeech} • {item.word.phonetic}
+                          {sense.partOfSpeech || '-'} • {entry.phonetic || '-'}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Badge className={cn(statusColors[status], 'text-white')}>{statusLabels[status]}</Badge>
+	                        <Badge className={cn(statusColors[status], 'text-white')}>
+                            {isZh ? (statusLabelsZh[status] || status) : (statusLabels[status] || status)}
+                          </Badge>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
-                            playAudio(item.word.word);
+                            playAudio(entry.headword);
                           }}
                         >
                           <Volume2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    <p className="text-sm mt-2 line-clamp-1">{item.word.definition}</p>
-                    <p className="text-xs text-muted-foreground">{item.word.definitionZh}</p>
+                    <p className="text-sm mt-2 line-clamp-1">{buildLexicalSummary(entry, i18n.language)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {sense.collocations.length > 0
+                        ? `${isZh ? '搭配' : 'Collocations'}: ${sense.collocations.slice(0, 2).join(' / ')}`
+                        : (isZh ? '暂无搭配，可先从释义和例句开始。' : 'No collocations yet; start from definition and examples.')}
+                    </p>
                     <div className="flex gap-2 mt-3">
                       <Badge variant="outline" className="text-xs">
-                        {item.word.topic}
+                        {entry.topic}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {item.word.level}
+                        {entry.cefrLevel}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        IELTS {entry.ieltsRelevance}
                       </Badge>
                       {isCustomWord && (
                         <Badge variant="secondary" className="text-xs">
@@ -490,38 +621,99 @@ export default function VocabularyBankPage() {
               <DialogContent className="max-w-lg">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-3">
-                    {item.word.word}
-                    <Button variant="ghost" size="icon" onClick={() => playAudio(item.word.word)}>
+                    {entry.headword}
+                    <Button variant="ghost" size="icon" onClick={() => playAudio(entry.headword)}>
                       <Volume2 className="h-4 w-4" />
                     </Button>
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    {item.word.partOfSpeech} • {item.word.phonetic}
+                    {sense.partOfSpeech || '-'} • {entry.phonetic || '-'} • {entry.cefrLevel} • {entry.topic}
                   </p>
 
                   <div>
-                    <h4 className="font-semibold mb-2">释义</h4>
-                    <p className="text-sm">{item.word.definition}</p>
-                    <p className="text-sm text-muted-foreground">{item.word.definitionZh}</p>
+                    <h4 className="font-semibold mb-2">{isZh ? '词义 / Sense' : 'Sense'}</h4>
+                    <p className="text-sm">{sense.definition || (isZh ? '暂无英文释义' : 'No English definition yet')}</p>
+                    <p className="text-sm text-muted-foreground">{sense.definitionZh || (isZh ? '暂无中文释义' : 'No Chinese definition yet')}</p>
                   </div>
 
                   <div>
-                    <h4 className="font-semibold mb-2">例句</h4>
-                    <p className="text-sm">{item.word.examples?.[0]?.en}</p>
-                    <p className="text-sm text-muted-foreground">{item.word.examples?.[0]?.zh}</p>
+                    <h4 className="font-semibold mb-2">{isZh ? '例句 / Examples' : 'Examples'}</h4>
+                    {firstExample ? (
+                      <>
+                        <p className="text-sm">{firstExample.en}</p>
+                        <p className="text-sm text-muted-foreground">{firstExample.zh}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {isZh ? '导入词暂时没有例句，仍可先做词义回想训练。' : 'This imported word has no example yet. You can still start meaning recall.'}
+                      </p>
+                    )}
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    {(item.word.synonyms ?? []).slice(0, 6).map((synonym) => (
-                      <Badge key={synonym} variant="secondary">
-                        {synonym}
-                      </Badge>
-                    ))}
+                  <div>
+                    <h4 className="font-semibold mb-2">{isZh ? '搭配 / Collocations' : 'Collocations'}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {sense.collocations.length > 0 ? sense.collocations.slice(0, 6).map((collocation) => (
+                        <Badge key={collocation} variant="secondary">
+                          {collocation}
+                        </Badge>
+                      )) : (
+                        <span className="text-sm text-muted-foreground">{isZh ? '暂无搭配' : 'No collocations yet'}</span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex gap-2 pt-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">{isZh ? '混淆提醒 / Common mistakes' : 'Common mistakes'}</h4>
+                    {entry.commonMistakes.length > 0 ? (
+                      <ul className="space-y-1 text-sm text-muted-foreground">
+                        {entry.commonMistakes.map((mistake) => (
+                          <li key={mistake}>• {mistake}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {isZh ? '暂无常见错误记录。' : 'No common mistake note yet.'}
+                      </p>
+                    )}
+                  </div>
+
+                  {(entry.memoryTip || entry.etymology) ? (
+                    <div>
+                      <h4 className="font-semibold mb-2">{isZh ? '记忆线索 / Memory note' : 'Memory note'}</h4>
+                      <p className="text-sm text-muted-foreground">{entry.memoryTip || entry.etymology}</p>
+                    </div>
+                  ) : null}
+
+                  <div>
+                    <h4 className="font-semibold mb-2">{isZh ? '训练模板 / Drills' : 'Drills'}</h4>
+                    <div className="space-y-2">
+                      {entry.trainingTemplates.map((template) => (
+                        <div key={template.type} className="rounded-lg border border-border bg-muted/40 p-3">
+                          <p className="text-sm font-medium">{isZh ? template.label.zh : template.label.en}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {isZh ? template.promptZh : template.prompt}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:flex-wrap">
+                    <Button variant="outline" className="flex-1" asChild>
+                      <Link to={`/dashboard/practice?source=lexicon&wordId=${encodeURIComponent(entry.id)}&q=${encodeURIComponent(entry.headword)}`}>
+                        <Brain className="h-4 w-4 mr-2" />
+                        {isZh ? '开始 Lexicon drill' : 'Start Lexicon drill'}
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="flex-1" asChild>
+                      <Link to={`/dashboard/review?source=lexicon&wordId=${encodeURIComponent(entry.id)}`}>
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        {isZh ? '加入复习回合' : 'Open review'}
+                      </Link>
+                    </Button>
                     {status !== 'mastered' && (
                       <Button variant="outline" className="flex-1" onClick={() => handleMarkAsMastered(item.word.id)}>
                         <Star className="h-4 w-4 mr-2" />

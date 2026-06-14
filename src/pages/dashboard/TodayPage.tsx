@@ -22,13 +22,11 @@ import {
   Check,
   Brain,
   Clock3,
-  ChevronLeft,
-  ChevronRight,
+  Flame,
   Bookmark,
   Share2,
   Star,
   TrendingUp,
-  BookOpen,
   MessageCircleMore,
   ShieldCheck,
   Target,
@@ -47,6 +45,7 @@ import {
   MODE_LABELS,
   MODE_DESCRIPTIONS,
 } from '@/services/learnerModel';
+import { applyLearnerControls } from '@/services/learnerControls';
 import {
   loadTodayFlags,
   markTodayWordHard,
@@ -61,8 +60,10 @@ import {
   getDailyCoachEvidenceToneClass,
 } from '@/features/learning/dailyCoachPlan';
 import { buildLexicalSummary, toLexicalEntry } from '@/features/lexicon/lexicalEntry';
+import { getActiveLearningPathNextLesson } from '@/features/learning/learningPathRouting';
 import { useTranslation } from 'react-i18next';
 import type { UserProgress } from '@/data/localStorage';
+import { TodayWordNavigation } from './TodayWordNavigation';
 
 interface WordWorkbenchProps {
   word: WordData;
@@ -82,7 +83,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section
       className={cn(
         learningFrameClassName,
-        'flex h-full min-h-[520px] cursor-pointer flex-col justify-between p-6 sm:p-8',
+        'premium-word-card flex h-full min-h-[430px] cursor-pointer flex-col justify-between p-5 sm:min-h-[520px] sm:p-8',
       )}
     >
       <div className="flex items-center justify-between gap-3">
@@ -118,7 +119,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
       <div className="space-y-6 py-8 text-center flex-1 flex flex-col justify-center">
         <p className="text-xs text-muted-foreground">当前单词</p>
-        <h2 className="text-[3.6rem] font-semibold leading-[0.9] tracking-[-0.065em] text-foreground sm:text-[5rem]">
+        <h2 className="text-[3.1rem] font-semibold leading-none tracking-tight text-foreground sm:text-[4.6rem] lg:text-[5rem]">
           {word.word}
         </h2>
         <div className="space-y-2">
@@ -165,13 +166,13 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section
       className={cn(
         learningFrameClassName,
-        'h-full min-h-[520px] p-6 sm:p-8',
+        'premium-word-card-back h-full min-h-[430px] p-5 sm:min-h-[520px] sm:p-8',
       )}
     >
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-3xl font-semibold tracking-[-0.05em] text-foreground">{word.word}</h3>
+            <h3 className="text-3xl font-semibold tracking-tight text-foreground">{word.word}</h3>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -195,13 +196,13 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
         <ScrollArea className="mt-6 flex-1 pr-2">
           <div className="space-y-4">
-            <section className="rounded-xl border border-border bg-card p-4">
+            <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
               <p className="mt-1 text-base leading-7 text-foreground">{word.definition}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
             </section>
 
             {word.examples.length > 0 ? (
-              <section className="rounded-xl border border-border bg-card p-4">
+              <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
                 <p className="text-xs text-muted-foreground">例句</p>
                 <div className="mt-3 space-y-3">
                   {word.examples.slice(0, 2).map((example, index) => (
@@ -216,7 +217,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
             <div className="grid gap-4 lg:grid-cols-2">
               {word.collocations.length > 0 ? (
-                <section className="rounded-xl border border-border bg-card p-4">
+                <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
                   <p className="text-xs text-muted-foreground">搭配</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {word.collocations.slice(0, 8).map((collocation) => (
@@ -232,7 +233,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
               ) : null}
 
               {(word.memoryTip || word.etymology) ? (
-                <section className="rounded-xl border border-border bg-card p-4">
+                <section className="premium-panel-soft rounded-lg border border-border bg-card p-4">
                   <p className="text-xs text-muted-foreground">助记</p>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.memoryTip || word.etymology}</p>
                 </section>
@@ -312,7 +313,14 @@ const CircularProgress = memo(function CircularProgress({
 });
 
 // Confetti celebration component
-const CONFETTI_COLORS = ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6'];
+const CONFETTI_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--accent-practice))',
+  'hsl(var(--accent-exam))',
+  'hsl(var(--accent-coach))',
+  'hsl(var(--success))',
+  'hsl(var(--info))',
+];
 const seededFraction = (seed: number): number => {
   const value = Math.sin(seed * 12.9898) * 43758.5453;
   return value - Math.floor(value);
@@ -354,7 +362,7 @@ const StreakFire = memo(function StreakFire({ days }: { days: number }) {
   if (days <= 0) return null;
   return (
     <motion.div
-      className="flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-3 py-1"
+      className="premium-status-chip flex items-center gap-1.5 rounded-md border px-3 py-1"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -362,9 +370,10 @@ const StreakFire = memo(function StreakFire({ days }: { days: number }) {
       <motion.span
         animate={{ y: [0, -2, 0] }}
         transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-        className="text-base"
+        className="text-amber-600 dark:text-amber-300"
+        aria-hidden="true"
       >
-        🔥
+        <Flame className="h-4 w-4" />
       </motion.span>
       <span className="text-xs font-bold text-amber-600">{days} day streak</span>
     </motion.div>
@@ -375,7 +384,7 @@ const StreakFire = memo(function StreakFire({ days }: { days: number }) {
 const XPCounter = memo(function XPCounter({ value }: { value: number }) {
   return (
     <motion.div
-      className="flex items-center gap-1.5 rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1"
+      className="premium-metric-card flex items-center gap-1.5 rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
@@ -408,6 +417,7 @@ export default function TodayPage() {
     refreshDailyMission,
     progress: wordProgress,
     streak,
+    settings,
   } = useUserData();
   const { i18n } = useTranslation();
   const language = i18n.language;
@@ -450,6 +460,7 @@ export default function TodayPage() {
   }, [durableLearnedWords, optimisticLearnedWords]);
   const progress = words.length > 0 ? (learnedWords.size / words.length) * 100 : 0;
   const recommendedUnit = getRecommendedUnit(userId);
+  const activePathNextLesson = useMemo(() => getActiveLearningPathNextLesson(userId), [userId]);
 
   useEffect(() => {
     refreshDailyWords();
@@ -459,13 +470,16 @@ export default function TodayPage() {
   // ── FSRS-5 Learner Model ──────────────────────────────────────────────────
   const learnerModel = useMemo(() => {
     if (!wordProgress.length) return null;
-    return computeLearnerModel(
-      userId,
-      wordProgress as UserProgress[],
-      currentStreak,
-      activeBookSummary.dailyGoal,
+    return applyLearnerControls(
+      computeLearnerModel(
+        userId,
+        wordProgress as UserProgress[],
+        currentStreak,
+        activeBookSummary.dailyGoal,
+      ),
+      settings,
     );
-  }, [activeBookSummary.dailyGoal, currentStreak, userId, wordProgress]);
+  }, [activeBookSummary.dailyGoal, currentStreak, settings, userId, wordProgress]);
 
   const learningOverviewQuery = useLearningOverviewQuery({
     userId,
@@ -643,6 +657,13 @@ export default function TodayPage() {
     }
   }, [currentWordIndex, words.length]);
 
+  const scrollToVocabularyWorkspace = useCallback(() => {
+    document.getElementById('today-vocabulary-workspace')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, []);
+
   // Keyboard shortcuts: Space flips the current card; ArrowLeft/ArrowRight navigate cards.
   // handleFlip is defined in this component scope and takes a wordId parameter,
   // so we wrap it with the current word's id here.
@@ -663,60 +684,6 @@ export default function TodayPage() {
   const missionDone = dailyMission?.tasks.filter((task) => task.done).length || 0;
   const missionTotal = dailyMission?.tasks.length || 0;
   const missionProgress = missionTotal > 0 ? Math.round((missionDone / missionTotal) * 100) : 0;
-  const coachNextStep = useMemo(() => {
-    if (dailyCoachPlan) {
-      return {
-        label: isZh ? 'Daily Coach OS' : 'Daily Coach OS',
-        title: isZh ? dailyCoachPlan.briefTitle.zh : dailyCoachPlan.briefTitle.en,
-        detail: isZh ? dailyCoachPlan.brief.zh : dailyCoachPlan.brief.en,
-        href: dailyCoachPlan.coachHref,
-      };
-    }
-
-    const topWeakness = weaknesses[0];
-    if (topWeakness) {
-      return {
-        label: isZh ? '教练下一步' : 'Coach next step',
-        title: isZh ? topWeakness.titleZh : topWeakness.title,
-        detail: isZh
-          ? `先用一次诊断确认 ${topWeakness.titleZh}，再安排针对训练。`
-          : `Diagnose ${topWeakness.title} first, then turn it into a focused drill.`,
-        href: '/dashboard/chat',
-      };
-    }
-
-    if (learnerModel?.stubbornWordCount) {
-      const topic = learnerModel.stubbornTopics[0] || (isZh ? '顽固词' : 'stubborn words');
-      return {
-        label: isZh ? '教练下一步' : 'Coach next step',
-        title: isZh ? `补强 ${topic}` : `Reinforce ${topic}`,
-        detail: isZh
-          ? `${learnerModel.stubbornWordCount} 个顽固词需要进入短测和复习回路。`
-          : `${learnerModel.stubbornWordCount} stubborn items should move into drill and review.`,
-        href: '/dashboard/chat',
-      };
-    }
-
-    if (dueWords.length > 0) {
-      return {
-        label: isZh ? '教练下一步' : 'Coach next step',
-        title: isZh ? '先清理到期复习' : 'Clear due reviews first',
-        detail: isZh
-          ? `${dueWords.length} 个到期项会影响今天的新练习安排。`
-          : `${dueWords.length} due items should shape today's training load.`,
-        href: '/dashboard/chat',
-      };
-    }
-
-    return {
-      label: isZh ? '教练下一步' : 'Coach next step',
-      title: isZh ? '做一次目标诊断' : 'Run a target diagnosis',
-      detail: isZh
-        ? `${learningProfile.target} 会作为今天教练建议的主上下文。`
-        : `${learningProfile.target} will anchor today's coach recommendation.`,
-      href: '/dashboard/chat',
-    };
-  }, [dailyCoachPlan, dueWords.length, isZh, learnerModel, learningProfile.target, weaknesses]);
 
   if (words.length === 0) {
     return (
@@ -744,9 +711,9 @@ export default function TodayPage() {
                 </Button>
               ) : (
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
-                  <Link to="/dashboard/vocabulary">
-                    <BookOpen className="mr-2 h-5 w-5" />
-                    去选择词书
+                  <Link to="/onboarding?redirect=%2Fdashboard%2Ftoday">
+                    <Target className="mr-2 h-5 w-5" />
+                    重新设置学习目标
                   </Link>
                 </Button>
               )}
@@ -772,6 +739,40 @@ export default function TodayPage() {
     burnoutRisk: learnerModel?.burnoutRisk,
     examType: learningProfile.target,
   });
+  const primaryMissionTask = dailyCoachPlan?.primaryTask ?? missionCard?.primaryAction ?? null;
+  const primaryMissionLabel = primaryMissionTask
+    ? (language.startsWith('zh') ? primaryMissionTask.ctaZh : primaryMissionTask.cta)
+    : (language.startsWith('zh') ? '继续今日任务' : 'Continue today');
+  const secondaryMissionTasks = (dailyCoachPlan?.secondaryTasks ?? missionCard?.secondaryActions ?? [])
+    .filter((action) => action.id !== primaryMissionTask?.id && action.href !== primaryMissionTask?.href)
+    .slice(0, 2);
+  const primaryMissionAction = primaryMissionTask?.surface === 'today'
+    ? {
+        label: primaryMissionLabel,
+        onClick: scrollToVocabularyWorkspace,
+        testId: 'today-primary-mission-cta',
+      }
+    : {
+        label: primaryMissionLabel,
+        href: primaryMissionTask?.href || '/dashboard/today',
+        testId: 'today-primary-mission-cta',
+      };
+  const isPlanLoading = learningOverviewQuery.isLoading && !dailyCoachPlan;
+  const heroTitle = dailyCoachPlan
+    ? (language.startsWith('zh') ? dailyCoachPlan.briefTitle.zh : dailyCoachPlan.briefTitle.en)
+    : (language.startsWith('zh') ? missionCard?.headlineZh : missionCard?.headline)
+      || (isPlanLoading
+        ? (language.startsWith('zh') ? '正在整理今天的学习入口' : 'Preparing today\'s learning entry point')
+        : (language.startsWith('zh') ? '先做最该做的一步' : 'Pick the highest-impact next step'));
+  const heroDescription = dailyCoachPlan
+    ? (language.startsWith('zh') ? dailyCoachPlan.brief.zh : dailyCoachPlan.brief.en)
+    : (language.startsWith('zh') ? missionCard?.supportZh : missionCard?.support)
+      || (isPlanLoading
+        ? (language.startsWith('zh')
+          ? '正在读取词书、到期复习和弱项信号。加载完成后会直接给出今天最值得做的一步。'
+          : 'Reading your word book, due reviews, and weak signals. The next action will appear here as soon as the plan is ready.')
+        : undefined);
+  const heroEstimatedMinutes = primaryMissionTask?.estimatedMinutes || missionCard?.estimatedMinutes || learningProfile.dailyMinutes;
 
   return (
     <LearningCockpitShell
@@ -780,22 +781,18 @@ export default function TodayPage() {
       progress={missionProgress}
       progressLabel={language.startsWith('zh') ? '任务进度' : 'Mission progress'}
       mission={{
-        title: (language.startsWith('zh') ? missionCard?.headlineZh : missionCard?.headline)
-          || (language.startsWith('zh') ? '先做最该做的一步' : 'Pick the highest-impact next step'),
-        description: (language.startsWith('zh') ? missionCard?.supportZh : missionCard?.support) || undefined,
-        estimatedMinutes: missionCard?.estimatedMinutes || learningProfile.dailyMinutes,
-        primaryAction: {
-          label: (language.startsWith('zh') ? missionCard?.primaryAction.ctaZh : missionCard?.primaryAction.cta)
-            || (language.startsWith('zh') ? '继续今日任务' : 'Continue today'),
-          href: missionCard?.primaryAction.href || '/dashboard/today',
-        },
-        secondaryActions: (missionCard?.secondaryActions || []).slice(0, 2).map((action) => ({
+        title: heroTitle,
+        description: heroDescription,
+        estimatedMinutes: heroEstimatedMinutes,
+        primaryAction: primaryMissionAction,
+        secondaryActions: secondaryMissionTasks.map((action) => ({
           label: language.startsWith('zh') ? action.ctaZh : action.cta,
           href: action.href,
           variant: 'outline' as const,
+          testId: `today-secondary-mission-${action.id}`,
         })),
         why: {
-          reason: missionCard?.primaryAction.reason,
+          reason: primaryMissionTask?.reason,
           learnerMode: learnerModel?.mode || null,
           burnoutRisk: learnerModel?.burnoutRisk,
         },
@@ -808,7 +805,7 @@ export default function TodayPage() {
         },
         {
           label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
-          value: `${missionCard?.estimatedMinutes || learningProfile.dailyMinutes} min`,
+          value: `${heroEstimatedMinutes} min`,
         },
         {
           label: language.startsWith('zh') ? '今日剩余' : 'Words left',
@@ -830,50 +827,33 @@ export default function TodayPage() {
         {todayXP > 0 && <XPCounter value={todayXP} />}
       </div>
 
-      <section className={cn(learningFrameClassName, 'border-primary/20 bg-primary/[0.04] p-4')}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-              <MessageCircleMore className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {coachNextStep.label}
-              </p>
-              <h2 className="mt-1 text-base font-semibold text-foreground">{coachNextStep.title}</h2>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">{coachNextStep.detail}</p>
-              {dailyCoachPlan ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {dailyCoachPlan.evidence.slice(0, 4).map((item) => (
-                    <span
-                      key={item.id}
-                      className={cn(
-                        'rounded-md border px-2.5 py-1 text-[11px] font-medium',
-                        getDailyCoachEvidenceToneClass(item.tone),
-                      )}
-                    >
-                      {isZh ? item.label.zh : item.label.en}: {item.value}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </div>
-          <Button className="shrink-0 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-            <Link to={coachNextStep.href}>
-              <MessageCircleMore className="mr-2 h-4 w-4" />
-              {isZh ? '去教练室' : 'Open Coach'}
-            </Link>
-          </Button>
+      {dailyCoachPlan ? (
+        <div
+          data-testid="today-primary-evidence"
+          className="flex flex-wrap gap-2"
+          aria-label={isZh ? '今日主任务证据' : 'Today primary mission evidence'}
+        >
+          {dailyCoachPlan.evidence.slice(0, 5).map((item) => (
+            <span
+              key={item.id}
+              className={cn(
+                'rounded-md border px-2.5 py-1 text-[11px] font-medium',
+                getDailyCoachEvidenceToneClass(item.tone),
+              )}
+            >
+              {isZh ? item.label.zh : item.label.en}: {isZh ? (item.valueZh ?? item.value) : item.value}
+            </span>
+          ))}
         </div>
-      </section>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
-          <LearningWorkspaceSurface
-            eyebrow={isZh ? '词汇工作区' : 'Vocabulary workspace'}
-            title={currentWord ? `${currentWord.word} · 当前主练单词` : 'Vocabulary workspace'}
-          >
+          <div id="today-vocabulary-workspace" data-testid="today-vocabulary-workspace">
+            <LearningWorkspaceSurface
+              eyebrow={isZh ? '词汇工作区' : 'Vocabulary workspace'}
+              title={currentWord ? `${currentWord.word} · 当前主练单词` : 'Vocabulary workspace'}
+            >
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-4">
                 <section className={cn(learningFrameClassName, 'p-4')}>
@@ -885,7 +865,7 @@ export default function TodayPage() {
                       sublabel={`${learnedWords.size} / ${words.length}`}
                     />
                     <div className="space-y-1">
-                      <p className="text-3xl font-semibold tracking-[-0.05em] text-[hsl(var(--accent-practice))]">
+                      <p className="text-3xl font-semibold tracking-tight text-[hsl(var(--accent-practice))]">
                         {learnedWords.size}
                         <span className="mx-2 text-muted-foreground">/</span>
                         <span className="text-foreground">{words.length}</span>
@@ -935,51 +915,20 @@ export default function TodayPage() {
                   ) : null}
                 </AnimatePresence>
 
-                <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handlePrevious}
-                      disabled={currentWordIndex === 0}
-                      className="h-11 w-11 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleNext}
-                      disabled={currentWordIndex === words.length - 1}
-                      className="h-11 w-11 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </Button>
-                  </div>
-
-                  <div className="flex gap-2 px-1">
-                    {words.map((word, index) => (
-                      <button
-                        key={word.id}
-                        type="button"
-                        onClick={() => {
-                          setCurrentWordIndex(index);
-                          setFlippedCards(new Set());
-                        }}
-                        className={cn(
-                          'h-2.5 rounded-full transition-all duration-300',
-                          index === currentWordIndex
-                            ? 'w-9 bg-primary'
-                            : learnedWords.has(word.id)
-                              ? 'w-2.5 bg-green-600'
-                              : hardWords.has(word.id)
-                                ? 'w-2.5 bg-amber-500'
-                                : 'w-2.5 bg-muted-foreground/20 hover:bg-muted-foreground/40',
-                        )}
-                        title={word.word}
-                      />
-                    ))}
-                  </div>
+                <div className="premium-action-bar flex flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                  <TodayWordNavigation
+                    words={words}
+                    currentWordIndex={currentWordIndex}
+                    learnedWordIds={learnedWords}
+                    hardWordIds={hardWords}
+                    isZh={isZh}
+                    onPrevious={handlePrevious}
+                    onNext={handleNext}
+                    onSelectWord={(index) => {
+                      setCurrentWordIndex(index);
+                      setFlippedCards(new Set());
+                    }}
+                  />
 
                   <LearningActionCluster className="sm:justify-end">
                     <Button
@@ -1004,7 +953,8 @@ export default function TodayPage() {
                 </div>
               </div>
             </div>
-          </LearningWorkspaceSurface>
+            </LearningWorkspaceSurface>
+          </div>
 
           {learnedWords.size === words.length && words.length > 0 ? (
             <LearningCompletionState
@@ -1034,7 +984,7 @@ export default function TodayPage() {
         <div className="space-y-6">
           {dailyCoachPlan?.dictionaryFocus && lexicalFocus ? (
             <LearningRailSection title={isZh ? '词典焦点' : 'Lexicon focus'}>
-              <div className="rounded-xl border border-[hsl(var(--accent-practice)/0.25)] bg-[hsl(var(--accent-practice)/0.08)] p-4 shadow-sm">
+              <div className="premium-panel-soft rounded-lg border border-[hsl(var(--accent-practice)/0.25)] bg-[hsl(var(--accent-practice)/0.08)] p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs text-muted-foreground">
@@ -1070,13 +1020,30 @@ export default function TodayPage() {
 
           <LearningRailSection title={isZh ? '学习背景' : 'Learning context'}>
             <div className="space-y-3">
-              <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+              <div className="premium-panel-soft rounded-lg border border-border bg-card p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">当前词书</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{activeBook?.name || '未选择词书'}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">今日词量 {words.length} / {activeBookSummary.dailyGoal}</p>
               </div>
 
-              <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+              {activePathNextLesson ? (
+                <div className="premium-panel-soft rounded-lg border border-primary/20 bg-primary/5 p-4 shadow-sm">
+                  <p className="text-xs text-muted-foreground">{isZh ? '学习路径下一步' : 'Path next step'}</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">
+                    {isZh ? activePathNextLesson.lesson.titleZh : activePathNextLesson.lesson.title}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    {isZh ? activePathNextLesson.target.labelZh : activePathNextLesson.target.label}
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-3 rounded-md" asChild>
+                    <Link to={activePathNextLesson.target.href}>
+                      {isZh ? '打开具体任务' : 'Open exact task'}
+                    </Link>
+                  </Button>
+                </div>
+              ) : null}
+
+              <div className="premium-panel-soft rounded-lg border border-border bg-card p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">到期复习</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{dueWords.length} 个到期复习</p>
                 {activeBookSummary.isNearlyCompleted ? <p className="mt-2 text-sm text-muted-foreground">当前词书接近完成</p> : null}
@@ -1086,7 +1053,7 @@ export default function TodayPage() {
                 const modeInfo = MODE_LABELS[learnerModel.mode];
                 return (
                   <div className={cn(
-                    'rounded-2xl border p-4 space-y-3',
+                    'premium-panel-soft rounded-lg border p-4 space-y-3',
                     learnerModel.mode === 'recovery'    && 'border-red-500/20 bg-red-500/[0.06]',
                     learnerModel.mode === 'maintenance' && 'border-amber-500/20 bg-amber-500/[0.06]',
                     learnerModel.mode === 'steady'      && 'border-primary/20 bg-primary/10',
@@ -1188,7 +1155,7 @@ export default function TodayPage() {
               })() : null}
 
               {adaptiveDifficulty ? (
-                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                <div className="premium-panel-soft rounded-lg border border-border bg-card p-4 shadow-sm">
                   <p className="text-xs text-muted-foreground">今日节奏</p>
                   <div className="mt-2 flex items-center justify-between gap-3">
                     <p className="text-lg font-semibold text-foreground">{adaptiveDifficulty.labelZh}</p>
@@ -1206,7 +1173,7 @@ export default function TodayPage() {
             <div className="space-y-3">
               {weaknesses.length > 0 ? (
                 weaknesses.map((weakness) => (
-                  <div key={weakness.tag} className="rounded-xl border border-border bg-card p-4">
+                  <div key={weakness.tag} className="premium-panel-soft rounded-lg border border-border bg-card p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">{weakness.titleZh}</p>
@@ -1228,13 +1195,13 @@ export default function TodayPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-xl border border-dashed border-border px-4 py-5 text-sm leading-6 text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm leading-6 text-muted-foreground">
                   先完成一次练习或写作反馈，系统才会生成更可信的弱项图谱。
                 </div>
               )}
 
               {recommendedUnit ? (
-                <div className="rounded-xl border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
+                <div className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
                   <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
                     <Target className="h-4 w-4" />
                     <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>
@@ -1273,29 +1240,6 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {/* Mobile sticky metric strip — only on small screens, floats above bottom nav */}
-      <div className="sm:hidden fixed bottom-16 inset-x-0 z-40 pointer-events-none">
-        <div className="mx-4 mb-2 flex items-center justify-center gap-1 pointer-events-auto">
-          <div className="flex items-center gap-3 rounded-full border border-border bg-background/90 px-4 py-2 shadow-lg backdrop-blur-md text-xs">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-primary" />
-              <span className="font-medium text-foreground">{learnedWords.size}</span>
-              <span className="text-muted-foreground">{isZh ? '已学' : 'learned'}</span>
-            </span>
-            <span className="h-3 w-px bg-border" />
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-500" />
-              <span className="font-medium text-foreground">{hardWords.size}</span>
-              <span className="text-muted-foreground">{isZh ? '较难' : 'hard'}</span>
-            </span>
-            <span className="h-3 w-px bg-border" />
-            <span className="flex items-center gap-1.5">
-              <span className="font-medium text-foreground">{words.length - learnedWords.size}</span>
-              <span className="text-muted-foreground">{isZh ? '待学' : 'left'}</span>
-            </span>
-          </div>
-        </div>
-      </div>
     </LearningCockpitShell>
   );
 }

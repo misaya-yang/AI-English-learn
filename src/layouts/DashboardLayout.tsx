@@ -24,7 +24,9 @@ import { BottomNavBar } from '@/components/BottomNavBar';
 import { StreakCounter } from '@/components/StreakCounter';
 import { XPProgressBar } from '@/components/XPProgressBar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useTranslation } from 'react-i18next';
+import { buildLifecycleNotification } from '@/features/learning/lifecycleNotifications';
 import {
   BookOpen,
   BookText,
@@ -52,6 +54,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
 
 interface NavItem {
   path: string;
@@ -63,160 +66,261 @@ interface NavItem {
 
 const LEARNING_ROUTE_PREFIXES = ['/dashboard/today', '/dashboard/review', '/dashboard/practice'] as const;
 
-const shellTitleMap: Record<string, { title: string; description: string }> = {
+type LocalizedText = { en: string; zh: string };
+
+const pickLocalized = (text: LocalizedText, isZh: boolean): string => (isZh ? text.zh : text.en);
+
+const localDateKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const shellTitleMap: Record<string, { title: LocalizedText; description: LocalizedText }> = {
   '/dashboard/today': {
-    title: 'Today',
-    description: '今天最值得做的一步，从这里开始。',
+    title: { en: 'Today', zh: '今日' },
+    description: { en: 'Start with the most useful step for today.', zh: '今天最值得做的一步，从这里开始。' },
   },
   '/dashboard/review': {
-    title: 'Review',
-    description: '清掉到期复习，别让遗忘继续堆积。',
+    title: { en: 'Review', zh: '复习' },
+    description: { en: 'Clear due reviews before forgetting piles up.', zh: '清掉到期复习，别让遗忘继续堆积。' },
   },
   '/dashboard/practice': {
-    title: 'Practice',
-    description: '把弱项转成短练习，稳定补强。',
+    title: { en: 'Practice', zh: '练习' },
+    description: { en: 'Turn weak signals into short reinforcement drills.', zh: '把弱项转成短练习，稳定补强。' },
   },
   '/dashboard/chat': {
-    title: 'Coach',
-    description: '做一轮带上下文的引导学习，把问题讲透。',
+    title: { en: 'Coach', zh: '教练' },
+    description: { en: 'Use guided coaching with context, questions, and retries.', zh: '做一轮带上下文的引导学习，把问题讲透。' },
   },
   '/dashboard/exam': {
-    title: 'Exam Prep',
-    description: '冲分路线、仿真题和结构化反馈都在这里。',
+    title: { en: 'Exam Prep', zh: '考试冲分' },
+    description: { en: 'Exam sprints, simulations, and structured feedback live here.', zh: '冲分路线、仿真题和结构化反馈都在这里。' },
   },
   '/dashboard/vocabulary': {
-    title: 'Vocabulary',
-    description: '管理词书、导入 deck、维护你的底层词汇资产。',
+    title: { en: 'Vocabulary', zh: '词汇' },
+    description: { en: 'Manage word books, imported decks, and lexical assets.', zh: '管理词书、导入 deck、维护你的底层词汇资产。' },
   },
   '/dashboard/analytics': {
-    title: 'Analytics',
-    description: '查看真实学习数据，而不是随机生成的好看图表。',
+    title: { en: 'Analytics', zh: '数据分析' },
+    description: { en: 'See real learning evidence instead of decorative charts.', zh: '查看真实学习数据，而不是随机生成的好看图表。' },
   },
   '/dashboard/memory': {
-    title: 'Memory',
-    description: '管理长期记忆，决定 AI 该记住什么。',
+    title: { en: 'Memory', zh: '记忆' },
+    description: { en: 'Manage long-term memory and what AI should remember.', zh: '管理长期记忆，决定 AI 该记住什么。' },
   },
   '/dashboard/pronunciation': {
-    title: 'Pronunciation',
-    description: '发音评估与口语训练，精准到音素级别。',
+    title: { en: 'Pronunciation', zh: '发音练习' },
+    description: { en: 'Pronunciation scoring and speaking drills down to phonemes.', zh: '发音评估与口语训练，精准到音素级别。' },
   },
   '/dashboard/writing': {
-    title: 'Writing',
-    description: '写作练习与 AI 批改，提升书面表达。',
+    title: { en: 'Writing', zh: '写作练习' },
+    description: { en: 'Writing practice and AI grading for clearer output.', zh: '写作练习与 AI 批改，提升书面表达。' },
   },
   '/dashboard/reading': {
-    title: 'Reading',
-    description: 'IELTS 阅读理解精读训练，提升阅读速度与准确率。',
+    title: { en: 'Reading', zh: '阅读' },
+    description: { en: 'IELTS reading drills for speed and accuracy.', zh: 'IELTS 阅读理解精读训练，提升阅读速度与准确率。' },
   },
   '/dashboard/listening': {
-    title: 'Listening',
-    description: 'IELTS 听力理解训练，练习不同口音和题型。',
+    title: { en: 'Listening', zh: '听力' },
+    description: { en: 'IELTS listening drills across accents and question types.', zh: 'IELTS 听力理解训练，练习不同口音和题型。' },
   },
   '/dashboard/grammar': {
-    title: 'Grammar',
-    description: '语法规则讲解与填空练习，系统巩固语法基础。',
+    title: { en: 'Grammar', zh: '语法' },
+    description: { en: 'Grammar explanations and targeted fill-in drills.', zh: '语法规则讲解与填空练习，系统巩固语法基础。' },
   },
   '/dashboard/learning-path': {
-    title: 'Learning Path',
-    description: '结构化学习路线，按阶段推进你的英语能力。',
+    title: { en: 'Learning Path', zh: '学习路径' },
+    description: { en: 'A structured path that moves your English forward by stage.', zh: '结构化学习路线，按阶段推进你的英语能力。' },
   },
   '/dashboard/leaderboard': {
-    title: '排行榜',
-    description: '查看学习排行榜，和其他学习者比较进度。',
+    title: { en: 'Leaderboard', zh: '排行榜' },
+    description: { en: 'Compare weekly progress with other learners.', zh: '查看学习排行榜，和其他学习者比较进度。' },
   },
   '/dashboard/settings': {
-    title: '设置',
-    description: '调整偏好、反馈风格和系统行为。',
+    title: { en: 'Settings', zh: '设置' },
+    description: { en: 'Adjust preferences, feedback style, and system behavior.', zh: '调整偏好、反馈风格和系统行为。' },
   },
   '/dashboard/profile': {
-    title: '个人资料',
-    description: '查看账号信息和学习身份。',
+    title: { en: 'Profile', zh: '个人资料' },
+    description: { en: 'Review account information and learner identity.', zh: '查看账号信息和学习身份。' },
   },
 };
 
-const learningPrimaryLabelByRoute: Record<(typeof LEARNING_ROUTE_PREFIXES)[number], string> = {
-  '/dashboard/today': '开始练习',
-  '/dashboard/review': '继续复习',
-  '/dashboard/practice': '返回今日',
+const learningPrimaryLabelByRoute: Record<(typeof LEARNING_ROUTE_PREFIXES)[number], LocalizedText> = {
+  '/dashboard/today': { en: 'Start practice', zh: '开始练习' },
+  '/dashboard/review': { en: 'Continue review', zh: '继续复习' },
+  '/dashboard/practice': { en: 'Back to Today', zh: '返回今日' },
 };
+
+const dashboardLayoutCopy = {
+  en: {
+    accountMenu: 'My account',
+    profile: 'Profile',
+    settings: 'Settings',
+    logout: 'Log out',
+    demo: 'Demo',
+    todayMissionProgress: "Today's mission progress",
+    coreLearning: 'Core learning',
+    skillPractice: 'Skill practice',
+    tools: 'Tools',
+    continueTodayMission: "Continue today's mission",
+    mission: 'Mission',
+    due: 'Due',
+    streak: 'Streak',
+    learning: 'Learning',
+    learner: 'Learner',
+    continueTodayHeading: "Continue today's mission",
+    continuePanelDue: (count: number) => `${count} due reviews should go first. Then move on to new content.`,
+    continuePanelFresh: 'Finish the main mission first, then use one short drill to reinforce today’s weak spot.',
+    taskProgress: 'Mission progress',
+    todayPlan: "Today's plan",
+    continue: 'Continue',
+    switchToLight: 'Switch to light mode',
+    switchToDark: 'Switch to dark mode',
+  },
+  zh: {
+    accountMenu: '我的账号',
+    profile: '个人资料',
+    settings: '设置',
+    logout: '退出登录',
+    demo: '演示',
+    todayMissionProgress: '今日任务进度',
+    coreLearning: '核心学习',
+    skillPractice: '专项技能',
+    tools: '工具',
+    continueTodayMission: '继续今日任务',
+    mission: '任务',
+    due: '到期',
+    streak: '连续',
+    learning: '学习',
+    learner: '学习者',
+    continueTodayHeading: '继续今日任务',
+    continuePanelDue: (count: number) => `${count} 个到期复习优先处理，做完后再推进新内容。`,
+    continuePanelFresh: '先完成主任务，再用一次短练习把今天的弱项补上。',
+    taskProgress: '任务进度',
+    todayPlan: '今日计划',
+    continue: '继续',
+    switchToLight: '切换浅色模式',
+    switchToDark: '切换深色模式',
+  },
+} as const;
 
 export default function DashboardLayout() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
-  const { streak, xp, dueWords, dailyMission } = useUserData();
+  const { streak, xp, dueWords, dailyMission, settings, learningProfile } = useUserData();
   const location = useLocation();
   const isChatRoute = location.pathname.startsWith('/dashboard/chat');
   const isLearningRoute = LEARNING_ROUTE_PREFIXES.some((path) => location.pathname.startsWith(path));
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchPalette();
   const isMobile = useIsMobile();
   const [moreSheetOpen, setMoreSheetOpen] = useState(false);
+  const isZh = i18n.language?.startsWith('zh') ?? false;
+  const currentLang = isZh ? 'zh' : 'en';
+  const copy = dashboardLayoutCopy[currentLang];
+  const lifecycleReminder = (() => {
+    const now = new Date();
+    const today = localDateKey(now);
+    const todayCompleted =
+      dailyMission?.status === 'completed' ||
+      (!!dailyMission?.tasks.length && dailyMission.tasks.every((task) => task.done));
+    const notification = buildLifecycleNotification({
+      notificationsEnabled: settings.notifications,
+      lifecycleEnabled: settings.lifecycleReminders,
+      quietHoursStart: settings.quietHoursStart,
+      quietHoursEnd: settings.quietHoursEnd,
+      now,
+      todayCompleted,
+      dueWordsCount: dueWords.length,
+      currentStreak: streak?.current || 0,
+      hasActivityToday: streak?.lastStudyDate === today || xp.today > 0 || todayCompleted,
+      examWeekBoost: settings.examWeekBoost,
+      examTargetActive:
+        learningProfile.tracks.includes('exam_boost') ||
+        /ielts|toefl|exam/i.test(learningProfile.target),
+      weeklyRecapReady: now.getDay() === 1,
+      weeklyRecapViewed: false,
+    });
+
+    if (!notification) return null;
+    return {
+      title: isZh ? notification.titleZh : notification.title,
+      body: isZh ? notification.bodyZh : notification.body,
+      tag: `vocabdaily-${notification.kind}`,
+      href: notification.href,
+    };
+  })();
+
+  useStudyReminder(lifecycleReminder);
 
   const primaryNav = useMemo<NavItem[]>(
     () => [
       {
         path: '/dashboard/today',
         label: t('nav.today'),
-        description: '今日主任务与下一步动作',
+        description: pickLocalized({ en: "Today's mission and next step", zh: '今日主任务与下一步动作' }, isZh),
         icon: CalendarDays,
       },
       {
         path: '/dashboard/review',
         label: t('nav.review'),
-        description: '到期复习与稳态记忆',
+        description: pickLocalized({ en: 'Due reviews and stable retention', zh: '到期复习与稳态记忆' }, isZh),
         icon: Brain,
         badge: dueWords.length > 0 ? dueWords.length : null,
       },
       {
         path: '/dashboard/practice',
         label: t('nav.practice'),
-        description: '测验、听力、写作短练习',
+        description: pickLocalized({ en: 'Quiz, listening, and writing micro drills', zh: '测验、听力、写作短练习' }, isZh),
         icon: WandSparkles,
       },
       {
         path: '/dashboard/reading',
         label: t('nav.reading'),
-        description: 'IELTS 阅读理解精读训练',
+        description: pickLocalized({ en: 'IELTS reading comprehension drills', zh: 'IELTS 阅读理解精读训练' }, isZh),
         icon: BookOpen,
       },
       {
         path: '/dashboard/listening',
         label: t('nav.listening'),
-        description: 'IELTS 听力理解训练',
+        description: pickLocalized({ en: 'IELTS listening comprehension drills', zh: 'IELTS 听力理解训练' }, isZh),
         icon: Headphones,
       },
       {
         path: '/dashboard/grammar',
         label: t('nav.grammar'),
-        description: '语法规则与填空练习',
+        description: pickLocalized({ en: 'Grammar rules and fill-in drills', zh: '语法规则与填空练习' }, isZh),
         icon: GraduationCap,
       },
       {
         path: '/dashboard/pronunciation',
         label: t('nav.pronunciation'),
-        description: '发音评估与口语练习',
+        description: pickLocalized({ en: 'Pronunciation scoring and speaking drills', zh: '发音评估与口语练习' }, isZh),
         icon: AudioLines,
       },
       {
         path: '/dashboard/writing',
         label: t('nav.writing'),
-        description: '写作训练与 AI 批改',
+        description: pickLocalized({ en: 'Writing practice and AI grading', zh: '写作训练与 AI 批改' }, isZh),
         icon: PenTool,
       },
       {
         path: '/dashboard/chat',
         label: t('nav.coach'),
-        description: '解释、引导和短测都从这里进入',
+        description: pickLocalized({ en: 'Explanations, guidance, and micro quizzes', zh: '解释、引导和短测都从这里进入' }, isZh),
         icon: MessageCircleMore,
       },
       {
         path: '/dashboard/exam',
         label: t('nav.examPrep'),
-        description: 'IELTS 冲分与高价值反馈',
+        description: pickLocalized({ en: 'IELTS sprint and high-value feedback', zh: 'IELTS 冲分与高价值反馈' }, isZh),
         icon: Target,
       },
     ],
-    [dueWords.length, t],
+    [dueWords.length, isZh, t],
   );
 
   const toolNav = useMemo<NavItem[]>(
@@ -224,35 +328,35 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/vocabulary',
         label: t('nav.vocabulary'),
-        description: '词书与词汇资产',
+        description: pickLocalized({ en: 'Word books and lexical assets', zh: '词书与词汇资产' }, isZh),
         icon: Library,
       },
       {
         path: '/dashboard/analytics',
         label: t('nav.analytics'),
-        description: '学习数据与趋势',
+        description: pickLocalized({ en: 'Learning evidence and trends', zh: '学习数据与趋势' }, isZh),
         icon: Trophy,
       },
       {
         path: '/dashboard/memory',
         label: t('nav.memory'),
-        description: '长期记忆管理',
+        description: pickLocalized({ en: 'Long-term memory management', zh: '长期记忆管理' }, isZh),
         icon: Shield,
       },
       {
         path: '/dashboard/leaderboard',
-        label: '排行榜',
-        description: '周榜排名与社区挑战',
+        label: pickLocalized({ en: 'Leaderboard', zh: '排行榜' }, isZh),
+        description: pickLocalized({ en: 'Weekly ranks and community challenges', zh: '周榜排名与社区挑战' }, isZh),
         icon: Medal,
       },
       {
         path: '/dashboard/settings',
-        label: '设置',
-        description: '系统设置',
+        label: t('common.settings'),
+        description: pickLocalized({ en: 'System settings', zh: '系统设置' }, isZh),
         icon: Settings,
       },
     ],
-    [t],
+    [isZh, t],
   );
 
   const learningNav = useMemo(() => primaryNav.filter((item) => LEARNING_ROUTE_PREFIXES.includes(item.path as (typeof LEARNING_ROUTE_PREFIXES)[number])), [primaryNav]);
@@ -278,34 +382,41 @@ export default function DashboardLayout() {
     [primaryNav],
   );
 
-  const activeShell =
+  const activeShellEntry =
     shellTitleMap[location.pathname] ||
     shellTitleMap[primaryNav.find((item) => location.pathname.startsWith(item.path))?.path ?? ''] ||
     shellTitleMap['/dashboard/today'];
+  const activeShell = {
+    title: pickLocalized(activeShellEntry.title, isZh),
+    description: pickLocalized(activeShellEntry.description, isZh),
+  };
 
   const missionCompleted = dailyMission?.tasks.filter((task) => task.done).length || 0;
   const missionTotal = dailyMission?.tasks.length || 0;
   const missionProgress = missionTotal > 0 ? Math.round((missionCompleted / missionTotal) * 100) : 0;
-  const currentLang = i18n.language.startsWith('zh') ? 'zh' : 'en';
+  const isDemoSession = Boolean(user?.id && isLocalAuthUserId(user.id));
+  const demoBadgeText = copy.demo;
 
   const learningPrimaryAction = useMemo(() => {
     if (location.pathname.startsWith('/dashboard/review')) {
       return {
         href: '/dashboard/review',
-        label: learningPrimaryLabelByRoute['/dashboard/review'],
+        label: pickLocalized(learningPrimaryLabelByRoute['/dashboard/review'], isZh),
       };
     }
     if (location.pathname.startsWith('/dashboard/practice')) {
       return {
         href: '/dashboard/today',
-        label: learningPrimaryLabelByRoute['/dashboard/practice'],
+        label: pickLocalized(learningPrimaryLabelByRoute['/dashboard/practice'], isZh),
       };
     }
     return {
       href: dueWords.length > 0 ? '/dashboard/review' : '/dashboard/practice',
-      label: dueWords.length > 0 ? 'Clear due reviews' : learningPrimaryLabelByRoute['/dashboard/today'],
+      label: dueWords.length > 0
+        ? pickLocalized({ en: 'Clear due reviews', zh: '清掉到期复习' }, isZh)
+        : pickLocalized(learningPrimaryLabelByRoute['/dashboard/today'], isZh),
     };
-  }, [dueWords.length, location.pathname]);
+  }, [dueWords.length, isZh, location.pathname]);
 
   const changeLanguage = (language: 'en' | 'zh') => {
     i18n.changeLanguage(language);
@@ -322,8 +433,8 @@ export default function DashboardLayout() {
           className={cn(
             'group flex items-center gap-3 rounded-lg border px-3 py-3 transition-all duration-150',
             active
-              ? 'border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7)]'
-              : 'border-transparent hover:border-border hover:bg-[hsl(var(--surface-raised))]',
+              ? 'premium-side-card border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7)]'
+              : 'border-transparent hover:border-border hover:bg-[hsl(var(--surface-raised))]/82',
           )}
         >
           <div
@@ -359,7 +470,7 @@ export default function DashboardLayout() {
         <div
           className={cn(
             'group relative overflow-hidden rounded-lg border border-transparent px-4 py-3 transition-all duration-150',
-            active ? 'border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))]' : 'hover:border-border hover:bg-[hsl(var(--surface-raised))]',
+            active ? 'premium-side-card border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))]' : 'hover:border-border hover:bg-[hsl(var(--surface-raised))]/82',
           )}
         >
           <span
@@ -411,24 +522,27 @@ export default function DashboardLayout() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>我的账号</DropdownMenuLabel>
+        <DropdownMenuLabel className="flex items-center justify-between gap-2">
+          <span>{copy.accountMenu}</span>
+          {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <Link to="/dashboard/profile">
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            个人资料
+            {copy.profile}
           </DropdownMenuItem>
         </Link>
         <Link to="/dashboard/settings">
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
-            设置
+            {copy.settings}
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
-          退出登录
+          {copy.logout}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -442,13 +556,16 @@ export default function DashboardLayout() {
             <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
+              {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
+            </div>
             <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
           </div>
         </div>
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>今日任务进度</span>
+            <span>{copy.todayMissionProgress}</span>
             <span>{missionProgress}%</span>
           </div>
           <Progress value={missionProgress} className="h-2" />
@@ -456,12 +573,12 @@ export default function DashboardLayout() {
       </div>
 
       <div className="space-y-2">
-        <p className="px-2 text-xs text-muted-foreground">核心学习</p>
+        <p className="px-2 text-xs text-muted-foreground">{copy.coreLearning}</p>
         {primaryNav.map((item) => renderStandardNavItem(item))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-2 text-xs text-muted-foreground">工具</p>
+        <p className="px-2 text-xs text-muted-foreground">{copy.tools}</p>
         {toolNav.map((item) => renderStandardNavItem(item))}
       </div>
 
@@ -469,12 +586,12 @@ export default function DashboardLayout() {
         <Button className="w-full justify-start rounded-md" asChild>
           <Link to="/dashboard/today">
             <Sparkles className="mr-2 h-4 w-4" />
-            继续今日任务
+            {copy.continueTodayMission}
           </Link>
         </Button>
         <Button variant="outline" className="w-full justify-start rounded-md" onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
-          退出登录
+          {copy.logout}
         </Button>
       </div>
     </div>
@@ -482,7 +599,7 @@ export default function DashboardLayout() {
 
   const learningMobileSheetBody = (
     <div className="flex h-full flex-col gap-6 bg-background text-foreground">
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
+      <div className="premium-side-card rounded-lg border bg-card p-4 shadow-sm">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-primary/10 text-primary">
@@ -496,32 +613,32 @@ export default function DashboardLayout() {
         </div>
         <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
           <div>
-            <p className="text-[11px] text-muted-foreground">任务</p>
+            <p className="text-[11px] text-muted-foreground">{copy.mission}</p>
             <p className="mt-1 text-xl font-semibold text-primary">{missionProgress}%</p>
           </div>
           <div>
-            <p className="text-[11px] text-muted-foreground">到期</p>
+            <p className="text-[11px] text-muted-foreground">{copy.due}</p>
             <p className="mt-1 text-xl font-semibold">{dueWords.length}</p>
           </div>
           <div>
-            <p className="text-[11px] text-muted-foreground">连续</p>
+            <p className="text-[11px] text-muted-foreground">{copy.streak}</p>
             <p className="mt-1 text-xl font-semibold">{streak?.current || 0}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] text-muted-foreground">核心学习</p>
+        <p className="px-1 text-[11px] text-muted-foreground">{copy.coreLearning}</p>
         {learningNav.map((item) => renderLearningNavItem(item))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] text-muted-foreground">专项技能</p>
+        <p className="px-1 text-[11px] text-muted-foreground">{copy.skillPractice}</p>
         {skillsNav.map((item) => renderLearningNavItem(item, true))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] text-muted-foreground">工具</p>
+        <p className="px-1 text-[11px] text-muted-foreground">{copy.tools}</p>
         {learningTools.map((item) => renderLearningNavItem(item, true))}
       </div>
 
@@ -551,9 +668,9 @@ export default function DashboardLayout() {
             </button>
           </div>
         </div>
-        <Button variant="outline" className="rounded-xl" onClick={() => logout()}>
+        <Button variant="outline" className="rounded-lg" onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
-          退出登录
+          {copy.logout}
         </Button>
       </div>
     </div>
@@ -562,31 +679,31 @@ export default function DashboardLayout() {
   if (isLearningRoute) {
     return (
       <>
-        <div className="flex h-screen overflow-hidden bg-background text-foreground">
-        <aside className="hidden h-screen min-h-0 w-[292px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
+        <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
+        <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[292px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-lg px-1 py-2">
             <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent text-sidebar-primary shadow-[inset_0_1px_0_hsl(0_0%_100%/0.08)]">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
               <p className="text-base font-semibold tracking-tight">VocabDaily</p>
-              <p className="text-[11px] text-primary">学习</p>
+              <p className="text-[11px] text-primary">{copy.learning}</p>
             </div>
           </Link>
 
-          <div className="mt-5 rounded-lg border border-sidebar-border bg-sidebar-accent p-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
-            <h2 className="text-xl font-semibold tracking-[-0.03em]">{activeShell.title}</h2>
+          <div className="premium-side-card mt-5 rounded-lg border border-sidebar-border bg-sidebar-accent p-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+            <h2 className="text-xl font-semibold tracking-tight">{activeShell.title}</h2>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
               <div>
-                <p className="text-[11px] text-muted-foreground">任务</p>
+                <p className="text-[11px] text-muted-foreground">{copy.mission}</p>
                 <p className="mt-1 text-lg font-semibold text-primary">{missionProgress}%</p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground">到期</p>
+                <p className="text-[11px] text-muted-foreground">{copy.due}</p>
                 <p className="mt-1 text-lg font-semibold">{dueWords.length}</p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground">连续</p>
+                <p className="text-[11px] text-muted-foreground">{copy.streak}</p>
                 <p className="mt-1 text-lg font-semibold">{streak?.current || 0}</p>
               </div>
             </div>
@@ -603,21 +720,21 @@ export default function DashboardLayout() {
           >
             <div className="space-y-6 pb-4">
               <div className="space-y-2">
-                <p className="px-1 text-[11px] text-muted-foreground">核心学习</p>
+                <p className="px-1 text-[11px] text-muted-foreground">{copy.coreLearning}</p>
                 {learningNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] text-muted-foreground">专项技能</p>
+                <p className="px-1 text-[11px] text-muted-foreground">{copy.skillPractice}</p>
                 {skillsNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] text-muted-foreground">工具</p>
+                <p className="px-1 text-[11px] text-muted-foreground">{copy.tools}</p>
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="rounded-lg border border-sidebar-border bg-sidebar-accent p-4 space-y-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+              <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent p-4 space-y-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
                 <div className="flex items-center justify-between">
                   <StreakCounter
                     current={streak?.current || 0}
@@ -630,10 +747,13 @@ export default function DashboardLayout() {
             </div>
           </ScrollArea>
 
-          <div className="mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+          <div className="premium-side-card mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                  {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
+                </div>
                 <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
               </div>
               {learningAccountMenu}
@@ -641,8 +761,8 @@ export default function DashboardLayout() {
           </div>
         </aside>
 
-        <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
-          <header className="border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/90">
+        <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <header className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/88 shadow-[0_1px_0_hsl(var(--border)/0.45)] backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/82">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
@@ -664,7 +784,7 @@ export default function DashboardLayout() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
                     <span>{activeShell.title}</span>
-                    {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} due</Badge> : null}
+                    {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} {copy.due}</Badge> : null}
                   </div>
                   <p className="truncate text-sm text-muted-foreground lg:text-base">{activeShell.description}</p>
                 </div>
@@ -745,15 +865,15 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="hidden h-screen min-h-0 w-[320px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
+    <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background">
+      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[320px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-lg px-1 py-2">
           <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-primary text-sidebar-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.14)]">
             <BookText className="h-5 w-5" />
           </div>
           <div>
             <p className="text-base font-semibold">VocabDaily</p>
-            <p className="text-xs text-muted-foreground">学习</p>
+            <p className="text-xs text-muted-foreground">{copy.learning}</p>
           </div>
         </Link>
 
@@ -769,10 +889,10 @@ export default function DashboardLayout() {
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+            <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="mt-1 text-lg font-semibold">继续今日任务</p>
+                  <p className="mt-1 text-lg font-semibold">{copy.continueTodayHeading}</p>
                 </div>
                 <div className="flex h-11 w-11 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
                   <Sparkles className="h-5 w-5" />
@@ -780,25 +900,25 @@ export default function DashboardLayout() {
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 {dueWords.length > 0
-                  ? `${dueWords.length} 个到期复习优先处理，做完后再推进新内容。`
-                  : '先完成主任务，再用一次短练习把今天的弱项补上。'}
+                  ? copy.continuePanelDue(dueWords.length)
+                  : copy.continuePanelFresh}
               </p>
               <div className="mt-4 space-y-2">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>任务进度</span>
+                  <span>{copy.taskProgress}</span>
                   <span>{missionCompleted}/{missionTotal || 3}</span>
                 </div>
                 <Progress value={missionProgress} className="h-2" />
               </div>
               <Button className="mt-4 w-full rounded-md" asChild>
                 <Link to="/dashboard/today">
-                  今日计划
+                  {copy.todayPlan}
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
 
-            <div className="rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 space-y-3">
+            <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 space-y-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
                 <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
@@ -807,54 +927,57 @@ export default function DashboardLayout() {
             </div>
 
             <div className="space-y-2">
-              <p className="px-2 text-xs text-muted-foreground">核心学习</p>
+              <p className="px-2 text-xs text-muted-foreground">{copy.coreLearning}</p>
               {primaryNav.map((item) => renderStandardNavItem(item))}
             </div>
 
             <div className="space-y-2">
-              <p className="px-2 text-xs text-muted-foreground">工具</p>
+              <p className="px-2 text-xs text-muted-foreground">{copy.tools}</p>
               {toolNav.map((item) => renderStandardNavItem(item, true))}
             </div>
           </div>
         </ScrollArea>
 
-        <div className="mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3">
+        <div className="premium-side-card mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
-              <p className="text-xs text-muted-foreground">学习者</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
+              </div>
+              <p className="text-xs text-muted-foreground">{copy.learner}</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-xl px-2">
+                <Button variant="ghost" className="rounded-lg px-2">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>我的账号</DropdownMenuLabel>
+                <DropdownMenuLabel>{copy.accountMenu}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <Link to="/dashboard/profile">
                   <DropdownMenuItem>
                     <User className="mr-2 h-4 w-4" />
-                    个人资料
+                    {copy.profile}
                   </DropdownMenuItem>
                 </Link>
                 <Link to="/dashboard/settings">
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
-                    设置
+                    {copy.settings}
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
                   <LayoutGrid className="mr-2 h-4 w-4" />
-                  {resolvedTheme === 'dark' ? '切换浅色模式' : '切换深色模式'}
+                  {resolvedTheme === 'dark' ? copy.switchToLight : copy.switchToDark}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => logout()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  退出登录
+                  {copy.logout}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -863,7 +986,7 @@ export default function DashboardLayout() {
       </aside>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <header className="border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/90">
+        <header className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/88 shadow-[0_1px_0_hsl(var(--border)/0.45)] backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/82">
           <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>
@@ -885,7 +1008,7 @@ export default function DashboardLayout() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <span>{activeShell.title}</span>
-                  {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} due</Badge> : null}
+                  {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} {copy.due}</Badge> : null}
                 </div>
                 <p className="truncate text-sm text-muted-foreground lg:text-base">{activeShell.description}</p>
               </div>
@@ -896,7 +1019,7 @@ export default function DashboardLayout() {
                 <Button variant="ghost" className="hidden rounded-2xl border border-border/70 bg-card/70 lg:flex" asChild>
                   <Link to="/dashboard/today">
                     <Zap className="mr-2 h-4 w-4" />
-                    继续
+                    {copy.continue}
                   </Link>
                 </Button>
               ) : null}

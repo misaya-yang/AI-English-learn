@@ -10,7 +10,7 @@ import { ExamWorkspaceTabs } from '@/features/exam/components/ExamWorkspaceTabs'
 import { useExamDraftPersistence } from '@/features/exam/hooks/useExamDraftPersistence';
 import { useExamPrepRuntime } from '@/features/exam/hooks/useExamPrepRuntime';
 import { useExamQuotaState } from '@/features/exam/hooks/useExamQuotaState';
-import type { ExamDraftSnapshot, WorkspaceCopy } from '@/features/exam/types';
+import type { ExamDraftSnapshot, WorkspaceCopy, WorkspaceView } from '@/features/exam/types';
 import type { AiFeedback, ExamItem, FeedbackIssue } from '@/types/examContent';
 
 const DRAFT_PREFIX = 'vocabdaily_exam_prep_draft_v2';
@@ -248,6 +248,38 @@ export default function ExamPrepPage() {
     body: '弱项图谱、Band 走势、历史回顾分开放置，按需切换，避免一次看完所有指标。',
   };
 
+  const sprintSteps: Array<{
+    id: WorkspaceView;
+    label: string;
+    description: string;
+    metric: string;
+  }> = [
+    {
+      id: 'brief',
+      label: '定轨道',
+      description: selectedTrack?.title || '选择考试轨道与目标分',
+      metric: selectedUnit ? `${selectedUnitProgress}% 单元进度` : '未选择单元',
+    },
+    {
+      id: 'draft',
+      label: '写作输出',
+      description: runtime.writingPrompt ? '题目已就绪，继续完成正文' : '生成题目或进入模拟',
+      metric: `${activeWordCount} words`,
+    },
+    {
+      id: 'review',
+      label: '评分反馈',
+      description: feedback ? `当前 Band ${feedback.scores.overallBand}` : '提交后查看评分证据',
+      metric: feedback ? `${latestNextActions.length} 个行动项` : '待评分',
+    },
+    {
+      id: 'insight',
+      label: '补救复盘',
+      description: selectedErrorNode ? `优先修复 ${ISSUE_LABELS[selectedErrorNode.tag]}` : '沉淀弱项图谱',
+      metric: `${errorAnalytics.length} 类弱项`,
+    },
+  ];
+
   const handleJumpToVocabulary = useCallback(() => {
     jumpToVocabularyByTag(topWeakTag || 'lexical');
   }, [jumpToVocabularyByTag, topWeakTag]);
@@ -273,6 +305,40 @@ export default function ExamPrepPage() {
         onShowWeakness={() => runtime.setWorkspaceView('insight')}
         isBusy={runtime.loadingStage !== 'idle'}
       />
+
+      <section className="premium-panel-soft rounded-lg border border-border bg-card p-3">
+        <div className="grid gap-2 md:grid-cols-4">
+          {sprintSteps.map((step, index) => {
+            const active = runtime.workspaceView === step.id;
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => runtime.setWorkspaceView(step.id)}
+                className={`flex min-h-[112px] flex-col items-start justify-between rounded-lg border p-3 text-left transition hover:border-primary/40 hover:bg-primary/5 ${
+                  active
+                    ? 'border-primary/45 bg-primary/10 text-foreground shadow-sm'
+                    : 'border-border bg-background/70 text-muted-foreground'
+                }`}
+              >
+                <span className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+                  <span
+                    className={`grid h-6 w-6 place-items-center rounded-full text-[11px] ${
+                      active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+                  {active ? '当前阶段' : '冲刺阶段'}
+                </span>
+                <span className="mt-3 text-base font-semibold text-foreground">{step.label}</span>
+                <span className="mt-1 line-clamp-2 text-sm leading-5">{step.description}</span>
+                <span className="mt-3 text-xs font-medium text-primary">{step.metric}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
         <RouteConsole

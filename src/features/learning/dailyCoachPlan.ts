@@ -1,6 +1,7 @@
 import type { DailyMissionCard, NextBestAction, WeaknessSnapshot } from '@/types/learning';
 import type { LearningProfile } from '@/types/examContent';
 import type { LexicalEntry } from '@/features/lexicon/lexicalEntry';
+import { getLearningStylePersonalization } from '@/features/learning/learningStylePersonalization';
 
 export type DailyCoachPlanReason =
   | 'review_pressure'
@@ -13,6 +14,7 @@ export interface DailyCoachEvidenceItem {
   id: string;
   label: { en: string; zh: string };
   value: string;
+  valueZh?: string;
   tone: 'neutral' | 'coach' | 'practice' | 'warning';
 }
 
@@ -122,6 +124,7 @@ function buildCoachPrompt(args: {
     `Daily Coach OS plan: ${args.primaryTask.title}.`,
     `Learner target: ${args.profile.target || 'general English'}; level: ${args.profile.level}.`,
     `Reason: ${reasonPromptLabel[args.reason]}.`,
+    `Preferred learning style: ${args.profile.learningStyle}; ${getLearningStylePersonalization(args.profile.learningStyle).coachInstruction}`,
     `Progress: ${args.learnedTodayCount}/${args.dailyWordsCount} daily words; ${args.dueWordsCount} due reviews.`,
   ];
 
@@ -150,12 +153,20 @@ export function buildDailyCoachPlan(args: BuildDailyCoachPlanArgs): DailyCoachPl
         ieltsRelevance: args.lexicalFocus.ieltsRelevance,
       }
     : undefined;
+  const stylePersonalization = getLearningStylePersonalization(args.profile.learningStyle);
 
   const evidence: DailyCoachEvidenceItem[] = [
     {
       id: 'target',
       label: { en: 'Target', zh: '目标' },
       value: args.profile.target || args.profile.level,
+      tone: 'coach',
+    },
+    {
+      id: 'learning-style',
+      label: { en: 'Style', zh: '偏好' },
+      value: stylePersonalization.label.en,
+      valueZh: stylePersonalization.label.zh,
       tone: 'coach',
     },
     {
@@ -209,14 +220,17 @@ export function buildDailyCoachPlan(args: BuildDailyCoachPlanArgs): DailyCoachPl
     `prompt=${encodeParam(coachPrompt)}`,
   ].join('&');
   const copy = reasonCopy[reason];
+  const briefTitle = reason === 'daily_vocabulary'
+    ? { en: args.missionCard.primaryAction.title, zh: args.missionCard.primaryAction.titleZh }
+    : copy.title;
 
   return {
     id: planId,
     reason,
-    briefTitle: copy.title,
+    briefTitle,
     brief: {
-      en: `${copy.lead.en} ${args.missionCard.primaryAction.description}`,
-      zh: `${copy.lead.zh} ${args.missionCard.primaryAction.descriptionZh}`,
+      en: `${copy.lead.en} ${args.missionCard.primaryAction.description} ${stylePersonalization.todayNudge.en}`,
+      zh: `${copy.lead.zh} ${args.missionCard.primaryAction.descriptionZh} ${stylePersonalization.todayNudge.zh}`,
     },
     primaryTask: args.missionCard.primaryAction,
     secondaryTasks: args.missionCard.secondaryActions.slice(0, 2),

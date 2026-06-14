@@ -18,6 +18,13 @@
   `npx vitest run` locally.
 - Production env vars on Vercel are still present:
   `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_BASE_URL`.
+- Vercel Preview and Production do **not** set
+  `VITE_ALLOW_SUPABASE_DEV_FALLBACK`. That flag is local-only and exists only
+  so maintainers can intentionally boot against the shared development project
+  when a `.env` file is absent.
+- If the shared development fallback project is ever reused for real users,
+  remove the fallback values from `src/lib/supabase.ts` and rotate the anon key
+  before release.
 
 ## 1. Migrations
 
@@ -58,6 +65,11 @@
 - Run a representative `SELECT` from the new table/columns with the
   service role key to confirm shape. Then run the same query with the
   anon key to confirm RLS rejects it (where appropriate).
+- When using the local fallback project for development, repeat the same anon
+  key check against that project before enabling
+  `VITE_ALLOW_SUPABASE_DEV_FALLBACK=true` on a maintainer machine. The fallback
+  anon key is publishable but must never expose real user rows without an
+  authenticated JWT and owner-scoped RLS.
 
 ## 2. Edge Functions
 
@@ -227,6 +239,10 @@ against the prod URL:
 ```bash
 BASE_URL=https://www.uuedu.online npm run test:e2e:smoke
 ```
+
+For product-route, persona, screenshot, theme/language, and known dependency
+coverage, follow `docs/ops/PRODUCT_REGRESSION_RUNBOOK.md` and attach the
+referenced screenshot directory to the release note.
 
 ## 7. Rollback
 

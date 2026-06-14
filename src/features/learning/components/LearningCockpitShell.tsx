@@ -71,8 +71,9 @@ export interface LearningCockpitShellProps {
 }
 
 const renderAction = (action: CockpitMissionAction, key: string) => {
+  const actionRole = key === 'primary' ? 'primary' : 'secondary';
   const className = cn(
-    'rounded-full',
+    'rounded-md',
     action.variant === 'outline'
       ? 'border-border bg-muted/20 text-foreground hover:bg-muted/50 hover:text-foreground'
       : 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -85,6 +86,7 @@ const renderAction = (action: CockpitMissionAction, key: string) => {
         variant={action.variant === 'outline' ? 'outline' : 'default'}
         className={className}
         data-testid={action.testId}
+        data-cockpit-action={actionRole}
       >
         <Link to={action.href}>{action.label}</Link>
       </Button>
@@ -98,6 +100,7 @@ const renderAction = (action: CockpitMissionAction, key: string) => {
       className={className}
       onClick={action.onClick}
       data-testid={action.testId}
+      data-cockpit-action={actionRole}
     >
       {action.label}
     </Button>

@@ -67,7 +67,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-lg border border-border bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7),0_18px_44px_-36px_hsl(var(--shadow-studio)/0.28)] transition-all duration-300';
+  'premium-panel relative rounded-lg border border-border bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7),0_18px_44px_-36px_hsl(var(--shadow-studio)/0.28)] transition-all duration-300';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
@@ -94,10 +94,9 @@ export function LearningHeroPanel({
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn(learningFrameClassName, 'overflow-hidden p-4 sm:p-6 lg:p-8', className)}
+      className={cn(learningFrameClassName, 'premium-hero-panel overflow-hidden p-4 sm:p-6 lg:p-8', className)}
     >
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primary" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[hsl(var(--border-strong)/0.55)]" />
+      <div className="pointer-events-none absolute inset-y-5 left-0 w-1 rounded-r-full bg-gradient-to-b from-primary via-[hsl(var(--accent-practice))] to-[hsl(var(--accent-exam))]" />
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_300px] lg:items-start z-10">
         <div className="space-y-5">
           {eyebrow ? (
@@ -106,21 +105,21 @@ export function LearningHeroPanel({
             </Badge>
           ) : null}
           <div className="space-y-3">
-            <h1 className="max-w-4xl text-4xl font-semibold leading-[0.98] tracking-[-0.045em] text-foreground sm:text-5xl">
+            <h1 className="max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
               {title}
             </h1>
-            {description ? <p className="max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg">{description}</p> : null}
+            {description ? <p className="line-clamp-3 max-w-3xl text-base leading-7 text-muted-foreground sm:line-clamp-none sm:text-lg">{description}</p> : null}
           </div>
           {actions ? <LearningActionCluster>{actions}</LearningActionCluster> : null}
         </div>
 
-        <div className="space-y-4 rounded-lg border border-border bg-[hsl(var(--surface-sunken))] p-4 shadow-inner sm:p-6 relative z-10">
+        <div className="premium-metric-well relative z-10 hidden space-y-4 rounded-lg border border-border bg-[hsl(var(--surface-sunken))] p-4 shadow-inner sm:block sm:p-6">
           {typeof progress === 'number' ? (
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="text-[11px] text-muted-foreground">{progressLabel || '进度'}</p>
-                  <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-primary">
+                  <p className="mt-2 text-4xl font-semibold tracking-tight text-primary">
                     {progressValueLabel || `${progress}%`}
                   </p>
                 </div>
@@ -164,11 +163,11 @@ export function LearningWorkspaceSurface({
 }: LearningWorkspaceSurfaceProps) {
   return (
     <section className={cn(learningFrameClassName, 'overflow-hidden', className)}>
-      <div className="border-b border-border bg-[hsl(var(--surface-sunken))] px-5 py-5 sm:px-6 lg:px-7">
+      <div className="border-b border-border/70 bg-[hsl(var(--surface-sunken))]/72 px-5 py-5 sm:px-6 lg:px-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-            <h2 className="text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-[2rem]">{title}</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[2rem]">{title}</h2>
             {description ? <p className="max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">{description}</p> : null}
           </div>
           {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
@@ -183,9 +182,9 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
   return (
     <div className={cn('grid gap-3 border-t border-border pt-4 sm:grid-cols-2 xl:grid-cols-3', className)}>
       {items.map((item) => (
-        <div key={`${item.label}-${String(item.value)}`} className="space-y-1.5 rounded-md border border-border/70 bg-[hsl(var(--surface-raised))] px-3 py-2.5">
+        <div key={`${item.label}-${String(item.value)}`} className="premium-metric-card space-y-1.5 rounded-md border border-border/70 bg-[hsl(var(--surface-raised))] px-3 py-2.5">
           <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
-          <div className={cn('text-2xl font-semibold tracking-[-0.04em]', metricToneClass[item.accent || 'default'])}>
+          <div className={cn('text-2xl font-semibold tracking-tight', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
           {item.hint ? <p className="hidden text-xs leading-5 text-muted-foreground xl:block">{item.hint}</p> : null}
@@ -214,11 +213,11 @@ export function LearningEmptyState({
       animate={{ opacity: 1, scale: 1 }}
       className={cn(learningFrameClassName, 'px-6 py-12 text-center sm:px-10', className)}
     >
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
         <Icon className="h-8 w-8" />
       </div>
       {eyebrow ? <p className="mt-5 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-      <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-foreground">{title}</h2>
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{title}</h2>
       <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-muted-foreground">{description}</p>
       {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mx-auto mt-8 max-w-3xl text-left" /> : null}
       {actions ? <LearningActionCluster className="mt-8 justify-center">{actions}</LearningActionCluster> : null}
@@ -243,11 +242,11 @@ export function LearningCompletionState({
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
       <div className="relative text-center z-10">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
           <Icon className="h-9 w-9" />
         </div>
         {eyebrow ? <p className="mt-6 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-        <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-foreground">{title}</h2>
+        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{title}</h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-muted-foreground">{description}</p>
       </div>
       {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mt-8" /> : null}

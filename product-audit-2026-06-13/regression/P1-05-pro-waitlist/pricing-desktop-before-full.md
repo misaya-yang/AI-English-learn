@@ -1,0 +1,180 @@
+- generic [active] [ref=e1] [box=0,0,1194,2531]:
+  - link "Skip to content" [ref=e2] [cursor=pointer] [box=-9999,0,1,1]:
+    - /url: "#main-content"
+  - generic [ref=e3] [box=0,0,1194,2531]:
+    - generic [ref=e13] [box=0,0,1194,2531]:
+      - banner [ref=e14] [box=0,0,1194,57]:
+        - generic [ref=e15] [box=21,0,1152,56]:
+          - link "VocabDaily — 返回首页" [ref=e16] [cursor=pointer] [box=45,10,127,37]:
+            - /url: /
+            - img [ref=e18] [box=55,20,16,16]
+            - generic [ref=e20] [box=91,10,81,37]:
+              - generic [ref=e21] [box=91,10,81,24]: VocabDaily
+              - generic [ref=e22] [box=91,34,81,13]: 学习工作台
+          - generic [ref=e23] [box=923,10,226,36]:
+            - generic [ref=e24] [box=923,10,76,36]:
+              - button "切换外观" [ref=e25] [cursor=pointer] [box=923,10,36,36]:
+                - img [box=933,20,16,16]
+                - generic [ref=e26] [box=941,28,1,1]: 切换外观
+              - button "切换语言" [ref=e27] [cursor=pointer] [box=963,10,36,36]:
+                - img [box=973,20,16,16]
+                - generic [ref=e28] [box=981,28,1,1]: 切换语言
+            - link "登录" [ref=e29] [cursor=pointer] [box=1015,18,28,20]:
+              - /url: /login
+            - link "免费开始" [ref=e30] [cursor=pointer] [box=1059,10,90,36]:
+              - /url: /register
+      - main [ref=e31] [box=21,57,1152,2373]:
+        - generic [ref=e32] [box=213,121,768,169]:
+          - generic [ref=e33] [box=548,122,98,22]:
+            - img [box=557,127,12,12]
+            - text: 定价与会员
+          - heading "选择你的学习方案" [level=1] [ref=e34] [box=213,166,768,48]
+          - paragraph [ref=e35] [box=213,226,768,28]: 选择适合你的学习方案
+          - paragraph [ref=e36] [box=213,266,768,24]: 免费开始，Pro 上线后再升级。
+        - status [ref=e37] [box=213,322,768,90]:
+          - img [ref=e38] [box=234,357,20,20]
+          - generic [ref=e40] [box=266,339,694,56]:
+            - paragraph [ref=e41] [box=266,339,694,20]: Pro 订阅暂未开放
+            - paragraph [ref=e42] [box=266,363,694,32]: 我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用， 支付服务真实可用后，本页会显示明确的升级入口。
+        - generic [ref=e45] [box=234,497,726,48]:
+          - generic [ref=e46] [box=234,497,54,48]:
+            - paragraph [ref=e47] [box=234,497,54,16]: 当前方案
+            - paragraph [ref=e48] [box=234,517,54,28]: 免费版
+          - generic [ref=e49] [box=898,508,62,26]: 免费版
+        - generic [ref=e50] [box=45,630,1104,22]:
+          - generic [ref=e51] [box=503,631,28,20]: 按月
+          - switch "Toggle yearly pricing" [ref=e52] [cursor=pointer] [box=547,632,32,18]
+          - generic [ref=e53] [box=595,630,96,22]:
+            - text: 按年
+            - generic [ref=e54] [box=631,630,60,22]: 省 20%
+        - generic [ref=e55] [box=149,692,896,802]:
+          - generic [ref=e58] [box=150,717,434,752]:
+            - generic [ref=e59] [box=178,745,378,60]:
+              - heading "免费版" [level=2] [ref=e60] [box=178,745,378,32]
+              - paragraph [ref=e61] [box=178,785,378,20]: 从每日学习习惯开始。
+            - generic [ref=e63] [box=178,829,378,40]:
+              - generic [ref=e64] [box=178,829,41,40]: $0
+              - generic [ref=e65] [box=223,847,26,20]: / 月
+            - list [ref=e66] [box=178,918,378,451]:
+              - listitem [ref=e67] [box=178,918,378,20]:
+                - img [ref=e68] [box=178,920,16,16]
+                - generic [ref=e70] [box=204,918,144,20]: 每日任务：新词 + 复习
+              - listitem [ref=e71] [box=178,950,378,20]:
+                - img [ref=e72] [box=178,952,16,16]
+                - generic [ref=e74] [box=204,950,168,20]: 核心测验、听力与教练对话
+              - listitem [ref=e75] [box=178,982,378,20]:
+                - img [ref=e76] [box=178,984,16,16]
+                - generic [ref=e78] [box=204,982,167,20]: 有限 IELTS 仿真与 AI 反馈
+              - listitem [ref=e79] [box=178,1014,378,20]:
+                - img [ref=e80] [box=178,1016,16,16]
+                - generic [ref=e82] [box=204,1014,112,20]: 智能间隔复习队列
+              - listitem [ref=e83] [box=178,1046,378,20]:
+                - img [ref=e84] [box=178,1048,16,16]
+                - generic [ref=e86] [box=204,1046,84,20]: 基础进度追踪
+              - listitem [ref=e87] [box=178,1078,378,20]:
+                - generic [ref=e88] [box=178,1080,16,16]: –
+                - generic [ref=e89] [box=204,1078,106,20]: 深度 AI 写作反馈
+              - listitem [ref=e90] [box=178,1110,378,20]:
+                - generic [ref=e91] [box=178,1112,16,16]: –
+                - generic [ref=e92] [box=204,1110,84,20]: 全部练习模式
+              - listitem [ref=e93] [box=178,1142,378,20]:
+                - generic [ref=e94] [box=178,1144,16,16]: –
+                - generic [ref=e95] [box=204,1142,84,20]: 优先生成队列
+              - listitem [ref=e96] [box=178,1174,378,20]:
+                - generic [ref=e97] [box=178,1176,16,16]: –
+                - generic [ref=e98] [box=204,1174,105,20]: 导出 CSV / Anki
+            - link "免费开始" [ref=e100] [cursor=pointer] [box=178,1397,378,44]:
+              - /url: /register
+              - text: 免费开始
+              - img [box=395,1411,16,16]
+          - generic [ref=e102] [box=609,692,436,802]:
+            - generic [ref=e104] [box=950,713,74,26]: 最受欢迎
+            - generic [ref=e105] [box=610,717,434,752]:
+              - generic [ref=e106] [box=638,745,378,60]:
+                - heading "专业版" [level=2] [ref=e107] [box=638,745,378,32]
+                - paragraph [ref=e108] [box=638,785,378,20]: 面向需要深度反馈与高效学习的用户。
+              - generic [ref=e110] [box=638,829,378,40]:
+                - generic [ref=e111] [box=638,829,92,40]: $9.99
+                - generic [ref=e112] [box=734,847,26,20]: / 月
+              - list [ref=e113] [box=638,918,378,308]:
+                - listitem [ref=e114] [box=638,918,378,20]:
+                  - img [ref=e115] [box=638,920,16,16]
+                  - generic [ref=e117] [box=664,918,98,20]: 每日新词不限量
+                - listitem [ref=e118] [box=638,950,378,20]:
+                  - img [ref=e119] [box=638,952,16,16]
+                  - generic [ref=e121] [box=664,950,78,20]: 进阶 AI 反馈
+                - listitem [ref=e122] [box=638,982,378,20]:
+                  - img [ref=e123] [box=638,984,16,16]
+                  - generic [ref=e125] [box=664,982,197,20]: IELTS 写作教练（结构化评分）
+                - listitem [ref=e126] [box=638,1014,378,20]:
+                  - img [ref=e127] [box=638,1016,16,16]
+                  - generic [ref=e129] [box=664,1014,141,20]: IELTS 微课程与仿真题
+                - listitem [ref=e130] [box=638,1046,378,20]:
+                  - img [ref=e131] [box=638,1048,16,16]
+                  - generic [ref=e133] [box=664,1046,140,20]: 错因图谱与一键补强课
+                - listitem [ref=e134] [box=638,1078,378,20]:
+                  - img [ref=e135] [box=638,1080,16,16]
+                  - generic [ref=e137] [box=664,1078,84,20]: 全部练习模式
+                - listitem [ref=e138] [box=638,1110,378,20]:
+                  - img [ref=e139] [box=638,1112,16,16]
+                  - generic [ref=e141] [box=664,1110,84,20]: 优先词汇生成
+                - listitem [ref=e142] [box=638,1142,378,20]:
+                  - img [ref=e143] [box=638,1144,16,16]
+                  - generic [ref=e145] [box=664,1142,105,20]: 导出 CSV / Anki
+                - listitem [ref=e146] [box=638,1174,378,20]:
+                  - img [ref=e147] [box=638,1176,16,16]
+                  - generic [ref=e149] [box=664,1174,70,20]: 无广告体验
+                - listitem [ref=e150] [box=638,1206,378,20]:
+                  - img [ref=e151] [box=638,1208,16,16]
+                  - generic [ref=e153] [box=664,1206,84,20]: 详细学习分析
+              - generic [ref=e155] [box=638,1254,378,187]:
+                - paragraph [ref=e156] [box=655,1271,344,20]: 暂未开放
+                - paragraph [ref=e157] [box=655,1295,344,20]: 付费版本暂未开放，免费版可正常使用。
+                - paragraph [ref=e158] [box=655,1326,344,16]: 结账入口会在真实支付服务接好后出现。
+                - button "Pro 开放时通知我" [ref=e159] [cursor=pointer] [box=655,1358,344,40]:
+                  - img [box=755,1370,16,16]
+                  - text: Pro 开放时通知我
+                - paragraph [ref=e160] [box=655,1406,344,18]: 只记录产品意向，不会跳转支付。
+        - generic [ref=e161] [box=213,1558,768,672]:
+          - heading "常见问题" [level=2] [ref=e162] [box=213,1558,768,32]
+          - generic [ref=e163] [box=213,1622,768,608]:
+            - generic [ref=e165] [box=214,1647,766,108]:
+              - heading "为什么现在还不能订阅？" [level=3] [ref=e166] [box=234,1667,726,20]:
+                - img [ref=e167] [box=234,1669,16,16]
+                - generic [ref=e170] [box=258,1667,154,20]: 为什么现在还不能订阅？
+              - paragraph [ref=e171] [box=234,1695,726,40]: 我们正在完成支付服务的配置。在此之前，免费版完全可用；只有真实支付服务准备好后，本页才会开放结账入口。
+            - generic [ref=e173] [box=214,1817,766,88]:
+              - heading "Pro 上线后我现在的数据会保留吗？" [level=3] [ref=e174] [box=234,1837,726,20]:
+                - img [ref=e175] [box=234,1839,16,16]
+                - generic [ref=e178] [box=258,1837,223,20]: Pro 上线后我现在的数据会保留吗？
+              - paragraph [ref=e179] [box=234,1865,726,20]: 会保留。您的学习记录、词汇和历史数据与订阅方案无关，升级后仅权益发生变化。
+            - generic [ref=e181] [box=214,1967,766,88]:
+              - heading "订阅功能上线后可以随时取消吗？" [level=3] [ref=e182] [box=234,1987,726,20]:
+                - img [ref=e183] [box=234,1989,16,16]
+                - generic [ref=e186] [box=258,1987,210,20]: 订阅功能上线后可以随时取消吗？
+              - paragraph [ref=e187] [box=234,2015,726,20]: 可以。您可以随时取消，并在当前计费周期结束前继续享有 Pro 权益。
+            - generic [ref=e189] [box=214,2117,766,88]:
+              - heading "将支持哪些支付方式？" [level=3] [ref=e190] [box=234,2137,726,20]:
+                - img [ref=e191] [box=234,2139,16,16]
+                - generic [ref=e194] [box=258,2137,140,20]: 将支持哪些支付方式？
+              - paragraph [ref=e195] [box=234,2165,726,20]: Stripe 将作为主要的国际支付通道，支付宝已在路线图上。我们只会在某种方式能完整完成真实扣款后才启用。
+        - generic [ref=e196] [box=45,2286,1104,80]:
+          - paragraph [ref=e197] [box=45,2286,1104,20]: 需要企业或学校方案？请先使用免费版完成学习闭环验证。
+          - link "免费开始" [ref=e198] [cursor=pointer] [box=536,2326,122,40]:
+            - /url: /register
+            - img [box=553,2338,16,16]
+            - text: 免费开始
+      - contentinfo [ref=e199] [box=0,2430,1194,101]:
+        - generic [ref=e200] [box=21,2463,1152,36]:
+          - link "VocabDaily — 返回首页" [ref=e201] [cursor=pointer] [box=45,2463,127,36]:
+            - /url: /
+            - img [ref=e203] [box=55,2473,16,16]
+            - generic [ref=e206] [box=91,2469,81,24]: VocabDaily
+          - paragraph [ref=e207] [box=495,2473,206,16]: © 2026 VocabDaily · 英语学习工作台
+          - navigation "法律链接" [ref=e208] [box=1023,2473,126,16]:
+            - link "服务条款" [ref=e209] [cursor=pointer] [box=1023,2473,48,16]:
+              - /url: /terms
+            - generic [ref=e210] [box=1083,2473,6,16]: /
+            - link "隐私政策" [ref=e211] [cursor=pointer] [box=1101,2473,48,16]:
+              - /url: /privacy
+    - region "Notifications alt+T" [box=0,2531,1194,0]

@@ -2,8 +2,21 @@ import { describe, it, expect } from 'vitest';
 import { resolveSupabaseEnv } from './supabase';
 
 describe('resolveSupabaseEnv', () => {
-  it('uses dev fallbacks when env is missing in non-prod', () => {
-    const resolved = resolveSupabaseEnv({ MODE: 'development' });
+  it('throws when non-prod env is missing without explicit fallback opt-in', () => {
+    expect(() => resolveSupabaseEnv({ MODE: 'development' })).toThrow(/VITE_SUPABASE_URL.*VITE_SUPABASE_ANON_KEY/);
+  });
+
+  it('uses dev fallbacks only when explicitly allowed in non-prod', () => {
+    const resolved = resolveSupabaseEnv({
+      MODE: 'development',
+      VITE_ALLOW_SUPABASE_DEV_FALLBACK: 'true',
+    });
+    expect(resolved.url).toMatch(/^https:\/\//);
+    expect(resolved.anonKey.length).toBeGreaterThan(10);
+  });
+
+  it('keeps test mode on the local fallback so unit tests do not need real env', () => {
+    const resolved = resolveSupabaseEnv({ MODE: 'test' });
     expect(resolved.url).toMatch(/^https:\/\//);
     expect(resolved.anonKey.length).toBeGreaterThan(10);
   });
@@ -22,6 +35,15 @@ describe('resolveSupabaseEnv', () => {
     expect(() => resolveSupabaseEnv({ PROD: true })).toThrow(/VITE_SUPABASE_URL/);
   });
 
+  it('does not allow fallback opt-in to bypass missing prod env', () => {
+    expect(() =>
+      resolveSupabaseEnv({
+        PROD: true,
+        VITE_ALLOW_SUPABASE_DEV_FALLBACK: 'true',
+      }),
+    ).toThrow(/VITE_SUPABASE_URL.*VITE_SUPABASE_ANON_KEY/);
+  });
+
   it('throws when prod env is missing only the anon key', () => {
     expect(() =>
       resolveSupabaseEnv({
@@ -38,6 +60,16 @@ describe('resolveSupabaseEnv', () => {
         PROD: true,
       }),
     ).toThrow(/VITE_SUPABASE_URL/);
+  });
+
+  it('does not mix provided non-prod env with fallback credentials', () => {
+    expect(() =>
+      resolveSupabaseEnv({
+        VITE_SUPABASE_URL: 'https://example.supabase.co',
+        VITE_ALLOW_SUPABASE_DEV_FALLBACK: 'true',
+        MODE: 'development',
+      }),
+    ).toThrow(/VITE_SUPABASE_ANON_KEY/);
   });
 
   it('returns the configured prod values when both vars are present', () => {

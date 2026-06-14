@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import {
   Play,
   Pause,
@@ -31,6 +32,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { recordLearningEvent } from '@/services/learningEvents';
 import { incrementReviewCount } from '@/services/gamification';
 import { toast } from 'sonner';
+import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -406,6 +408,8 @@ interface QuestionCardProps {
 }
 
 function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCardProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const correctAnswer = Array.isArray(q.answer) ? q.answer[0] : q.answer;
   const isCorrect = submitted
     ? userAnswer.trim().toLowerCase() === correctAnswer.toLowerCase()
@@ -468,7 +472,9 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
             disabled={submitted}
             value={userAnswer}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={q.type === 'fill_blank' ? 'Fill in the blank…' : 'Your answer…'}
+            placeholder={q.type === 'fill_blank'
+              ? (isZh ? '填入答案...' : 'Fill in the blank…')
+              : (isZh ? '你的答案...' : 'Your answer…')}
             className={cn(
               'w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none transition-all duration-200',
               !submitted
@@ -480,7 +486,7 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
           />
           {submitted && !isCorrect && (
             <p className="mt-1.5 text-xs text-green-600">
-              ✓ Correct: <span className="font-semibold">{correctAnswer}</span>
+              {isZh ? '正确答案' : 'Correct'}: <span className="font-semibold">{correctAnswer}</span>
             </p>
           )}
         </div>
@@ -504,7 +510,7 @@ export default function ListeningPage() {
   const { addStudySession } = useUserData();
   const { user } = useAuth();
   const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language.startsWith('zh');
   const [phase, setPhase] = useState<Phase>('select');
   const [selected, setSelected] = useState<ListeningPassage | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -550,7 +556,7 @@ export default function ListeningPage() {
     const pct = correct / total;
     const xp = pct >= 0.8 ? 30 : pct >= 0.6 ? 18 : 8;
     addStudySession(0, 0, xp, 0);
-    toast.success(`+${xp} XP`, { description: `${correct}/${total} correct` });
+    toast.success(`+${xp} XP`, { description: isZh ? `${correct}/${total} 正确` : `${correct}/${total} correct` });
 
     if (user?.id) {
       void recordLearningEvent({
@@ -569,6 +575,14 @@ export default function ListeningPage() {
     }
   };
 
+  const featuredListening = SEED_PASSAGES[0];
+  const waveformBars = [36, 56, 42, 76, 48, 88, 62, 44, 72, 52, 82, 40, 68, 58, 46, 78];
+  const listeningFlow = [
+    isZh ? '先完整听一遍，不急着看文字稿' : 'Listen once before opening the transcript',
+    isZh ? '进入题目后凭记忆定位关键信息' : 'Answer from memory and key details',
+    isZh ? '复盘时再对照文字稿修正误听点' : 'Review the transcript after submission',
+  ];
+
   const handleReset = () => {
     tts.stop();
     setPhase('select');
@@ -583,26 +597,88 @@ export default function ListeningPage() {
 
   if (phase === 'select') {
     return (
-      <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {isZh ? '听力练习' : 'Listening Practice'}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {isZh ? 'IELTS 学术听力 — 音频片段与理解题' : 'IELTS Academic — audio clips with comprehension questions'}
-          </p>
-        </div>
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
+        <section className="premium-hero-panel overflow-hidden rounded-lg border border-border bg-card p-5">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-primary">{isZh ? '听力专项' : 'Listening module'}</p>
+                <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                  {isZh ? '听力练习' : 'Listening Practice'}
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  {isZh
+                    ? '按 IELTS 听力节奏练习：先听、再答、最后用文字稿修正误听。'
+                    : 'Practice the IELTS listening loop: listen, answer, then repair mistakes with the transcript.'}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border bg-background/70 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <LevelBadge level={featuredListening.level} />
+                  <span className="text-xs text-muted-foreground">{featuredListening.topic}</span>
+                  <span className="text-xs text-muted-foreground">· {featuredListening.durationLabel}</span>
+                </div>
+                <h2 className="mt-3 text-lg font-semibold text-foreground">{featuredListening.title}</h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{featuredListening.subtitle}</p>
+              </div>
+
+              <Button onClick={() => handleSelect(featuredListening)} className="rounded-md bg-primary text-primary-foreground">
+                {isZh ? '开始推荐听力' : 'Start recommended audio'}
+                <ChevronRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold tracking-wider text-muted-foreground">
+                    {isZh ? '音频训练面板' : 'Audio training panel'}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {featuredListening.questions.length} {isZh ? '题 · 约' : 'questions ·'} {featuredListening.durationLabel}
+                  </p>
+                </div>
+                <div className="rounded-full bg-primary/10 p-3 text-primary">
+                  <Headphones className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-5 flex h-24 items-center gap-1.5 rounded-lg border border-border bg-card px-4">
+                {waveformBars.map((height, index) => (
+                  <span
+                    key={index}
+                    className="flex-1 rounded-full bg-primary/50"
+                    style={{ height: `${height}%` }}
+                  />
+                ))}
+              </div>
+              <div className="mt-4 space-y-2">
+                {listeningFlow.map((item, index) => (
+                  <div key={item} className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+                      {index + 1}
+                    </span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Passage cards */}
         <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">{isZh ? '可选音频' : 'Available audio clips'}</h2>
+            <span className="text-xs text-muted-foreground">{SEED_PASSAGES.length} {isZh ? '段' : 'clips'}</span>
+          </div>
           {SEED_PASSAGES.map((passage) => (
             <motion.button
               key={passage.id}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleSelect(passage)}
-              className="w-full rounded-xl border border-border bg-card p-5 text-left transition-all hover:shadow-sm hover:border-blue-500/20"
+              className="w-full rounded-lg border border-border bg-card p-5 text-left transition-all hover:border-primary/30 hover:bg-muted/70 hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -620,7 +696,7 @@ export default function ListeningPage() {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <BookOpen className="h-3 w-3" />
-                    {passage.questions.length} questions
+                    {passage.questions.length} {isZh ? '题' : 'questions'}
                   </div>
                   <div className="rounded-full bg-blue-500/10 p-1.5">
                     <ChevronRight className="h-3.5 w-3.5 text-blue-400" />
@@ -635,7 +711,7 @@ export default function ListeningPage() {
           <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3">
             <p className="text-sm text-amber-400 flex items-center gap-2">
               <VolumeX className="h-4 w-4 flex-shrink-0" />
-              Your browser doesn't support speech synthesis. You can still read the transcript.
+              {isZh ? '当前浏览器不支持语音合成，你仍然可以阅读文字稿练习。' : "Your browser doesn't support speech synthesis. You can still read the transcript."}
             </p>
           </div>
         )}
@@ -707,10 +783,10 @@ export default function ListeningPage() {
                 className="rounded-md bg-blue-500 text-primary-foreground hover:bg-blue-400 px-6"
               >
                 {tts.isPlaying
-                  ? <><Pause className="h-4 w-4 mr-1.5" />Pause</>
+                  ? <><Pause className="h-4 w-4 mr-1.5" />{isZh ? '暂停' : 'Pause'}</>
                   : tts.isPaused
-                    ? <><Play className="h-4 w-4 mr-1.5" />Resume</>
-                    : <><Play className="h-4 w-4 mr-1.5" />Play</>}
+                    ? <><Play className="h-4 w-4 mr-1.5" />{isZh ? '继续' : 'Resume'}</>
+                    : <><Play className="h-4 w-4 mr-1.5" />{isZh ? '播放' : 'Play'}</>}
               </Button>
               <Button
                 variant="outline"
@@ -756,7 +832,7 @@ export default function ListeningPage() {
           onClick={handleStartQuestions}
           className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold"
         >
-          Start Questions <ChevronRight className="ml-1.5 h-4 w-4" />
+          {isZh ? '开始答题' : 'Start Questions'} <ChevronRight className="ml-1.5 h-4 w-4" />
         </Button>
       </div>
     );
@@ -767,90 +843,178 @@ export default function ListeningPage() {
   if ((phase === 'questions' || phase === 'review') && selected) {
     const totalQ = selected.questions.length;
     const allAnswered = selected.questions.every((q) => (answers[q.id] ?? '').trim().length > 0);
+    const accuracy = totalQ > 0 ? Math.round((score / totalQ) * 100) : 0;
+    const answeredCount = selected.questions.filter((q) => (answers[q.id] ?? '').trim().length > 0).length;
+    const answerProgress = totalQ > 0 ? Math.round((answeredCount / totalQ) * 100) : 0;
 
     return (
-      <div className="mx-auto max-w-2xl space-y-5 px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-foreground">{selected.title}</h2>
-            <p className="text-sm text-muted-foreground">
-              {submitted ? `Score: ${score}/${totalQ}` : `${totalQ} questions`}
-            </p>
-          </div>
-          {submitted && (
-            <div className={cn(
-              'flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-semibold',
-              score / totalQ >= 0.8
-                ? 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]'
-                : score / totalQ >= 0.6
-                  ? 'bg-amber-500/15 text-amber-500'
-                  : 'bg-destructive/10 text-destructive',
-            )}>
-              <Trophy className="h-4 w-4" />
-              {Math.round((score / totalQ) * 100)}%
-            </div>
-          )}
-        </div>
-
-        {/* Questions */}
-        <div className="space-y-3">
-          {selected.questions.map((q, i) => (
-            <QuestionCard
-              key={q.id}
-              q={q}
-              index={i}
-              userAnswer={answers[q.id] ?? ''}
-              onChange={(val) => setAnswers((prev) => ({ ...prev, [q.id]: val }))}
-              submitted={submitted}
-            />
-          ))}
-        </div>
-
-        {/* Actions */}
-        {!submitted ? (
-          <Button
-            onClick={handleSubmit}
-            disabled={!allAnswered}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold disabled:opacity-50"
-          >
-            Submit Answers
-          </Button>
-        ) : (
-          <div className="space-y-3">
-            {/* Transcript toggle in review */}
-            <button
-              onClick={() => setShowTranscript((v) => !v)}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Volume2 className="h-3.5 w-3.5" />
-              {showTranscript ? 'Hide transcript' : 'Review transcript'}
-            </button>
-            <AnimatePresence>
-              {showTranscript && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="rounded-xl border border-border bg-muted p-4">
-                    <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
-                      {selected.transcript}
-                    </p>
-                  </div>
-                </motion.div>
+      <div className="mx-auto max-w-5xl px-4 py-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-5">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">{selected.title}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {submitted ? (isZh ? `得分：${score}/${totalQ}` : `Score: ${score}/${totalQ}`) : `${totalQ} ${isZh ? '题' : 'questions'}`}
+                </p>
+              </div>
+              {submitted && (
+                <div className={cn(
+                  'flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-semibold',
+                  score / totalQ >= 0.8
+                    ? 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]'
+                    : score / totalQ >= 0.6
+                      ? 'bg-amber-500/15 text-amber-500'
+                      : 'bg-destructive/10 text-destructive',
+                )}>
+                  <Trophy className="h-4 w-4" />
+                  {Math.round((score / totalQ) * 100)}%
+                </div>
               )}
-            </AnimatePresence>
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              className="w-full rounded-md border-border hover:bg-muted text-foreground"
-            >
-              {isZh ? '换一段' : 'Try Another Passage'}
-            </Button>
+            </div>
+
+            {submitted && (
+              <LearningCompletionState
+                icon={Trophy}
+                eyebrow={isZh ? '听力复盘' : 'Listening recap'}
+                title={isZh ? `本次听力 ${score}/${totalQ}` : `Listening score ${score}/${totalQ}`}
+                description={
+                  accuracy >= 80
+                    ? (isZh ? '关键信息抓取很稳，可以继续挑战更长的讲座或访谈。' : 'Key-detail capture was strong. Move on to a longer lecture or interview.')
+                    : accuracy >= 60
+                      ? (isZh ? '理解主线没问题，建议用文字稿修正漏听的数字、术语和转折。' : 'The main thread held up. Use the transcript to repair missed numbers, terms, and contrast markers.')
+                      : (isZh ? '这段听力需要慢下来复盘，先对照文字稿找出误听点。' : 'Slow this one down: compare against the transcript and identify the missed cues.')
+                }
+                metrics={[
+                  { label: isZh ? '答对' : 'Correct', value: `${score}/${totalQ}`, accent: accuracy >= 80 ? 'emerald' : undefined },
+                  { label: isZh ? '正确率' : 'Accuracy', value: `${accuracy}%`, accent: accuracy >= 80 ? 'emerald' : accuracy >= 60 ? 'warm' : undefined },
+                  { label: isZh ? '音频长度' : 'Audio length', value: selected.durationLabel },
+                ]}
+                actions={
+                  <>
+                    <Button onClick={() => setShowTranscript(true)} variant="outline" className="rounded-md border-border bg-card">
+                      <Volume2 className="mr-2 h-4 w-4" />
+                      {isZh ? '打开文字稿复盘' : 'Review transcript'}
+                    </Button>
+                    <Button onClick={handleReset} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                      {isZh ? '换一段听力' : 'Try another clip'}
+                    </Button>
+                  </>
+                }
+              />
+            )}
+
+            {/* Questions */}
+            <div className="space-y-3">
+              {selected.questions.map((q, i) => (
+                <QuestionCard
+                  key={q.id}
+                  q={q}
+                  index={i}
+                  userAnswer={answers[q.id] ?? ''}
+                  onChange={(val) => setAnswers((prev) => ({ ...prev, [q.id]: val }))}
+                  submitted={submitted}
+                />
+              ))}
+            </div>
+
+            {/* Actions */}
+            {!submitted ? (
+              <Button
+                onClick={handleSubmit}
+                disabled={!allAnswered}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold disabled:opacity-50"
+              >
+                {isZh ? '提交答案' : 'Submit Answers'}
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                {/* Transcript toggle in review */}
+                <button
+                  onClick={() => setShowTranscript((v) => !v)}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Volume2 className="h-3.5 w-3.5" />
+                  {showTranscript ? (isZh ? '隐藏文字稿' : 'Hide transcript') : (isZh ? '复盘文字稿' : 'Review transcript')}
+                </button>
+                <AnimatePresence>
+                  {showTranscript && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="rounded-xl border border-border bg-muted p-4">
+                        <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
+                          {selected.transcript}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="w-full rounded-md border-border hover:bg-muted text-foreground"
+                >
+                  {isZh ? '换一段' : 'Try Another Passage'}
+                </Button>
+              </div>
+            )}
           </div>
-        )}
+
+          <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+              <p className="text-xs font-semibold tracking-wider text-primary">
+                {isZh ? '听力任务栏' : 'Listening brief'}
+              </p>
+              <h3 className="mt-2 text-base font-semibold text-foreground">{selected.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{selected.subtitle}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="rounded-lg border border-border bg-background/70 p-3">
+                  <p className="text-xs text-muted-foreground">{isZh ? '题目' : 'Questions'}</p>
+                  <p className="mt-1 text-lg font-semibold">{totalQ}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-background/70 p-3">
+                  <p className="text-xs text-muted-foreground">{isZh ? '时长' : 'Length'}</p>
+                  <p className="mt-1 text-lg font-semibold">{selected.durationLabel}</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{isZh ? '答题进度' : 'Answer progress'}</span>
+                  <span>{answeredCount}/{totalQ}</span>
+                </div>
+                <Progress value={submitted ? 100 : answerProgress} className="h-2" />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background/70 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                {submitted ? (isZh ? '复盘重点' : 'Review focus') : (isZh ? '答题策略' : 'Answering strategy')}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {submitted
+                  ? (accuracy >= 60
+                    ? (isZh ? '对照文字稿，把错题里的数字、专有名词和转折词标出来。' : 'Use the transcript to mark missed numbers, terms, and contrast cues.')
+                    : (isZh ? '先重听开头和转折句，再回到错题解析。' : 'Replay the opening and contrast sentences before reviewing each missed answer.'))
+                  : (isZh ? '先完成所有题，再提交。遇到数字和术语题时先填关键词，不要卡在完整句。' : 'Answer every item before submitting. For numbers and terms, capture the keyword first.')}
+              </p>
+              {submitted && (
+                <Button
+                  onClick={() => setShowTranscript(true)}
+                  variant="outline"
+                  className="mt-4 w-full rounded-md border-border bg-card"
+                >
+                  <Volume2 className="mr-2 h-4 w-4" />
+                  {isZh ? '打开文字稿' : 'Open transcript'}
+                </Button>
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
     );
   }

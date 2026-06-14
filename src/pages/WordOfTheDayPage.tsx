@@ -22,13 +22,47 @@ import {
   ChevronRight,
   History,
   BookmarkPlus,
+  MessageCircleMore,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { wordsDatabase, type WordData, getWordOfTheDay } from '@/data/words';
+import {
+  buildWordShareCardSvg,
+  buildWordShareFileName,
+  buildWordShareText,
+} from '@/features/share/wordShareCard';
 import { speakEnglishText } from '@/services/tts';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserData } from '@/contexts/UserDataContext';
+import { buildAuthRedirect } from '@/lib/authRedirect';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
-// Generate mock previous words data for the last 30 days
-const generatePreviousWordsData = (): { date: string; word: WordData }[] => {
+const normalizeWordKey = (value: string): string => value.trim().toLowerCase();
+
+const isShareAbort = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false;
+  return error.name === 'AbortError';
+};
+
+const downloadSvgFile = (fileName: string, svg: string): boolean => {
+  if (typeof URL.createObjectURL !== 'function') return false;
+
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.rel = 'noopener';
+  link.click();
+  URL.revokeObjectURL?.(url);
+  return true;
+};
+
+// Public archive preview. This is deterministic marketing/sample content, not user history.
+const generatePublicArchiveWordsData = (): { date: string; word: WordData }[] => {
   const words: { date: string; word: WordData }[] = [];
   const today = new Date();
   
@@ -48,39 +82,179 @@ const generatePreviousWordsData = (): { date: string; word: WordData }[] => {
   return words;
 };
 
-const previousWordsData = generatePreviousWordsData();
+const publicArchiveWordsData = generatePublicArchiveWordsData();
 
 export default function WordOfTheDayPage() {
+  const { isAuthenticated } = useAuth();
+  const { addCustomWord, customWords, markWordAsLearned, progress } = useUserData();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
   const [wordOfTheDay] = useState<WordData>(getWordOfTheDay());
   const [selectedWord, setSelectedWord] = useState<WordData | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('definition');
   const [currentPage, setCurrentPage] = useState(0);
   const wordsPerPage = 10;
+  const copy = isZh
+    ? {
+        startLearning: '开始学习',
+        dashboard: '进入今日任务',
+        badge: '每日单词',
+        subtitle: '每天一个高价值词，练完再进入你的真实复习队列。',
+        definition: '定义',
+        examples: '例句',
+        related: '相关',
+        more: '更多',
+        definitionHeading: '定义',
+        examplesHeading: '例句',
+        relatedSynonyms: '同义词',
+        relatedAntonyms: '反义词',
+        collocations: '搭配',
+        etymology: '词源',
+        memoryTip: '记忆提示',
+        topic: '主题',
+        listen: '朗读',
+        saveWord: '保存到我的词库',
+        savedWord: '已在我的词库',
+        practiceWord: '练这个词',
+        coachWord: '让教练讲这个词',
+        startFree: '免费开始',
+        anonSave: '注册后可以保存单词、追踪进度，并让 AI 教练安排复习。',
+        authSave: '已登录：保存后会进入词库，并生成后续复习信号。',
+        savedToast: '已保存到你的词库，并加入后续复习',
+        alreadySavedToast: '这个词已经在你的词库里',
+        archiveTitle: '公开词库样例',
+        archiveBody: '这些是公开样例词，不是你的个人学习历史。',
+        page: '第',
+        pageOf: '页，共',
+        dialogTitle: '公开样例词',
+        footerRights: '© 2026 VocabDaily。保留所有权利。',
+        legalLabel: '法律链接',
+        terms: '服务条款',
+        privacy: '隐私政策',
+        shareTitle: '每日单词',
+        shareButton: '分享单词卡',
+        shareFallbackToast: '分享文案已复制，单词卡已下载',
+        shareCopiedToast: '分享文案已复制',
+        shareDownloadedToast: '单词卡已下载',
+        shareErrorToast: '暂时无法分享，请稍后再试',
+      }
+    : {
+        startLearning: 'Start Learning',
+        dashboard: 'Go to Today',
+        badge: 'Word of the Day',
+        subtitle: 'One high-value word each day before you enter your real review queue.',
+        definition: 'Definition',
+        examples: 'Examples',
+        related: 'Related',
+        more: 'More',
+        definitionHeading: 'Definition',
+        examplesHeading: 'Example Sentences',
+        relatedSynonyms: 'Synonyms',
+        relatedAntonyms: 'Antonyms',
+        collocations: 'Collocations',
+        etymology: 'Etymology',
+        memoryTip: 'Memory Tip',
+        topic: 'Topic',
+        listen: 'Listen',
+        saveWord: 'Save to My Word Bank',
+        savedWord: 'Saved to My Word Bank',
+        practiceWord: 'Practice This Word',
+        coachWord: 'Ask Coach About This Word',
+        startFree: 'Start Free Journey',
+        anonSave: 'Sign up to save words, track progress, and practice with AI.',
+        authSave: 'Signed in: saving creates a word-bank entry and a later review signal.',
+        savedToast: 'Saved to your word bank and queued for later review',
+        alreadySavedToast: 'This word is already in your word bank',
+        archiveTitle: 'Public Word Archive',
+        archiveBody: 'These are public sample words, not your personal learning history.',
+        page: 'Page',
+        pageOf: 'of',
+        dialogTitle: 'Public archive word',
+        footerRights: '© 2026 VocabDaily. All rights reserved.',
+        legalLabel: 'Legal links',
+        terms: 'Terms',
+        privacy: 'Privacy',
+        shareTitle: 'Word of the Day',
+        shareButton: 'Share word card',
+        shareFallbackToast: 'Share text copied and word card downloaded',
+        shareCopiedToast: 'Share text copied',
+        shareDownloadedToast: 'Word card downloaded',
+        shareErrorToast: 'Unable to share right now. Please try again later.',
+      };
+  const savedWord = customWords.some(
+    (item) => normalizeWordKey(item.word) === normalizeWordKey(wordOfTheDay.word) || item.id === wordOfTheDay.id,
+  );
+  const wordHasProgress = progress.some((item) => item.wordId === wordOfTheDay.id);
+  const coachPrompt = isZh
+    ? `请用中文解释每日单词 "${wordOfTheDay.word}"，给我一个记忆法、2 个高频搭配和 1 道小测。`
+    : `Explain the word "${wordOfTheDay.word}", give me one mnemonic, two high-frequency collocations, and one quick quiz.`;
+  const coachHref = `/dashboard/chat?focus=${encodeURIComponent(wordOfTheDay.word)}&prompt=${encodeURIComponent(coachPrompt)}`;
+  const authCoachHref = isAuthenticated ? coachHref : buildAuthRedirect(coachHref, '/register');
+  const practiceHref = `/dashboard/practice?word=${encodeURIComponent(wordOfTheDay.word)}`;
 
   const playAudio = (text: string) => {
     void speakEnglishText(text);
   };
 
   const shareWord = async (word: WordData) => {
+    const publicUrl = `${window.location.origin}/word-of-the-day`;
+    const shareText = buildWordShareText(word, {
+      language: i18n.language || 'en',
+      dateLabel: today,
+      origin: publicUrl,
+    });
+    const shareCardSvg = buildWordShareCardSvg(word, {
+      language: i18n.language || 'en',
+      dateLabel: today,
+      origin: publicUrl,
+    });
+    const shareCardFile = new File([shareCardSvg], buildWordShareFileName(word), {
+      type: 'image/svg+xml',
+    });
     const shareData = {
-      title: `Word of the Day: ${word.word}`,
-      text: `${word.word} - ${word.definition}`,
-      url: window.location.href,
+      title: `${copy.shareTitle}: ${word.word}`,
+      text: shareText,
+      url: publicUrl,
     };
 
-    if (navigator.share) {
-      try {
+    try {
+      if (navigator.share) {
+        if (navigator.canShare?.({ files: [shareCardFile] })) {
+          await navigator.share({ ...shareData, files: [shareCardFile] });
+          return;
+        }
         await navigator.share(shareData);
-      } catch {
-        // Share cancelled or failed — no action needed
+        return;
       }
-    } else {
-      navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
+    } catch (error) {
+      if (isShareAbort(error)) return;
+    }
+
+    try {
+      let didCopy = false;
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
+        didCopy = true;
+      }
+
+      const didDownload = downloadSvgFile(buildWordShareFileName(word), shareCardSvg);
+
+      if (didCopy && didDownload) {
+        toast.success(copy.shareFallbackToast);
+      } else if (didCopy) {
+        toast.success(copy.shareCopiedToast);
+      } else if (didDownload) {
+        toast.success(copy.shareDownloadedToast);
+      } else {
+        toast.error(copy.shareErrorToast);
+      }
+    } catch {
+      toast.error(copy.shareErrorToast);
     }
   };
 
-  const today = new Date().toLocaleDateString('en-US', {
+  const today = new Date().toLocaleDateString(isZh ? 'zh-CN' : 'en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -97,9 +271,30 @@ export default function WordOfTheDayPage() {
     setSelectedDate(null);
   };
 
-  // Pagination for previous words
-  const totalPages = Math.ceil(previousWordsData.length / wordsPerPage);
-  const paginatedWords = previousWordsData.slice(
+  const ensureWordInLearningLoop = () => {
+    if (!savedWord) {
+      addCustomWord(wordOfTheDay);
+    }
+    if (!wordHasProgress) {
+      markWordAsLearned(wordOfTheDay.id);
+    }
+  };
+
+  const handleSaveWord = () => {
+    if (savedWord && wordHasProgress) {
+      toast.info(copy.alreadySavedToast);
+      return;
+    }
+    ensureWordInLearningLoop();
+    toast.success(copy.savedToast);
+  };
+
+  const handlePracticeWord = () => {
+    ensureWordInLearningLoop();
+  };
+
+  const totalPages = Math.ceil(publicArchiveWordsData.length / wordsPerPage);
+  const paginatedWords = publicArchiveWordsData.slice(
     currentPage * wordsPerPage,
     (currentPage + 1) * wordsPerPage
   );
@@ -132,7 +327,14 @@ export default function WordOfTheDayPage() {
               <Button variant="outline" size="icon" onClick={() => playAudio(word.word)}>
                 <Volume2 className="h-5 w-5" />
               </Button>
-              <Button variant="outline" size="icon" onClick={() => shareWord(word)}>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={copy.shareButton}
+                title={copy.shareButton}
+                data-testid="word-share-card-button"
+                onClick={() => shareWord(word)}
+              >
                 <Share2 className="h-5 w-5" />
               </Button>
             </div>
@@ -143,17 +345,17 @@ export default function WordOfTheDayPage() {
           {/* Tabs Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-4">
-              <TabsTrigger value="definition">Definition</TabsTrigger>
-              <TabsTrigger value="examples">Examples</TabsTrigger>
-              <TabsTrigger value="related">Related</TabsTrigger>
-              <TabsTrigger value="more">More</TabsTrigger>
+              <TabsTrigger value="definition">{copy.definition}</TabsTrigger>
+              <TabsTrigger value="examples">{copy.examples}</TabsTrigger>
+              <TabsTrigger value="related">{copy.related}</TabsTrigger>
+              <TabsTrigger value="more">{copy.more}</TabsTrigger>
             </TabsList>
 
             <ScrollArea className="h-[240px] sm:h-[300px] mt-4">
               <TabsContent value="definition" className="mt-0">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-semibold mb-3">Definition / 定义</h3>
+                    <h3 className="font-semibold mb-3">{copy.definitionHeading}</h3>
                     <div className="mb-4 p-4 bg-muted rounded-lg">
                       <p className="text-lg">{word.definition}</p>
                       <p className="text-muted-foreground mt-1">{word.definitionZh}</p>
@@ -164,7 +366,7 @@ export default function WordOfTheDayPage() {
 
               <TabsContent value="examples" className="mt-0">
                 <div className="space-y-4">
-                  <h3 className="font-semibold mb-3">Example Sentences / 例句</h3>
+                  <h3 className="font-semibold mb-3">{copy.examplesHeading}</h3>
                   {word.examples.map((ex, index) => (
                     <div key={index} className="mb-4 p-4 bg-muted rounded-lg">
                       <p className="text-lg mb-2">"{ex.en}"</p>
@@ -176,7 +378,7 @@ export default function WordOfTheDayPage() {
                         onClick={() => playAudio(ex.en)}
                       >
                         <Volume2 className="h-4 w-4 mr-2" />
-                        Listen
+                        {copy.listen}
                       </Button>
                     </div>
                   ))}
@@ -186,7 +388,7 @@ export default function WordOfTheDayPage() {
               <TabsContent value="related" className="mt-0">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="font-semibold mb-3">Synonyms / 同义词</h3>
+                    <h3 className="font-semibold mb-3">{copy.relatedSynonyms}</h3>
                     <div className="flex flex-wrap gap-2">
                       {word.synonyms.map((syn) => (
                         <Badge key={syn} variant="secondary" className="text-sm">
@@ -197,7 +399,7 @@ export default function WordOfTheDayPage() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold mb-3">Antonyms / 反义词</h3>
+                    <h3 className="font-semibold mb-3">{copy.relatedAntonyms}</h3>
                     <div className="flex flex-wrap gap-2">
                       {word.antonyms.map((ant) => (
                         <Badge key={ant} variant="outline" className="text-sm">
@@ -208,7 +410,7 @@ export default function WordOfTheDayPage() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold mb-3">Collocations / 搭配词</h3>
+                    <h3 className="font-semibold mb-3">{copy.collocations}</h3>
                     <div className="flex flex-wrap gap-2">
                       {word.collocations.map((col) => (
                         <Badge key={col} className="bg-emerald-100 text-emerald-800 text-sm">
@@ -224,20 +426,20 @@ export default function WordOfTheDayPage() {
                 <div className="space-y-6">
                   {word.etymology && (
                     <div>
-                      <h3 className="font-semibold mb-2">Etymology / 字源</h3>
+                      <h3 className="font-semibold mb-2">{copy.etymology}</h3>
                       <p className="text-muted-foreground">{word.etymology}</p>
                     </div>
                   )}
 
                   {word.memoryTip && (
                     <div>
-                      <h3 className="font-semibold mb-2">Memory Tip / 记忆技巧</h3>
+                      <h3 className="font-semibold mb-2">{copy.memoryTip}</h3>
                       <p className="text-muted-foreground">{word.memoryTip}</p>
                     </div>
                   )}
 
                   <div>
-                    <h3 className="font-semibold mb-2">Topic / 主题</h3>
+                    <h3 className="font-semibold mb-2">{copy.topic}</h3>
                     <Badge variant="outline">{word.topic}</Badge>
                   </div>
                 </div>
@@ -261,11 +463,15 @@ export default function WordOfTheDayPage() {
               </span>
               <span className="text-sm font-semibold tracking-tight">VocabDaily</span>
             </Link>
-            <Link to="/register">
-              <Button className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
-                Start Learning
-              </Button>
-            </Link>
+            <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+              <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
+                {isAuthenticated ? copy.dashboard : copy.startLearning}
+              </Link>
+            </Button>
+            <div className="hidden items-center gap-1 sm:flex">
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </header>
@@ -275,10 +481,10 @@ export default function WordOfTheDayPage() {
         <div className="text-center mb-8">
           <Badge variant="secondary" className="mb-4">
             <Calendar className="h-3 w-3 mr-1" />
-            Word of the Day
+            {copy.badge}
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold mb-2">{today}</h1>
-          <p className="text-muted-foreground">每日一字</p>
+          <p className="text-muted-foreground">{copy.subtitle}</p>
         </div>
 
         {/* Main Word Card */}
@@ -287,29 +493,67 @@ export default function WordOfTheDayPage() {
         {/* CTA */}
         <div className="mt-8 flex flex-col items-center gap-4">
           <div className="flex flex-wrap justify-center gap-3">
-            <Link to="/register">
-              <Button size="lg" variant="outline" className="h-11 rounded-md">
-                <BookmarkPlus className="h-4 w-4 mr-2" />
-                Add to My Word Bank
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Start Free Journey
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  className="h-11 rounded-md"
+                  onClick={handleSaveWord}
+                >
+                  <BookmarkPlus className="h-4 w-4 mr-2" />
+                  {savedWord ? copy.savedWord : copy.saveWord}
+                </Button>
+                <Button asChild size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
+                  <Link to={practiceHref} onClick={handlePracticeWord}>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {copy.practiceWord}
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="h-11 rounded-md">
+                  <Link to={authCoachHref}>
+                    <MessageCircleMore className="h-4 w-4 mr-2" />
+                    {copy.coachWord}
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild size="lg" variant="outline" className="h-11 rounded-md">
+                  <Link to={buildAuthRedirect('/word-of-the-day', '/register')}>
+                    <BookmarkPlus className="h-4 w-4 mr-2" />
+                    {copy.saveWord}
+                  </Link>
+                </Button>
+                <Button asChild size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
+                  <Link to={buildAuthRedirect(practiceHref, '/register')}>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {copy.startFree}
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="h-11 rounded-md">
+                  <Link to={authCoachHref}>
+                    <MessageCircleMore className="h-4 w-4 mr-2" />
+                    {copy.coachWord}
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
-            Sign up to save words, track progress, and practice with AI
+            {isAuthenticated ? copy.authSave : copy.anonSave}
           </p>
         </div>
 
-        {/* Previous Words Section */}
+        {/* Public Archive Section */}
         <div className="mt-12">
-          <div className="flex items-center gap-2 mb-4">
-            <History className="h-5 w-5 text-emerald-600" />
-            <h3 className="text-xl font-semibold">Previous Words / 往期单词</h3>
+          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-emerald-600" />
+              <h3 className="text-xl font-semibold">{copy.archiveTitle}</h3>
+            </div>
+            <p className="max-w-md text-sm text-muted-foreground">{copy.archiveBody}</p>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -341,7 +585,7 @@ export default function WordOfTheDayPage() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm text-muted-foreground">
-              Page {currentPage + 1} of {totalPages}
+              {copy.page} {currentPage + 1} {copy.pageOf} {totalPages}
             </span>
             <Button
               variant="outline"
@@ -361,7 +605,7 @@ export default function WordOfTheDayPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
-              Word from {selectedDate}
+              {copy.dialogTitle} {selectedDate}
             </DialogTitle>
           </DialogHeader>
           {selectedWord && renderWordCard(selectedWord, selectedDate || undefined)}
@@ -379,8 +623,17 @@ export default function WordOfTheDayPage() {
               <span className="text-sm font-medium">VocabDaily</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              © 2026 VocabDaily. All rights reserved.
+              {copy.footerRights}
             </p>
+            <nav className="flex items-center gap-3 text-xs text-muted-foreground" aria-label={copy.legalLabel}>
+              <Link to="/terms" className="transition-colors hover:text-foreground">
+                {copy.terms}
+              </Link>
+              <span className="text-border" aria-hidden="true">/</span>
+              <Link to="/privacy" className="transition-colors hover:text-foreground">
+                {copy.privacy}
+              </Link>
+            </nav>
           </div>
         </div>
       </footer>

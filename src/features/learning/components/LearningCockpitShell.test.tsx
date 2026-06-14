@@ -86,6 +86,23 @@ describe('LearningCockpitShell', () => {
     expect(screen.getByRole('link', { name: 'Third' })).toBeInTheDocument();
   });
 
+  it('marks exactly one primary cockpit action when secondary actions exist', () => {
+    renderShell({
+      mission: {
+        title: 'Open dashboard',
+        primaryAction: { label: 'Primary', href: '/dashboard/today' },
+        secondaryActions: [
+          { label: 'Second', href: '/dashboard/review' },
+          { label: 'Third', href: '/dashboard/practice' },
+        ],
+      },
+    });
+
+    const cockpit = screen.getByTestId('learning-cockpit');
+    expect(cockpit.querySelectorAll('[data-cockpit-action="primary"]')).toHaveLength(1);
+    expect(cockpit.querySelectorAll('[data-cockpit-action="secondary"]')).toHaveLength(2);
+  });
+
   it('renders the why-badge above the hero when whyBadge is supplied', () => {
     renderShell({
       mission: {

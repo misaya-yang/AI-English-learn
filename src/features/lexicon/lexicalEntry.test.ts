@@ -33,6 +33,10 @@ describe('lexicalEntry adapter', () => {
       definitionZh: '方法；处理方式',
     });
     expect(entry.senses[0].collocations).toEqual(['practical approach', 'new approach']);
+    expect(entry.commonMistakes).toEqual([
+      'Avoid learning "approach" alone; attach it to "practical approach".',
+      'Do not treat "approach" and "method" as always interchangeable.',
+    ]);
     expect(entry.trainingTemplates.map((item) => item.type)).toEqual(['recall', 'collocation', 'usage']);
   });
 
@@ -50,6 +54,7 @@ describe('lexicalEntry adapter', () => {
 
     expect(entry.topic).toBe('general');
     expect(entry.senses[0].examples).toEqual([]);
+    expect(entry.commonMistakes).toEqual([]);
     expect(entry.trainingTemplates.map((item) => item.type)).toEqual(['recall', 'usage']);
   });
 

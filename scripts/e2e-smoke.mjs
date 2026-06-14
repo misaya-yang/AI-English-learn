@@ -4,8 +4,8 @@ import { chromium } from '@playwright/test';
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:4174';
 const E2E_EMAIL = process.env.E2E_EMAIL || '';
 const E2E_PASSWORD = process.env.E2E_PASSWORD || '';
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://zjkbktdmwencnouwfrij.supabase.co';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_0_pU0AO93wz-7Bmt6xROJg_stLwrT0h';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
 const E2E_REPORT_PATH = process.env.E2E_REPORT_PATH || 'functional-report-smoke.json';
 const HEADLESS = process.env.E2E_HEADLESS !== 'false';
 
@@ -32,6 +32,10 @@ const createErrorCollector = (page) => {
 const prepareCredentials = async () => {
   if (E2E_EMAIL && E2E_PASSWORD) {
     return { email: E2E_EMAIL, password: E2E_PASSWORD, source: 'env' };
+  }
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return null;
   }
 
   const email = `e2e_smoke_${Date.now()}@example.com`;

@@ -399,7 +399,7 @@ export function _resetCache(): void {
 
 /**
  * Thresholds defining rank/title names, highest first.
- * Mirrors the LEVEL_THRESHOLDS array in ProfilePage.tsx — keep in sync.
+ * Use the helpers below from pages and dashboards instead of duplicating thresholds.
  */
 export const LEVEL_THRESHOLDS: [string, number][] = [
   ['Language Master', 15000],

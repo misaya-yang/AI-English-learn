@@ -99,14 +99,11 @@ export default function MagicLinkPage() {
           </p>
 
           <div className="mt-6 w-full">
-            <Link to="/login">
-              <Button
-                variant="outline"
-                className="h-11 w-full rounded-md"
-              >
+            <Button asChild variant="outline" className="h-11 w-full rounded-md">
+              <Link to="/login">
                 {copy.backToLogin}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </AuthShell>

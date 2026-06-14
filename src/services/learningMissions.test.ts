@@ -125,6 +125,7 @@ describe('learningMissions', () => {
       expect(profile.target).toBe('general_improvement');
       expect(profile.tracks).toEqual(['daily_communication', 'workplace_english']);
       expect(profile.dailyMinutes).toBe(20);
+      expect(profile.learningStyle).toBe('visual');
       expect(profile.languagePreference).toBe('bilingual');
       expect(profile.updatedAt).toBeTruthy();
     });
@@ -137,6 +138,7 @@ describe('learningMissions', () => {
       expect(raw).toBeTruthy();
       const map = JSON.parse(raw!);
       expect(map[TEST_USER]).toBeDefined();
+      expect(map[TEST_USER].learningStyle).toBe('visual');
     });
 
     it('returns the existing profile on subsequent calls', () => {
@@ -152,6 +154,22 @@ describe('learningMissions', () => {
 
       expect(p1.userId).toBe('user-1111');
       expect(p2.userId).toBe('user-2222');
+    });
+
+    it('normalizes legacy profiles that do not have a learning style', () => {
+      storageMock.setItem('vocabdaily_user_learning_profiles', JSON.stringify({
+        [TEST_USER]: {
+          userId: TEST_USER,
+          level: 'B2',
+          target: 'general_improvement',
+          tracks: ['daily_communication'],
+          dailyMinutes: 18,
+          languagePreference: 'bilingual',
+          updatedAt: '2026-04-01T00:00:00.000Z',
+        },
+      }));
+
+      expect(getLearningProfile(TEST_USER).learningStyle).toBe('visual');
     });
   });
 
@@ -179,6 +197,7 @@ describe('learningMissions', () => {
       const payload = upsertMock.mock.calls[0][0];
       expect(payload.user_id).toBe(TEST_USER);
       expect(payload.level).toBe('B2');
+      expect(payload.learning_style).toBe('visual');
     });
 
     it('keeps local fallback profiles local-only', async () => {
@@ -245,6 +264,7 @@ describe('learningMissions', () => {
       const payload = upsertMock.mock.calls[0][0];
       expect(payload.user_id).toBe(TEST_USER);
       expect(payload.mission_date).toBe('2026-04-04');
+      expect(payload.meta.learningStyle).toBe('visual');
     });
 
     it('keeps local fallback missions local-only', async () => {

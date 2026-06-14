@@ -21,8 +21,8 @@
 // No real user credentials are required unless $JWT is supplied.
 
 const BASE_URL = (process.env.BASE_URL || 'https://www.uuedu.online').replace(/\/$/, '');
-const SUPABASE_URL = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://zjkbktdmwencnouwfrij.supabase.co').replace(/\/$/, '');
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_0_pU0AO93wz-7Bmt6xROJg_stLwrT0h';
+const SUPABASE_URL = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
 const JWT = process.env.JWT || '';
 const TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS || 15000);
 
@@ -44,6 +44,14 @@ const fetchWithTimeout = async (url, opts = {}) => {
 };
 
 const checks = [];
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error(
+    'Missing Supabase smoke env. Set VITE_SUPABASE_URL/SUPABASE_URL and ' +
+      'VITE_SUPABASE_ANON_KEY/SUPABASE_ANON_KEY explicitly.',
+  );
+  process.exit(1);
+}
 
 const recordCheck = (name, status, evidence = '') => {
   checks.push({ name, status, evidence });

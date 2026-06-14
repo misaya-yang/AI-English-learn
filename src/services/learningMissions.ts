@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
 import type { LearningMission, LearningMissionTask, LearningProfile, LearningTrack } from '@/types/examContent';
 import type { LearnerModel } from '@/services/learnerModel';
+import { DEFAULT_LEARNING_STYLE, normalizeLearningStyle } from '@/features/learning/learningStylePersonalization';
 
 const KEYS = {
   PROFILE: 'vocabdaily_user_learning_profiles',
@@ -42,6 +43,11 @@ const clamp = (value: number, min: number, max: number): number => Math.min(max,
 const isExamTarget = (profile: LearningProfile): boolean =>
   profile.target.toLowerCase().includes('ielts') || profile.tracks.some((track) => track.includes('exam'));
 
+const normalizeProfile = (profile: LearningProfile): LearningProfile => ({
+  ...profile,
+  learningStyle: normalizeLearningStyle(profile.learningStyle),
+});
+
 export const getLearningProfile = (userId: string): LearningProfile => {
   const map = getProfileMap();
   if (!map[userId]) {
@@ -51,13 +57,20 @@ export const getLearningProfile = (userId: string): LearningProfile => {
       target: 'general_improvement',
       tracks: defaultTracks,
       dailyMinutes: 20,
+      learningStyle: DEFAULT_LEARNING_STYLE,
       languagePreference: 'bilingual',
       updatedAt: nowIso(),
     };
     setProfileMap(map);
+  } else {
+    const normalized = normalizeProfile(map[userId]);
+    if (normalized.learningStyle !== map[userId].learningStyle) {
+      map[userId] = normalized;
+      setProfileMap(map);
+    }
   }
 
-  return map[userId];
+  return normalizeProfile(map[userId]);
 };
 
 export const saveLearningProfile = async (
@@ -87,6 +100,7 @@ export const saveLearningProfile = async (
       target: next.target,
       tracks: next.tracks,
       daily_minutes: next.dailyMinutes,
+      learning_style: next.learningStyle,
       language_preference: next.languagePreference,
       updated_at: next.updatedAt,
     });
@@ -226,6 +240,7 @@ const persistMission = async (
       target: profile.target,
       learnerMode: learnerModel?.mode ?? 'steady',
       weakTopics: learnerModel?.weakTopics ?? [],
+      learningStyle: profile.learningStyle,
       stubbornWordCount: learnerModel?.stubbornWordCount ?? 0,
       stubbornTopics: learnerModel?.stubbornTopics ?? [],
       burnoutRisk: learnerModel ? Number(learnerModel.burnoutRisk.toFixed(2)) : 0,

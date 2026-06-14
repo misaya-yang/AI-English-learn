@@ -52,6 +52,14 @@ describe('SUBSCRIPTION_PLANS', () => {
       expect(plan.limits.exports).toBe(true);
     }
   });
+
+  it('keeps Pro packaging aligned to learning outcomes', () => {
+    const pro = SUBSCRIPTION_PLANS.find((p) => p.id === 'pro')!;
+
+    expect(pro.features).toContain('IELTS Writing and Speaking scoring rubrics');
+    expect(pro.features).toContain('Custom wordbook imports plus Anki / CSV export');
+    expect(pro.features.join(' ')).not.toContain('Priority support');
+  });
 });
 
 // ─── getCurrentSubscription ───────────────────────────────────────────────────

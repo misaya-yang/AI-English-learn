@@ -53,7 +53,7 @@ export default function Home() {
         ? 'VocabDaily 每天告诉你该复习什么、接下来学什么，并用 AI 教练反馈你真正练过的写作和口语。'
         : "Each day VocabDaily shows what's due to review, what to learn next, and gives you AI-coached feedback on the writing and speaking you actually practice.",
       primaryCta: isZh ? '开始今天的学习' : "Start today's session",
-      secondaryCta: isZh ? '看看如何运作' : 'See how it works',
+      secondaryCta: isZh ? '试一节样课' : 'Try a sample lesson',
       footnote: isZh ? '免费开始 · 无需信用卡' : 'Free to start · No credit card required',
       evidence: [
         isZh ? 'FSRS 到期复习' : 'FSRS due reviews',
@@ -83,7 +83,7 @@ export default function Home() {
         },
       ],
       summary: isZh ? '预计 15 分钟' : 'Estimated 15 min',
-      cta: isZh ? '开始' : 'Begin',
+      cta: isZh ? '试样课' : 'Try sample',
     },
     examplesLabel: isZh ? '本周可能学到的词汇' : 'Words you might practice this week',
     workflow: {
@@ -127,9 +127,9 @@ export default function Home() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="study-premium-bg min-h-[100dvh] bg-background text-foreground">
       {/* Top nav — quiet, paper-warm */}
-      <header className="sticky top-0 z-40 border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-[hsl(var(--surface-raised))]/88 shadow-[0_1px_0_hsl(var(--border)/0.45)] backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.18)]">
@@ -175,7 +175,7 @@ export default function Home() {
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className="border-t border-border bg-card md:hidden">
+          <div className="premium-panel-soft border-t border-border bg-card md:hidden">
             <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
               <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
                 {copy.nav.workflow}
@@ -204,7 +204,7 @@ export default function Home() {
 
       <main>
         {/* Hero — first viewport with concrete workflow preview */}
-        <section className="border-b border-border bg-[hsl(var(--surface-sunken))]">
+        <section className="border-b border-border/70 bg-transparent">
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:py-20">
             <div>
               <span className="inline-flex items-center gap-2 rounded-md border border-border bg-[hsl(var(--surface-raised))] px-3 py-1 text-xs font-semibold text-muted-foreground">
@@ -229,7 +229,7 @@ export default function Home() {
                   </Link>
                 </Button>
                 <Link
-                  to="#workflow"
+                  to="/demo"
                   className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
                 >
                   {copy.hero.secondaryCta}
@@ -242,22 +242,22 @@ export default function Home() {
 
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <Brain className="h-4 w-4 text-[hsl(var(--accent-memory))]" />
                   {copy.hero.evidence[0]}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <svg className="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  <MessageSquare className="h-4 w-4 text-[hsl(var(--accent-coach))]" />
                   {copy.hero.evidence[1]}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <svg className="h-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/></svg>
+                  <Calendar className="h-4 w-4 text-[hsl(var(--accent-practice))]" />
                   {copy.hero.evidence[2]}
                 </span>
               </div>
             </div>
 
             {/* Today preview card */}
-            <div className="relative overflow-hidden rounded-lg border border-border border-l-4 border-l-primary bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_48px_-38px_hsl(var(--shadow-studio)/0.34)] sm:p-6">
+            <div className="premium-hero-panel relative overflow-hidden rounded-lg border border-border border-l-4 border-l-primary bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_48px_-38px_hsl(var(--shadow-studio)/0.34)] sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
@@ -276,7 +276,7 @@ export default function Home() {
               </div>
 
               <ul className="mt-5 space-y-3" aria-label="Example daily learning queue">
-                <li className="flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
+                <li className="premium-panel-soft flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-memory))]/10 text-[hsl(var(--accent-memory))]">
                       <Brain className="h-3.5 w-3.5" />
@@ -288,7 +288,7 @@ export default function Home() {
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">{copy.today.items[0].duration}</span>
                 </li>
-                <li className="flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
+                <li className="premium-panel-soft flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-practice))]/10 text-[hsl(var(--accent-practice))]">
                       <BookOpen className="h-3.5 w-3.5" />
@@ -300,7 +300,7 @@ export default function Home() {
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">{copy.today.items[1].duration}</span>
                 </li>
-                <li className="flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
+                <li className="premium-panel-soft flex items-center justify-between rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))] px-3 py-2.5">
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-coach))]/10 text-[hsl(var(--accent-coach))]">
                       <MessageSquare className="h-3.5 w-3.5" />
@@ -319,7 +319,7 @@ export default function Home() {
                   {copy.today.summary}
                 </p>
                 <Link
-                  to={primaryCtaPath}
+                  to="/demo"
                   className="text-xs font-medium text-primary underline-offset-4 hover:underline"
                 >
                   {copy.today.cta}
@@ -335,7 +335,7 @@ export default function Home() {
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {sampleWords.map((w) => (
-                <div key={w.word} className="rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+                <div key={w.word} className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
                   <div className="flex items-baseline gap-2">
                     <span className="text-base font-semibold tracking-tight">{w.word}</span>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
@@ -348,7 +348,7 @@ export default function Home() {
         </section>
 
         {/* How it works */}
-        <section id="workflow" className="border-b border-border bg-background">
+        <section id="workflow" className="border-b border-border/70 bg-transparent">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {copy.workflow.title}
@@ -377,7 +377,7 @@ export default function Home() {
                   body: copy.workflow.steps[2].body,
                 },
               ].map((step, i) => (
-                <div key={i} className="rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+                <div key={i} className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-md"
                     style={{
@@ -396,11 +396,11 @@ export default function Home() {
         </section>
 
         {/* Feature chip row */}
-        <section className="border-b border-border bg-background">
+        <section className="border-b border-border/70 bg-transparent">
           <div className="mx-auto max-w-6xl px-4 pb-10 pt-0 sm:px-6">
             <div className="flex flex-wrap justify-center gap-3">
               {copy.featureChips.map((feature) => (
-                <span key={feature} className="rounded-md border border-border bg-[hsl(var(--surface-raised))] px-4 py-1.5 text-sm font-medium text-muted-foreground">
+                <span key={feature} className="premium-metric-card rounded-md border border-border bg-[hsl(var(--surface-raised))] px-4 py-1.5 text-sm font-medium text-muted-foreground">
                   {feature}
                 </span>
               ))}
@@ -444,7 +444,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-border bg-[hsl(var(--surface-sunken))]">
+      <footer className="border-t border-border/70 bg-[hsl(var(--surface-raised))]/88">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
           <div className="flex items-center gap-2">
             <span className={cn('flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary')}>
@@ -455,6 +455,15 @@ export default function Home() {
           <p>
             {isZh ? '© 2026 VocabDaily。保留所有权利。' : '© 2026 VocabDaily. All rights reserved.'}
           </p>
+          <nav className="flex items-center gap-3" aria-label={isZh ? '法律链接' : 'Legal links'}>
+            <Link to="/terms" className="hover:text-foreground">
+              {isZh ? '服务条款' : 'Terms'}
+            </Link>
+            <span className="text-border" aria-hidden="true">/</span>
+            <Link to="/privacy" className="hover:text-foreground">
+              {isZh ? '隐私政策' : 'Privacy'}
+            </Link>
+          </nav>
         </div>
       </footer>
     </div>

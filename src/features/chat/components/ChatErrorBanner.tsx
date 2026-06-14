@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -32,10 +33,17 @@ export const ChatErrorBanner = ({
             {error.requestId ? ` · requestId: ${error.requestId}` : ''}
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={onRetry} disabled={isRetrying}>
-          <RefreshCw className="h-3.5 w-3.5 mr-1" />
-          {isZh ? '重试' : 'Retry'}
-        </Button>
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/dashboard/practice">
+              {isZh ? '本地练习' : 'Practice locally'}
+            </Link>
+          </Button>
+          <Button size="sm" variant="outline" onClick={onRetry} disabled={isRetrying}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1" />
+            {isZh ? '重试' : 'Retry'}
+          </Button>
+        </div>
       </div>
     </div>
   );

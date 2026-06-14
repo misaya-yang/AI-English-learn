@@ -52,6 +52,7 @@ export function buildLearningProfileUpdatesFromAuthProfile(
     target: examFocused ? bandTargetByLevel[profile.cefrLevel] : 'general_improvement',
     tracks,
     dailyMinutes: clamp(profile.dailyGoal * 2, 12, 45),
+    learningStyle: profile.learningStyle,
     languagePreference: 'bilingual',
   };
 }

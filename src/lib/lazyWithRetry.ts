@@ -3,10 +3,10 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 const CHUNK_ERROR_PATTERN =
   /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk [\d]+ failed|ChunkLoadError/i;
 
-export const lazyWithRetry = <T extends ComponentType<unknown>>(
-  importer: () => Promise<{ default: T }>,
+export const lazyWithRetry = <P extends object>(
+  importer: () => Promise<{ default: ComponentType<P> }>,
   key: string,
-): LazyExoticComponent<T> => {
+): LazyExoticComponent<ComponentType<P>> => {
   return lazy(async () => {
     try {
       const module = await importer();

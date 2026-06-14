@@ -23,8 +23,8 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
         'fixed inset-x-0 bottom-0 z-50 flex h-16 items-center justify-around border-t backdrop-blur-xl',
         'pb-[env(safe-area-inset-bottom)]',
         isLearningMode
-          ? 'border-white/[0.06] bg-black/90'
-          : 'border-border/60 bg-background/90',
+          ? 'premium-bottom-nav-learning'
+          : 'premium-bottom-nav',
       )}
     >
       {NAV_ITEMS.map((item) => {
@@ -39,10 +39,10 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
               'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 transition-colors',
               active
                 ? isLearningMode
-                  ? 'text-emerald-400'
+                  ? 'text-primary'
                   : 'text-primary'
                 : isLearningMode
-                  ? 'text-white/45 active:text-white/70'
+                  ? 'text-muted-foreground active:text-foreground'
                   : 'text-muted-foreground active:text-foreground',
             )}
           >
@@ -53,7 +53,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
                   layoutId="bottomnav-indicator"
                   className={cn(
                     'absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full',
-                    isLearningMode ? 'bg-emerald-400' : 'bg-primary',
+                    'bg-primary',
                   )}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 />
@@ -70,7 +70,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
         className={cn(
           'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 transition-colors',
           isLearningMode
-            ? 'text-white/45 active:text-white/70'
+            ? 'text-muted-foreground active:text-foreground'
             : 'text-muted-foreground active:text-foreground',
         )}
       >
