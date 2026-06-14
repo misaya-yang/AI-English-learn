@@ -301,8 +301,8 @@ export function ChatComposer({
                 onClick={onStop}
                 variant="outline"
                 size="icon"
-                className="h-10 w-10 rounded-xl hover:border-red-300 hover:bg-red-50 hover:text-red-600"
-                aria-label={language.startsWith('zh') ? '停止生成' : 'Stop generating'}
+                className="h-10 w-10 rounded-md hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+                aria-label={language.startsWith('zh') ? '停止回复' : 'Stop response'}
               >
                 <StopCircle className="h-5 w-5" />
               </Button>

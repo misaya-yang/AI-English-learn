@@ -119,7 +119,7 @@ export default function WordOfTheDayPage() {
         coachWord: '打开答疑',
         startFree: '免费开始',
         anonSave: '注册后可以保存单词、追踪进度，并继续复习。',
-        authSave: '已登录：保存后会进入词库，并生成后续复习信号。',
+        authSave: '已登录：保存后会进入词库，并记录后续复习。',
         savedToast: '已保存到你的词库，并加入后续复习',
         alreadySavedToast: '这个词已经在你的词库里',
         archiveTitle: '公开词库样例',
@@ -304,17 +304,17 @@ export default function WordOfTheDayPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="overflow-hidden rounded-xl border-border bg-card">
-        <CardContent className="p-6 md:p-8">
+      <Card className="overflow-hidden rounded-md border-border bg-card">
+        <CardContent className="p-5 md:p-6">
           {/* Word Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Badge>{word.level}</Badge>
-                <Badge variant="outline">{word.partOfSpeech}</Badge>
+                <Badge className="rounded-md">{word.level}</Badge>
+                <Badge variant="outline" className="rounded-md">{word.partOfSpeech}</Badge>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold">{word.word}</h2>
-              <p className="text-lg text-muted-foreground mt-1">{word.phonetic}</p>
+              <h2 className="text-3xl font-semibold md:text-4xl">{word.word}</h2>
+              <p className="mt-1 text-base text-muted-foreground">{word.phonetic}</p>
               {date && (
                 <p className="text-sm text-muted-foreground mt-1">
                   <Calendar className="h-4 w-4 inline mr-1" />
@@ -323,23 +323,24 @@ export default function WordOfTheDayPage() {
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={() => playAudio(word.word)}>
-                <Volume2 className="h-5 w-5" />
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-md" onClick={() => playAudio(word.word)}>
+                <Volume2 className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
+                className="h-9 w-9 rounded-md"
                 aria-label={copy.shareButton}
                 title={copy.shareButton}
                 data-testid="word-share-card-button"
                 onClick={() => shareWord(word)}
               >
-                <Share2 className="h-5 w-5" />
+                <Share2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <Separator className="my-6" />
+          <Separator className="my-4" />
 
           {/* Tabs Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -350,13 +351,13 @@ export default function WordOfTheDayPage() {
               <TabsTrigger value="more">{copy.more}</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="h-[240px] sm:h-[300px] mt-4">
+            <ScrollArea className="mt-4 h-[180px] sm:h-[220px]">
               <TabsContent value="definition" className="mt-0">
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold mb-3">{copy.definitionHeading}</h3>
-                    <div className="mb-4 p-4 bg-muted rounded-lg">
-                      <p className="text-lg">{word.definition}</p>
+                    <div className="mb-4 rounded-md bg-muted p-4">
+                      <p className="text-base">{word.definition}</p>
                       <p className="text-muted-foreground mt-1">{word.definitionZh}</p>
                     </div>
                   </div>
@@ -367,8 +368,8 @@ export default function WordOfTheDayPage() {
                 <div className="space-y-4">
                   <h3 className="font-semibold mb-3">{copy.examplesHeading}</h3>
                   {word.examples.map((ex, index) => (
-                    <div key={index} className="mb-4 p-4 bg-muted rounded-lg">
-                      <p className="text-lg mb-2">"{ex.en}"</p>
+                    <div key={index} className="mb-4 rounded-md bg-muted p-4">
+                      <p className="mb-2 text-base">"{ex.en}"</p>
                       <p className="text-muted-foreground">{ex.zh}</p>
                       <Button
                         variant="ghost"
@@ -475,22 +476,25 @@ export default function WordOfTheDayPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
+      <main className="container mx-auto max-w-5xl px-4 py-8">
         {/* Date Header */}
-        <div className="text-center mb-8">
-          <Badge variant="secondary" className="mb-4">
-            <Calendar className="h-3 w-3 mr-1" />
-            {copy.badge}
-          </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{today}</h1>
-          <p className="text-muted-foreground">{copy.subtitle}</p>
+        <div className="mb-6 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Badge variant="secondary" className="mb-3 rounded-md">
+              <Calendar className="h-3 w-3 mr-1" />
+              {copy.badge}
+            </Badge>
+            <h1 className="text-2xl font-semibold md:text-3xl">{isZh ? '今天的词' : "Today's word"}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{copy.subtitle}</p>
+          </div>
+          <p className="text-sm text-muted-foreground">{today}</p>
         </div>
 
         {/* Main Word Card */}
         {renderWordCard(wordOfTheDay)}
 
         {/* CTA */}
-        <div className="mt-8 flex flex-col items-center gap-4">
+        <div className="mt-6 flex flex-col items-center gap-4">
           <div className="flex flex-wrap justify-center gap-3">
             {isAuthenticated ? (
               <>

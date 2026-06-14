@@ -394,6 +394,12 @@ export default function DashboardLayout() {
   const missionProgress = missionTotal > 0 ? Math.round((missionCompleted / missionTotal) * 100) : 0;
   const isDemoSession = Boolean(user?.id && isLocalAuthUserId(user.id));
   const demoBadgeText = copy.demo;
+  const displayName =
+    isDemoSession && isZh && user?.displayName === 'Demo Learner'
+      ? '演示学习者'
+      : (user?.displayName || user?.email || copy.learner);
+  const avatarInitial = displayName.charAt(0).toUpperCase();
+  const levelLabel = isZh ? `等级 ${xp?.level || 1}` : `Level ${xp?.level || 1}`;
 
   const learningPrimaryAction = useMemo(() => {
     if (location.pathname.startsWith('/dashboard/review')) {
@@ -526,7 +532,7 @@ export default function DashboardLayout() {
         >
           <Avatar className="h-9 w-9">
             <AvatarFallback className="bg-primary/10 text-primary">
-              {user?.displayName?.[0] || user?.email?.[0] || 'U'}
+              {avatarInitial}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -563,14 +569,14 @@ export default function DashboardLayout() {
       <div className="rounded-md border border-sidebar-border bg-sidebar-accent p-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
+            <AvatarFallback>{avatarInitial}</AvatarFallback>
           </Avatar>
           <div>
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
+              <p className="text-sm font-semibold">{displayName}</p>
               {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
             </div>
-            <p className="text-xs text-sidebar-foreground/55">Level {xp?.level || 1}</p>
+            <p className="text-xs text-sidebar-foreground/55">{levelLabel}</p>
           </div>
         </div>
         <div className="mt-4 space-y-2">
@@ -613,12 +619,12 @@ export default function DashboardLayout() {
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-sidebar-primary/14 text-sidebar-primary">
-              {user?.displayName?.[0] || user?.email?.[0] || 'U'}
+              {avatarInitial}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
-            <p className="text-xs text-sidebar-foreground/55">Level {xp?.level || 1}</p>
+            <p className="text-sm font-semibold">{displayName}</p>
+            <p className="text-xs text-sidebar-foreground/55">{levelLabel}</p>
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-3 border-t border-sidebar-border pt-4">
@@ -761,10 +767,10 @@ export default function DashboardLayout() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                  <p className="text-sm font-medium">{displayName}</p>
                   {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
                 </div>
-                <p className="text-xs text-sidebar-foreground/55">Level {xp?.level || 1}</p>
+                <p className="text-xs text-sidebar-foreground/55">{levelLabel}</p>
               </div>
               {learningAccountMenu}
             </div>
@@ -948,7 +954,7 @@ export default function DashboardLayout() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                <p className="text-sm font-medium">{displayName}</p>
                 {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
               </div>
               <p className="text-xs text-sidebar-foreground/55">{copy.learner}</p>
@@ -957,7 +963,7 @@ export default function DashboardLayout() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="rounded-md px-2">
                   <Avatar className="h-9 w-9">
-                    <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
+                    <AvatarFallback>{avatarInitial}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>

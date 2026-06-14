@@ -6,6 +6,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { ContentUnit, ExamTrack } from '@/types/examContent';
 
+const skillLabel = (skill: string): string => {
+  const labels: Record<string, string> = {
+    writing: '写作',
+    speaking: '口语',
+    reading: '阅读',
+    listening: '听力',
+  };
+  return labels[skill] || skill;
+};
+
 interface RouteConsoleProps {
   trackSearch: string;
   onTrackSearchChange: (value: string) => void;
@@ -45,20 +55,20 @@ export function RouteConsole({
         <div className="space-y-2">
           <p className="text-[11px] font-medium text-muted-foreground/80">路线选择</p>
           <h2 className="text-lg font-semibold">选择冲分轨道</h2>
-          <p className="text-sm text-muted-foreground">先定 Band 区间和 skill，再决定这轮写作应该站在哪个单元。</p>
+          <p className="text-sm text-muted-foreground">先定 Band 区间和技能，再决定这轮写作进入哪个单元。</p>
         </div>
 
         <Input
           value={trackSearch}
           onChange={(event) => onTrackSearchChange(event.target.value)}
-          placeholder="搜索 Track / Band / Skill"
+          placeholder="搜索轨道 / Band / 技能"
           className="mt-4 h-10 bg-background/60"
         />
 
         <ScrollArea className="mt-4 h-[280px]">
           <div className="space-y-2 pr-3">
             {filteredTracks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">没有匹配的 Track。</p>
+              <p className="text-sm text-muted-foreground">没有匹配的轨道。</p>
             ) : (
               filteredTracks.map((track) => {
                 const active = track.id === selectedTrackId;
@@ -78,7 +88,7 @@ export function RouteConsole({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-medium leading-snug">{track.title}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">{track.bandTarget} · {track.skill}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{track.bandTarget} · {skillLabel(track.skill)}</p>
                       </div>
                       <span className="text-xs font-medium text-muted-foreground">{progress}%</span>
                     </div>
@@ -94,7 +104,7 @@ export function RouteConsole({
       <section className="rounded-lg border border-border/70 bg-card/90 p-4">
         <div className="space-y-2">
           <p className="text-[11px] font-medium text-muted-foreground/80">练习单元</p>
-          <h2 className="text-lg font-semibold">按单元推进，不要一口气全练</h2>
+          <h2 className="text-lg font-semibold">按单元推进</h2>
         </div>
 
         <Input
@@ -108,7 +118,7 @@ export function RouteConsole({
           <div className="mt-4 rounded-lg border border-border/70 bg-background/40 p-3">
             <p className="text-sm font-medium">{selectedUnit.title}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {selectedUnit.cefrLevel} · {selectedUnit.estimatedMinutes} min · {selectedUnitProgress}% 完成
+              {selectedUnit.cefrLevel} · {selectedUnit.estimatedMinutes} 分钟 · {selectedUnitProgress}% 完成
             </p>
           </div>
         )}
@@ -116,7 +126,7 @@ export function RouteConsole({
         <ScrollArea className="mt-4 h-[260px]">
           <div className="space-y-2 pr-3">
             {filteredUnits.length === 0 ? (
-              <p className="text-sm text-muted-foreground">当前 Track 暂无可用单元。</p>
+              <p className="text-sm text-muted-foreground">当前轨道暂无可用单元。</p>
             ) : (
               filteredUnits.map((unit) => {
                 const active = unit.id === selectedUnitId;
@@ -136,7 +146,7 @@ export function RouteConsole({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-medium leading-snug">{unit.title}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">{unit.cefrLevel} · {unit.estimatedMinutes} min</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{unit.cefrLevel} · {unit.estimatedMinutes} 分钟</p>
                       </div>
                       <span className="text-xs font-medium text-muted-foreground">{progress}%</span>
                     </div>

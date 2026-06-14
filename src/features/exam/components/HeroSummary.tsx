@@ -79,9 +79,9 @@ export function HeroSummary({
 
         {/* Page title */}
         <div>
-          <h1 className="text-xl font-semibold">考试冲分 · IELTS Exam Prep</h1>
+          <h1 className="text-xl font-semibold">IELTS 写作练习</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            先确定这次练什么，再写作，最后按反馈修改。
+            题目、正文和反馈分开处理，写的时候少打断。
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export function HeroSummary({
               </div>
               <div className="flex items-center justify-between">
                 <span>本轮建议任务</span>
-                <span className="font-medium text-foreground">{taskType === 'task1' ? 'Task 1' : 'Task 2'}</span>
+                <span className="font-medium text-foreground">{taskType === 'task1' ? '小作文' : '大作文'}</span>
               </div>
             </div>
           </div>
@@ -146,7 +146,7 @@ export function HeroSummary({
           />
           <Link to="/pricing">
             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
-              升级会员 <ArrowUpRight className="ml-0.5 h-3 w-3" />
+              查看 Pro <ArrowUpRight className="ml-0.5 h-3 w-3" />
             </Button>
           </Link>
         </div>
@@ -174,7 +174,7 @@ function QuotaPill({ label, remaining, total }: { label: string; remaining: numb
   return (
     <span
       className={cn(
-        'rounded-full border px-2.5 py-0.5 text-xs font-medium',
+        'rounded-md border px-2.5 py-0.5 text-xs font-medium',
         isEmpty
           ? 'border-rose-400/40 bg-rose-500/[0.08] text-rose-500'
           : 'border-emerald-400/40 bg-emerald-500/[0.08] text-emerald-600',

@@ -301,7 +301,7 @@ const analyticsCopy = {
       heatmapLow: '少',
       heatmapHigh: '多',
       retentionDistribution: '各单词当前记忆保留率分布',
-      retentionWindow: '推荐复习时间窗口',
+      retentionWindow: '建议复习时间窗口',
       risk: '未来最容易忘记的词',
     },
     empty: {
@@ -337,7 +337,7 @@ const analyticsCopy = {
       },
       window: {
         title: '还没有可靠复习时段',
-        description: '再积累几次不同时段的学习记录，系统就能开始推荐更可信的复习时间窗口。',
+        description: '再积累几次不同时段的学习记录，这里会显示更可信的复习时间窗口。',
         action: '记录一次学习',
       },
       risk: {

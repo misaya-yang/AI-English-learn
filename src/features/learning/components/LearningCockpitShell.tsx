@@ -124,7 +124,7 @@ export function LearningCockpitShell({
         ? [
             {
               label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
-              value: `${mission.estimatedMinutes} min`,
+              value: language.startsWith('zh') ? `${mission.estimatedMinutes} 分钟` : `${mission.estimatedMinutes} min`,
             },
           ]
         : []);

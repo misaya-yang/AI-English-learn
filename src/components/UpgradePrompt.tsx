@@ -23,10 +23,10 @@ import {
 
 const FEATURE_LABELS: Record<QuotaFeature, { label: string; labelZh: string }> = {
   aiWritingGrade:   { label: 'Writing Feedback', labelZh: '写作反馈' },
-  aiReadingGen:     { label: 'Reading Generation', labelZh: '阅读材料生成' },
+  aiReadingGen:     { label: 'Reading Material', labelZh: '阅读材料' },
   aiChat:           { label: 'English Help', labelZh: '英语答疑' },
   aiExamFeedback:   { label: 'Exam Feedback', labelZh: '考试反馈' },
-  aiListeningGen:   { label: 'Listening Generation', labelZh: '听力材料生成' },
+  aiListeningGen:   { label: 'Listening Material', labelZh: '听力材料' },
 };
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   if (variant === 'modal') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 backdrop-blur-sm p-4">
-        <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-2xl">
+        <div className="w-full max-w-sm rounded-md border border-border bg-card p-6 shadow-2xl">
           <UpgradeCard {...cardProps} />
         </div>
       </div>
@@ -110,7 +110,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   // Default: card
   return (
     <div className={cn(
-        'rounded-lg border border-warning/30 bg-warning/10 p-5',
+        'rounded-md border border-warning/30 bg-warning/10 p-5',
       className,
     )}>
       <UpgradeCard {...cardProps} />
@@ -158,7 +158,7 @@ function UpgradeCard({
       </div>
 
       <div>
-        <p className="text-base font-bold text-foreground">
+        <p className="text-base font-semibold text-foreground">
           {isZh ? '今日额度已用完' : 'Today\'s free quota is used'}
         </p>
         <p className="mt-0.5 text-sm text-muted-foreground">

@@ -15,7 +15,7 @@ export const PRO_JOB: LocalizedLine = {
 
 export const FREE_PLAN_FEATURES: LocalizedLine[] = [
   { en: 'Daily mission with new words and review', zh: '每日任务：新词 + 复习' },
-  { en: 'FSRS review queue and basic analytics', zh: 'FSRS 复习队列与基础分析' },
+  { en: 'Due review queue and basic analytics', zh: '到期复习队列与基础分析' },
   { en: 'Limited writing and exam feedback quota', zh: '有限写作与考试反馈额度' },
   { en: 'Core lexicon, practice, and Word of the Day', zh: '核心词库、练习与每日单词' },
   { en: 'Weekly recap preview', zh: '周报预览' },
@@ -35,7 +35,7 @@ export const PRO_PLAN_FEATURES: LocalizedLine[] = [
   { en: 'Advanced analytics: review debt, skill trends, mistake patterns', zh: '进阶分析：复习债、技能趋势、错题记录' },
   { en: 'Custom wordbook imports plus Anki / CSV export', zh: '自定义词书导入 + Anki / CSV 导出' },
   { en: 'Weekly plan and recap', zh: '周计划与周报' },
-  { en: 'All practice modes and priority generation', zh: '全部练习模式与优先生成' },
+  { en: 'All practice modes and higher material quota', zh: '全部练习模式与更高材料额度' },
 ];
 
 export const PRO_WAITLIST_PROMISE: LocalizedLine = {
@@ -49,8 +49,8 @@ export const PRO_GATE_REASONS: Record<string, LocalizedLine> = {
     zh: 'Pro 提供 IELTS 写作评分、评分项说明和跟进练习。',
   },
   aiReadingGen: {
-    en: 'Pro adds more generated material so advanced learners can practice with custom topics.',
-    zh: 'Pro 提供更多生成材料，让进阶学习者围绕自定义主题练习。',
+    en: 'Pro adds more reading material so advanced learners can practice with custom topics.',
+    zh: 'Pro 提供更多阅读材料，让进阶学习者围绕自定义主题练习。',
   },
   aiChat: {
     en: 'Pro gives you more English help, mistake follow-ups, and weekly planning.',
@@ -58,11 +58,11 @@ export const PRO_GATE_REASONS: Record<string, LocalizedLine> = {
   },
   aiExamFeedback: {
     en: 'Pro focuses exam prep on scored IELTS feedback, diagnostics, and targeted remediation.',
-    zh: 'Pro 将考试练习升级为 IELTS 评分反馈、诊断和定向补强。',
+    zh: 'Pro 提供 IELTS 评分反馈、诊断和定向补强。',
   },
   aiListeningGen: {
-    en: 'Pro unlocks more listening generation for targeted weak-skill practice.',
-    zh: 'Pro 解锁更多听力生成，用于薄弱技能定向练习。',
+    en: 'Pro adds more listening material for targeted weak-skill practice.',
+    zh: 'Pro 提供更多听力材料，用于薄弱技能定向练习。',
   },
 };
 

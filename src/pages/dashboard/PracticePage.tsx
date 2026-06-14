@@ -1042,7 +1042,7 @@ export default function PracticePage() {
                 {isQuotaLoading
                   ? (isZh ? '正在读取额度...' : 'Loading quota...')
                   : isWritingSubmitting
-                    ? (isZh ? '正在生成反馈...' : 'Generating feedback...')
+                    ? (isZh ? '正在评分...' : 'Scoring...')
                     : feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0
                       ? (isZh ? '今日额度已用完' : 'Quota exhausted today')
                       : (isZh ? '获取 IELTS 反馈' : 'Get IELTS feedback')}

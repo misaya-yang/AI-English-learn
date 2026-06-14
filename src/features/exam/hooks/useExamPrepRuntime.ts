@@ -148,7 +148,7 @@ export function useExamPrepRuntime({
     resetCoachPanels();
     setWorkspaceView('draft');
     setToolPanel(undefined);
-    toast.success('已生成新的 IELTS 题目');
+    toast.success('已准备新的 IELTS 题目');
   }, [promptDifficulty, promptTopic, resetCoachPanels, taskType]);
 
   const handleBuildOutline = useCallback(() => {
@@ -219,7 +219,7 @@ export function useExamPrepRuntime({
   const handleGenerateSimItem = useCallback(async () => {
     const quotaResult = await consumeExamFeatureQuota(userId, 'simItemsPerDay');
     if (!quotaResult.allowed) {
-      toast.error('今日仿真题次数已用完，请明天再试或升级 Pro。');
+      toast.error('今日仿真题次数已用完，请明天再试。Pro 开放后会提供更多次数。');
       return;
     }
 
@@ -227,7 +227,7 @@ export function useExamPrepRuntime({
 
     const timeoutId = setTimeout(() => {
       setLoadingStage('idle');
-      toast.error('生成超时，请检查网络后重试。');
+      toast.error('准备超时，请检查网络后重试。');
     }, 30000);
 
     try {
@@ -261,12 +261,12 @@ export function useExamPrepRuntime({
         },
       });
 
-      toast.success('仿真题已生成，计时已启动。');
+      toast.success('仿真题已就绪，计时已启动。');
       setLoadingStage('idle');
     } catch (error) {
       clearTimeout(timeoutId);
       console.error(error);
-      toast.error('仿真题生成失败，请稍后重试。');
+      toast.error('仿真题准备失败，请稍后重试。');
       setLoadingStage('idle');
     }
   }, [
@@ -281,7 +281,7 @@ export function useExamPrepRuntime({
 
   const handleSubmitWriting = useCallback(async () => {
     if (!writingPrompt.trim()) {
-      toast.error('请先输入或生成题目');
+      toast.error('请先输入题目或准备一套仿真题');
       return;
     }
 
@@ -292,7 +292,7 @@ export function useExamPrepRuntime({
 
     const quotaResult = await consumeExamFeatureQuota(userId, 'aiAdvancedFeedbackPerDay');
     if (!quotaResult.allowed) {
-      toast.error('今日高级反馈次数已用完，请明天再试或升级 Pro。');
+      toast.error('今日高级反馈次数已用完，请明天再试。Pro 开放后会提供更多次数。');
       return;
     }
 
@@ -301,7 +301,7 @@ export function useExamPrepRuntime({
 
     const gradeTimeoutId = setTimeout(() => {
       setLoadingStage('idle');
-      toast.error('生成超时，请检查网络后重试。');
+      toast.error('评分超时，请检查网络后重试。');
     }, 30000);
 
     try {
@@ -403,7 +403,7 @@ export function useExamPrepRuntime({
   const handleGenerateMicroLesson = useCallback(async () => {
     const tags = (feedback?.issues || []).map((issue) => issue.tag);
     if (tags.length === 0) {
-      toast.info('先完成一次写作评分，再生成错因微课。');
+      toast.info('先完成一次写作评分，再整理错因微课。');
       return;
     }
 
@@ -417,7 +417,7 @@ export function useExamPrepRuntime({
 
     const microTimeoutId = setTimeout(() => {
       setLoadingStage('idle');
-      toast.error('生成超时，请检查网络后重试。');
+      toast.error('微课整理超时，请检查网络后重试。');
     }, 30000);
 
     try {
@@ -441,12 +441,12 @@ export function useExamPrepRuntime({
       setInsightView('weakness');
       await refreshQuota();
 
-      toast.success('已生成错因补救微课，并切换到对应单元。');
+      toast.success('已整理错因补救微课，并切换到对应单元。');
       setLoadingStage('idle');
     } catch (error) {
       clearTimeout(microTimeoutId);
       console.error(error);
-      toast.error('补救微课生成失败，请稍后重试。');
+      toast.error('补救微课整理失败，请稍后重试。');
       setLoadingStage('idle');
     }
   }, [feedback, onCatalogChange, onSwitchTrack, onSwitchUnit, refreshQuota, userId]);

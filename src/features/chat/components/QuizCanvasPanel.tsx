@@ -97,9 +97,9 @@ export const QuizCanvasPanel = ({
             language={language}
           />
         ) : (
-          <div className="rounded-xl border border-border bg-card px-3 py-4 text-sm text-muted-foreground">
+          <div className="rounded-md border border-border bg-card px-3 py-4 text-sm text-muted-foreground">
             {isLoading
-              ? (isZh ? '正在生成测验题目...' : 'Generating quiz questions...')
+              ? (isZh ? '正在准备测验题目...' : 'Preparing quiz questions...')
               : (isZh ? '暂未拿到题目，请重试或稍后继续。' : 'No quiz item returned yet. Please retry.')}
           </div>
         )}

@@ -42,7 +42,7 @@ describe('SampleLesson', () => {
 
     expect(screen.getByTestId('sample-feedback')).toHaveTextContent('Correct.');
     expect(screen.getByText('1 recall')).toBeInTheDocument();
-    expect(screen.getByText('Feedback generated')).toBeInTheDocument();
+    expect(screen.getByText('Feedback checked')).toBeInTheDocument();
     expect(screen.getByText('Review card prepared')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Save this progress/i })).toHaveAttribute(
       'href',

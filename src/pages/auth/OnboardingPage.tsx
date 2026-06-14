@@ -443,10 +443,10 @@ export default function OnboardingPage() {
                 <span>50</span>
               </div>
 
-              <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
+              <div className="rounded-md border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
                 <p className="text-sm text-foreground">
                   <strong className="text-emerald-700 dark:text-emerald-300">
-                    {isZh ? '推荐：' : 'Recommended:'}
+                    {isZh ? '建议：' : 'Suggested:'}
                   </strong>{' '}
                   {isZh ? '每天 10-15 个新词以获得最佳记忆效果。' : '10-15 words per day for optimal retention.'}
                 </p>

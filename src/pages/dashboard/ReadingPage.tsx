@@ -294,7 +294,7 @@ export default function ReadingPage() {
       toast.success(isZh ? '文章已准备好' : 'Passage ready!');
       startPassage({ ...randomSeed, id: `gen-${Date.now()}`, title: randomSeed.title + ' (New)' });
     } catch {
-      toast.error(isZh ? '生成失败，已切换到内置文章' : 'Generation failed. Using a built-in passage');
+      toast.error(isZh ? '新文章暂时不可用，已切换到内置文章' : 'New passage is unavailable. Using a built-in passage');
       startPassage(SEED_PASSAGES[0]);
     } finally {
       setIsGenerating(false);

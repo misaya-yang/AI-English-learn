@@ -390,12 +390,12 @@ export default function SettingsPage() {
 
                   <Separator />
 
-                  <div className="space-y-4 rounded-lg border border-border bg-muted/25 p-4">
+                  <div className="space-y-4 rounded-md border border-border bg-muted/25 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <Label>学习提醒</Label>
                         <p className="text-sm text-muted-foreground">
-                          根据复习债、streak 风险、考试周和周报生成提醒内容。
+                          根据复习债、连续学习风险、考试周和周报整理提醒内容。
                         </p>
                       </div>
                       <Switch

@@ -81,8 +81,8 @@ const plans: Plan[] = [
     monthlyPrice: 9.99,
     yearlyPrice: 7.99,
     features: PRO_PLAN_FEATURES,
-    cta: 'Upgrade to Pro',
-    ctaZh: '升级到专业版',
+    cta: 'Join Pro notice',
+    ctaZh: '加入专业版通知',
     highlighted: true,
   },
 ];
@@ -100,9 +100,9 @@ const faqs = [
     question: 'Will my current data carry over when Pro launches?',
     questionZh: 'Pro 上线后我现在的数据会保留吗？',
     answer:
-      'Yes. Your learning records, vocabulary, and history are independent of your plan. Upgrading later only changes entitlements.',
+      'Yes. Your learning records, vocabulary, and history are independent of your plan. Switching later only changes entitlements.',
     answerZh:
-      '会保留。您的学习记录、词汇和历史数据与订阅方案无关，升级后仅权益发生变化。',
+      '会保留。您的学习记录、词汇和历史数据与订阅方案无关，切换后仅权益范围发生变化。',
   },
   {
     question: 'Can I cancel my subscription anytime once it\'s live?',
@@ -267,23 +267,23 @@ export default function PricingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="max-w-3xl">
           <Badge
             variant="secondary"
-            className="border border-primary/20 bg-primary/10 text-primary"
+            className="rounded-md border border-border bg-muted text-muted-foreground"
           >
             <Crown className="mr-1 h-3 w-3" />
             {isZh ? '定价与会员' : 'Pricing & membership'}
           </Badge>
-          <h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">
+          <h1 className="mt-4 text-2xl font-semibold leading-tight sm:text-3xl">
             {isZh ? '选择你的学习方案' : 'Choose your learning plan'}
           </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
             {isZh ? '免费版够日常练习，Pro 用于考试评分和周计划。' : 'Free covers daily practice. Pro adds exam scoring and weekly planning.'}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {isZh ? '免费开始，Pro 上线后再升级。' : 'Start free, upgrade when Pro is live.'}
+            {isZh ? '先用免费版，Pro 开放后再切换。' : 'Start free, switch when Pro is live.'}
           </p>
         </div>
 
@@ -291,15 +291,15 @@ export default function PricingPage() {
           aria-label={isZh ? '方案任务分工' : 'Plan jobs to be done'}
           className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2"
         >
-          <div className="rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))]/80 p-4">
+          <div className="rounded-md border border-border/85 bg-[hsl(var(--surface-raised))]/80 p-4">
             <p className="text-xs font-semibold text-muted-foreground">
-              {isZh ? 'Free 负责什么' : 'Free job'}
+              {isZh ? '免费版包含' : 'Free includes'}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(FREE_JOB, i18n.language || 'en')}</p>
           </div>
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <div className="rounded-md border border-primary/30 bg-primary/5 p-4">
             <p className="text-xs font-semibold text-primary">
-              {isZh ? 'Pro 负责什么' : 'Pro job'}
+              {isZh ? '专业版适合' : 'Pro is for'}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(PRO_JOB, i18n.language || 'en')}</p>
           </div>
@@ -370,22 +370,22 @@ export default function PricingPage() {
                 <Card
                   data-testid={`pricing-plan-${plan.id}`}
                   className={cn(
-                    'relative h-full overflow-hidden rounded-lg border bg-[hsl(var(--surface-raised))] [padding-block:0]',
+                    'relative h-full overflow-hidden rounded-md border bg-[hsl(var(--surface-raised))] [padding-block:0]',
                     plan.highlighted
-                      ? 'border-primary/45 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_20px_44px_-34px_hsl(var(--primary)/0.62)]'
+                      ? 'border-primary/45 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_18px_36px_-32px_hsl(var(--primary)/0.48)]'
                       : 'border-border',
                   )}
                 >
                   {plan.highlighted && <div className="absolute inset-x-0 top-0 h-1 bg-primary" />}
                   {plan.highlighted && (
-                    <Badge className="absolute right-5 top-5 bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                      {isZh ? '最受欢迎' : 'Most popular'}
+                    <Badge className="absolute right-5 top-5 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                      {isZh ? '备考方案' : 'Exam prep'}
                     </Badge>
                   )}
 
-                  <CardContent className="flex h-full flex-col p-6 sm:p-7">
+                  <CardContent className="flex h-full flex-col p-5 sm:p-6">
                     <div>
-                      <h2 className="text-2xl font-bold">{isZh ? plan.nameZh : plan.name}</h2>
+                      <h2 className="text-xl font-semibold">{isZh ? plan.nameZh : plan.name}</h2>
                       <p className="mt-2 text-sm text-muted-foreground">
                         {isZh ? plan.descriptionZh : plan.description}
                       </p>
@@ -393,7 +393,7 @@ export default function PricingPage() {
 
                     <div className="mt-6">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold">
+                        <span className="text-3xl font-semibold">
                           ${price.toFixed(2).replace(/\.00$/, '')}
                         </span>
                         <span className="text-sm text-muted-foreground">{isZh ? '/ 月' : '/ month'}</span>
@@ -450,7 +450,7 @@ export default function PricingPage() {
                         // local product intent so we can measure Pro demand.
                         <div
                           data-testid="pricing-pro-coming-soon"
-                          className="rounded-lg border border-dashed border-amber-300/70 bg-amber-50/60 p-4 text-center dark:border-amber-400/30 dark:bg-amber-500/[0.08]"
+                          className="rounded-md border border-dashed border-amber-300/70 bg-amber-50/60 p-4 text-center dark:border-amber-400/30 dark:bg-amber-500/[0.08]"
                         >
                           <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
                             {isZh ? '暂未开放' : 'Coming soon'}
@@ -527,7 +527,7 @@ export default function PricingPage() {
                 {isZh ? (
                   <>
                     我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
-                    支付服务真实可用后，本页会显示明确的升级入口。
+                    支付服务真实可用后，本页会显示明确的 Pro 入口。
                   </>
                 ) : (
                   <>

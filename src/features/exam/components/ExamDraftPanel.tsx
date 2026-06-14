@@ -60,7 +60,7 @@ export function ExamDraftPanel({
           <div>
             <p className="text-[11px] font-medium text-muted-foreground/80">题目已就绪</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              {taskType === 'task1' ? 'Task 1 目标 >=150 词' : 'Task 2 目标 >=250 词'} · {activeWordCount} words · {autosavedAt ? `自动保存 ${autosavedAt}` : '未保存'}
+              {taskType === 'task1' ? '小作文目标 >=150 词' : '大作文目标 >=250 词'} · {activeWordCount} 词 · {autosavedAt ? `自动保存 ${autosavedAt}` : '未保存'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -81,7 +81,7 @@ export function ExamDraftPanel({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>Your Answer</Label>
+          <Label>正文</Label>
           <span className="text-xs text-muted-foreground">Ctrl/Cmd + Enter 快速提交评分</span>
         </div>
         <Textarea
@@ -94,7 +94,7 @@ export function ExamDraftPanel({
             }
           }}
           className="min-h-[320px] bg-background/70 leading-8"
-          placeholder="Write your IELTS response here..."
+          placeholder="在这里写 IELTS 作文正文..."
         />
       </div>
 
@@ -106,7 +106,7 @@ export function ExamDraftPanel({
         className="rounded-lg border border-border/70 bg-background/35 px-4"
       >
         <AccordionItem value="outline" className="border-border/60">
-          <AccordionTrigger className="py-4 text-base">Outline Builder</AccordionTrigger>
+          <AccordionTrigger className="py-4 text-base">提纲</AccordionTrigger>
           <AccordionContent>
             {outline ? (
               <div className="space-y-3">
@@ -134,7 +134,7 @@ export function ExamDraftPanel({
         </AccordionItem>
 
         <AccordionItem value="vocab" className="border-border/60">
-          <AccordionTrigger className="py-4 text-base">Vocabulary Enhancer</AccordionTrigger>
+          <AccordionTrigger className="py-4 text-base">词汇改写</AccordionTrigger>
           <AccordionContent>
             {vocabSuggestions.length > 0 ? (
               <div className="space-y-2">
@@ -162,7 +162,7 @@ export function ExamDraftPanel({
         </AccordionItem>
 
         <AccordionItem value="coach" className="border-none">
-          <AccordionTrigger className="py-4 text-base">Writing Help</AccordionTrigger>
+          <AccordionTrigger className="py-4 text-base">写作答疑</AccordionTrigger>
           <AccordionContent className="space-y-3">
             <Textarea
               value={tutorQuestion}
@@ -192,7 +192,7 @@ export function ExamDraftPanel({
           className="bg-emerald-600 text-white hover:bg-emerald-700"
         >
           {loadingStage === 'grading' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
-          获取结构化评分反馈
+          查看评分反馈
         </Button>
         <Button variant="outline" onClick={onBackToBrief}>
           回到策略

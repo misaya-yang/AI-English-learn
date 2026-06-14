@@ -146,7 +146,7 @@ export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
 
     return (
       <div className="space-y-6 text-center">
-        <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-md border border-border bg-muted">
           <span className="text-2xl font-bold text-emerald-600">{level}</span>
         </div>
         <div>
@@ -155,14 +155,14 @@ export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
             答对 {correctCount}/{PLACEMENT_QUESTIONS.length} 题
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            推荐等级：<strong>{level}</strong>
+            建议等级：<strong>{level}</strong>
           </p>
         </div>
         <Button
           onClick={() => onComplete(level)}
           className="bg-emerald-600 hover:bg-emerald-700 w-full"
         >
-          使用推荐等级
+          使用建议等级
         </Button>
       </div>
     );

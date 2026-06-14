@@ -694,8 +694,8 @@ export default function TodayPage() {
           description={
             activeBook
               ? (isZh
-                ? '先生成今天的新词，再看是否需要复习。'
-                : 'Generate today\'s words, then check reviews.')
+                ? '先准备今天的新词，再看是否需要复习。'
+                : 'Prepare today\'s words, then check reviews.')
               : (isZh
                 ? '你还没有激活词书。先选词书或导入 deck。'
                 : 'No active word book yet. Pick a word book or import a deck.')
@@ -710,7 +710,7 @@ export default function TodayPage() {
               {activeBook ? (
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={refreshDailyWords}>
                   <ClipboardList className="mr-2 h-5 w-5" />
-                  {isZh ? '生成今日单词' : 'Generate today\'s words'}
+                  {isZh ? '准备今日单词' : 'Prepare today\'s words'}
                 </Button>
               ) : (
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
@@ -825,7 +825,7 @@ export default function TodayPage() {
         },
         {
           label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
-          value: `${heroEstimatedMinutes} min`,
+          value: language.startsWith('zh') ? `${heroEstimatedMinutes} 分钟` : `${heroEstimatedMinutes} min`,
         },
         {
           label: language.startsWith('zh') ? '新词剩余' : 'Words left',
@@ -1224,7 +1224,7 @@ export default function TodayPage() {
                 <div className="premium-panel-soft rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
                   <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
                     <Target className="h-4 w-4" />
-                    <p className="text-sm font-semibold">推荐补强微课：{recommendedUnit.title}</p>
+                    <p className="text-sm font-semibold">补强微课：{recommendedUnit.title}</p>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">{recommendedUnit.estimatedMinutes} 分钟</p>
                   <Button variant="outline" size="sm" className="mt-3 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>

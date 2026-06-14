@@ -56,7 +56,7 @@ export function ExamBriefPanel({
           <Input
             value={promptTopic}
             onChange={(event) => onPromptTopicChange(event.target.value)}
-            placeholder="Topic: public transport / education / AI"
+            placeholder="话题：public transport / education / technology"
             className="h-10 bg-background/60"
           />
           <Select value={promptDifficulty} onValueChange={(value) => onPromptDifficultyChange(value as PromptDifficulty)}>
@@ -64,9 +64,9 @@ export function ExamBriefPanel({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="easy">Easy</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="hard">Hard</SelectItem>
+              <SelectItem value="easy">基础</SelectItem>
+              <SelectItem value="medium">标准</SelectItem>
+              <SelectItem value="hard">进阶</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={onGeneratePrompt} disabled={isBusy} variant="outline" className="h-10">
@@ -83,7 +83,7 @@ export function ExamBriefPanel({
           </Button>
         </div>
 
-        <div className="rounded-lg border border-border/70 bg-background/40 p-4">
+        <div className="rounded-md border border-border/70 bg-background/40 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-[11px] font-medium text-muted-foreground/80">当前题目</p>
@@ -92,7 +92,7 @@ export function ExamBriefPanel({
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="rounded-md">
                 <Gauge className="mr-1 h-3 w-3" />
-                {taskType === 'task1' ? 'Task 1' : 'Task 2'}
+                {taskType === 'task1' ? '小作文' : '大作文'}
               </Badge>
               {simItem?.attribution && <Badge variant="outline" className="rounded-md">{simItem.attribution}</Badge>}
             </div>
@@ -101,13 +101,13 @@ export function ExamBriefPanel({
         </div>
 
         {isSimulationMode && (
-          <div className="rounded-lg border border-emerald-400/35 bg-emerald-500/[0.08] p-4">
+          <div className="rounded-md border border-emerald-400/35 bg-emerald-500/[0.08] p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-medium text-emerald-500">仿真计时进行中</p>
-                <p className="text-xs text-muted-foreground">{taskType === 'task1' ? 'Task 1 建议 20 分钟' : 'Task 2 建议 40 分钟'}</p>
+                <p className="text-xs text-muted-foreground">{taskType === 'task1' ? '小作文建议 20 分钟' : '大作文建议 40 分钟'}</p>
               </div>
-              <Badge className="rounded-full bg-emerald-600 text-white">
+              <Badge className="rounded-md bg-emerald-600 text-white">
                 <Timer className="mr-1 h-3.5 w-3.5" /> {formatSeconds(simulationRemainingSec)}
               </Badge>
             </div>
@@ -119,7 +119,7 @@ export function ExamBriefPanel({
         )}
       </div>
 
-      <div className="rounded-lg border border-border/70 bg-background/35 p-4">
+      <div className="rounded-md border border-border/70 bg-background/35 p-4">
         <p className="text-[11px] font-medium text-muted-foreground/80">本轮目标</p>
         <p className="mt-2 text-base font-semibold">{selectedUnit?.title || '先从左侧选择一个单元'}</p>
         <p className="mt-1 text-sm text-muted-foreground">{selectedTrackTitle || '系统会按目标 Band 自动关联轨道。'}</p>

@@ -268,7 +268,7 @@ export default function VocabularyBankPage() {
             }}
             onError={(errors) => {
               if (errors.length > 0) {
-                toast.warning(`Anki 导入有 ${errors.length} 条无法映射，已生成错误报告`);
+                toast.warning(`Anki 导入有 ${errors.length} 条无法映射，已导出错误报告`);
                 downloadImportErrors(errors);
               }
             }}

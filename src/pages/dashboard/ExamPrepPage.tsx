@@ -224,7 +224,7 @@ export default function ExamPrepPage() {
   const workspaceCopy: WorkspaceCopy = ({
     brief: {
       eyebrow: '本次练习',
-      title: '先确定这次练什么',
+      title: '本次写作设置',
       body: '选择轨道、题型、话题和时间。题目确定后再写，不用一上来就处理所有工具。',
     },
     draft: {
@@ -262,9 +262,9 @@ export default function ExamPrepPage() {
     },
     {
       id: 'draft',
-      label: '写作输出',
+      label: '写正文',
       description: runtime.writingPrompt ? '题目已就绪，继续完成正文' : '准备题目或进入模拟',
-      metric: `${activeWordCount} words`,
+      metric: `${activeWordCount} 词`,
     },
     {
       id: 'review',
@@ -323,13 +323,13 @@ export default function ExamPrepPage() {
               >
                 <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <span
-                    className={`grid h-6 w-6 place-items-center rounded-full text-[11px] ${
+                    className={`grid h-6 w-6 place-items-center rounded-md text-[11px] ${
                       active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {index + 1}
                   </span>
-                  {active ? '当前阶段' : '冲刺阶段'}
+                  {active ? '当前' : '步骤'}
                 </span>
                 <span className="mt-3 text-base font-semibold text-foreground">{step.label}</span>
                 <span className="mt-1 line-clamp-2 text-sm leading-5">{step.description}</span>

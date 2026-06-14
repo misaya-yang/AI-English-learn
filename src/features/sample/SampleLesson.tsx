@@ -58,8 +58,8 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
       ? 'mitigate 表示“减轻”。先把例句读一遍，再重新输入这个词。'
       : 'Mitigate means “make less severe.” Read the example once, then type the word again.',
     loop: isZh
-      ? ['回想 1 次', '生成反馈', '准备复习卡']
-      : ['1 recall', 'Feedback generated', 'Review card prepared'],
+      ? ['回想 1 次', '查看反馈', '准备复习卡']
+      : ['1 recall', 'Feedback checked', 'Review card prepared'],
   };
   const feedbackTone = isCorrect
     ? 'border-[hsl(var(--accent-practice)/0.28)] bg-[hsl(var(--accent-practice)/0.08)]'
@@ -92,7 +92,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
             {copy.intro}
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-sm">
+        <div className="rounded-md border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-sm">
           <p className="text-xs font-medium text-muted-foreground">{copy.wordLabel}</p>
           <div className="mt-3 flex flex-wrap items-baseline gap-2">
             <h2 className="text-4xl font-semibold text-foreground">{sampleWord.word}</h2>
@@ -109,7 +109,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_48px_-38px_hsl(var(--shadow-studio)/0.34)] sm:p-6">
+      <div className="rounded-md border border-border bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_48px_-38px_hsl(var(--shadow-studio)/0.34)] sm:p-6">
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <p className="text-xs font-medium text-muted-foreground">{copy.promptLabel}</p>
@@ -143,7 +143,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
         {hasFeedback ? (
           <div
             data-testid="sample-feedback"
-            className={cn('mt-5 rounded-lg border p-4', feedbackTone)}
+            className={cn('mt-5 rounded-md border p-4', feedbackTone)}
             role="status"
           >
             <div className="flex items-start gap-3">
