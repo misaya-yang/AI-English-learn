@@ -115,11 +115,11 @@ export default function Home() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur">
+    <div className="study-premium-bg min-h-[100dvh] bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-[hsl(var(--surface-raised))]/92 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.18)]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary text-primary-foreground">
               <BookOpen className="h-4 w-4" />
             </span>
             <span className="text-sm font-semibold tracking-tight">VocabDaily</span>
@@ -191,17 +191,28 @@ export default function Home() {
 
       <main>
         <section className="border-b border-border/70">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
+          <div className="mx-auto grid min-h-[calc(100dvh-3.5rem)] max-w-6xl gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:items-center lg:py-16">
             <div>
-              <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
-                {copy.hero.title}
+              <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-border bg-[hsl(var(--surface-raised))]/88 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                VocabDaily
+              </div>
+              <h1 className="max-w-2xl text-4xl font-semibold leading-[1.06] text-foreground sm:text-5xl md:text-[3.5rem]">
+                {isZh ? (
+                  <>
+                    <span className="block">今天练什么，</span>
+                    <span className="block">一目了然。</span>
+                  </>
+                ) : (
+                  copy.hero.title
+                )}
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
                 {copy.hero.subtitle}
               </p>
 
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild size="lg" className="h-11 rounded-md px-5 text-sm font-medium shadow-sm">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button asChild size="lg" className="h-11 rounded-md px-5 text-sm font-medium">
                   <Link to={primaryCtaPath}>
                     {copy.hero.primaryCta}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -215,16 +226,17 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-2 text-sm text-muted-foreground">
+              <div className="mt-7 flex flex-wrap gap-2 text-sm text-muted-foreground">
                 {copy.hero.evidence.map((item) => (
-                  <span key={item} className="rounded-md border border-border px-3 py-1">
+                  <span key={item} className="rounded-md border border-border/80 bg-[hsl(var(--surface-raised))]/70 px-3 py-1">
                     {item}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
+            <div className="relative overflow-hidden rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))] p-5 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035),0_18px_40px_-32px_hsl(var(--shadow-studio)/0.28)] sm:p-6">
+              <div className="absolute inset-y-0 left-0 w-1 bg-primary" />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
@@ -237,15 +249,15 @@ export default function Home() {
                     {copy.today.subtitle}
                   </p>
                 </div>
-                <span className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md border border-border/80 bg-muted/50 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                 </span>
               </div>
 
-              <ul className="mt-5 space-y-3" aria-label="Example daily learning queue">
-                <li className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2.5">
+              <ul className="mt-5 divide-y divide-border/70" aria-label="Example daily learning queue">
+                <li className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
                       <Calendar className="h-3.5 w-3.5" />
                     </span>
                     <div>
@@ -255,9 +267,9 @@ export default function Home() {
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">{copy.today.items[0].duration}</span>
                 </li>
-                <li className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2.5">
+                <li className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-practice)/0.1)] text-[hsl(var(--accent-practice))]">
                       <BookOpen className="h-3.5 w-3.5" />
                     </span>
                     <div>
@@ -267,9 +279,9 @@ export default function Home() {
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">{copy.today.items[1].duration}</span>
                 </li>
-                <li className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2.5">
+                <li className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-coach)/0.1)] text-[hsl(var(--accent-coach))]">
                       <MessageSquare className="h-3.5 w-3.5" />
                     </span>
                     <div>
@@ -281,7 +293,7 @@ export default function Home() {
                 </li>
               </ul>
 
-              <div className="mt-5 border-t border-border pt-4">
+              <div className="mt-4 border-t border-border/70 pt-4">
                 <p className="text-xs text-muted-foreground">
                   {copy.today.summary}
                 </p>
@@ -290,13 +302,13 @@ export default function Home() {
           </div>
 
           {/* Sample word strip */}
-          <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16">
+          <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-14">
             <p className="text-xs font-medium text-muted-foreground">
               {copy.examplesLabel}
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {sampleWords.map((w) => (
-                <div key={w.word} className="rounded-lg border border-border bg-card p-4">
+                <div key={w.word} className="rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))]/88 p-4">
                   <div className="flex items-baseline gap-2">
                     <span className="text-base font-semibold tracking-tight">{w.word}</span>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
@@ -308,7 +320,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="workflow" className="border-b border-border/70 bg-transparent">
+        <section id="workflow" className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/34">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {copy.workflow.title}
@@ -337,7 +349,7 @@ export default function Home() {
                   body: copy.workflow.steps[2].body,
                 },
               ].map((step, i) => (
-                <div key={i} className="rounded-lg border border-border bg-card p-5">
+                <div key={i} className="rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))] p-5">
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground"
                   >

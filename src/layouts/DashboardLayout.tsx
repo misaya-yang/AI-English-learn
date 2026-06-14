@@ -431,16 +431,24 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group flex items-center gap-3 rounded-lg border px-3 py-3 transition-all duration-150',
+            'group relative flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 transition-colors duration-150',
             active
-              ? 'premium-side-card border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7)]'
-              : 'border-transparent hover:border-border hover:bg-[hsl(var(--surface-raised))]/82',
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+              : 'text-sidebar-foreground/72 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
           )}
         >
+          <span
+            className={cn(
+              'absolute inset-y-2 left-0 w-[3px] rounded-full transition-colors',
+              active ? 'bg-sidebar-primary' : 'bg-transparent',
+            )}
+          />
           <div
             className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-md border transition-colors',
-              active ? 'border-primary/20 bg-primary text-primary-foreground' : 'border-border bg-muted text-muted-foreground',
+              'flex h-9 w-9 items-center justify-center rounded-md border transition-colors',
+              active
+                ? 'border-sidebar-primary/20 bg-sidebar-primary text-sidebar-primary-foreground'
+                : 'border-sidebar-border/60 bg-sidebar-accent/30 text-sidebar-foreground/55 group-hover:text-sidebar-foreground',
             )}
           >
             <Icon className="h-4 w-4" />
@@ -454,7 +462,7 @@ export default function DashboardLayout() {
                 </Badge>
               ) : null}
             </div>
-            {!compact ? <p className="truncate text-xs text-muted-foreground">{item.description}</p> : null}
+            {!compact ? <p className="truncate text-xs text-sidebar-foreground/52">{item.description}</p> : null}
           </div>
         </div>
       </Link>
@@ -469,37 +477,41 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group relative overflow-hidden rounded-lg border border-transparent px-4 py-3 transition-all duration-150',
-            active ? 'premium-side-card border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))]' : 'hover:border-border hover:bg-[hsl(var(--surface-raised))]/82',
+            'group relative overflow-hidden rounded-md border border-transparent px-3 py-2.5 transition-colors duration-150',
+            active
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+              : 'text-sidebar-foreground/72 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
           )}
         >
           <span
             className={cn(
-              'absolute inset-y-3 left-0 w-[3px] rounded-full transition-colors',
-              active ? 'bg-primary' : 'bg-transparent group-hover:bg-border',
+              'absolute inset-y-2 left-0 w-[3px] rounded-full transition-colors',
+              active ? 'bg-sidebar-primary' : 'bg-transparent',
             )}
           />
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-md border transition-colors',
-                active ? 'border-primary/20 bg-primary text-primary-foreground' : 'border-border bg-muted text-muted-foreground',
+                'flex h-9 w-9 items-center justify-center rounded-md border transition-colors',
+                active
+                  ? 'border-sidebar-primary/20 bg-sidebar-primary text-sidebar-primary-foreground'
+                  : 'border-sidebar-border/60 bg-sidebar-accent/30 text-sidebar-foreground/55 group-hover:text-sidebar-foreground',
               )}
             >
               <Icon className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className={cn('truncate text-sm font-semibold', active ? 'text-foreground' : 'text-foreground/85')}>{item.label}</p>
+                <p className="truncate text-sm font-semibold">{item.label}</p>
                 {item.badge ? (
-                  <span className="rounded-full border border-border bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                  <span className="rounded-full border border-sidebar-border bg-sidebar-primary/12 px-2 py-0.5 text-[10px] font-medium text-sidebar-primary">
                     {item.badge}
                   </span>
                 ) : null}
               </div>
-              {!compact ? <p className="mt-1 truncate text-xs text-muted-foreground">{item.description}</p> : null}
+              {!compact ? <p className="mt-1 truncate text-xs text-sidebar-foreground/52">{item.description}</p> : null}
             </div>
-            <ChevronRight className={cn('h-4 w-4 transition-opacity', active ? 'text-muted-foreground' : 'text-muted-foreground/40 group-hover:text-muted-foreground')} />
+            <ChevronRight className={cn('h-4 w-4 transition-opacity', active ? 'text-sidebar-foreground/70' : 'text-sidebar-foreground/28 group-hover:text-sidebar-foreground/58')} />
           </div>
         </div>
       </Link>
@@ -511,7 +523,7 @@ export default function DashboardLayout() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-auto rounded-full border bg-card px-2 py-2 hover:bg-muted"
+          className="h-auto rounded-md border border-current/15 bg-transparent px-2 py-2 hover:bg-current/5"
           aria-label={currentLang === 'zh' ? '打开账号菜单' : 'Open account menu'}
         >
           <Avatar className="h-9 w-9">
@@ -549,8 +561,8 @@ export default function DashboardLayout() {
   );
 
   const standardMobileSheetBody = (
-    <div className="flex h-full flex-col gap-4 px-1">
-      <div className="rounded-lg border bg-card p-4">
+    <div className="flex h-full flex-col gap-4 px-1 text-sidebar-foreground">
+      <div className="rounded-lg border border-sidebar-border bg-sidebar-accent p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarFallback>{user?.displayName?.[0] || user?.email?.[0] || 'U'}</AvatarFallback>
@@ -560,11 +572,11 @@ export default function DashboardLayout() {
               <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
               {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
             </div>
-            <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
+            <p className="text-xs text-sidebar-foreground/55">Level {xp?.level || 1}</p>
           </div>
         </div>
         <div className="mt-4 space-y-2">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-sidebar-foreground/55">
             <span>{copy.todayMissionProgress}</span>
             <span>{missionProgress}%</span>
           </div>
@@ -573,12 +585,12 @@ export default function DashboardLayout() {
       </div>
 
       <div className="space-y-2">
-        <p className="px-2 text-xs text-muted-foreground">{copy.coreLearning}</p>
+        <p className="px-2 text-xs text-sidebar-foreground/55">{copy.coreLearning}</p>
         {primaryNav.map((item) => renderStandardNavItem(item))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-2 text-xs text-muted-foreground">{copy.tools}</p>
+        <p className="px-2 text-xs text-sidebar-foreground/55">{copy.tools}</p>
         {toolNav.map((item) => renderStandardNavItem(item))}
       </div>
 
@@ -598,54 +610,54 @@ export default function DashboardLayout() {
   );
 
   const learningMobileSheetBody = (
-    <div className="flex h-full flex-col gap-6 bg-background text-foreground">
-      <div className="premium-side-card rounded-lg border bg-card p-4 shadow-sm">
+    <div className="flex h-full flex-col gap-6 bg-sidebar text-sidebar-foreground">
+      <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary/10 text-primary">
+            <AvatarFallback className="bg-sidebar-primary/14 text-sidebar-primary">
               {user?.displayName?.[0] || user?.email?.[0] || 'U'}
             </AvatarFallback>
           </Avatar>
           <div>
             <p className="text-sm font-semibold">{user?.displayName || user?.email}</p>
-            <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
+            <p className="text-xs text-sidebar-foreground/55">Level {xp?.level || 1}</p>
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
+        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-sidebar-border pt-4">
           <div>
-            <p className="text-[11px] text-muted-foreground">{copy.mission}</p>
-            <p className="mt-1 text-xl font-semibold text-primary">{missionProgress}%</p>
+            <p className="text-[11px] text-sidebar-foreground/55">{copy.mission}</p>
+            <p className="mt-1 text-xl font-semibold text-sidebar-primary">{missionProgress}%</p>
           </div>
           <div>
-            <p className="text-[11px] text-muted-foreground">{copy.due}</p>
+            <p className="text-[11px] text-sidebar-foreground/55">{copy.due}</p>
             <p className="mt-1 text-xl font-semibold">{dueWords.length}</p>
           </div>
           <div>
-            <p className="text-[11px] text-muted-foreground">{copy.streak}</p>
+            <p className="text-[11px] text-sidebar-foreground/55">{copy.streak}</p>
             <p className="mt-1 text-xl font-semibold">{streak?.current || 0}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] text-muted-foreground">{copy.coreLearning}</p>
+        <p className="px-1 text-[11px] text-sidebar-foreground/55">{copy.coreLearning}</p>
         {learningNav.map((item) => renderLearningNavItem(item))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] text-muted-foreground">{copy.skillPractice}</p>
+        <p className="px-1 text-[11px] text-sidebar-foreground/55">{copy.skillPractice}</p>
         {skillsNav.map((item) => renderLearningNavItem(item, true))}
       </div>
 
       <div className="space-y-2">
-        <p className="px-1 text-[11px] text-muted-foreground">{copy.tools}</p>
+        <p className="px-1 text-[11px] text-sidebar-foreground/55">{copy.tools}</p>
         {learningTools.map((item) => renderLearningNavItem(item, true))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
+      <div className="mt-auto flex items-center justify-between border-t border-sidebar-border pt-4">
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <div className="inline-flex rounded-full border bg-card p-1">
+          <div className="inline-flex rounded-md border border-sidebar-border bg-sidebar-accent p-1">
             <button
               type="button"
               onClick={() => changeLanguage('en')}
@@ -680,30 +692,30 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[292px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
+        <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[292px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 text-sidebar-foreground lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-lg px-1 py-2">
-            <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent text-sidebar-primary shadow-[inset_0_1px_0_hsl(0_0%_100%/0.08)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
               <p className="text-base font-semibold tracking-tight">VocabDaily</p>
-              <p className="text-[11px] text-primary">{copy.learning}</p>
+              <p className="text-[11px] text-sidebar-foreground/55">{copy.learning}</p>
             </div>
           </Link>
 
-          <div className="premium-side-card mt-5 rounded-lg border border-sidebar-border bg-sidebar-accent p-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+          <div className="premium-side-card mt-5 rounded-lg border border-sidebar-border bg-sidebar-accent p-4">
             <h2 className="text-xl font-semibold tracking-tight">{activeShell.title}</h2>
-            <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
+            <div className="mt-4 grid grid-cols-3 gap-3 border-t border-sidebar-border pt-4">
               <div>
-                <p className="text-[11px] text-muted-foreground">{copy.mission}</p>
-                <p className="mt-1 text-lg font-semibold text-primary">{missionProgress}%</p>
+                <p className="text-[11px] text-sidebar-foreground/55">{copy.mission}</p>
+                <p className="mt-1 text-lg font-semibold text-sidebar-primary">{missionProgress}%</p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground">{copy.due}</p>
+                <p className="text-[11px] text-sidebar-foreground/55">{copy.due}</p>
                 <p className="mt-1 text-lg font-semibold">{dueWords.length}</p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground">{copy.streak}</p>
+                <p className="text-[11px] text-sidebar-foreground/55">{copy.streak}</p>
                 <p className="mt-1 text-lg font-semibold">{streak?.current || 0}</p>
               </div>
             </div>
@@ -720,41 +732,41 @@ export default function DashboardLayout() {
           >
             <div className="space-y-6 pb-4">
               <div className="space-y-2">
-                <p className="px-1 text-[11px] text-muted-foreground">{copy.coreLearning}</p>
+                <p className="px-1 text-[11px] text-sidebar-foreground/55">{copy.coreLearning}</p>
                 {learningNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] text-muted-foreground">{copy.skillPractice}</p>
+                <p className="px-1 text-[11px] text-sidebar-foreground/55">{copy.skillPractice}</p>
                 {skillsNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
               <div className="space-y-2">
-                <p className="px-1 text-[11px] text-muted-foreground">{copy.tools}</p>
+                <p className="px-1 text-[11px] text-sidebar-foreground/55">{copy.tools}</p>
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent p-4 space-y-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+              <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <StreakCounter
                     current={streak?.current || 0}
                     longest={streak?.longest || 0}
                   />
-                  <span className="text-xs font-bold text-muted-foreground">Lv {xp?.level || 1}</span>
+                  <span className="text-xs font-bold text-sidebar-foreground/55">Lv {xp?.level || 1}</span>
                 </div>
                 <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
               </div>
             </div>
           </ScrollArea>
 
-          <div className="premium-side-card mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+          <div className="premium-side-card mt-4 rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
                   {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
                 </div>
-                <p className="text-xs text-muted-foreground">Level {xp?.level || 1}</p>
+                <p className="text-xs text-sidebar-foreground/55">Level {xp?.level || 1}</p>
               </div>
               {learningAccountMenu}
             </div>
@@ -762,7 +774,7 @@ export default function DashboardLayout() {
         </aside>
 
         <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <header className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/88 shadow-[0_1px_0_hsl(var(--border)/0.45)] backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/82">
+          <header className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/92 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/86">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
@@ -771,7 +783,7 @@ export default function DashboardLayout() {
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-[320px] border-r bg-background p-4">
+                  <SheetContent side="left" className="w-[320px] border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
                     <SheetTitle className="sr-only">
                       {currentLang === 'zh' ? '学习导航' : 'Learning navigation'}
                     </SheetTitle>
@@ -791,7 +803,7 @@ export default function DashboardLayout() {
               </div>
 
               <div className="flex items-center gap-2 lg:gap-3">
-                <div className="hidden items-center rounded-full border bg-card p-1 sm:inline-flex">
+                <div className="hidden items-center rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))]/70 p-1 sm:inline-flex">
                   <button
                     type="button"
                     onClick={() => changeLanguage('en')}
@@ -847,7 +859,7 @@ export default function DashboardLayout() {
         <>
           <BottomNavBar isLearningMode onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
-            <SheetContent side="bottom" className="border-t bg-background p-4">
+            <SheetContent side="bottom" className="border-t border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
               <SheetTitle className="sr-only">
                 {currentLang === 'zh' ? '更多学习工具' : 'More learning tools'}
               </SheetTitle>
@@ -866,14 +878,14 @@ export default function DashboardLayout() {
 
   return (
     <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background">
-      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[320px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 lg:flex">
+      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[320px] flex-col border-r border-sidebar-border bg-sidebar px-4 py-4 text-sidebar-foreground lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-lg px-1 py-2">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-primary text-sidebar-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.14)]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-primary/20 bg-sidebar-primary text-sidebar-primary-foreground">
             <BookText className="h-5 w-5" />
           </div>
           <div>
             <p className="text-base font-semibold">VocabDaily</p>
-            <p className="text-xs text-muted-foreground">{copy.learning}</p>
+            <p className="text-xs text-sidebar-foreground/55">{copy.learning}</p>
           </div>
         </Link>
 
@@ -889,22 +901,22 @@ export default function DashboardLayout() {
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-4 shadow-[0_1px_0_hsl(var(--border)/0.7)]">
+            <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="mt-1 text-lg font-semibold">{copy.continueTodayHeading}</p>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
+                <div className="flex h-11 w-11 items-center justify-center rounded-md border border-sidebar-primary/20 bg-sidebar-primary/12 text-sidebar-primary">
                   <Sparkles className="h-5 w-5" />
                 </div>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm text-sidebar-foreground/64">
                 {dueWords.length > 0
                   ? copy.continuePanelDue(dueWords.length)
                   : copy.continuePanelFresh}
               </p>
               <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center justify-between text-xs text-sidebar-foreground/55">
                   <span>{copy.taskProgress}</span>
                   <span>{missionCompleted}/{missionTotal || 3}</span>
                 </div>
@@ -921,18 +933,18 @@ export default function DashboardLayout() {
             <div className="premium-side-card rounded-lg border border-sidebar-border bg-sidebar-accent px-4 py-3 space-y-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
-                <Badge variant="outline" className="rounded-full">Lv {xp?.level || 1}</Badge>
+                <Badge variant="outline" className="rounded-full border-sidebar-border bg-sidebar-accent text-sidebar-foreground">Lv {xp?.level || 1}</Badge>
               </div>
               <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
             </div>
 
             <div className="space-y-2">
-              <p className="px-2 text-xs text-muted-foreground">{copy.coreLearning}</p>
+              <p className="px-2 text-xs text-sidebar-foreground/55">{copy.coreLearning}</p>
               {primaryNav.map((item) => renderStandardNavItem(item))}
             </div>
 
             <div className="space-y-2">
-              <p className="px-2 text-xs text-muted-foreground">{copy.tools}</p>
+              <p className="px-2 text-xs text-sidebar-foreground/55">{copy.tools}</p>
               {toolNav.map((item) => renderStandardNavItem(item, true))}
             </div>
           </div>
@@ -945,7 +957,7 @@ export default function DashboardLayout() {
                 <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
                 {isDemoSession && <Badge variant="outline">{demoBadgeText}</Badge>}
               </div>
-              <p className="text-xs text-muted-foreground">{copy.learner}</p>
+              <p className="text-xs text-sidebar-foreground/55">{copy.learner}</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -986,7 +998,7 @@ export default function DashboardLayout() {
       </aside>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <header className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/88 shadow-[0_1px_0_hsl(var(--border)/0.45)] backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/82">
+        <header className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/92 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--surface-raised))]/86">
           <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-4">
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>
@@ -995,7 +1007,7 @@ export default function DashboardLayout() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[320px] border-r bg-background p-4">
+                <SheetContent side="left" className="w-[320px] border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
                   <SheetTitle className="sr-only">
                     {currentLang === 'zh' ? '应用导航' : 'App navigation'}
                   </SheetTitle>
@@ -1016,7 +1028,7 @@ export default function DashboardLayout() {
 
             <div className="flex items-center gap-2 lg:gap-3">
               {!isChatRoute ? (
-                <Button variant="ghost" className="hidden rounded-2xl border border-border/70 bg-card/70 lg:flex" asChild>
+                <Button variant="ghost" className="hidden rounded-md border border-border/70 bg-card/70 lg:flex" asChild>
                   <Link to="/dashboard/today">
                     <Zap className="mr-2 h-4 w-4" />
                     {copy.continue}
@@ -1045,7 +1057,7 @@ export default function DashboardLayout() {
         <>
           <BottomNavBar isLearningMode={false} onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
-            <SheetContent side="bottom" className="border-t bg-background p-4">
+            <SheetContent side="bottom" className="border-t border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
               <SheetTitle className="sr-only">
                 {currentLang === 'zh' ? '更多工具' : 'More tools'}
               </SheetTitle>

@@ -67,7 +67,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'premium-panel relative rounded-lg border border-border bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--border)/0.7),0_18px_44px_-36px_hsl(var(--shadow-studio)/0.28)] transition-all duration-300';
+  'relative rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))] shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035),0_14px_30px_-28px_hsl(var(--shadow-studio)/0.26)] transition-all duration-300';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
@@ -96,7 +96,7 @@ export function LearningHeroPanel({
       animate={{ opacity: 1, y: 0 }}
       className={cn(learningFrameClassName, 'premium-hero-panel overflow-hidden p-4 sm:p-6 lg:p-8', className)}
     >
-      <div className="pointer-events-none absolute inset-y-5 left-0 w-1 rounded-r-full bg-gradient-to-b from-primary via-[hsl(var(--accent-practice))] to-[hsl(var(--accent-exam))]" />
+      <div className="pointer-events-none absolute inset-y-5 left-0 w-1 rounded-r-full bg-primary" />
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_300px] lg:items-start z-10">
         <div className="space-y-5">
           {eyebrow ? (
@@ -113,7 +113,7 @@ export function LearningHeroPanel({
           {actions ? <LearningActionCluster>{actions}</LearningActionCluster> : null}
         </div>
 
-        <div className="premium-metric-well relative z-10 hidden space-y-4 rounded-lg border border-border bg-[hsl(var(--surface-sunken))] p-4 shadow-inner sm:block sm:p-6">
+        <div className="premium-metric-well relative z-10 hidden space-y-4 rounded-lg border border-border/80 bg-[hsl(var(--surface-sunken))] p-4 sm:block sm:p-6">
           {typeof progress === 'number' ? (
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-4">
@@ -163,7 +163,7 @@ export function LearningWorkspaceSurface({
 }: LearningWorkspaceSurfaceProps) {
   return (
     <section className={cn(learningFrameClassName, 'overflow-hidden', className)}>
-      <div className="border-b border-border/70 bg-[hsl(var(--surface-sunken))]/72 px-5 py-5 sm:px-6 lg:px-7">
+      <div className="border-b border-border/70 bg-[hsl(var(--surface-sunken))]/62 px-5 py-5 sm:px-6 lg:px-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}

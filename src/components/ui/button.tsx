@@ -5,19 +5,19 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold transition-all duration-180 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/35 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold transition-all duration-180 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/30 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
-        default: "border border-primary/15 bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.18),0_8px_20px_-16px_hsl(var(--primary)/0.85)] hover:bg-primary/92 hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.2),0_14px_26px_-18px_hsl(var(--primary)/0.9)]",
+        default: "border border-primary/15 bg-primary text-primary-foreground shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.08),0_10px_22px_-18px_hsl(var(--primary)/0.78)] hover:bg-primary/94 hover:shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.08),0_14px_26px_-20px_hsl(var(--primary)/0.84)]",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border border-border bg-card shadow-[0_1px_0_hsl(var(--border)/0.65)] hover:border-[hsl(var(--border-strong))] hover:bg-muted/70 hover:text-foreground dark:bg-card dark:hover:bg-muted/80",
+          "border border-border bg-[hsl(var(--surface-raised))] text-foreground shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035)] hover:border-[hsl(var(--border-strong))] hover:bg-muted/70 dark:bg-card dark:hover:bg-muted/80",
         secondary:
-          "border border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/75",
+          "border border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/78",
         ghost:
-          "hover:bg-muted/80 hover:text-foreground dark:hover:bg-muted/70",
+          "hover:bg-muted/72 hover:text-foreground dark:hover:bg-muted/70",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

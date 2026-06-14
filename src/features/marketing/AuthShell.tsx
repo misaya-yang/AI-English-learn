@@ -69,7 +69,7 @@ export function AuthShell({
     : t('auth.shell.body', { defaultValue: 'Sign in to see the words and practice tasks due today.' });
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--surface-sunken))] text-foreground">
+    <div className="study-premium-bg min-h-screen bg-background text-foreground">
       <main className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16 lg:py-20">
         {/* Form column — first on mobile per direction. */}
         <div className="order-1 flex justify-center lg:order-2 lg:justify-start">
@@ -94,7 +94,7 @@ export function AuthShell({
 
             <section
               className={cn(
-                'rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-6 shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_52px_-40px_hsl(var(--shadow-studio)/0.34)] sm:p-7',
+                'rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))] p-6 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035),0_18px_40px_-32px_hsl(var(--shadow-studio)/0.26)] sm:p-7',
                 panelClassName,
               )}
             >

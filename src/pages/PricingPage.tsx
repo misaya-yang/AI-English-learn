@@ -232,9 +232,9 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="study-premium-bg min-h-screen bg-background text-foreground">
       {/* Header reuses the shared brand mark so Pricing matches Home / Auth. */}
-      <header className="sticky top-0 z-30 border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border/70 bg-[hsl(var(--surface-raised))]/92 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <BrandMark />
           <div className="flex items-center gap-2 sm:gap-4">
@@ -267,8 +267,8 @@ export default function PricingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        <div className="mx-auto max-w-3xl text-center">
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+        <div className="max-w-3xl">
           <Badge
             variant="secondary"
             className="border border-primary/20 bg-primary/10 text-primary"
@@ -276,71 +276,43 @@ export default function PricingPage() {
             <Crown className="mr-1 h-3 w-3" />
             {isZh ? '定价与会员' : 'Pricing & membership'}
           </Badge>
-          <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+          <h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">
             {isZh ? '选择你的学习方案' : 'Choose your learning plan'}
           </h1>
-          <p className="mt-3 text-lg text-muted-foreground">
+          <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
             {isZh ? '免费版够日常练习，Pro 用于考试评分和周计划。' : 'Free covers daily practice. Pro adds exam scoring and weekly planning.'}
           </p>
-          <p className="mt-3 text-base text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {isZh ? '免费开始，Pro 上线后再升级。' : 'Start free, upgrade when Pro is live.'}
           </p>
         </div>
 
         <section
           aria-label={isZh ? '方案任务分工' : 'Plan jobs to be done'}
-          className="mx-auto mt-8 grid max-w-4xl gap-3 sm:grid-cols-2"
+          className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2"
         >
-          <div className="rounded-lg border border-border bg-card/60 p-4">
-            <p className="text-xs font-semibold uppercase text-muted-foreground">
+          <div className="rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))]/80 p-4">
+            <p className="text-xs font-semibold text-muted-foreground">
               {isZh ? 'Free 负责什么' : 'Free job'}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(FREE_JOB, i18n.language || 'en')}</p>
           </div>
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
-            <p className="text-xs font-semibold uppercase text-primary">
+            <p className="text-xs font-semibold text-primary">
               {isZh ? 'Pro 负责什么' : 'Pro job'}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(PRO_JOB, i18n.language || 'en')}</p>
           </div>
         </section>
 
-        {/* Fail-closed banner — visible whenever live checkout is disabled. */}
-        {!isCheckoutLive && (
-          <div
-            role="status"
-            className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-lg border border-amber-300/70 bg-amber-50/70 px-5 py-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:gap-3 dark:border-amber-400/30 dark:bg-amber-500/[0.08] dark:text-amber-200"
-          >
-            <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
-            <div className="space-y-1">
-              <p className="font-semibold">
-                {isZh ? 'Pro 订阅暂未开放' : 'Pro checkout is not yet open'}
-              </p>
-              <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
-                {isZh ? (
-                  <>
-                    我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
-                    支付服务真实可用后，本页会显示明确的升级入口。
-                  </>
-                ) : (
-                  <>
-                  We haven't wired a real payment provider on this deployment yet, so we won't pretend Pro is purchasable.
-                  The free plan stays fully functional, and this page will switch to checkout only after a real provider is ready.
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-        )}
-
-        <Card className="mx-auto mt-10 max-w-3xl border-primary/25">
-          <CardContent className="p-4 sm:p-5">
+        <Card className="mt-8 max-w-4xl border-primary/25 [padding-block:0]">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">
                   {isZh ? '当前方案' : 'Current plan'}
                 </p>
-                <p className="mt-1 text-lg font-semibold">
+                <p className="mt-1 text-base font-semibold">
                   {currentPlan === 'pro' ? 'Pro' : (isZh ? '免费版' : 'Free')}
                 </p>
               </div>
@@ -363,7 +335,7 @@ export default function PricingPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-10 flex items-center justify-center gap-4">
+        <div className="mt-6 flex items-center justify-start gap-4">
           <span className={cn('text-sm', !isYearly && 'font-semibold')}>{isZh ? '按月' : 'Monthly'}</span>
           <Switch
             checked={isYearly}
@@ -381,7 +353,7 @@ export default function PricingPage() {
           </span>
         </div>
 
-        <div className="mx-auto mt-10 grid max-w-4xl gap-6 sm:grid-cols-2">
+        <div className="mt-6 grid max-w-4xl gap-6 sm:grid-cols-2">
           {plans.map((plan) => {
             const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
             const isPaid = plan.id !== 'free';
@@ -398,15 +370,15 @@ export default function PricingPage() {
                 <Card
                   data-testid={`pricing-plan-${plan.id}`}
                   className={cn(
-                    'relative h-full overflow-hidden rounded-lg border bg-[hsl(var(--surface-raised))]',
+                    'relative h-full overflow-hidden rounded-lg border bg-[hsl(var(--surface-raised))] [padding-block:0]',
                     plan.highlighted
-                      ? 'border-[hsl(var(--accent-coach))] shadow-[0_1px_0_hsl(var(--border)/0.7),0_22px_52px_-38px_hsl(var(--accent-coach)/0.7)]'
+                      ? 'border-primary/45 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_20px_44px_-34px_hsl(var(--primary)/0.62)]'
                       : 'border-border',
                   )}
                 >
-                  {plan.highlighted && <div className="absolute inset-x-0 top-0 h-1 bg-[hsl(var(--accent-coach))]" />}
+                  {plan.highlighted && <div className="absolute inset-x-0 top-0 h-1 bg-primary" />}
                   {plan.highlighted && (
-                    <Badge className="absolute right-5 top-5 bg-[hsl(var(--accent-coach))] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                    <Badge className="absolute right-5 top-5 bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
                       {isZh ? '最受欢迎' : 'Most popular'}
                     </Badge>
                   )}
@@ -539,6 +511,34 @@ export default function PricingPage() {
             );
           })}
         </div>
+
+        {/* Fail-closed banner — visible whenever live checkout is disabled. */}
+        {!isCheckoutLive && (
+          <div
+            role="status"
+            className="mt-8 flex max-w-4xl flex-col gap-2 rounded-lg border border-amber-300/70 bg-amber-50/70 px-5 py-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:gap-3 dark:border-amber-400/30 dark:bg-amber-500/[0.08] dark:text-amber-200"
+          >
+            <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
+            <div className="space-y-1">
+              <p className="font-semibold">
+                {isZh ? 'Pro 订阅暂未开放' : 'Pro checkout is not yet open'}
+              </p>
+              <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
+                {isZh ? (
+                  <>
+                    我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
+                    支付服务真实可用后，本页会显示明确的升级入口。
+                  </>
+                ) : (
+                  <>
+                    We haven't wired a real payment provider on this deployment yet, so we won't pretend Pro is purchasable.
+                    The free plan stays fully functional, and this page will switch to checkout only after a real provider is ready.
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
 
         <section className="mx-auto mt-16 max-w-3xl">
           <h2 className="text-center text-2xl font-bold">
