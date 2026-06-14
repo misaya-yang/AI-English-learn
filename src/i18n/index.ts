@@ -185,8 +185,8 @@ const en = {
         desc: 'Multiple choice, fill-in-blank, matching, listening, and writing practice.',
       },
       gamification: {
-        title: 'Gamification & Progress',
-        desc: 'XP points, streaks, badges, and detailed analytics to keep you motivated.',
+        title: 'Progress Records',
+        desc: 'Study records, review timing, and detailed analytics help you stay consistent.',
       },
       aiTutor: {
         title: 'English Help',
@@ -372,7 +372,7 @@ const en = {
         totalWords: 'Total Words',
         mastered: 'Mastered',
         streak: 'Current Streak',
-        xp: 'Total XP',
+        xp: 'Study records',
       },
       charts: {
         weekly: 'Weekly Activity',
@@ -502,9 +502,9 @@ const zh = {
     newChat: '新对话',
     history: '历史对话',
     clearAll: '清空所有对话',
-    poweredBy: 'Online feedback enabled',
-    markdownSupport: '支持 Markdown 格式',
-    streaming: '实时流式输出',
+    poweredBy: '在线反馈可用',
+    markdownSupport: '支持 Markdown',
+    streaming: '实时回复',
     cloudStorage: 'Supabase 云存储',
     localStorage: '本地存储模式',
     thinking: '思考中...',
@@ -519,7 +519,7 @@ const zh = {
     today: '今日单词',
     review: '复习',
     practice: '练习',
-    examPrep: '考试冲分',
+    examPrep: '考试训练',
     vocabulary: '我的词库',
     analytics: '学习进度',
     chat: '答疑',
@@ -564,10 +564,10 @@ const zh = {
     clearConversation: '清空当前对话',
     deleteAll: '删除所有对话',
     quickPrompts: {
-      affectEffect: '解释 "affect" 和 "effect" 的区别',
-      collocations: '给我 5 个 "make" 的搭配词',
+      affectEffect: '区分 affect 和 effect',
+      collocations: '练 5 个 make 搭配',
       dialogue: '创建一个餐厅的简短对话',
-      practice: '帮我练习使用 "serendipity"',
+      practice: '练习 serendipity 的用法',
     },
   },
   auth: {
@@ -648,8 +648,8 @@ const zh = {
         desc: '选择题、填空、配对、听力和写作练习。',
       },
       gamification: {
-        title: '游戏化与进度追踪',
-        desc: '经验值、连续学习、徽章和详细分析，保持学习动力。',
+        title: '学习记录',
+        desc: '学习记录、复习节奏和详细分析，帮助你稳定推进。',
       },
       aiTutor: {
         title: '英语答疑',
@@ -835,7 +835,7 @@ const zh = {
         totalWords: '总单词数',
         mastered: '已掌握',
         streak: '连续学习',
-        xp: '总经验值',
+        xp: '学习记录',
       },
       charts: {
         weekly: '每周活动',
@@ -845,7 +845,7 @@ const zh = {
         heatmap: '活动热图',
         retention: '记忆保留曲线',
       },
-      badges: '徽章',
+      badges: '学习标记',
     },
     memory: {
       title: '记忆中心',
@@ -881,7 +881,7 @@ const zh = {
     },
     profile: {
       title: '个人资料',
-      level: '等级',
+      level: '水平',
       editProfile: '编辑资料',
       saveChanges: '保存更改',
       learningLevel: '学习水平',

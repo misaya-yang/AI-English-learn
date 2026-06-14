@@ -201,7 +201,7 @@ export const buildMissionCard = (args: {
             ? `你下一步最可能提分的突破口，是先修正${topWeakness.titleZh}。`
             : '当前最值得做的是一次结构化 IELTS 写作提分练习。',
           cta: 'Open exam prep',
-          ctaZh: '前往考试冲分',
+          ctaZh: '前往考试训练',
           href: '/dashboard/exam',
           estimatedMinutes: 18,
           priority: 'high',
@@ -257,7 +257,7 @@ export const buildMissionCard = (args: {
                 ? 'Open practice'
                 : 'Open drill',
             ctaZh: examFocused && (topWeakness.tag === 'coherence' || topWeakness.tag === 'grammar' || topWeakness.tag === 'logic' || topWeakness.tag === 'collocation' || topWeakness.tag === 'tense')
-              ? '前往考试冲分'
+              ? '前往考试训练'
               : topWeakness.tag === 'listening_accuracy'
                 ? '打开练习'
                 : '开始针对练习',
@@ -281,7 +281,7 @@ export const buildMissionCard = (args: {
             : 'You have space to consolidate with a quick mixed practice run.',
           descriptionZh: args.weaknesses[0]
             ? `你最近的错误主要集中在${args.weaknesses[0].titleZh}。`
-            : '当前适合做一次混合短练习，把今天学过的内容固化下来。',
+            : '当前适合做一次混合短练习，把今天学过的内容用起来。',
           cta: 'Open practice',
           ctaZh: '打开练习',
           href: '/dashboard/practice',
@@ -308,12 +308,12 @@ export const buildMissionCard = (args: {
     buildAction({
       id: 'secondary-exam',
       surface: 'exam',
-      title: args.recommendedUnitTitle ? `Practice ${args.recommendedUnitTitle}` : 'Open score-boost writing practice',
-      titleZh: args.recommendedUnitTitle ? `练习微课：${args.recommendedUnitTitle}` : '打开考试冲分写作练习',
+      title: args.recommendedUnitTitle ? `Practice ${args.recommendedUnitTitle}` : 'Open exam writing practice',
+      titleZh: args.recommendedUnitTitle ? `练习微课：${args.recommendedUnitTitle}` : '打开考试写作练习',
       description: 'Structured IELTS-style writing feedback is best for logic, cohesion, and lexical upgrades.',
       descriptionZh: '如果你要补逻辑、衔接和词汇升级，结构化写作反馈最有效。',
       cta: 'Go to exam prep',
-      ctaZh: '前往考试冲分',
+      ctaZh: '前往考试训练',
       href: '/dashboard/exam',
       estimatedMinutes: 18,
       priority: 'medium',

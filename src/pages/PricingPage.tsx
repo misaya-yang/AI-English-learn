@@ -10,8 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import {
   ArrowRight,
   Bell,
+  BookOpen,
   Check,
-  Crown,
   HelpCircle,
   ShieldAlert,
 } from 'lucide-react';
@@ -98,7 +98,7 @@ const faqs = [
   },
   {
     question: 'Will my current data carry over when Pro launches?',
-    questionZh: 'Pro 上线后我现在的数据会保留吗？',
+    questionZh: '专业版上线后我现在的数据会保留吗？',
     answer:
       'Yes. Your learning records, vocabulary, and history are independent of your plan. Switching later only changes entitlements.',
     answerZh:
@@ -110,7 +110,7 @@ const faqs = [
     answer:
       'Yes. You can cancel anytime and keep access until the end of the current billing period.',
     answerZh:
-      '可以。您可以随时取消，并在当前计费周期结束前继续享有 Pro 权益。',
+      '可以。您可以随时取消，并在当前计费周期结束前继续享有专业版权益。',
   },
   {
     question: 'Which payment methods will you support?',
@@ -218,7 +218,7 @@ export default function PricingPage() {
     if (result.status === 'duplicate') {
       toast.info(
         isZh
-          ? '已经记录过这个 Pro 意向了。'
+          ? '已经记录过这个专业版意向了。'
           : 'You are already on the Pro interest list for this billing option.',
       );
       return;
@@ -226,7 +226,7 @@ export default function PricingPage() {
 
     toast.success(
       isZh
-        ? '已记录：Pro 开放时会提醒你。'
+        ? '已记录：专业版开放时会提醒你。'
         : 'Saved. We will use this signal for the Pro launch.',
     );
   };
@@ -273,17 +273,17 @@ export default function PricingPage() {
             variant="secondary"
             className="rounded-md border border-border bg-muted text-muted-foreground"
           >
-            <Crown className="mr-1 h-3 w-3" />
+            <BookOpen className="mr-1 h-3 w-3" />
             {isZh ? '定价与会员' : 'Pricing & membership'}
           </Badge>
           <h1 className="mt-4 text-2xl font-semibold leading-tight sm:text-3xl">
             {isZh ? '选择你的学习方案' : 'Choose your learning plan'}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-            {isZh ? '免费版够日常练习，Pro 用于考试评分和周计划。' : 'Free covers daily practice. Pro adds exam scoring and weekly planning.'}
+            {isZh ? '免费版够日常练习，专业版用于考试评分和周计划。' : 'Free covers daily practice. Pro adds exam scoring and weekly planning.'}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {isZh ? '先用免费版，Pro 开放后再切换。' : 'Start free, switch when Pro is live.'}
+            {isZh ? '先用免费版，专业版开放后再切换。' : 'Start free, switch when Pro is live.'}
           </p>
         </div>
 
@@ -313,7 +313,7 @@ export default function PricingPage() {
                   {isZh ? '当前方案' : 'Current plan'}
                 </p>
                 <p className="mt-1 text-base font-semibold">
-                  {currentPlan === 'pro' ? 'Pro' : (isZh ? '免费版' : 'Free')}
+                  {currentPlan === 'pro' ? (isZh ? '专业版' : 'Pro') : (isZh ? '免费版' : 'Free')}
                 </p>
               </div>
               <Badge
@@ -457,7 +457,7 @@ export default function PricingPage() {
                           </p>
                           <p className="mt-1 text-xs leading-relaxed text-amber-800/85 dark:text-amber-200/85">
                             {isZh
-                              ? 'Pro 将围绕 IELTS 评分、进阶分析、自定义词书和周计划开放；免费版可正常使用。'
+                              ? '专业版将围绕 IELTS 评分、进阶分析、自定义词书和周计划开放；免费版可正常使用。'
                               : "Pro will focus on IELTS scoring, advanced analytics, custom wordbooks, and weekly planning. Free stays available."}
                           </p>
                           <p className="mt-3 text-xs font-medium text-amber-900 dark:text-amber-200">
@@ -478,7 +478,7 @@ export default function PricingPage() {
                             ) : (
                               <>
                                 <Bell className="mr-2 h-4 w-4" />
-                                {isZh ? 'Pro 开放时通知我' : 'Notify me when Pro opens'}
+                                {isZh ? '专业版开放时通知我' : 'Notify me when Pro opens'}
                               </>
                             )}
                           </Button>
@@ -521,13 +521,13 @@ export default function PricingPage() {
             <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
             <div className="space-y-1">
               <p className="font-semibold">
-                {isZh ? 'Pro 订阅暂未开放' : 'Pro checkout is not yet open'}
+                {isZh ? '专业版订阅暂未开放' : 'Pro checkout is not yet open'}
               </p>
               <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
                 {isZh ? (
                   <>
                     我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
-                    支付服务真实可用后，本页会显示明确的 Pro 入口。
+                    支付服务真实可用后，本页会显示明确的专业版入口。
                   </>
                 ) : (
                   <>

@@ -23,7 +23,6 @@ import {
   Volume2,
   VolumeX,
   BookOpen,
-  Trophy,
   SkipForward,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -73,15 +72,15 @@ const SEED_PASSAGES: ListeningPassage[] = [
     durationLabel: '~90 sec',
     transcript: `Welcome to today's lecture on urban planning. We'll be focusing specifically on green spaces in modern cities and why they matter beyond aesthetics.
 
-Research consistently shows that exposure to green spaces reduces cortisol — the primary stress hormone — by up to 20 percent in urban residents. This effect is not merely psychological. Studies using brain imaging confirm that walking through a park, even for just 20 minutes, lowers activity in the prefrontal cortex region associated with repetitive negative thinking.
+Research consistently shows that exposure to green spaces reduces cortisol, the primary stress hormone, by up to 20 percent in urban residents. This effect is not merely psychological. Studies using brain imaging confirm that walking through a park, even for just 20 minutes, lowers activity in the prefrontal cortex region associated with repetitive negative thinking.
 
-But the benefits extend beyond individual wellbeing. Neighbourhoods with more parks show measurably lower crime rates — roughly 15 percent on average according to a 2022 meta-analysis. Researchers attribute this partly to increased social cohesion. When people gather in shared green spaces, they develop informal community bonds.
+But the benefits extend beyond individual wellbeing. Neighbourhoods with more parks show measurably lower crime rates, roughly 15 percent on average according to a 2022 meta-analysis. Researchers attribute this partly to increased social cohesion. When people gather in shared green spaces, they develop informal community bonds.
 
 From an economic standpoint, properties within 300 metres of a park command a premium of approximately 8 to 12 percent in most major cities. Municipalities that invest in green infrastructure therefore see returns through higher property tax revenues.
 
 There is, however, an equity concern. High-quality parks are disproportionately located in wealthier districts. This phenomenon, sometimes called "green gentrification," can paradoxically displace the lower-income residents who would benefit most from improved green access.
 
-To summarise: green spaces offer documented psychological, social, economic, and environmental benefits — but their distribution remains deeply unequal.`,
+To summarise: green spaces offer documented psychological, social, economic, and environmental benefits, but their distribution remains deeply unequal.`,
     questions: [
       {
         id: 1,
@@ -147,7 +146,7 @@ To summarise: green spaces offer documented psychological, social, economic, and
     durationLabel: '~80 sec',
     transcript: `Interviewer: Can you explain why sleep is so important for memory?
 
-Researcher: Absolutely. When we sleep, the brain goes through a process called memory consolidation. During deep sleep — also known as slow-wave sleep — the brain replays the day's experiences and transfers important information from short-term to long-term memory. Think of it like saving files from your temporary storage to your hard drive.
+Researcher: Absolutely. When we sleep, the brain goes through a process called memory consolidation. During deep sleep, also known as slow-wave sleep, the brain replays the day's experiences and transfers important information from short-term to long-term memory. Think of it like saving files from your temporary storage to your hard drive.
 
 Interviewer: And what happens if we don't get enough sleep?
 
@@ -155,7 +154,7 @@ Researcher: The effects are quite serious. First, cognitive performance drops si
 
 Interviewer: What about dreams? Do they serve a purpose?
 
-Researcher: Yes, particularly REM sleep — rapid eye movement sleep — which is when most vivid dreaming occurs. During REM, the brain processes emotional memories and appears to practise creative problem-solving. Some researchers believe REM sleep is when the brain makes novel connections between disparate pieces of information — essentially the biological basis of insight and creativity.
+Researcher: Yes, particularly REM sleep, rapid eye movement sleep, which is when most vivid dreaming occurs. During REM, the brain processes emotional memories and appears to practise creative problem-solving. Some researchers believe REM sleep is when the brain makes novel connections between disparate pieces of information, essentially the biological basis of insight and creativity.
 
 Interviewer: How many hours of sleep do adults actually need?
 
@@ -212,13 +211,13 @@ Researcher: Most adults require between 7 and 9 hours per night. Consistently sl
     durationLabel: '~2 min',
     transcript: `Good afternoon. Today I want to address a question that's generating considerable debate in medical circles: should we trust artificial intelligence to diagnose disease?
 
-The case for AI diagnostics is compelling. In radiology, deep learning models have achieved diagnostic accuracy for certain conditions — particularly early-stage diabetic retinopathy and some forms of lung cancer — that matches or exceeds specialist physicians. A landmark 2019 study published in Nature demonstrated that an AI system could detect breast cancer from mammograms with greater sensitivity and fewer false positives than radiologists.
+The case for AI diagnostics is compelling. In radiology, deep learning models have achieved diagnostic accuracy for certain conditions, particularly early-stage diabetic retinopathy and some forms of lung cancer, that matches or exceeds specialist physicians. A landmark 2019 study published in Nature demonstrated that an AI system could detect breast cancer from mammograms with greater sensitivity and fewer false positives than radiologists.
 
 However, the deployment of these systems is not without risk. A critical concern is algorithmic bias. Many AI training datasets are heavily skewed toward data from Western, predominantly white populations. When these systems are applied to more diverse patient groups, accuracy can drop substantially. One study found a 10 percentage point accuracy gap when a dermatology AI was tested on darker skin tones compared to lighter ones.
 
-There is also the problem of explainability. Most high-performing AI diagnostic tools are what we call "black boxes" — they provide an output, such as a diagnosis probability, without explaining their reasoning. This creates serious issues for clinical integration. Physicians are understandably reluctant to act on a recommendation they cannot interrogate or verify.
+There is also the problem of explainability. Most high-performing AI diagnostic tools are what we call "black boxes": they provide an output, such as a diagnosis probability, without explaining their reasoning. This creates serious issues for clinical integration. Physicians are understandably reluctant to act on a recommendation they cannot interrogate or verify.
 
-The regulatory landscape is evolving rapidly. In the United States, the FDA has approved over 500 AI-enabled medical devices as of 2023. But post-market surveillance — monitoring how these systems perform after deployment — remains inadequate.
+The regulatory landscape is evolving rapidly. In the United States, the FDA has approved over 500 AI-enabled medical devices as of 2023. But post-market surveillance, monitoring how these systems perform after deployment, remains inadequate.
 
 My position is this: AI should serve as a second opinion, not a replacement for clinical judgment. The technology is powerful but immature. Used thoughtfully, it could dramatically improve early detection and reduce diagnostic error. Used carelessly, it could entrench existing health inequities and erode the physician-patient relationship.`,
     questions: [
@@ -556,7 +555,7 @@ export default function ListeningPage() {
     const pct = correct / total;
     const xp = pct >= 0.8 ? 30 : pct >= 0.6 ? 18 : 8;
     addStudySession(0, 0, xp, 0);
-    toast.success(`+${xp} ${isZh ? '经验' : 'XP'}`, { description: isZh ? `${correct}/${total} 正确` : `${correct}/${total} correct` });
+    toast.success(isZh ? '听力练习已记录' : 'Listening practice recorded', { description: isZh ? `${correct}/${total} 正确` : `${correct}/${total} correct` });
 
     if (user?.id) {
       void recordLearningEvent({
@@ -870,7 +869,7 @@ export default function ListeningPage() {
                       ? 'bg-amber-500/15 text-amber-500'
                       : 'bg-destructive/10 text-destructive',
                 )}>
-                  <Trophy className="h-4 w-4" />
+                  <CheckCircle2 className="h-4 w-4" />
                   {Math.round((score / totalQ) * 100)}%
                 </div>
               )}
@@ -878,7 +877,7 @@ export default function ListeningPage() {
 
             {submitted && (
               <LearningCompletionState
-                icon={Trophy}
+                icon={CheckCircle2}
                 eyebrow={isZh ? '听力复盘' : 'Listening recap'}
                 title={isZh ? `本次听力 ${score}/${totalQ}` : `Listening score ${score}/${totalQ}`}
                 description={

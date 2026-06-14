@@ -15,23 +15,23 @@ interface MissionCardsProps {
 
 const ACCENT_STYLES: Record<MissionAccent, { bg: string; ring: string; icon: typeof Target }> = {
   practice: {
-    bg: 'bg-primary/5',
-    ring: 'ring-primary/20',
+    bg: 'bg-card',
+    ring: 'ring-border',
     icon: ClipboardList,
   },
   coach: {
-    bg: 'bg-blue-50 dark:bg-blue-950/40',
-    ring: 'ring-blue-200/60 dark:ring-blue-800/60',
+    bg: 'bg-card',
+    ring: 'ring-border',
     icon: Target,
   },
   exam: {
-    bg: 'bg-amber-50 dark:bg-amber-950/40',
-    ring: 'ring-amber-200/60 dark:ring-amber-800/60',
+    bg: 'bg-card',
+    ring: 'ring-border',
     icon: BookOpen,
   },
   memory: {
-    bg: 'bg-primary/5',
-    ring: 'ring-primary/20',
+    bg: 'bg-card',
+    ring: 'ring-border',
     icon: Brain,
   },
 };

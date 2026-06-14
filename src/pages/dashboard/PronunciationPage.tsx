@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, Trophy } from 'lucide-react';
+import { Volume2, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -95,7 +95,7 @@ export default function PronunciationPage() {
 
   const pronunciationRecap = session.result ? (
     <LearningCompletionState
-      icon={Trophy}
+      icon={CheckCircle2}
       eyebrow={isZh ? '发音复盘' : 'Pronunciation recap'}
       title={isZh ? `本次发音 ${session.result.overallScore}/100` : `Pronunciation score ${session.result.overallScore}/100`}
       description={

@@ -87,7 +87,7 @@ describe('buildWeeklyLearningRecap', () => {
     });
 
     expect(recap.reviewDebtTrend.direction).toBe('up');
-    expect(recap.weakestPattern?.label).toBe('Review debt');
+    expect(recap.weakestPattern?.label).toBe('Pending reviews');
     expect(recap.nextRecommendation.href).toBe('/dashboard/review');
   });
 });

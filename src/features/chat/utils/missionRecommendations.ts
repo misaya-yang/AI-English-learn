@@ -49,7 +49,7 @@ const TASK_LABELS: Record<string, { titleEn: string; titleZh: string; reasonEn: 
     titleEn: 'Take a 5-question retrieval quiz',
     titleZh: '做一组 5 题快速测验',
     reasonEn: 'A retrieval drill is the fastest way to lock in what you just learned.',
-    reasonZh: '检索式测验是把今天学到的内容固化下来最快的方式。',
+    reasonZh: '用几道题检查今天学过的内容。',
     promptEn: 'Give me a 5-question English quiz drawn from words and grammar I\'ve been practicing recently. Show one at a time, then explain in Chinese after I answer.',
   },
   review: {
@@ -81,7 +81,7 @@ const LEVEL_TIPS: Record<string, { titleEn: string; titleZh: string; reasonEn: s
     titleEn: 'Expand daily-conversation skills',
     titleZh: '扩展日常对话能力',
     reasonEn: 'A2 learners level up fastest by chaining short scenarios end to end.',
-    reasonZh: 'A2 阶段把多个场景串起来练，最容易看到提升。',
+    reasonZh: 'A2 阶段适合把几个日常场景连起来练。',
     promptEn: 'Help me expand my conversational English with common phrases for shopping, travel, and meeting new people.',
     minutes: 10,
   },
@@ -111,9 +111,9 @@ const LEVEL_TIPS: Record<string, { titleEn: string; titleZh: string; reasonEn: s
   },
   C2: {
     titleEn: 'Push native-level precision',
-    titleZh: '挑战母语级精准度',
+    titleZh: '练习高阶表达精度',
     reasonEn: 'At C2, the gains come from subtle nuance most learners miss.',
-    reasonZh: 'C2 阶段最值得练的是大多数学习者忽略的细微差别。',
+    reasonZh: 'C2 阶段适合处理更细的语气和搭配差别。',
     promptEn: 'Give me a subtle language-nuance challenge — something even advanced learners often get wrong.',
     minutes: 12,
   },
@@ -124,10 +124,10 @@ const BEGINNER_FALLBACKS: MissionRecommendation[] = [
     id: 'fallback-greetings',
     icon: 'beginner-warmup',
     variant: 'today',
-    title: { en: 'Warm up with everyday greetings', zh: '用日常问候热身' },
+    title: { en: 'Practice everyday greetings', zh: '练日常问候' },
     reason: {
       en: 'A friendly warm-up makes the rest of the session easier.',
-      zh: '先用一段日常问候热身，后面的练习会更顺畅。',
+      zh: '从短对话开始，压力更小。',
     },
     estimatedMinutes: 5,
     promptEn: 'Help me practice 5 friendly English greetings and a short response for each. After I try, give me brief feedback in Chinese.',
@@ -148,10 +148,10 @@ const BEGINNER_FALLBACKS: MissionRecommendation[] = [
     id: 'fallback-mini-quiz',
     icon: 'beginner-warmup',
     variant: 'today',
-    title: { en: 'Quick 3-question warm-up quiz', zh: '3 题热身小测' },
+    title: { en: 'Quick 3-question check', zh: '做 3 题小测' },
     reason: {
       en: 'A tiny quiz gives the coach a baseline before recommending more.',
-      zh: '先做个小测，后面更容易判断下一步练什么。',
+      zh: '先看当前水平，再决定下一步练什么。',
     },
     estimatedMinutes: 5,
     promptEn: 'Give me 3 quick English questions to gauge my current level. After I answer, summarize what to focus on first.',
@@ -176,15 +176,15 @@ export function buildMissionRecommendations(ctx: BuildMissionContext = {}): Miss
       variant: dueCount >= 12 ? 'recovery' : 'review',
       title: {
         en: `Clear ${dueCount} due reviews in chat`,
-        zh: `用一次对话清掉 ${dueCount} 个到期复习`,
+        zh: `复习 ${dueCount} 个到期词`,
       },
       reason: {
         en: dueCount >= 12
           ? 'Backlog is high. Practice them in short bursts so retention does not slip.'
           : 'Practising due words in context is the fastest way to keep retention up.',
         zh: dueCount >= 12
-          ? '复习积压偏高，先用对话分批清掉，避免遗忘曲线掉得更快。'
-          : '在语境里练到期词，是把记忆稳住最有效的方式。',
+          ? '到期词偏多，先分批处理。'
+          : '用语境复习到期词。',
       },
       estimatedMinutes: dueCount >= 12 ? 14 : 10,
       promptEn: `I have ${dueCount} words due for review. Use 5 of them in a short story or dialogue, then ask me to recall their meanings.`,
@@ -215,10 +215,10 @@ export function buildMissionRecommendations(ctx: BuildMissionContext = {}): Miss
       id: 'exam-boost',
       icon: 'exam-boost',
       variant: 'sprint',
-      title: { en: 'IELTS Task 2 sprint', zh: 'IELTS 写作冲刺' },
+      title: { en: 'IELTS writing round', zh: '练一轮 IELTS 写作' },
       reason: {
-        en: 'Structured Task 2 practice with feedback is the fastest path to a band gain.',
-        zh: '结构化的 Task 2 训练加针对反馈，是提分最快的入口。',
+        en: 'A structured writing round gives clearer feedback than open-ended drafting.',
+        zh: '先按结构写一轮，反馈会比随意写更清楚。',
       },
       estimatedMinutes: 18,
       promptEn: 'Give me an IELTS Writing Task 2 prompt and walk me through a 4-paragraph structure before I draft. After I write, evaluate band 1-9.',

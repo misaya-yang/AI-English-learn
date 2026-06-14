@@ -13,7 +13,7 @@
 import { useState, useCallback } from 'react';
 import {
   BookOpen, CheckCircle2, XCircle, Loader2, RefreshCw,
-  ChevronRight, Target, Lightbulb, Award, Clock,
+  ChevronRight, Target, Lightbulb, Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +63,7 @@ const SEED_PASSAGES: ReadingPassage[] = [
     estimatedMinutes: 12,
     passage: `Memory is often described as the mental faculty by which information is encoded, stored, and retrieved. While early psychologists viewed memory as a single unified system, contemporary research has revealed that it comprises multiple distinct subsystems, each with different properties and neural substrates.
 
-Working memory, sometimes called short-term memory, holds a limited amount of information in an active, readily accessible state for a brief period — typically no more than 20 to 30 seconds without rehearsal. The capacity of working memory is famously limited to roughly seven items, plus or minus two, as demonstrated by the cognitive psychologist George Miller in 1956. This constraint explains why telephone numbers are conventionally grouped in chunks: the chunking strategy transforms multiple individual digits into fewer, more manageable units.
+Working memory, sometimes called short-term memory, holds a limited amount of information in an active, readily accessible state for a brief period, typically no more than 20 to 30 seconds without rehearsal. The capacity of working memory is famously limited to roughly seven items, plus or minus two, as demonstrated by the cognitive psychologist George Miller in 1956. This constraint explains why telephone numbers are conventionally grouped in chunks: the chunking strategy transforms multiple individual digits into fewer, more manageable units.
 
 Long-term memory, by contrast, can store vast quantities of information over indefinite periods. It is further divided into explicit (declarative) memory, which includes facts and autobiographical events, and implicit (procedural) memory, which encompasses skills and habits learned through repetition. Explicit memory requires conscious recollection, while implicit memory operates largely outside awareness.
 
@@ -131,11 +131,11 @@ Retrieval, the final stage of memory, is not a passive playback but an active re
     level: 'C1',
     topic: 'Environment & Technology',
     estimatedMinutes: 14,
-    passage: `The global energy landscape is undergoing a profound transformation, driven by the twin imperatives of decarbonisation and energy security. Solar photovoltaic and wind technologies have experienced exponential cost reductions over the past decade — the cost of utility-scale solar electricity has fallen by approximately 90 percent since 2010 — making renewables the cheapest source of new electricity generation in most markets.
+    passage: `The global energy landscape is undergoing a profound transformation, driven by the twin imperatives of decarbonisation and energy security. Solar photovoltaic and wind technologies have experienced exponential cost reductions over the past decade. The cost of utility-scale solar electricity has fallen by approximately 90 percent since 2010, making renewables the cheapest source of new electricity generation in most markets.
 
 Despite this progress, the intermittency of wind and solar power presents significant challenges for grid operators. Unlike conventional thermal power plants, which can dispatch electricity on demand, renewable generators produce power only when the sun shines or the wind blows. Balancing supply and demand thus requires either flexible backup capacity, large-scale energy storage, or sophisticated demand-response mechanisms.
 
-Battery storage technology, particularly lithium-ion systems, has emerged as a leading solution for short-duration grid applications. However, long-duration storage — lasting days or weeks rather than hours — remains technically and economically challenging. Hydrogen produced through electrolysis powered by renewable electricity, so-called green hydrogen, is frequently proposed as a solution for seasonal storage and for decarbonising hard-to-abate sectors such as steel and shipping. Yet the round-trip efficiency of power-to-hydrogen-to-power conversion currently stands at only 25 to 40 percent, raising questions about its cost-effectiveness relative to direct electrification.
+Battery storage technology, particularly lithium-ion systems, has emerged as a leading solution for short-duration grid applications. However, long-duration storage that lasts days or weeks rather than hours remains technically and economically challenging. Hydrogen produced through electrolysis powered by renewable electricity, so-called green hydrogen, is frequently proposed as a solution for seasonal storage and for decarbonising hard-to-abate sectors such as steel and shipping. Yet the round-trip efficiency of power-to-hydrogen-to-power conversion currently stands at only 25 to 40 percent, raising questions about its cost-effectiveness relative to direct electrification.
 
 Transmission infrastructure represents another bottleneck. Many of the world's best renewable resources are located far from centres of demand, necessitating investment in long-distance high-voltage direct current (HVDC) lines. Permitting processes for such infrastructure frequently take a decade or longer in many jurisdictions, a timeline incompatible with the urgency of climate targets.
 
@@ -198,7 +198,7 @@ Geopolitical considerations further complicate the transition. The manufacturing
     level: 'B1',
     topic: 'Society & Environment',
     estimatedMinutes: 10,
-    passage: `Urban farming — growing food within city boundaries — has gained considerable popularity in recent years as populations continue to concentrate in metropolitan areas. Proponents argue that it offers a range of environmental and social benefits, from reducing the distance food travels from farm to plate, to strengthening community bonds and improving access to fresh produce in so-called food deserts.
+    passage: `Urban farming, the practice of growing food within city boundaries, has gained considerable popularity in recent years as populations continue to concentrate in metropolitan areas. Proponents argue that it offers a range of environmental and social benefits, from reducing the distance food travels from farm to plate, to strengthening community bonds and improving access to fresh produce in so-called food deserts.
 
 The most common forms of urban agriculture include rooftop gardens, community allotments, vertical farms, and hydroponic systems. Hydroponic farming, which grows plants in nutrient-rich water rather than soil, uses up to 90 percent less water than conventional agriculture and can be established in almost any indoor space. Vertical farms stack multiple growing layers in a controlled environment, enabling year-round production regardless of outdoor weather conditions.
 
@@ -288,7 +288,7 @@ export default function ReadingPage() {
     setIsGenerating(true);
     toast.info(isZh ? '正在准备新文章，大约需要 10-15 秒' : 'Preparing a new passage. This may take 10-15 seconds.');
     try {
-      // AI generation via edge function (graceful fallback to random seed)
+      // Generated passage via edge function with graceful fallback to a seed article.
       await new Promise((r) => setTimeout(r, 500)); // Simulate latency
       const randomSeed = SEED_PASSAGES[Math.floor(Math.random() * SEED_PASSAGES.length)];
       toast.success(isZh ? '文章已准备好' : 'Passage ready!');
@@ -345,8 +345,8 @@ export default function ReadingPage() {
     addStudySession(0, pct >= 0.8 ? 1 : 0, xp, elapsed);
     setPhase('review');
 
-    if (pct === 1)       toast.success(isZh ? `满分！+${xp} 经验` : `Perfect score! +${xp} XP`);
-    else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确，+${xp} 经验` : `Great work: ${correct}/${total} correct. +${xp} XP`);
+    if (pct === 1)       toast.success(isZh ? '满分，阅读练习已记录' : 'Perfect score. Reading practice recorded.');
+    else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确` : `Great work: ${correct}/${total} correct.`);
     else                 toast.info(isZh ? `${correct}/${total} 正确，建议复盘解析` : `${correct}/${total} correct. Review the answers below.`);
 
     if (user?.id) {
@@ -407,7 +407,9 @@ export default function ReadingPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{featuredPassage.level}</Badge>
                   <span className="text-xs text-muted-foreground">{featuredPassage.topic}</span>
-                  <span className="text-xs text-muted-foreground">· {featuredPassage.estimatedMinutes} min</span>
+                  <span className="text-xs text-muted-foreground">
+                    · {featuredPassage.estimatedMinutes} {isZh ? '分钟' : 'min'}
+                  </span>
                 </div>
                 <h2 className="mt-3 text-lg font-semibold text-foreground">{featuredPassage.title}</h2>
                 <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
@@ -488,7 +490,7 @@ export default function ReadingPage() {
                   </Badge>
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    {p.estimatedMinutes} min
+                    {p.estimatedMinutes} {isZh ? '分钟' : 'min'}
                   </span>
                 </div>
               </div>
@@ -639,7 +641,7 @@ export default function ReadingPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
       <LearningCompletionState
-        icon={Award}
+        icon={CheckCircle2}
         eyebrow={isZh ? '阅读复盘' : 'Reading recap'}
         title={isZh ? `本次阅读 ${score?.correct}/${score?.total}` : `Reading score ${score?.correct}/${score?.total}`}
         description={

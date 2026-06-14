@@ -4,7 +4,7 @@
  * Can be used inline (banner) or as a modal overlay.
  */
 
-import { Zap, X, Crown, Check } from 'lucide-react';
+import { BookOpen, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { QuotaFeature } from '@/hooks/useQuota';
@@ -70,25 +70,25 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   if (variant === 'banner') {
     return (
       <div className={cn(
-        'flex items-center justify-between gap-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3',
+        'flex items-center justify-between gap-4 rounded-md border border-border bg-card px-4 py-3',
         className,
       )}>
         <div className="flex items-center gap-2.5">
-          <Zap className="h-4 w-4 text-amber-400 flex-shrink-0" />
-          <p className="text-sm text-amber-600 dark:text-amber-300">
+          <BookOpen className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
             <span className="font-semibold">{isZh ? featureMeta.labelZh : featureMeta.label}</span>
             {' '}
             {isZh ? `今日免费额度已用完（${freeLimit}次/天）` : `free quota is used today (${freeLimit}/day)`}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Button asChild size="sm" className="h-8 rounded-md bg-warning text-warning-foreground px-3 text-xs font-medium hover:bg-warning/90">
+          <Button asChild size="sm" className="h-8 rounded-md px-3 text-xs font-medium">
             <Link to="/pricing">
               {ctaLabel}
             </Link>
           </Button>
           {onDismiss && (
-            <button onClick={onDismiss} className="text-amber-400 hover:text-amber-300 transition-colors">
+            <button onClick={onDismiss} className="text-muted-foreground transition-colors hover:text-foreground">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -110,7 +110,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   // Default: card
   return (
     <div className={cn(
-        'rounded-md border border-warning/30 bg-warning/10 p-5',
+        'rounded-md border border-border bg-card p-5',
       className,
     )}>
       <UpgradeCard {...cardProps} />
@@ -147,8 +147,8 @@ function UpgradeCard({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-warning/30 bg-warning/10">
-          <Crown className="h-5 w-5 text-amber-400" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground">
+          <BookOpen className="h-5 w-5" />
         </div>
         {onDismiss && (
           <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -187,9 +187,9 @@ function UpgradeCard({
 
       {/* CTAs */}
       <div className="space-y-2">
-        <Button asChild className="w-full rounded-md bg-warning text-warning-foreground font-medium hover:bg-warning/90">
+        <Button asChild className="w-full rounded-md font-medium">
           <Link to="/pricing">
-            <Zap className="mr-2 h-4 w-4" />
+            <Check className="mr-2 h-4 w-4" />
             {ctaLabel}
           </Link>
         </Button>

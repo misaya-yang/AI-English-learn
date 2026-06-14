@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Flame } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -40,12 +40,7 @@ export function StreakCounter({ current, longest, totalStudyDays, className }: S
             className,
           )}
         >
-          <Flame
-            className={cn(
-              'h-4 w-4 transition-colors',
-              current > 0 ? 'text-orange-500' : 'text-muted-foreground',
-            )}
-          />
+          <CalendarDays className="h-4 w-4 text-muted-foreground transition-colors" />
           <span className={cn('text-sm font-bold tabular-nums', current > 0 ? 'text-foreground' : 'text-muted-foreground')}>
             {current}
           </span>
@@ -59,7 +54,7 @@ export function StreakCounter({ current, longest, totalStudyDays, className }: S
             transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <Flame className="h-5 w-5 text-orange-500" />
+              <CalendarDays className="h-5 w-5 text-muted-foreground" />
               <span className="text-lg font-bold">{isZh ? `连续 ${current} 天` : `${current} day streak`}</span>
             </div>
             <div className="space-y-2 text-sm text-muted-foreground">

@@ -142,7 +142,7 @@ describe('LearningCockpitShell', () => {
     expect(badge.className).not.toContain('text-white');
     expect(badge.className).not.toContain('text-amber-100');
     expect(badge.className).not.toMatch(/(^|\s)text-amber-200(\s|$)/);
-    expect(badge.className).toContain('text-amber-700');
+    expect(badge.className).toContain('text-foreground');
   });
 
   it('uses semantic primary tokens for the main cockpit action', () => {

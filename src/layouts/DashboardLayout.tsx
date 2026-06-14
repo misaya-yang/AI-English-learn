@@ -31,6 +31,7 @@ import {
   BookOpen,
   BookText,
   Brain,
+  BarChart2,
   CalendarDays,
   ChevronRight,
   ClipboardList,
@@ -39,7 +40,6 @@ import {
   LayoutGrid,
   AudioLines,
   PenTool,
-  Medal,
   Library,
   LogOut,
   Menu,
@@ -48,7 +48,6 @@ import {
   Settings,
   Shield,
   Target,
-  Trophy,
   User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -93,7 +92,7 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
     description: { en: 'Use guided practice with context, questions, and retries.', zh: '做一轮带上下文的引导练习，把问题讲透。' },
   },
   '/dashboard/exam': {
-    title: { en: 'Exam Prep', zh: '考试冲分' },
+    title: { en: 'Exam Prep', zh: '考试训练' },
     description: { en: 'IELTS practice, timed prompts, and writing feedback.', zh: 'IELTS 练习、计时题和写作反馈。' },
   },
   '/dashboard/vocabulary': {
@@ -133,8 +132,8 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
     description: { en: 'A structured path that moves your English forward by stage.', zh: '结构化学习路线，按阶段推进你的英语能力。' },
   },
   '/dashboard/leaderboard': {
-    title: { en: 'Leaderboard', zh: '排行榜' },
-    description: { en: 'Compare weekly progress with other learners.', zh: '查看学习排行榜，和其他学习者比较进度。' },
+    title: { en: 'Leaderboard', zh: '学习记录' },
+    description: { en: 'Compare weekly progress with other learners.', zh: '查看本周学习记录。' },
   },
   '/dashboard/settings': {
     title: { en: 'Settings', zh: '设置' },
@@ -333,7 +332,7 @@ export default function DashboardLayout() {
         path: '/dashboard/analytics',
         label: t('nav.analytics'),
         description: pickLocalized({ en: 'Learning evidence and trends', zh: '学习数据与趋势' }, isZh),
-        icon: Trophy,
+        icon: BarChart2,
       },
       {
         path: '/dashboard/memory',
@@ -343,9 +342,9 @@ export default function DashboardLayout() {
       },
       {
         path: '/dashboard/leaderboard',
-        label: pickLocalized({ en: 'Leaderboard', zh: '排行榜' }, isZh),
-        description: pickLocalized({ en: 'Weekly ranks and community challenges', zh: '周榜排名与社区挑战' }, isZh),
-        icon: Medal,
+        label: pickLocalized({ en: 'Leaderboard', zh: '学习记录' }, isZh),
+        description: pickLocalized({ en: 'Weekly progress with other learners', zh: '本周练习记录' }, isZh),
+        icon: CalendarDays,
       },
       {
         path: '/dashboard/settings',
@@ -399,7 +398,7 @@ export default function DashboardLayout() {
       ? '演示学习者'
       : (user?.displayName || user?.email || copy.learner);
   const avatarInitial = displayName.charAt(0).toUpperCase();
-  const levelLabel = isZh ? `等级 ${xp?.level || 1}` : `Level ${xp?.level || 1}`;
+  const levelLabel = isZh ? `阶段 ${xp?.level || 1}` : `Level ${xp?.level || 1}`;
 
   const learningPrimaryAction = useMemo(() => {
     if (location.pathname.startsWith('/dashboard/review')) {
@@ -756,7 +755,9 @@ export default function DashboardLayout() {
                     current={streak?.current || 0}
                     longest={streak?.longest || 0}
                   />
-                  <span className="text-xs font-semibold text-sidebar-foreground/55">等级 {xp?.level || 1}</span>
+                  <span className="text-xs font-semibold text-sidebar-foreground/55">
+                    {isZh ? '阶段' : 'Level'} {xp?.level || 1}
+                  </span>
                 </div>
                 <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
               </div>
@@ -933,7 +934,9 @@ export default function DashboardLayout() {
             <div className="premium-side-card rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-3 space-y-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
-                <Badge variant="outline" className="rounded-md border-sidebar-border bg-sidebar-accent text-sidebar-foreground">等级 {xp?.level || 1}</Badge>
+                <Badge variant="outline" className="rounded-md border-sidebar-border bg-sidebar-accent text-sidebar-foreground">
+                  {isZh ? '阶段' : 'Level'} {xp?.level || 1}
+                </Badge>
               </div>
               <XPProgressBar todayXP={xp?.today || 0} level={xp?.level || 1} />
             </div>

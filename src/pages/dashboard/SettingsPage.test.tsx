@@ -133,7 +133,7 @@ describe('SettingsPage notifications', () => {
     renderPage();
 
     expect(screen.getByText('当前会发送这条提醒')).toBeInTheDocument();
-    expect(screen.getByText(/复习债正在上升/)).toBeInTheDocument();
+    expect(screen.getByText(/待复习正在增加/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '打开对应任务' })).toHaveAttribute('href', '/dashboard/review');
 
     fireEvent.change(screen.getByLabelText('安静时间开始'), { target: { value: '21:00' } });

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
-  Flame,
+  CalendarDays,
   TrendingUp,
   Users,
 } from 'lucide-react';
@@ -10,7 +10,6 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
-import { LEAGUE_TIERS } from '@/features/social/types';
 import { buildSocialLeaderboardSnapshot } from '@/services/socialLeaderboard';
 
 interface LeaderEntry {
@@ -52,7 +51,7 @@ function sortEntries(entries: LeaderEntry[], tab: LeaderboardTab): LeaderEntry[]
 
 function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) {
   const value = tab === 'weekly' ? entry.weeklyXp : tab === 'streak' ? entry.streak : entry.totalWords;
-  const unit = tab === 'weekly' ? '经验' : tab === 'streak' ? '天' : '词';
+  const unit = tab === 'weekly' ? '记录' : tab === 'streak' ? '天' : '词';
   const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
     ? '演示学习者'
     : entry.displayName;
@@ -94,7 +93,7 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
             {entry.level}
           </span>
           <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-            <Flame className="h-2.5 w-2.5 text-orange-400" />
+            <CalendarDays className="h-2.5 w-2.5" />
             {entry.streak}天
           </span>
         </div>
@@ -147,39 +146,36 @@ export default function LeaderboardPage() {
   }, [activeTab, snapshot.leagueMembers]);
 
   const currentUserEntry = entries.find((entry) => entry.isCurrentUser) || null;
-  const leagueMeta = LEAGUE_TIERS.find((tier) => tier.id === snapshot.leagueTier);
 
   const tabs: Array<{ id: LeaderboardTab; label: string; labelZh: string; icon: React.ReactNode }> = [
-    { id: 'weekly', label: 'Weekly points', labelZh: '本周经验', icon: <TrendingUp className="h-3.5 w-3.5" /> },
-    { id: 'streak', label: 'Streak', labelZh: '连续天数', icon: <Flame className="h-3.5 w-3.5" /> },
+    { id: 'weekly', label: 'Weekly records', labelZh: '本周练习', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+    { id: 'streak', label: 'Streak', labelZh: '连续天数', icon: <CalendarDays className="h-3.5 w-3.5" /> },
     { id: 'total', label: 'Total Words', labelZh: '累计词量', icon: <BookOpen className="h-3.5 w-3.5" /> },
   ];
 
   const movementCopy = snapshot.promoted
-    ? '你目前处于晋级区，继续保持就能升到下一联赛。'
+    ? '你本周记录在前段，继续完成今日学习即可。'
     : snapshot.demoted
-      ? '你目前处于降级区，建议优先完成今日复习和短测。'
+      ? '你本周记录偏少，建议先完成今日复习和短测。'
       : snapshot.promotionCutoffRank
-        ? `距离晋级区还差 ${Math.max(currentUserEntry ? currentUserEntry.rank - snapshot.promotionCutoffRank : 0, 0)} 名。`
-        : '你已经处于最高联赛，继续拉开分差。';
+        ? `距离前 ${snapshot.promotionCutoffRank} 还差 ${Math.max(currentUserEntry ? currentUserEntry.rank - snapshot.promotionCutoffRank : 0, 0)} 名。`
+        : '你本周记录已经在前列。';
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">排行榜</h1>
+          <h1 className="text-2xl font-bold text-foreground">学习记录</h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Users className="h-3.5 w-3.5" />
-            {leagueMeta?.labelZh || '联赛'} · 本周 {entries.length} 名学习者
+            本周 {entries.length} 名学习者
           </p>
         </div>
 
-        {leagueMeta ? (
-          <div className="rounded-md border border-border bg-card px-4 py-3 text-right">
-            <p className="text-xs text-muted-foreground">当前联赛</p>
-            <p className="mt-1 text-lg font-semibold text-foreground">{leagueMeta.labelZh}</p>
-          </div>
-        ) : null}
+        <div className="rounded-md border border-border bg-card px-4 py-3 text-right">
+          <p className="text-xs text-muted-foreground">当前视图</p>
+          <p className="mt-1 text-lg font-semibold text-foreground">本周记录</p>
+        </div>
       </div>
 
       {currentUserEntry ? (
@@ -192,7 +188,7 @@ export default function LeaderboardPage() {
               {currentUserEntry.displayName === 'Demo Learner' ? '演示学习者' : currentUserEntry.displayName}
             </p>
             <p className="text-xs text-muted-foreground">
-              第 {currentUserEntry.rank} 名 · 本周 {currentUserEntry.weeklyXp} 经验
+              第 {currentUserEntry.rank} 名 · 本周 {currentUserEntry.weeklyXp} 条记录
             </p>
           </div>
           <RankIcon rank={currentUserEntry.rank} />
@@ -206,13 +202,13 @@ export default function LeaderboardPage() {
               <p className="text-xs text-muted-foreground">本周状态</p>
               <p className="mt-1 text-sm font-medium text-foreground">{movementCopy}</p>
             </div>
-            <BadgeLike text={snapshot.promoted ? '晋级区' : snapshot.demoted ? '降级风险' : '稳定保持'} />
+            <BadgeLike text={snapshot.promoted ? '前段' : snapshot.demoted ? '需补练' : '稳定'} />
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-3 text-center">
             <MetricCard label="名次" value={`#${snapshot.currentUserRank}`} />
-            <MetricCard label="晋级线" value={snapshot.promotionCutoffRank ? `前 ${snapshot.promotionCutoffRank}` : '已锁定'} />
-            <MetricCard label="安全线" value={snapshot.demotionCutoffRank ? `#${snapshot.demotionCutoffRank - 1}` : '安全'} />
+            <MetricCard label="前段线" value={snapshot.promotionCutoffRank ? `前 ${snapshot.promotionCutoffRank}` : '前列'} />
+            <MetricCard label="参考线" value={snapshot.demotionCutoffRank ? `#${snapshot.demotionCutoffRank - 1}` : '稳定'} />
           </div>
         </div>
 
@@ -226,7 +222,7 @@ export default function LeaderboardPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{friend.displayName}</p>
-                  <p className="text-[11px] text-muted-foreground">{friend.weeklyXp} 经验 · 连续{friend.streak}天</p>
+                  <p className="text-[11px] text-muted-foreground">{friend.weeklyXp} 条记录 · 连续{friend.streak}天</p>
                 </div>
               </div>
             ))}
@@ -256,7 +252,7 @@ export default function LeaderboardPage() {
       <div className="grid grid-cols-3 gap-3">
         {entries.slice(0, 3).map((entry) => {
           const value = activeTab === 'weekly' ? entry.weeklyXp : activeTab === 'streak' ? entry.streak : entry.totalWords;
-          const unit = activeTab === 'weekly' ? '经验' : activeTab === 'streak' ? '天' : '词';
+          const unit = activeTab === 'weekly' ? '记录' : activeTab === 'streak' ? '天' : '词';
           const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
             ? '演示学习者'
             : entry.displayName;
@@ -286,7 +282,7 @@ export default function LeaderboardPage() {
       </div>
 
       <div>
-        <p className="mb-2 px-1 text-[11px] font-medium text-muted-foreground">完整排名</p>
+        <p className="mb-2 px-1 text-[11px] font-medium text-muted-foreground">完整记录</p>
         <div className="space-y-1">
           {entries.map((entry) => (
             <LeaderRow key={entry.userId} entry={entry} tab={activeTab} />
@@ -297,7 +293,7 @@ export default function LeaderboardPage() {
       <div className="flex items-center gap-2.5 rounded-md border border-border bg-card px-4 py-3">
         <Users className="h-4 w-4 shrink-0 text-primary" />
         <p className="text-sm text-muted-foreground">
-          联赛按周重置。当前页面保留这一周的本地快照，接入后端实时榜后会切换到实时数据。
+          本页按周重置。当前先展示本地快照，接入后端同步后会切换到实时记录。
         </p>
       </div>
     </div>

@@ -206,7 +206,7 @@ export const MODE_LABELS: Record<LearningMode, { label: string; labelZh: string;
   maintenance: { label: 'Maintenance', labelZh: '复习优先',   color: 'text-amber-400' },
   steady:      { label: 'Steady',      labelZh: '稳步前进',   color: 'text-emerald-400' },
   stretch:     { label: 'Stretch',     labelZh: '加速扩展',   color: 'text-blue-400' },
-  sprint:      { label: 'Sprint',      labelZh: '考前冲刺',   color: 'text-violet-400' },
+  sprint:      { label: 'Sprint',      labelZh: '考前强化',   color: 'text-violet-400' },
 };
 
 export const MODE_DESCRIPTIONS: Record<LearningMode, string> = {

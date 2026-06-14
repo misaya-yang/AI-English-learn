@@ -26,7 +26,7 @@ const TERMS_SECTIONS: LegalSection[] = [
       'Some paid or Pro features shown in the product are not yet available. Checkout must stay disabled until a real payment provider, pricing configuration, and release checklist are complete.',
     ],
     bodyZh: [
-      'VocabDaily 是一款英语学习应用，覆盖词汇复习、每日练习、AI 教练反馈和考试备考流程。',
+      'VocabDaily 是一款英语学习应用，覆盖词汇复习、每日练习、智能反馈和考试备考流程。',
       '产品中展示的部分付费或 Pro 功能尚未开放。只有在真实支付服务、价格配置和发布检查完成后，结账入口才可以开启。',
     ],
   },
@@ -79,7 +79,7 @@ const PRIVACY_SECTIONS: LegalSection[] = [
       'Imported vocabulary, generated practice items, and local offline data may be used to personalize review queues and recommendations.',
     ],
     bodyZh: [
-      'VocabDaily 可能使用账号信息、个人设置、学习目标、词书数据、复习记录、练习答案、错题和 AI 教练对话来提供学习体验。',
+      'VocabDaily 可能使用账号信息、个人设置、学习目标、词书数据、复习记录、练习答案、错题和答疑对话来提供学习体验。',
       '导入词汇、生成练习内容和本地离线数据可能用于个性化复习队列和推荐。',
     ],
   },

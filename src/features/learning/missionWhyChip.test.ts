@@ -61,7 +61,7 @@ describe('getMissionWhyChip', () => {
       learnerMode: 'sprint',
     });
     expect(result.variant).toBe('sprint');
-    expect(result.label.en).toBe('Exam push');
+    expect(result.label.en).toBe('Exam practice');
   });
 
   it('keeps recovery framing even when sprint is also requested', () => {

@@ -35,7 +35,7 @@ import {
   Save,
   AlertTriangle,
   LogOut,
-  Zap,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { clearAllData } from '@/data/localStorage';
@@ -395,7 +395,7 @@ export default function SettingsPage() {
                       <div>
                         <Label>学习提醒</Label>
                         <p className="text-sm text-muted-foreground">
-                          根据复习债、连续学习风险、考试周和周报整理提醒内容。
+                          根据待复习、连续学习风险、考试周和周报整理提醒内容。
                         </p>
                       </div>
                       <Switch
@@ -461,7 +461,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
+                <SlidersHorizontal className="h-5 w-5" />
                 FSRS 学习强度
               </CardTitle>
               <CardDescription>
@@ -526,7 +526,7 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between rounded-lg border border-border p-4">
                   <div>
-                    <Label>考前冲刺周</Label>
+                    <Label>考前强化周</Label>
                     <p className="mt-1 text-sm text-muted-foreground">优先安排考试输出和更多复习。</p>
                   </div>
                   <Switch

@@ -38,7 +38,7 @@ describe('UpgradePrompt', () => {
     expect(screen.getByText(/English Help is limited to 10\/day on Free/i)).toBeInTheDocument();
     expect(screen.getByText(/weekly planning/i)).toBeInTheDocument();
     expect(screen.getByText(/IELTS Writing and Speaking scoring rubrics/i)).toBeInTheDocument();
-    expect(screen.getByText(/Advanced analytics: review debt/i)).toBeInTheDocument();
+    expect(screen.getByText(/Advanced analytics: pending reviews/i)).toBeInTheDocument();
     expect(screen.getByText(/Join the Pro interest list/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Join waitlist/i })).toHaveAttribute('href', '/pricing');
     expect(screen.queryByText(/^Upgrade to Pro$/i)).not.toBeInTheDocument();

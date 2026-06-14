@@ -1,4 +1,4 @@
-import { ArrowUpRight, BookOpen, Crown, Flame, Target, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, BookOpen, CalendarDays, Target, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -65,12 +65,12 @@ export function HeroSummary({
       <div className="space-y-4">
         {/* Status badges row */}
         <div className="flex flex-wrap items-center gap-2">
-          <Badge className={cn('rounded-md border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-emerald-600 text-white' : '')}>
-            {plan === 'pro' ? <Crown className="mr-1 h-3.5 w-3.5" /> : <BookOpen className="mr-1 h-3.5 w-3.5" />}
+          <Badge className={cn('rounded-md border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-primary text-primary-foreground' : '')}>
+            <BookOpen className="mr-1 h-3.5 w-3.5" />
             {plan === 'pro' ? '专业版' : '基础版'}
           </Badge>
           <Badge variant="outline" className="rounded-md">
-            <Flame className="mr-1 h-3.5 w-3.5" /> 连续学习 {streakDays} 天
+            <CalendarDays className="mr-1 h-3.5 w-3.5" /> 连续学习 {streakDays} 天
           </Badge>
           <Badge variant="outline" className="rounded-md">
             <TrendingUp className="mr-1 h-3.5 w-3.5" /> 本周模拟 {thisWeekRuns} 次

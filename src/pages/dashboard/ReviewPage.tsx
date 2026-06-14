@@ -19,7 +19,6 @@ import {
   Volume2,
   Check,
   X,
-  Zap,
   Clock3,
   Lightbulb,
 } from 'lucide-react';
@@ -273,7 +272,7 @@ export default function ReviewPage() {
     }
 
     const interval = isZh ? ratingMeta[rating].delayZh : ratingMeta[rating].delayEn;
-    toast.success(`+${rating === 'again' ? 3 : rating === 'hard' ? 5 : rating === 'good' ? 7 : 10} ${isZh ? '经验' : 'XP'} · ${isZh ? '下次' : 'Next'}: ${interval}`);
+    toast.success(`${isZh ? '复习已记录' : 'Review recorded'} · ${isZh ? '下次' : 'Next'}: ${interval}`);
 
     if (currentIndex < reviewItems.length - 1) {
       setCurrentIndex((prev) => prev + 1);
@@ -632,7 +631,7 @@ export default function ReviewPage() {
                 </div>
               <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] p-4">
                 <div className="flex items-center gap-2 text-amber-600">
-                  <Zap className="h-4 w-4" />
+                  <Lightbulb className="h-4 w-4" />
                   <p className="text-sm font-semibold">{isZh ? '较难' : 'Hard'}</p>
                 </div>
                   <p className="mt-2 text-sm text-muted-foreground">短间隔复现</p>
@@ -647,7 +646,7 @@ export default function ReviewPage() {
               {isCurrentCardStubborn ? (
                 <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] p-4">
                   <div className="flex items-center gap-2 text-amber-600">
-                    <Zap className="h-4 w-4" />
+                    <Lightbulb className="h-4 w-4" />
                     <p className="text-sm font-semibold">{isZh ? '强化路径' : 'Reinforcement path'}</p>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">

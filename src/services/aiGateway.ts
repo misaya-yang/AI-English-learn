@@ -396,7 +396,7 @@ export const getChatFallbackReply = (messages: Array<{ role: string; content: st
     '- Add one concrete example to support your main point.',
     '- Check article/preposition errors and verb tense consistency.',
     '',
-    '我当前在本地降级模式（在线反馈不可用），但仍可给你学习建议。',
+    '我当前在本地备用模式（在线反馈不可用），但仍可给你学习建议。',
     '建议你补一条具体例子，并检查时态与连接词。',
   ].join('\n');
 };

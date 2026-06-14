@@ -165,7 +165,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="level">{isZh ? '等级' : 'Level'}</Label>
+              <Label htmlFor="level">{isZh ? '水平' : 'Level'}</Label>
               <Select
                 value={wordData.level}
                 onValueChange={(value) => setWordData({ ...wordData, level: value as WordData['level'] })}

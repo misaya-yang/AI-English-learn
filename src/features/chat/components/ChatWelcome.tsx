@@ -60,9 +60,11 @@ export function ChatWelcome({
             </div>
             <div>
               <p className="text-sm font-medium">{isZh ? prompt.textZh : prompt.text}</p>
-              <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
-                {isZh ? prompt.text : prompt.textZh}
-              </p>
+              {!isZh && prompt.textZh ? (
+                <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
+                  {prompt.textZh}
+                </p>
+              ) : null}
             </div>
           </button>
         ))}

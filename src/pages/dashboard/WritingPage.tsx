@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Send, Loader2, RefreshCw, BookOpen, Briefcase, PenLine, Notebook, Trophy } from 'lucide-react';
+import { FileText, Send, Loader2, RefreshCw, BookOpen, Briefcase, PenLine, Notebook, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,7 +68,7 @@ export default function WritingPage() {
 
   const writingRecap = gradeResult && !isGrading ? (
     <LearningCompletionState
-      icon={Trophy}
+      icon={CheckCircle2}
       eyebrow={isZh ? '写作复盘' : 'Writing recap'}
       title={isZh ? `本轮写作 ${gradeResult.overallScore}/100` : `Writing score ${gradeResult.overallScore}/100`}
       description={

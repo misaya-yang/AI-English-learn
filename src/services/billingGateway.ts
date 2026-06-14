@@ -91,7 +91,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     featuresZh: [
       '不限量英语答疑与错题跟进',
       'IELTS 写作与口语评分量表',
-      '进阶分析：复习债、技能趋势、错题记录',
+      '进阶分析：待复习、技能趋势、错题记录',
       '自定义词书导入 + Anki / CSV 导出',
       '周计划与周报',
     ],

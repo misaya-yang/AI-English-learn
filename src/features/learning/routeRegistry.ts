@@ -20,13 +20,11 @@ import {
   Headphones,
   Library,
   MapPin,
-  Medal,
   MessageCircleMore,
   PenTool,
   Settings,
   Shield,
   Target,
-  Trophy,
 } from 'lucide-react';
 
 export type DashboardRouteId =
@@ -173,12 +171,12 @@ const ROUTES: DashboardRouteMeta[] = [
   {
     id: 'exam',
     path: '/dashboard/exam',
-    label: { en: 'Exam Prep', zh: '考试冲刺' },
+    label: { en: 'Exam Prep', zh: '考试训练' },
     description: { en: 'IELTS practice and writing feedback.', zh: 'IELTS 练习与写作反馈。' },
     icon: Target,
     group: 'practice',
     mobilePriority: 3,
-    pageTitle: { en: 'Exam Prep · VocabDaily', zh: '考试冲刺 · VocabDaily' },
+    pageTitle: { en: 'Exam Prep · VocabDaily', zh: '考试训练 · VocabDaily' },
     searchAliases: ['exam', 'ielts', 'toefl', '考试', 'sprint'],
   },
   {
@@ -208,7 +206,7 @@ const ROUTES: DashboardRouteMeta[] = [
     path: '/dashboard/analytics',
     label: { en: 'Analytics', zh: '数据分析' },
     description: { en: 'Learning metrics and trends.', zh: '学习数据与趋势。' },
-    icon: Trophy,
+    icon: Target,
     group: 'tools',
     mobilePriority: 13,
     pageTitle: { en: 'Analytics · VocabDaily', zh: '数据分析 · VocabDaily' },
@@ -228,12 +226,12 @@ const ROUTES: DashboardRouteMeta[] = [
   {
     id: 'leaderboard',
     path: '/dashboard/leaderboard',
-    label: { en: 'Leaderboard', zh: '排行榜' },
-    description: { en: 'Weekly leaderboard and challenges.', zh: '周榜排名与社区挑战。' },
-    icon: Medal,
+    label: { en: 'Leaderboard', zh: '学习记录' },
+    description: { en: 'Weekly progress with other learners.', zh: '本周练习记录。' },
+    icon: CalendarDays,
     group: 'tools',
     mobilePriority: 15,
-    pageTitle: { en: 'Leaderboard · VocabDaily', zh: '排行榜 · VocabDaily' },
+    pageTitle: { en: 'Leaderboard · VocabDaily', zh: '学习记录 · VocabDaily' },
     searchAliases: ['leaderboard', '排行', 'rank', '社区'],
   },
   {

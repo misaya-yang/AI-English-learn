@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Circle, Clock, Trophy } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,7 +85,7 @@ export function RoleplayMode({
                 </Badge>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  ~{activeScenario.estimatedMinutes} min
+                  {isZh ? `约 ${activeScenario.estimatedMinutes} 分钟` : `~${activeScenario.estimatedMinutes} min`}
                 </span>
               </div>
             </div>
@@ -147,7 +147,7 @@ export function RoleplayMode({
                 animate={{ opacity: 1, height: 'auto' }}
                 className="mt-3 rounded-lg bg-primary/5 p-3 text-center"
               >
-                <Trophy className="h-6 w-6 text-yellow-500 mx-auto mb-1" />
+                <CheckCircle2 className="mx-auto mb-1 h-6 w-6 text-primary" />
                 <p className="text-lg font-bold">{sessionScore}/100</p>
                 <p className="text-xs text-muted-foreground">
                   {isZh ? '场景完成！' : 'Scenario Complete!'}

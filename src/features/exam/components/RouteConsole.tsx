@@ -55,7 +55,7 @@ export function RouteConsole({
       <section className="rounded-lg border border-border/70 bg-card/90 p-4">
         <div className="space-y-2">
           <p className="text-[11px] font-medium text-muted-foreground/80">路线选择</p>
-          <h2 className="text-lg font-semibold">选择冲分轨道</h2>
+          <h2 className="text-lg font-semibold">选择训练路线</h2>
           <p className="text-sm text-muted-foreground">先定 Band 区间和技能，再决定这轮写作进入哪个单元。</p>
         </div>
 

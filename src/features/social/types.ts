@@ -42,11 +42,11 @@ export interface FriendProfile {
 }
 
 export const LEAGUE_TIERS: { id: LeagueTier; label: string; labelZh: string; icon: string; color: string; promotionSlots: number; demotionSlots: number }[] = [
-  { id: 'bronze', label: 'Bronze League', labelZh: '青铜联赛', icon: '🥉', color: 'text-amber-700', promotionSlots: 10, demotionSlots: 0 },
-  { id: 'silver', label: 'Silver League', labelZh: '白银联赛', icon: '🥈', color: 'text-gray-400', promotionSlots: 10, demotionSlots: 5 },
-  { id: 'gold', label: 'Gold League', labelZh: '黄金联赛', icon: '🥇', color: 'text-yellow-500', promotionSlots: 10, demotionSlots: 5 },
-  { id: 'platinum', label: 'Platinum League', labelZh: '铂金联赛', icon: '💎', color: 'text-cyan-400', promotionSlots: 5, demotionSlots: 5 },
-  { id: 'diamond', label: 'Diamond League', labelZh: '钻石联赛', icon: '👑', color: 'text-purple-400', promotionSlots: 0, demotionSlots: 5 },
+  { id: 'bronze', label: 'Group 1', labelZh: '第 1 组', icon: '1', color: 'text-slate-600', promotionSlots: 10, demotionSlots: 0 },
+  { id: 'silver', label: 'Group 2', labelZh: '第 2 组', icon: '2', color: 'text-slate-600', promotionSlots: 10, demotionSlots: 5 },
+  { id: 'gold', label: 'Group 3', labelZh: '第 3 组', icon: '3', color: 'text-slate-600', promotionSlots: 10, demotionSlots: 5 },
+  { id: 'platinum', label: 'Group 4', labelZh: '第 4 组', icon: '4', color: 'text-slate-600', promotionSlots: 5, demotionSlots: 5 },
+  { id: 'diamond', label: 'Group 5', labelZh: '第 5 组', icon: '5', color: 'text-slate-600', promotionSlots: 0, demotionSlots: 5 },
 ];
 
 export const LEAGUE_GROUP_SIZE = 30;

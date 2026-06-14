@@ -22,10 +22,9 @@ import {
   Check,
   Brain,
   Clock3,
-  Flame,
+  CalendarDays,
   Bookmark,
   Share2,
-  Star,
   TrendingUp,
   MessageCircleMore,
   ShieldCheck,
@@ -61,6 +60,7 @@ import {
 } from '@/features/learning/dailyCoachPlan';
 import { buildLexicalSummary, toLexicalEntry } from '@/features/lexicon/lexicalEntry';
 import { getActiveLearningPathNextLesson } from '@/features/learning/learningPathRouting';
+import { getExamUnitTitle } from '@/features/exam/examDisplayCopy';
 import { useTranslation } from 'react-i18next';
 import type { UserProgress } from '@/data/localStorage';
 import { TodayWordNavigation } from './TodayWordNavigation';
@@ -356,31 +356,26 @@ function ConfettiCelebration({ active }: { active: boolean }) {
   );
 }
 
-// Streak fire display
-const StreakFire = memo(function StreakFire({ days }: { days: number }) {
+const StreakStatus = memo(function StreakStatus({ days }: { days: number }) {
   if (days <= 0) return null;
   return (
     <motion.div
-      className="premium-status-chip flex items-center gap-1.5 rounded-md border px-3 py-1"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="premium-status-chip flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-3 py-1 text-muted-foreground"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.18 }}
     >
-      <motion.span
-        animate={{ y: [0, -2, 0] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-        className="text-amber-600 dark:text-amber-300"
-        aria-hidden="true"
-      >
-        <Flame className="h-4 w-4" />
-      </motion.span>
-      <span className="text-xs font-bold text-amber-600">连续 {days} 天</span>
+      <CalendarDays className="h-4 w-4" />
+      <span className="text-xs font-medium">连续 {days} 天</span>
     </motion.div>
   );
 });
 
 // Animated daily progress counter
 const XPCounter = memo(function XPCounter({ value }: { value: number }) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
+
   return (
     <motion.div
       className="premium-metric-card flex items-center gap-1.5 rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1"
@@ -394,7 +389,7 @@ const XPCounter = memo(function XPCounter({ value }: { value: number }) {
         animate={{ y: 0, opacity: 1 }}
         className="text-xs font-bold text-[hsl(var(--accent-practice))]"
       >
-        +{value} 经验
+        {isZh ? `今日记录 +${value}` : `Today +${value}`}
       </motion.span>
     </motion.div>
   );
@@ -413,6 +408,17 @@ const TOPIC_LABELS: Record<string, string> = {
   general: '综合',
   'IELTS general': 'IELTS 综合',
 };
+
+const sanitizeTaskCopy = (value: string): string =>
+  value
+    .replace(/考试冲分/g, '考试训练')
+    .replace(/冲分/g, '训练')
+    .replace(/复习债/g, '待复习')
+    .replace(/热身/g, '练习')
+    .replace(/固化/g, '用起来')
+    .replace(/最快/g, '优先')
+    .replace(/母语级/g, '更准确')
+    .replace(/真正记得住/g, '记得更稳');
 
 const formatTopicLabel = (topic: string): string => TOPIC_LABELS[topic] || topic;
 
@@ -584,8 +590,8 @@ export default function TodayPage() {
         setTimeout(() => setShowConfetti(false), 3000);
       }
 
-      toast.success(`已学会 "${currentWord.word}"! +5 经验`, {
-        icon: <Star className="h-4 w-4 text-yellow-500" />,
+      toast.success(`已学会 "${currentWord.word}"`, {
+        icon: <Check className="h-4 w-4 text-muted-foreground" />,
       });
     } else {
       if (hardWords.has(currentWord.id)) {
@@ -760,7 +766,7 @@ export default function TodayPage() {
   });
   const primaryMissionTask = dailyCoachPlan?.primaryTask ?? missionCard?.primaryAction ?? null;
   const primaryMissionLabel = primaryMissionTask
-    ? (language.startsWith('zh') ? primaryMissionTask.ctaZh : primaryMissionTask.cta)
+    ? sanitizeTaskCopy(language.startsWith('zh') ? primaryMissionTask.ctaZh : primaryMissionTask.cta)
     : (language.startsWith('zh') ? '继续今日任务' : 'Continue today');
   const secondaryMissionTasks = (dailyCoachPlan?.secondaryTasks ?? missionCard?.secondaryActions ?? [])
     .filter((action) => action.id !== primaryMissionTask?.id && action.href !== primaryMissionTask?.href)
@@ -822,7 +828,7 @@ export default function TodayPage() {
         estimatedMinutes: heroEstimatedMinutes,
         primaryAction: primaryMissionAction,
         secondaryActions: secondaryMissionTasks.map((action) => ({
-          label: language.startsWith('zh') ? action.ctaZh : action.cta,
+          label: sanitizeTaskCopy(language.startsWith('zh') ? action.ctaZh : action.cta),
           href: action.href,
           variant: 'outline' as const,
           testId: `today-secondary-mission-${action.id}`,
@@ -859,7 +865,7 @@ export default function TodayPage() {
 
       {/* Streak & XP indicators */}
       <div className="flex items-center gap-3 flex-wrap">
-        <StreakFire days={currentStreak} />
+        <StreakStatus days={currentStreak} />
         {todayXP > 0 && <XPCounter value={todayXP} />}
       </div>
 
@@ -1181,7 +1187,7 @@ export default function TodayPage() {
                             </p>
                           </div>
                           <Badge variant="secondary" className="rounded-md">
-                            Reinforce
+                            {isZh ? '强化' : 'Reinforce'}
                           </Badge>
                         </div>
                       </div>
@@ -1240,7 +1246,10 @@ export default function TodayPage() {
                 <div className="premium-panel-soft rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
                   <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
                     <Target className="h-4 w-4" />
-                    <p className="text-sm font-semibold">补强微课：{recommendedUnit.title}</p>
+                    <p className="text-sm font-semibold">
+                      {isZh ? '专项讲解：' : 'Focused lesson: '}
+                      {isZh ? getExamUnitTitle(recommendedUnit) : recommendedUnit.title}
+                    </p>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">{recommendedUnit.estimatedMinutes} 分钟</p>
                   <Button variant="outline" size="sm" className="mt-3 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>

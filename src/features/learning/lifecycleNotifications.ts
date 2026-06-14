@@ -62,7 +62,7 @@ export function buildLifecycleNotification(input: LifecycleNotificationInput): L
     return {
       kind: 'review_debt',
       title: 'Review debt is rising',
-      titleZh: '复习债正在上升',
+      titleZh: '待复习正在增加',
       body: `${debtSignals} review signals need attention. Clear reviews before adding new words.`,
       bodyZh: `有 ${debtSignals} 个复习信号需要处理。先清复习，再加新词。`,
       href: '/dashboard/review',

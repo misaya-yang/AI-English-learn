@@ -10,7 +10,7 @@ export const FREE_JOB: LocalizedLine = {
 
 export const PRO_JOB: LocalizedLine = {
   en: 'Use Pro when you need IELTS scoring, custom materials, and a weekly plan.',
-  zh: 'Pro 适合需要 IELTS 评分、自定义材料和周计划的学习者。',
+  zh: '专业版适合需要 IELTS 评分、自定义材料和周计划的学习者。',
 };
 
 export const FREE_PLAN_FEATURES: LocalizedLine[] = [
@@ -32,7 +32,7 @@ export const FREE_PLAN_LIMITATIONS: LocalizedLine[] = [
 export const PRO_PLAN_FEATURES: LocalizedLine[] = [
   { en: 'Unlimited English help and mistake follow-ups', zh: '不限量英语答疑与错题跟进' },
   { en: 'IELTS Writing and Speaking scoring rubrics', zh: 'IELTS 写作与口语评分量表' },
-  { en: 'Advanced analytics: review debt, skill trends, mistake patterns', zh: '进阶分析：复习债、技能趋势、错题记录' },
+  { en: 'Advanced analytics: pending reviews, skill trends, mistake patterns', zh: '进阶分析：待复习、技能趋势、错题记录' },
   { en: 'Custom wordbook imports plus Anki / CSV export', zh: '自定义词书导入 + Anki / CSV 导出' },
   { en: 'Weekly plan and recap', zh: '周计划与周报' },
   { en: 'All practice modes and higher material quota', zh: '全部练习模式与更高材料额度' },
@@ -40,29 +40,29 @@ export const PRO_PLAN_FEATURES: LocalizedLine[] = [
 
 export const PRO_WAITLIST_PROMISE: LocalizedLine = {
   en: 'Join the Pro interest list. This records product interest only and never starts checkout.',
-  zh: '加入 Pro 意向名单。这里只记录产品意向，不会发起支付。',
+  zh: '加入专业版通知名单。这里只记录产品意向，不会发起支付。',
 };
 
 export const PRO_GATE_REASONS: Record<string, LocalizedLine> = {
   aiWritingGrade: {
     en: 'Pro adds IELTS-style writing scores, rubric notes, and follow-up drills.',
-    zh: 'Pro 提供 IELTS 写作评分、评分项说明和跟进练习。',
+    zh: '专业版提供 IELTS 写作评分、评分项说明和跟进练习。',
   },
   aiReadingGen: {
     en: 'Pro adds more reading material so advanced learners can practice with custom topics.',
-    zh: 'Pro 提供更多阅读材料，让进阶学习者围绕自定义主题练习。',
+    zh: '专业版提供更多阅读材料，让进阶学习者围绕自定义主题练习。',
   },
   aiChat: {
     en: 'Pro gives you more English help, mistake follow-ups, and weekly planning.',
-    zh: 'Pro 提供更多英语答疑、错题跟进和周计划。',
+    zh: '专业版提供更多英语答疑、错题跟进和周计划。',
   },
   aiExamFeedback: {
     en: 'Pro focuses exam prep on scored IELTS feedback, diagnostics, and targeted remediation.',
-    zh: 'Pro 提供 IELTS 评分反馈、诊断和定向补强。',
+    zh: '专业版提供 IELTS 评分反馈、诊断和定向补强。',
   },
   aiListeningGen: {
     en: 'Pro adds more listening material for targeted weak-skill practice.',
-    zh: 'Pro 提供更多听力材料，用于薄弱技能定向练习。',
+    zh: '专业版提供更多听力材料，用于薄弱技能定向练习。',
   },
 };
 

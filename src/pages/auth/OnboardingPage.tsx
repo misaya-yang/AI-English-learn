@@ -234,9 +234,9 @@ export default function OnboardingPage() {
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
-                <p className="font-medium">{isZh ? '做 10 道题自动测定等级' : 'Take a 10-question placement test'}</p>
+                <p className="font-medium">{isZh ? '做 10 道题判断英语水平' : 'Take a 10-question placement test'}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {isZh ? '10 道题自动判断你的等级' : 'Get an automatic level estimate in a few minutes'}
+                  {isZh ? '几分钟内得到一个水平参考' : 'Get an automatic level estimate in a few minutes'}
                 </p>
               </div>
             </Button>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { CircleGauge } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 interface XPProgressBarProps {
@@ -11,6 +12,8 @@ interface XPProgressBarProps {
 }
 
 export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XPProgressBarProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const progress = Math.min((todayXP / dailyGoal) * 100, 100);
   const isComplete = todayXP >= dailyGoal;
 
@@ -43,12 +46,12 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
     <div className={cn('relative', className)}>
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5">
-          <Star className={cn('h-3.5 w-3.5', isComplete ? 'text-warning' : 'text-muted-foreground')} />
+          <CircleGauge className={cn('h-3.5 w-3.5', isComplete ? 'text-primary' : 'text-muted-foreground')} />
           <span className="text-xs font-semibold text-muted-foreground">
-            {todayXP} / {dailyGoal} 经验
+            {todayXP} / {dailyGoal} {isZh ? '学习记录' : 'points'}
           </span>
         </div>
-        <span className="text-xs font-semibold text-muted-foreground">等级 {level}</span>
+        <span className="text-xs font-semibold text-muted-foreground">{isZh ? '阶段' : 'Level'} {level}</span>
       </div>
 
       <div className="relative h-2 w-full overflow-hidden rounded-md bg-muted">
@@ -74,7 +77,7 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
           >
-            +{xpBurst.gain} 经验
+            +{xpBurst.gain} {isZh ? '记录' : 'points'}
           </motion.span>
         )}
       </AnimatePresence>

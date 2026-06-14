@@ -18,12 +18,11 @@ import {
   GraduationCap,
   Target,
   BookOpen,
-  Zap,
   Edit2,
   Save,
   Camera,
-  Flame,
-  Star,
+  ShieldCheck,
+  BadgeCheck,
   TrendingUp,
   Loader2,
 } from 'lucide-react';
@@ -78,6 +77,23 @@ const TOPIC_LABELS: Record<string, { en: string; zh: string }> = {
   science: { en: 'Science', zh: '科学' },
   health: { en: 'Health', zh: '健康' },
   arts: { en: 'Arts', zh: '艺术' },
+};
+
+const ACHIEVEMENT_DISPLAY_ZH: Record<string, string> = {
+  first_word: '第一个单词',
+  ten_words: '10 个单词',
+  fifty_words: '50 个单词',
+  hundred_words: '100 个单词',
+  five_hundred_words: '500 个单词',
+  streak_7: '连续 7 天',
+  streak_30: '连续 30 天',
+  streak_100: '连续 100 天',
+  mastered_10: '掌握 10 词',
+  mastered_50: '掌握 50 词',
+  review_100: '完成 100 次复习',
+  level_5: '阶段 5',
+  level_10: '阶段 10',
+  xp_1000: '累计 1000 条记录',
 };
 
 export default function ProfilePage() {
@@ -164,7 +180,7 @@ export default function ProfilePage() {
     }));
   };
 
-  // Calculate level progress with the canonical gamification helpers.
+  // Calculate progress with the canonical learning-progress helpers.
   const currentLevel = computeLevel(xp.total);
   const currentThreshold = (currentLevel - 1) * 100;
   const nextThreshold = currentLevel * 100;
@@ -187,7 +203,7 @@ export default function ProfilePage() {
       ? '演示学习者'
       : (user?.displayName || (isZh ? '学习者' : 'Learner'));
   const avatarInitial = displayName[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U';
-  const levelProgressLabel = isZh ? '等级进度' : levelName;
+  const levelProgressLabel = isZh ? '能力阶段' : levelName;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -195,7 +211,7 @@ export default function ProfilePage() {
         <div>
           <h1 className="text-2xl font-bold">{isZh ? '个人资料' : 'Profile'}</h1>
           <p className="text-muted-foreground">
-            {isZh ? '管理学习画像、目标和账号身份。' : 'Manage your learner identity, goals, and account profile.'}
+            {isZh ? '管理学习设置、目标和账号身份。' : 'Manage your learner identity, goals, and account profile.'}
           </p>
         </div>
         <Button
@@ -276,13 +292,13 @@ export default function ProfilePage() {
 	                  <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
 	                    <Badge variant="secondary">{cefrLevel}</Badge>
 	                    <Badge variant="secondary" className="bg-primary/10 text-primary">
-	                      {isZh ? `等级 ${currentLevel}` : `Level ${currentLevel}`}
+		                      {isZh ? `阶段 ${currentLevel}` : `Level ${currentLevel}`}
 	                    </Badge>
 	                  </div>
 	                  <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
 	                    {isZh
-                        ? `学习画像：${cefrLevel} ${cefrLevelLabel} · 每日 ${profile?.dailyGoal || 10} 个词 · ${currentLearningStyle.labelZh}`
-                        : `Learner profile: ${cefrLevel} ${cefrLevelLabel} · ${profile?.dailyGoal || 10} words/day · ${currentLearningStyle.label}`}
+                ? `学习设置：${cefrLevel} ${cefrLevelLabel} · 每日 ${profile?.dailyGoal || 10} 个词 · ${currentLearningStyle.labelZh}`
+                : `Learner profile: ${cefrLevel} ${cefrLevelLabel} · ${profile?.dailyGoal || 10} words/day · ${currentLearningStyle.label}`}
 	                  </p>
 	                </>
 	              )}
@@ -291,7 +307,7 @@ export default function ProfilePage() {
             <div className="grid w-full grid-cols-3 gap-2 md:w-auto md:min-w-[280px]">
               <div className="rounded-md border border-border bg-background px-3 py-2">
                 <p className="text-lg font-semibold tabular-nums">{xp.total.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">{isZh ? '经验' : 'XP'}</p>
+	                <p className="text-xs text-muted-foreground">{isZh ? '学习记录' : 'Points'}</p>
               </div>
 	              <div className="rounded-md border border-border bg-background px-3 py-2">
 	                <p className="text-lg font-semibold tabular-nums">{streak.current}</p>
@@ -308,10 +324,10 @@ export default function ProfilePage() {
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
 	              <span className="text-sm font-medium">
-	                {levelProgressLabel} → {isZh ? `等级 ${currentLevel + 1}` : `Level ${currentLevel + 1}`}
+		                {levelProgressLabel} → {isZh ? `阶段 ${currentLevel + 1}` : `Level ${currentLevel + 1}`}
 	              </span>
               <span className="text-sm text-muted-foreground">
-                {xpInCurrentLevel} / {xpNeededForNext} {isZh ? '经验' : 'XP'}
+	                {xpInCurrentLevel} / {xpNeededForNext} {isZh ? '记录' : 'points'}
               </span>
             </div>
             <Progress value={progressPercent} className="h-2" />
@@ -324,7 +340,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
-	              {isZh ? '学习等级' : 'Learning level'}
+		              {isZh ? '英语水平' : 'Learning level'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -352,7 +368,7 @@ export default function ProfilePage() {
                   <span className="font-bold text-primary">{cefrLevel}</span>
                 </div>
                 <div>
-	                  <p className="font-medium">{isZh ? '当前 CEFR 等级' : 'CEFR level'}</p>
+	                  <p className="font-medium">{isZh ? '当前 CEFR 水平' : 'CEFR level'}</p>
                   <p className="text-sm text-muted-foreground">{cefrLevelLabel}</p>
                 </div>
               </div>
@@ -437,7 +453,7 @@ export default function ProfilePage() {
         <Card className="rounded-md border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5" />
+              <ShieldCheck className="h-5 w-5" />
 	              {isZh ? '学习风格' : 'Learning style'}
             </CardTitle>
           </CardHeader>
@@ -463,7 +479,7 @@ export default function ProfilePage() {
             ) : (
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted">
-                  <Zap className="h-5 w-5 text-foreground" />
+                  <ShieldCheck className="h-5 w-5 text-foreground" />
                 </div>
                 <div>
 	                  <p className="font-medium">{isZh ? currentLearningStyle.labelZh : currentLearningStyle.label}</p>
@@ -487,12 +503,12 @@ export default function ProfilePage() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="rounded-md border border-border bg-background p-3">
-              <Flame className="mb-3 h-5 w-5 text-muted-foreground" />
+              <ShieldCheck className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{streak.current}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '当前连续' : 'Current streak'}</p>
             </div>
             <div className="rounded-md border border-border bg-background p-3">
-              <Star className="mb-3 h-5 w-5 text-muted-foreground" />
+              <BadgeCheck className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{streak.longest}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '最长连续' : 'Longest streak'}</p>
             </div>
@@ -514,7 +530,7 @@ export default function ProfilePage() {
         <Card className="rounded-md border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Flame className="h-5 w-5 text-orange-500" />
+              <ShieldCheck className="h-5 w-5 text-muted-foreground" />
 	              {isZh ? '打卡保护' : 'Streak protection'}
             </CardTitle>
           </CardHeader>
@@ -526,7 +542,7 @@ export default function ProfilePage() {
               </div>
               {dailyMultiplier > 1 && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {dailyMultiplier}x {isZh ? '经验' : 'XP'}
+	                  {dailyMultiplier}x {isZh ? '学习记录' : 'points'}
                 </Badge>
               )}
             </div>
@@ -541,14 +557,14 @@ export default function ProfilePage() {
               onClick={() => {
                 const result = purchaseStreakFreeze();
                 if (result.success) {
-                  toast.success(`已购买打卡冻结（消耗 ${result.cost} 经验）`);
-                } else {
-                  toast.error(`经验不足（需要 ${result.cost} 经验）`);
-                }
+	                  toast.success(`已兑换打卡冻结（消耗 ${result.cost} 条记录）`);
+	                } else {
+	                  toast.error(`学习记录不足（需要 ${result.cost} 条记录）`);
+	                }
               }}
             >
-              <Zap className="h-4 w-4 mr-1" />
-	              {isZh ? '购买冻结（50 经验）' : 'Buy freeze (50 XP)'}
+              <ShieldCheck className="h-4 w-4 mr-1" />
+		              {isZh ? '兑换冻结（50 条记录）' : 'Buy freeze (50 points)'}
             </Button>
           </CardContent>
         </Card>
@@ -556,14 +572,16 @@ export default function ProfilePage() {
         <Card className="rounded-md border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-500" />
-	              {isZh ? '成就徽章' : 'Achievement badges'}（{achievements.length}/{allAchievementDefs.length}）
+              <BadgeCheck className="h-5 w-5 text-muted-foreground" />
+		              {isZh ? '学习标记' : 'Achievement badges'}（{achievements.length}/{allAchievementDefs.length}）
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-              {allAchievementDefs.map((def) => {
+              {allAchievementDefs.map((def, index) => {
                 const unlocked = achievements.find((a) => a.id === def.id);
+                const achievementName = isZh ? (ACHIEVEMENT_DISPLAY_ZH[def.id] || def.nameZh) : def.nameEn;
+                const achievementDescription = isZh ? def.descriptionZh : def.descriptionEn;
                 return (
                   <div
                     key={def.id}
@@ -571,10 +589,12 @@ export default function ProfilePage() {
                       'flex flex-col items-center gap-1 rounded-md border border-transparent p-2 text-center transition-opacity',
                       unlocked ? 'opacity-100' : 'opacity-30 grayscale',
                     )}
-                    title={unlocked ? `${def.nameZh} - ${def.descriptionZh}` : def.descriptionZh}
+                    title={unlocked ? `${achievementName} - ${achievementDescription}` : achievementDescription}
                   >
-                    <span className="grid h-8 w-8 place-items-center rounded-md border border-border bg-muted text-base">{def.icon}</span>
-                    <span className="text-[10px] leading-tight text-muted-foreground">{def.nameZh}</span>
+                    <span className="grid h-8 w-8 place-items-center rounded-md border border-border bg-muted text-[11px] font-semibold tabular-nums text-muted-foreground">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-[10px] leading-tight text-muted-foreground">{achievementName}</span>
                   </div>
                 );
               })}
@@ -587,16 +607,16 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-amber-500" />
+              <ShieldCheck className="h-5 w-5 text-muted-foreground" />
 	              {isZh ? '今日服务额度' : 'Today service quota'}
             </div>
             <span className={cn(
               'rounded-md px-3 py-1 text-sm font-semibold',
               plan === 'pro'
-                ? 'bg-amber-500/15 text-amber-500'
+                ? 'bg-primary/10 text-primary'
                 : 'bg-muted text-muted-foreground',
             )}>
-              {plan === 'pro' ? 'Pro' : 'Free'}
+              {plan === 'pro' ? (isZh ? '专业版' : 'Pro') : (isZh ? '免费版' : 'Free')}
             </span>
           </CardTitle>
         </CardHeader>

@@ -127,6 +127,6 @@ describe('ProfilePage', () => {
     expect(screen.getByText('Level 36')).toBeInTheDocument();
     expect(screen.getByText('Canonical Expert → Level 37')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View plan access' })).toHaveAttribute('href', '/pricing');
-    expect(screen.queryByText('升级 Pro 解锁无限 AI 功能')).not.toBeInTheDocument();
+    expect(screen.queryByText('升级专业版解锁更多额度')).not.toBeInTheDocument();
   });
 });

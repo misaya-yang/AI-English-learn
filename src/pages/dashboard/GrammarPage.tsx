@@ -15,7 +15,6 @@ import {
   XCircle,
   BookOpen,
   Lightbulb,
-  Trophy,
   RotateCcw,
   Play,
 } from 'lucide-react';
@@ -624,9 +623,9 @@ export default function GrammarPage() {
     const pct = correct / activeRule.practice.length;
     const xp = pct >= 0.8 ? 20 : pct >= 0.5 ? 10 : 5;
     addStudySession(0, 0, xp, 0);
-    toast.success(`+${xp} ${isZh ? '经验' : 'XP'}`, { description: isZh ? `${correct}/${activeRule.practice.length} 正确` : `${correct}/${activeRule.practice.length} correct` });
+    toast.success(isZh ? '语法练习已记录' : 'Grammar practice recorded', { description: isZh ? `${correct}/${activeRule.practice.length} 正确` : `${correct}/${activeRule.practice.length} correct` });
 
-    // Record learning event and gamification
+    // Record learning event and review-count progress.
     if (user?.id) {
       void recordLearningEvent({
         userId: user.id,
@@ -802,7 +801,7 @@ export default function GrammarPage() {
               score / totalQ >= 0.5 ? 'bg-amber-500/15 text-amber-500' :
               'bg-destructive/10 text-destructive',
             )}>
-              <Trophy className="h-4 w-4" />
+              <CheckCircle2 className="h-4 w-4" />
               {score}/{totalQ}
             </div>
           )}
@@ -810,7 +809,7 @@ export default function GrammarPage() {
 
         {submitted && (
           <LearningCompletionState
-            icon={Trophy}
+            icon={CheckCircle2}
             eyebrow={isZh ? '语法复盘' : 'Grammar recap'}
             title={isZh ? `本轮语法 ${score}/${totalQ}` : `Grammar score ${score}/${totalQ}`}
             description={
@@ -823,7 +822,7 @@ export default function GrammarPage() {
             metrics={[
               { label: isZh ? '答对' : 'Correct', value: `${score}/${totalQ}`, accent: score / totalQ >= 0.8 ? 'emerald' : undefined },
               { label: isZh ? '规则' : 'Rule', value: isZh ? activeRule.titleZh : activeRule.title },
-              { label: isZh ? '等级' : 'Level', value: activeRule.level },
+              { label: isZh ? '水平' : 'Level', value: activeRule.level },
             ]}
             actions={
               <>

@@ -187,12 +187,12 @@ const buildReviewRecap = (
       needsReview,
       encouragement,
       nextAction: {
-        ctaEn: 'Run an IELTS Task 2 sprint',
-        ctaZh: '做一次雅思 Task 2 冲刺',
+        ctaEn: 'Run an IELTS writing round',
+        ctaZh: '做一次雅思写作练习',
         href: '/dashboard/exam',
         reason: {
           en: 'Retention is high. Convert it into a writing sprint while you\'re warm.',
-          zh: '记忆稳定，趁状态做一次写作冲刺最划算。',
+          zh: '记忆状态稳定，适合接一组写作练习。',
         },
       },
     };
@@ -206,12 +206,12 @@ const buildReviewRecap = (
     nextAction: {
       ctaEn: 'Open Practice',
       ctaZh: '打开 Practice',
-      href: '/dashboard/practice',
-      reason: {
-        en: 'Lock in the gains with a short mixed practice run.',
-        zh: '用一组短练习把今天的提升固化下来。',
+        href: '/dashboard/practice',
+        reason: {
+          en: 'Lock in the gains with a short mixed practice run.',
+          zh: '用一组混合短练习收尾。',
+        },
       },
-    },
   };
 };
 

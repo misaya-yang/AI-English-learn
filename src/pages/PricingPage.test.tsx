@@ -97,7 +97,7 @@ describe('PricingPage — fail-closed pro checkout', () => {
     renderPricingPage();
 
     expect(screen.getByText(/Pro checkout is not yet open/i)).toBeInTheDocument();
-    expect(screen.queryByText('Pro 订阅暂未开放')).not.toBeInTheDocument();
+    expect(screen.queryByText('专业版订阅暂未开放')).not.toBeInTheDocument();
   });
 
   it('renders the localized coming-soon banner in Chinese mode', async () => {
@@ -105,7 +105,7 @@ describe('PricingPage — fail-closed pro checkout', () => {
 
     renderPricingPage();
 
-    expect(screen.getByText('Pro 订阅暂未开放')).toBeInTheDocument();
+    expect(screen.getByText('专业版订阅暂未开放')).toBeInTheDocument();
     expect(screen.queryByText(/Pro checkout is not yet open/i)).not.toBeInTheDocument();
   });
 
@@ -167,7 +167,7 @@ describe('PricingPage — fail-closed pro checkout', () => {
     expect(screen.getByText(FREE_JOB.en)).toBeInTheDocument();
     expect(screen.getByText(PRO_JOB.en)).toBeInTheDocument();
     expect(await screen.findByText(/IELTS Writing and Speaking scoring rubrics/i)).toBeInTheDocument();
-    expect(screen.getByText(/Advanced analytics: review debt, skill trends, mistake patterns/i)).toBeInTheDocument();
+    expect(screen.getByText(/Advanced analytics: pending reviews, skill trends, mistake patterns/i)).toBeInTheDocument();
     expect(screen.getByText(/Custom wordbook imports plus Anki \/ CSV export/i)).toBeInTheDocument();
     expect(screen.queryByText(/Priority support/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Join the Pro interest list/i)).toBeInTheDocument();

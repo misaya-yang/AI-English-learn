@@ -23,9 +23,7 @@ import {
   X,
   Lightbulb,
   RotateCcw,
-  Trophy,
   Target,
-  Zap,
   PenTool,
   Headphones,
   ChevronRight,
@@ -88,7 +86,7 @@ const practiceModes = [
     nameZh: '写作练习',
     description: 'Write sentences and get feedback',
     descriptionZh: '写一段输出，获得结构化反馈。',
-    icon: Zap,
+    icon: PenTool,
   },
 ] as const;
 
@@ -299,8 +297,8 @@ export default function PracticePage() {
         focus: '快速检查词义匹配与基础理解，最适合先把今天的薄弱点扫一遍。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 5), 10),
         estimatedMinutes: 6,
-        reason: dueWords.length >= 5 ? `你当前有 ${dueWords.length} 个到期复习，先用短测把最容易错的点找出来。` : '先做一次短测，最快知道今天该补哪一块。',
-        insight: '适合先热身，进入成本最低。',
+        reason: dueWords.length >= 5 ? `你当前有 ${dueWords.length} 个到期复习，先用短测找出容易错的点。` : '先做一次短测，看看今天该补哪一块。',
+        insight: '题量短，适合先开始。',
       },
       fill_blank: {
         label: 'Recall drill',
@@ -383,11 +381,11 @@ export default function PracticePage() {
       setMaxCombo((prev) => Math.max(prev, newCombo));
       setScore((prev) => prev + 1);
       const comboBonus = newCombo >= 5
-        ? (isZh ? '，5 连击' : ', 5-answer streak')
+        ? (isZh ? '，连续 5 题正确' : ', 5 correct in a row')
         : newCombo >= 3
-          ? (isZh ? '，3 连击' : ', 3-answer streak')
+          ? (isZh ? '，连续 3 题正确' : ', 3 correct in a row')
           : '';
-      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 ${isZh ? '经验' : 'XP'}${comboBonus}`);
+      toast.success(`${isZh ? '回答正确' : 'Correct'}${comboBonus}`);
       // Bump per-word progress through FSRS so a correct answer is reflected
       // in the durable progress store, not just the session score.
       try {
@@ -582,7 +580,7 @@ export default function PracticePage() {
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      toast.success(`${isZh ? '回答正确！' : 'Correct!'} +10 ${isZh ? '经验' : 'XP'}`);
+      toast.success(isZh ? '回答正确' : 'Correct');
       try {
         reviewWord(currentWord.id, 'good');
       } catch {
@@ -734,7 +732,7 @@ export default function PracticePage() {
         {selectedMode === 'writing' ? (
           <div className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
             <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
-              <Zap className="h-4 w-4" />
+              <PenTool className="h-4 w-4" />
               <p className="text-sm font-semibold">{isZh ? '写作反馈额度' : 'Writing feedback quota'}</p>
             </div>
             <p className="mt-3 text-2xl font-semibold text-foreground">
@@ -1038,7 +1036,7 @@ export default function PracticePage() {
                   feedbackQuotaRemaining <= 0
                 }
               >
-                <Zap className="mr-2 h-4 w-4" />
+                <PenTool className="mr-2 h-4 w-4" />
                 {isQuotaLoading
                   ? (isZh ? '正在读取额度...' : 'Loading quota...')
                   : isWritingSubmitting
@@ -1359,7 +1357,7 @@ export default function PracticePage() {
           }}
         />
         <LearningCompletionState
-          icon={Trophy}
+          icon={Check}
           eyebrow={isZh ? '练习总结' : 'Session summary'}
           title={timedMode && timeLeft <= 0 ? (isZh ? '时间到！' : 'Time is up') : (isZh ? '这轮短练习已经完成' : 'This short practice is complete')}
           description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x，继续保持。` : `Best streak: ${maxCombo}x. Keep going.`) : (isZh ? '这轮结果已经出来了。' : 'Your result is ready.')}

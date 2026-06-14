@@ -44,9 +44,9 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? '15 分钟英语练习' : '15-minute English practice',
+      title: isZh ? '今日英语练习' : 'Today\'s English practice',
       subtitle: isZh
-        ? '复习、学词、做练习。每天按这个顺序走。'
+        ? '先复习，再学新词，最后做一组短练习。'
         : 'Review due words, add a few new ones, then do one short drill.',
       primaryCta: isZh ? '开始练习' : 'Start practice',
       secondaryCta: isZh ? '看样课' : 'Try sample',
@@ -57,9 +57,9 @@ export default function Home() {
       ],
     },
     today: {
-      label: isZh ? '示例任务' : 'Example task',
-      title: isZh ? '今天 3 步' : '3 steps today',
-      subtitle: isZh ? '登录后换成你的词库和错题' : 'Uses your words and mistakes after sign-in',
+      label: isZh ? '今日学习' : 'Today plan',
+      title: isZh ? '先完成这 3 项' : 'Finish these 3 items',
+      subtitle: isZh ? '登录后会换成你的词库和错题' : 'Uses your words and mistakes after sign-in',
       items: [
         {
           title: isZh ? '复习 12 个词' : 'Review 12 words',
@@ -77,11 +77,11 @@ export default function Home() {
           duration: isZh ? '4 分钟' : '4 min',
         },
       ],
-      summary: isZh ? '做完再继续加练' : 'Finish these before extra practice',
+      summary: isZh ? '完成后再加练' : 'Finish these before extra practice',
     },
     examplesLabel: isZh ? '示例词' : 'Sample words',
     workflow: {
-      title: isZh ? '每天的顺序' : 'Daily order',
+      title: isZh ? '练习顺序' : 'Daily order',
       subtitle: isZh ? '先复习，再学新词，最后做一题输出。' : 'Review first, learn new words, then do one output task.',
       steps: [
         {
@@ -99,8 +99,8 @@ export default function Home() {
       ],
     },
     footerCta: {
-      title: isZh ? '先完成今天这 3 步。' : 'Finish today\'s 3 steps.',
-      subtitle: isZh ? '复习、学词、练习都做完，再决定要不要继续。' : 'Review, learn, and practice before adding more.',
+      title: isZh ? '从今日学习开始。' : 'Start with today\'s plan.',
+      subtitle: isZh ? '先完成复习、新词和短练习，再决定是否继续。' : 'Review, learn, and practice before adding more.',
       button: isZh ? '开始练习' : 'Start practice',
     },
   };

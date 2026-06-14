@@ -42,7 +42,7 @@ export const buildQuickPrompts = (t: Translator, ctx?: QuickPromptContext): Quic
     prompts.push({
       icon: GraduationCap,
       text: 'Give me an IELTS Writing Task 2 topic and evaluate my response structure.',
-      textZh: t('chat.quickPrompts.ieltsWriting', { defaultValue: '给我一个雅思写作 Task 2 话题并评估我的结构' }),
+      textZh: t('chat.quickPrompts.ieltsWriting', { defaultValue: '给我一个雅思写作题并评估结构' }),
     });
   }
 

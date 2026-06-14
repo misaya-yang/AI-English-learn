@@ -111,7 +111,7 @@ export function generateRecommendations(input: RecommendationInput): Recommendat
       title: `Target ${cefrLevel} exam writing precision`,
       titleZh: `练 ${cefrLevel} 考试写作精度`,
       reason: 'Your level and exam target make structured IELTS-style output the highest leverage next step.',
-      reasonZh: '你的等级和考试目标说明：结构化考试输出是当前最有杠杆的练习。',
+      reasonZh: '你的英语水平和考试目标说明：结构化考试输出是当前最有价值的练习。',
       priority: 2,
       icon: '🎓',
       action: '/dashboard/exam',

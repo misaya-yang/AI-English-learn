@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
 import {
   CommandDialog,
@@ -11,14 +12,14 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { wordsDatabase } from '@/data/words';
-import { BookOpen, CalendarDays, Brain, BarChart2, Trophy, Settings } from 'lucide-react';
+import { BookOpen, CalendarDays, Brain, BarChart2, Target, Settings } from 'lucide-react';
 
 const QUICK_LINKS = [
   { label: 'Today', labelZh: '今日任务', href: '/dashboard/today', icon: CalendarDays },
   { label: 'Review', labelZh: '复习', href: '/dashboard/review', icon: Brain },
   { label: 'Analytics', labelZh: '统计', href: '/dashboard/analytics', icon: BarChart2 },
   { label: 'Vocabulary', labelZh: '词书', href: '/dashboard/vocabulary', icon: BookOpen },
-  { label: 'Exam', labelZh: '考试练习', href: '/dashboard/exam', icon: Trophy },
+  { label: 'Exam', labelZh: '考试练习', href: '/dashboard/exam', icon: Target },
   { label: 'Settings', labelZh: '设置', href: '/dashboard/settings', icon: Settings },
 ];
 
@@ -30,6 +31,8 @@ interface SearchPaletteProps {
 export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
   const navigate = useNavigate();
   const { progress } = useUserData();
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const [query, setQuery] = useState('');
 
   const handleOpenChange = useCallback(
@@ -93,8 +96,8 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
               >
                 <link.icon className="h-4 w-4 shrink-0 text-emerald-400" />
                 <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="font-medium text-white">{link.label}</span>
-                  <span className="text-xs text-white/45">{link.labelZh}</span>
+                  <span className="font-medium text-white">{isZh ? link.labelZh : link.label}</span>
+                  <span className="text-xs text-white/45">{isZh ? link.label : link.labelZh}</span>
                 </div>
               </CommandItem>
             ))}

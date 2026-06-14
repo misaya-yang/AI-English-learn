@@ -123,7 +123,7 @@ export function ChatComposer({
             >
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">
-                  {language.startsWith('zh') ? 'Agent 工具与模式' : 'Agent tools & mode'}
+                  {language.startsWith('zh') ? '工具与模式' : 'Agent tools & mode'}
                 </p>
                 <Button
                   variant="ghost"
@@ -141,8 +141,8 @@ export function ChatComposer({
                     <button
                       key={option.id}
                       onClick={() => onSelectMode(option.id)}
-                      className={cn(
-                        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors',
                         currentMode === option.id
                           ? 'border-primary/50 bg-primary/10 text-primary'
                           : 'border-border hover:border-primary/40 hover:bg-primary/5',
@@ -158,7 +158,7 @@ export function ChatComposer({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 rounded-full text-xs"
+                    className="h-8 rounded-md text-xs"
                     onClick={onManualQuiz}
                     disabled={isLoading}
                   >
@@ -169,10 +169,7 @@ export function ChatComposer({
                   <Button
                     size="sm"
                     variant={searchMode === 'auto' ? 'default' : 'outline'}
-                    className={cn(
-                      'h-8 rounded-full text-xs',
-                      searchMode === 'auto' ? 'bg-blue-600 text-white hover:bg-blue-700' : '',
-                    )}
+                    className="h-8 rounded-md text-xs"
                     onClick={onToggleSearchMode}
                     disabled={isLoading}
                   >
@@ -189,7 +186,7 @@ export function ChatComposer({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 rounded-full text-xs"
+                    className="h-8 rounded-md text-xs"
                     onClick={onForceWebSearch}
                     disabled={isLoading || !canSearchInput}
                   >
@@ -200,7 +197,7 @@ export function ChatComposer({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 rounded-full text-xs"
+                    className="h-8 rounded-md text-xs"
                     onClick={onRememberInput}
                     disabled={isLoading || !canRememberInput}
                   >
@@ -211,7 +208,7 @@ export function ChatComposer({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 rounded-full text-xs"
+                    className="h-8 rounded-md text-xs"
                     onClick={onForgetInput}
                     disabled={isLoading || !canForgetInput}
                   >
@@ -239,7 +236,7 @@ export function ChatComposer({
               <button
                 key={prompt.text}
                 onClick={() => onQuickPrompt(prompt.text)}
-                className="flex-shrink-0 whitespace-nowrap rounded-full border border-border px-4 py-2 text-sm transition-all hover:border-primary/40 hover:bg-primary/5"
+                className="flex-shrink-0 whitespace-nowrap rounded-md border border-border px-4 py-2 text-sm transition-all hover:border-primary/40 hover:bg-primary/5"
               >
                 {prompt.textZh}
               </button>
@@ -247,12 +244,12 @@ export function ChatComposer({
           </div>
         )}
 
-        <div className="relative flex items-end gap-2 rounded-xl border border-border/80 bg-card p-3 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15">
+        <div className="relative flex items-end gap-2 rounded-md border border-border/80 bg-card p-3 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15">
           <Button
             variant="ghost"
             size="icon"
             className={cn(
-              'mb-1 h-10 w-10 rounded-xl border transition-colors',
+              'mb-1 h-10 w-10 rounded-md border transition-colors',
               toolsExpanded
                 ? 'border-primary/40 bg-primary/10 text-primary'
                 : 'border-border hover:border-primary/40',
@@ -285,7 +282,7 @@ export function ChatComposer({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  'h-10 w-10 rounded-xl transition-colors',
+                  'h-10 w-10 rounded-md transition-colors',
                   voiceListening
                     ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
                     : 'hover:bg-muted text-muted-foreground',
@@ -310,7 +307,7 @@ export function ChatComposer({
               <Button
                 onClick={onSend}
                 disabled={!input.trim()}
-                className="h-10 w-10 rounded-xl bg-primary p-0 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                className="h-10 w-10 rounded-md bg-primary p-0 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 aria-label={language.startsWith('zh') ? '发送消息' : 'Send message'}
               >
                 <Send className="h-5 w-5" />
@@ -319,7 +316,7 @@ export function ChatComposer({
           </div>
         </div>
 
-        <p className="mt-2 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground">
+        <p className="mt-2 flex flex-wrap items-center justify-center gap-2 text-center text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <FlaskConical className="h-3 w-3" />
             {poweredByLabel}
@@ -334,10 +331,14 @@ export function ChatComposer({
               ? (language.startsWith('zh') ? '自动' : 'Auto')
               : (language.startsWith('zh') ? '关闭' : 'Off')}
           </span>
-          <span>·</span>
-          <span>{markdownSupportLabel}</span>
-          <span>·</span>
-          <span>{streamingLabel}</span>
+          {language.startsWith('zh') ? null : (
+            <>
+              <span>·</span>
+              <span>{markdownSupportLabel}</span>
+              <span>·</span>
+              <span>{streamingLabel}</span>
+            </>
+          )}
           {(lastSources.length > 0 || lastToolRuns.length > 0) && (
             <>
               <span>·</span>
@@ -348,7 +349,7 @@ export function ChatComposer({
               </span>
             </>
           )}
-          {(chatPerf.ttftMs !== null || chatPerf.nextQuestionMs !== null) && (
+          {!language.startsWith('zh') && (chatPerf.ttftMs !== null || chatPerf.nextQuestionMs !== null) && (
             <>
               <span>·</span>
               <span>

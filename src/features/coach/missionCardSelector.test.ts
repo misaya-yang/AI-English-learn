@@ -6,7 +6,7 @@ describe('selectMissionCards', () => {
     const cards = selectMissionCards(undefined);
     expect(cards).toHaveLength(3);
     expect(cards.map((c) => c.id)).toEqual([
-      'fallback.warmup',
+      'fallback.short-vocab',
       'fallback.coach',
       'fallback.memory',
     ]);
@@ -27,7 +27,7 @@ describe('selectMissionCards', () => {
       burnoutRisk: 0,
     });
     expect(cards).toHaveLength(3);
-    expect(cards[0].id).toBe('fallback.warmup');
+    expect(cards[0].id).toBe('fallback.short-vocab');
   });
 
   it('includes a review card when there are due reviews', () => {

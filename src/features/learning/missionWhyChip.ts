@@ -27,10 +27,10 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
   },
   exam_boost: {
     variant: 'sprint',
-    label: { en: 'Exam push', zh: '考试冲刺' },
+    label: { en: 'Exam practice', zh: '考试训练' },
     subtitle: {
       en: 'Best path to your next score gain is one structured exam-prep drill.',
-      zh: '当前最快提分的入口，是做一次结构化的考试训练。',
+      zh: '今天安排一组结构化考试练习。',
     },
   },
   due_words: {
@@ -54,7 +54,7 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
     label: { en: 'Weak-spot drill', zh: '薄弱点练习' },
     subtitle: {
       en: 'Recent errors are clustering. Drill them while the signal is fresh.',
-      zh: '最近错题集中在某一类，趁信号清晰时立刻针对练。',
+      zh: '最近错题集中在这一类，先做针对练习。',
     },
   },
   practice_gap: {
@@ -62,7 +62,7 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
     label: { en: 'Practice fill-in', zh: '巩固练习' },
     subtitle: {
       en: 'Light mixed practice consolidates what you just learned.',
-      zh: '一次混合短练习能把今天学的内容固化下来。',
+      zh: '用一组混合短练习收尾。',
     },
   },
 };

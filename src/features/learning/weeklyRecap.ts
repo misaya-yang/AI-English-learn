@@ -91,7 +91,7 @@ export function buildWeeklyLearningRecap(args: {
   ]);
 
   const weakestPattern = focusMax([
-    { label: 'Review debt', labelZh: '复习债', count: recentDebt + dueNow },
+    { label: 'Pending reviews', labelZh: '待复习', count: recentDebt + dueNow },
     { label: 'Practice misses', labelZh: '练习错题', count: args.events.filter(isPracticeIncorrect).length },
     { label: 'Consistency', labelZh: '学习频率', count: activeDays > 0 && activeDays < 4 ? 4 - activeDays : 0 },
   ]);
@@ -99,8 +99,8 @@ export function buildWeeklyLearningRecap(args: {
   const reviewDebtTrend = {
     count: recentDebt + dueNow,
     direction: recentDebt + dueNow === 0 ? 'down' as const : recentDebt + dueNow <= 3 ? 'flat' as const : 'up' as const,
-    label: recentDebt + dueNow === 0 ? 'Review debt is clear' : `${recentDebt + dueNow} review-debt signals`,
-    labelZh: recentDebt + dueNow === 0 ? '复习债已清空' : `${recentDebt + dueNow} 个复习债信号`,
+    label: recentDebt + dueNow === 0 ? 'No pending reviews' : `${recentDebt + dueNow} pending-review signals`,
+    labelZh: recentDebt + dueNow === 0 ? '暂无待复习' : `${recentDebt + dueNow} 个待复习提醒`,
   };
 
   const highlights: WeeklyLearningRecap['highlights'] = [];
@@ -130,10 +130,10 @@ export function buildWeeklyLearningRecap(args: {
           zh: '先完成一个 Today 任务，这样下周才有记录可总结。',
           href: '/dashboard/today',
         }
-      : weakestPattern?.label === 'Review debt'
+      : recentDebt + dueNow > 0
         ? {
             en: 'Start with Review next week and clear the due queue before adding new words.',
-            zh: '下周先从 Review 开始，清掉到期复习再加新词。',
+            zh: '下周先从复习开始，清掉到期词再加新词。',
             href: '/dashboard/review',
           }
         : weakestPattern?.label === 'Practice misses'

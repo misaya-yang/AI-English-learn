@@ -155,14 +155,14 @@ export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
             答对 {correctCount}/{PLACEMENT_QUESTIONS.length} 题
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            建议等级：<strong>{level}</strong>
+            建议水平：<strong>{level}</strong>
           </p>
         </div>
         <Button
           onClick={() => onComplete(level)}
           className="bg-emerald-600 hover:bg-emerald-700 w-full"
         >
-          使用建议等级
+          使用建议水平
         </Button>
       </div>
     );

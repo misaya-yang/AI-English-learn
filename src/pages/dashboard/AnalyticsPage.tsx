@@ -47,11 +47,9 @@ import {
 import {
   BookOpen,
   Target,
-  Zap,
   Calendar,
-  Flame,
   ChevronUp,
-  Award,
+  CircleGauge,
   AlertTriangle,
   Clock3,
   MessageCircleMore,
@@ -134,13 +132,13 @@ const analyticsCopy = {
       totalWords: 'Total Words',
       mastered: 'Mastered',
       streak: 'Current Streak',
-      xp: 'Total XP',
+      xp: 'Study records',
       streakUnit: 'days',
       streakActive: 'On fire',
       streakStart: 'Start today',
-      levelPrefix: 'Level',
-      xpTotal: 'XP total',
-      xpNeeded: 'XP needed for level',
+      levelPrefix: 'Stage',
+      xpTotal: 'Record total',
+      xpNeeded: 'Records needed for next stage',
     },
     tabs: {
       overview: 'Overview',
@@ -263,13 +261,13 @@ const analyticsCopy = {
       totalWords: '总单词数',
       mastered: '已掌握',
       streak: '连续学习',
-      xp: '总经验值',
+      xp: '学习记录',
       streakUnit: '天',
-      streakActive: '保持火热',
+      streakActive: '今日有记录',
       streakStart: '从今天开始',
-      levelPrefix: '等级',
-      xpTotal: '总经验',
-      xpNeeded: '经验到等级',
+      levelPrefix: '阶段',
+      xpTotal: '记录总数',
+      xpNeeded: '到下一阶段',
     },
     tabs: {
       overview: '概览',
@@ -374,7 +372,7 @@ const analyticsCopy = {
       weeklyReport: '本周总结',
       wordsStrengthened: '强化词数',
       activeDays: '活跃天数',
-      reviewDebt: '复习债信号',
+      reviewDebt: '待复习提醒',
       insufficient: '暂时没有足够记录。先完成一次今日任务、复习或练习。',
       strongestWaiting: '等待更多记录',
       weakestPrefix: '最需要处理',
@@ -617,18 +615,18 @@ export default function AnalyticsPage() {
       label: copy.stats.streak,
       value: `${streakCurrent} ${copy.stats.streakUnit}`,
       change: streakCurrent > 0 ? copy.stats.streakActive : copy.stats.streakStart,
-      icon: Flame,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
+      icon: Calendar,
+      color: 'text-slate-600',
+      bgColor: 'bg-muted',
     },
     {
-      title: 'Total XP',
+      title: 'Study records',
       label: copy.stats.xp,
       value: xp.total.toString(),
       change: `${copy.stats.levelPrefix} ${level}`,
-      icon: Zap,
+      icon: CircleGauge,
       color: 'text-slate-600',
-      bgColor: 'bg-slate-100',
+      bgColor: 'bg-muted',
     },
   ];
 
@@ -761,11 +759,11 @@ export default function AnalyticsPage() {
 
   const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
   const badges = [
-    { name: '7-day streak', nameZh: '连续 7 天', detailZh: '按时完成每日学习', detailEn: 'Kept daily study going', icon: Flame, color: 'text-slate-600', earned: streakCurrent >= 7 },
+    { name: '7-day streak', nameZh: '连续 7 天', detailZh: '按时完成每日学习', detailEn: 'Kept daily study going', icon: Calendar, color: 'text-slate-600', earned: streakCurrent >= 7 },
     { name: '100 words', nameZh: '累计 100 词', detailZh: '词汇量达到 100', detailEn: 'Reached 100 learned words', icon: BookOpen, color: 'text-slate-600', earned: stats.totalWords >= 100 },
     { name: 'Full week', nameZh: '完整一周', detailZh: '本周每天都有记录', detailEn: 'Recorded activity every day this week', icon: Calendar, color: 'text-slate-600', earned: hasPerfectWeek },
     { name: 'Vocabulary milestone', nameZh: '词汇里程碑', detailZh: '已掌握词数达到 50', detailEn: 'Mastered 50 words', icon: Target, color: 'text-slate-600', earned: stats.masteredWords >= 50 },
-    { name: 'Steady learner', nameZh: '稳定学习者', detailZh: '总经验达到 1000', detailEn: 'Reached 1000 total points', icon: Award, color: 'text-slate-600', earned: xp.total >= 1000 },
+    { name: 'Steady learner', nameZh: '稳定学习者', detailZh: '学习记录达到 1000', detailEn: 'Reached 1000 study records', icon: CircleGauge, color: 'text-slate-600', earned: xp.total >= 1000 },
   ];
 
   const formatRiskDueLabel = (hoursUntilDue: number): string => {
@@ -877,7 +875,7 @@ export default function AnalyticsPage() {
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-yellow-500" />
+              <CircleGauge className="h-5 w-5 text-muted-foreground" />
               <span className="font-medium">{copy.stats.levelPrefix} {level} - {levelNameDisplay}</span>
             </div>
             <span className="text-sm text-muted-foreground">
@@ -885,13 +883,12 @@ export default function AnalyticsPage() {
             </span>
           </div>
           <div className="h-2 w-full rounded-md bg-muted">
-            <div
-              className="h-2 rounded-md bg-warning transition-all"
-              style={{ width: `${xpInCurrentLevel}%` }}
-            />
+            <div className="h-2 rounded-md bg-primary transition-all" style={{ width: `${xpInCurrentLevel}%` }} />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {xpInCurrentLevel} / 100 {isZh ? '经验' : 'XP'} &mdash; {xpToNextLevel} {copy.stats.xpNeeded} {level + 1}
+            {isZh
+              ? `${xpInCurrentLevel} / 100 记录，距离阶段 ${level + 1} 还需 ${xpToNextLevel} 记录`
+              : `${xpInCurrentLevel} / 100 points, ${xpToNextLevel} points needed for level ${level + 1}`}
           </p>
         </CardContent>
       </Card>
@@ -923,7 +920,7 @@ export default function AnalyticsPage() {
                     <YAxis stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
                     <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
                     <Bar dataKey="words" fill={colors.words} name={isZh ? '学习词数' : 'Words learned'} />
-                    <Bar dataKey="xp" fill={colors.xp} name={isZh ? '经验' : 'Points earned'} />
+                    <Bar dataKey="xp" fill={colors.xp} name={isZh ? '学习记录' : 'Points earned'} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -1425,7 +1422,7 @@ export default function AnalyticsPage() {
           <Card className="border-emerald-500/20 bg-emerald-500/[0.04]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-emerald-500" />
+                <CircleGauge className="h-5 w-5 text-muted-foreground" />
                 {copy.insights.weeklyReport}
               </CardTitle>
             </CardHeader>

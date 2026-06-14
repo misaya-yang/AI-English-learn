@@ -172,11 +172,11 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   },
   {
     id: 'xp_1000',
-    icon: '💎',
-    nameEn: 'XP Hoarder',
-    nameZh: '经验富翁',
-    descriptionEn: 'Earn 1000 XP',
-    descriptionZh: '获得 1000 经验值',
+    icon: '1000',
+    nameEn: 'Steady record',
+    nameZh: '稳定记录',
+    descriptionEn: 'Reach 1000 study records',
+    descriptionZh: '学习记录达到 1000',
     check: (s) => s.totalXP >= 1000,
   },
 ];

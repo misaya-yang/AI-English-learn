@@ -31,13 +31,13 @@ export interface MissionLearnerProfile {
 
 const FALLBACK_CARDS: readonly MissionCard[] = Object.freeze([
   Object.freeze({
-    id: 'fallback.warmup',
-    title: 'Warm up with a 5-minute vocab sprint',
-    titleZh: '做 5 分钟词汇热身',
+    id: 'fallback.short-vocab',
+    title: 'Start with a 5-minute vocabulary drill',
+    titleZh: '做 5 分钟词汇短练习',
     whyRecommended: 'Great way to ease into today even without any history yet.',
-    whyRecommendedZh: '还没有学习记录时，先从短热身开始。',
-    prompt: 'Give me a 5-minute vocabulary warm-up tailored for a beginner.',
-    promptZh: '给我一组 5 分钟的英语词汇热身，适合初学者。',
+    whyRecommendedZh: '还没有学习记录时，先从短练习开始。',
+    prompt: 'Give me a 5-minute vocabulary drill tailored for a beginner.',
+    promptZh: '给我一组 5 分钟的英语词汇短练习，适合初学者。',
     accent: 'practice',
   }),
   Object.freeze({
