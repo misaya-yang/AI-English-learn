@@ -125,7 +125,7 @@ export default function LearningPathPage() {
     });
     setCompletedLessonIds(next.completedLessonIds);
     setLessonEvidence(next.lessonEvidence);
-    toast.success(isZh ? '已记录课程完成证据' : 'Lesson evidence recorded');
+    toast.success(isZh ? '已记录课程完成' : 'Lesson completion recorded');
   };
 
   const handleOpenLesson = (path: LearningPath, lesson: LessonItem) => {
@@ -328,7 +328,7 @@ export default function LearningPathPage() {
                         >
                           <button
                             type="button"
-                            aria-label={done ? (isZh ? '已有完成证据' : 'Completion evidence recorded') : (isZh ? '记录完成证据' : 'Record completion evidence')}
+                            aria-label={done ? (isZh ? '已完成' : 'Completion recorded') : (isZh ? '记录完成' : 'Record completion')}
                             onClick={() => handleCompleteLesson(selectedPath, lesson)}
                             disabled={done}
                             className="mt-1 shrink-0 disabled:cursor-default"
@@ -361,9 +361,9 @@ export default function LearningPathPage() {
                               <span>
                                 {done && evidence
                                   ? (isZh
-                                    ? `证据：${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('zh-CN')}`
-                                    : `Evidence: ${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('en-US')}`)
-                                  : (isZh ? '完成后需记录 lesson.completed 证据' : 'Requires lesson.completed evidence')}
+                                    ? `记录：${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('zh-CN')}`
+                                    : `Record: ${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('en-US')}`)
+                                  : (isZh ? '完成后会记录进度' : 'Completion records progress')}
                               </span>
                             </div>
                           </button>
@@ -377,7 +377,7 @@ export default function LearningPathPage() {
           ))}
 
           <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
-            <span>{isZh ? '点击课程名称打开具体任务；勾选只在写入完成证据后生效。' : 'Click a lesson to open the exact task; completion only counts after evidence is recorded.'}</span>
+            <span>{isZh ? '点击课程名称打开具体任务；勾选后会记录课程完成。' : 'Click a lesson to open the exact task; checking it records completion.'}</span>
             <Badge variant="secondary">{progressPercent}%</Badge>
           </div>
         </div>

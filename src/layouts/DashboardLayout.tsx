@@ -80,7 +80,7 @@ const localDateKey = (date: Date): string => {
 const shellTitleMap: Record<string, { title: LocalizedText; description: LocalizedText }> = {
   '/dashboard/today': {
     title: { en: 'Today', zh: '今日' },
-    description: { en: 'Start with the most useful step for today.', zh: '今天最值得做的一步，从这里开始。' },
+    description: { en: 'Start with one clear task for today.', zh: '今天先做一个明确任务。' },
   },
   '/dashboard/review': {
     title: { en: 'Review', zh: '复习' },
@@ -88,7 +88,7 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
   },
   '/dashboard/practice': {
     title: { en: 'Practice', zh: '练习' },
-    description: { en: 'Turn weak signals into short reinforcement drills.', zh: '把弱项转成短练习，稳定补强。' },
+    description: { en: 'Use short drills for the parts that still feel shaky.', zh: '用短练习处理还不稳的部分。' },
   },
   '/dashboard/chat': {
     title: { en: 'Coach', zh: '教练' },
@@ -96,27 +96,27 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
   },
   '/dashboard/exam': {
     title: { en: 'Exam Prep', zh: '考试冲分' },
-    description: { en: 'Exam sprints, simulations, and structured feedback live here.', zh: '冲分路线、仿真题和结构化反馈都在这里。' },
+    description: { en: 'IELTS practice, timed prompts, and writing feedback.', zh: 'IELTS 练习、计时题和写作反馈。' },
   },
   '/dashboard/vocabulary': {
     title: { en: 'Vocabulary', zh: '词汇' },
-    description: { en: 'Manage word books, imported decks, and lexical assets.', zh: '管理词书、导入 deck、维护你的底层词汇资产。' },
+    description: { en: 'Manage word books and imported lists.', zh: '管理词书和导入词表。' },
   },
   '/dashboard/analytics': {
     title: { en: 'Analytics', zh: '数据分析' },
-    description: { en: 'See real learning evidence instead of decorative charts.', zh: '查看真实学习数据，而不是随机生成的好看图表。' },
+    description: { en: 'See completed practice, review, and study time.', zh: '查看已完成的练习、复习和学习时间。' },
   },
   '/dashboard/memory': {
     title: { en: 'Memory', zh: '记忆' },
-    description: { en: 'Manage long-term memory and what AI should remember.', zh: '管理长期记忆，决定 AI 该记住什么。' },
+    description: { en: 'Manage what the coach can use next time.', zh: '管理下次练习可用的学习信息。' },
   },
   '/dashboard/pronunciation': {
     title: { en: 'Pronunciation', zh: '发音练习' },
-    description: { en: 'Pronunciation scoring and speaking drills down to phonemes.', zh: '发音评估与口语训练，精准到音素级别。' },
+    description: { en: 'Practice sounds, stress, and short spoken answers.', zh: '练发音、重音和短口语回答。' },
   },
   '/dashboard/writing': {
     title: { en: 'Writing', zh: '写作练习' },
-    description: { en: 'Writing practice and AI grading for clearer output.', zh: '写作练习与 AI 批改，提升书面表达。' },
+    description: { en: 'Write, score, and revise short answers.', zh: '写一段、看评分、再修改。' },
   },
   '/dashboard/reading': {
     title: { en: 'Reading', zh: '阅读' },
@@ -261,7 +261,7 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/today',
         label: t('nav.today'),
-        description: pickLocalized({ en: "Today's mission and next step", zh: '今日主任务与下一步动作' }, isZh),
+        description: pickLocalized({ en: "Today's task and follow-up", zh: '今日任务与后续练习' }, isZh),
         icon: CalendarDays,
       },
       {
@@ -304,7 +304,7 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/writing',
         label: t('nav.writing'),
-        description: pickLocalized({ en: 'Writing practice and AI grading', zh: '写作训练与 AI 批改' }, isZh),
+        description: pickLocalized({ en: 'Writing practice and scoring', zh: '写作练习与评分' }, isZh),
         icon: PenTool,
       },
       {
@@ -316,7 +316,7 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/exam',
         label: t('nav.examPrep'),
-        description: pickLocalized({ en: 'IELTS sprint and high-value feedback', zh: 'IELTS 冲分与高价值反馈' }, isZh),
+        description: pickLocalized({ en: 'IELTS practice and writing feedback', zh: 'IELTS 练习与写作反馈' }, isZh),
         icon: Target,
       },
     ],

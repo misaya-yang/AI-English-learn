@@ -87,8 +87,8 @@ export function buildLifecycleNotification(input: LifecycleNotificationInput): L
       kind: 'streak_risk',
       title: 'Protect your streak gently',
       titleZh: '轻量保住连续学习',
-      body: 'A five-minute Today task is enough to keep the loop alive.',
-      bodyZh: '做一个 5 分钟 Today 任务，就够把学习闭环接上。',
+      body: 'A five-minute Today task is enough to keep your streak alive.',
+      bodyZh: '做一个 5 分钟 Today 任务，就够保住连续学习。',
       href: '/dashboard/today',
       priority: 'medium',
     };
@@ -98,7 +98,7 @@ export function buildLifecycleNotification(input: LifecycleNotificationInput): L
     return {
       kind: 'weekly_recap',
       title: 'Weekly recap is ready',
-      titleZh: '证据周报已准备好',
+      titleZh: '本周总结已准备好',
       body: 'Review what improved, what is still noisy, and what to do next.',
       bodyZh: '看看本周哪里进步、哪里还不稳，以及下一步做什么。',
       href: '/dashboard/analytics',

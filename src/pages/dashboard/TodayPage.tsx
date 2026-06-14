@@ -691,36 +691,40 @@ export default function TodayPage() {
         <LearningEmptyState
           icon={Sparkles}
           eyebrow={isZh ? '今日任务' : 'Today mission'}
-          title="先确定今天的学习入口"
+          title={isZh ? '先准备今天的单词' : 'Prepare today\'s words first'}
           description={
             activeBook
-              ? `当前词书是《${activeBook.name}》。先生成今天的新词，再根据到期复习和弱项安排下一步。`
-              : '你还没有激活词书。先选词书或导入 deck，再开始今天的任务链路。'
+              ? (isZh
+                ? `当前词书是《${activeBook.name}》。先生成今天的新词，再看是否需要复习。`
+                : `Current word book: ${activeBook.name}. Generate today's words, then check reviews.`)
+              : (isZh
+                ? '你还没有激活词书。先选词书或导入 deck。'
+                : 'No active word book yet. Pick a word book or import a deck.')
           }
           metrics={[
-            { label: isZh ? '到期复习' : 'Due reviews', value: dueWords.length, hint: '先知道是否有旧账要清。' },
-            { label: isZh ? '今日目标' : 'Daily target', value: activeBookSummary.dailyGoal, hint: '让今天的学习规模保持可完成。' },
-            { label: isZh ? '目标' : 'Target', value: learningProfile.target, hint: '主任务会围绕这个目标排优先级。' },
+            { label: isZh ? '到期复习' : 'Due reviews', value: dueWords.length, hint: isZh ? '先看有没有今天该复习的词。' : 'Check whether any words are due.' },
+            { label: isZh ? '今日目标' : 'Daily target', value: activeBookSummary.dailyGoal, hint: isZh ? '控制在今天能完成的数量。' : 'Keep today small enough to finish.' },
+            { label: isZh ? '目标' : 'Target', value: learningProfile.target, hint: isZh ? '任务会按这个目标排序。' : 'Tasks are ordered around this goal.' },
           ]}
           actions={
             <>
               {activeBook ? (
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={refreshDailyWords}>
                   <Sparkles className="mr-2 h-5 w-5" />
-                  生成今日任务
+                  {isZh ? '生成今日单词' : 'Generate today\'s words'}
                 </Button>
               ) : (
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                   <Link to="/onboarding?redirect=%2Fdashboard%2Ftoday">
                     <Target className="mr-2 h-5 w-5" />
-                    重新设置学习目标
+                    {isZh ? '重新设置学习目标' : 'Set learning goal again'}
                   </Link>
                 </Button>
               )}
               <Button size="lg" variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
                 <Link to="/dashboard/chat">
                   <MessageCircleMore className="mr-2 h-5 w-5" />
-                  让 AI 帮我规划
+                  {isZh ? '问一下教练' : 'Ask the coach'}
                 </Link>
               </Button>
             </>
@@ -762,15 +766,15 @@ export default function TodayPage() {
     ? (language.startsWith('zh') ? dailyCoachPlan.briefTitle.zh : dailyCoachPlan.briefTitle.en)
     : (language.startsWith('zh') ? missionCard?.headlineZh : missionCard?.headline)
       || (isPlanLoading
-        ? (language.startsWith('zh') ? '正在整理今天的学习入口' : 'Preparing today\'s learning entry point')
-        : (language.startsWith('zh') ? '先做最该做的一步' : 'Pick the highest-impact next step'));
+        ? (language.startsWith('zh') ? '正在读取今日任务' : 'Loading today\'s tasks')
+        : (language.startsWith('zh') ? '先完成一个小任务' : 'Start with one small task'));
   const heroDescription = dailyCoachPlan
     ? (language.startsWith('zh') ? dailyCoachPlan.brief.zh : dailyCoachPlan.brief.en)
     : (language.startsWith('zh') ? missionCard?.supportZh : missionCard?.support)
       || (isPlanLoading
         ? (language.startsWith('zh')
-          ? '正在读取词书、到期复习和弱项信号。加载完成后会直接给出今天最值得做的一步。'
-          : 'Reading your word book, due reviews, and weak signals. The next action will appear here as soon as the plan is ready.')
+          ? '正在读取词书、到期复习和最近错题。'
+          : 'Reading your word book, due reviews, and recent mistakes.')
         : undefined);
   const heroEstimatedMinutes = primaryMissionTask?.estimatedMinutes || missionCard?.estimatedMinutes || learningProfile.dailyMinutes;
 
@@ -851,7 +855,7 @@ export default function TodayPage() {
         <div className="space-y-6">
           <div id="today-vocabulary-workspace" data-testid="today-vocabulary-workspace">
             <LearningWorkspaceSurface
-              eyebrow={isZh ? '词汇工作区' : 'Vocabulary workspace'}
+              eyebrow={isZh ? '今日单词' : 'Today words'}
               title={currentWord ? `${currentWord.word} · 当前主练单词` : 'Vocabulary workspace'}
             >
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
@@ -1028,7 +1032,7 @@ export default function TodayPage() {
 
               {activePathNextLesson ? (
                 <div className="premium-panel-soft rounded-lg border border-primary/20 bg-primary/5 p-4 shadow-sm">
-                  <p className="text-xs text-muted-foreground">{isZh ? '学习路径下一步' : 'Path next step'}</p>
+                  <p className="text-xs text-muted-foreground">{isZh ? '学习路径' : 'Learning path'}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {isZh ? activePathNextLesson.lesson.titleZh : activePathNextLesson.lesson.title}
                   </p>
@@ -1156,7 +1160,7 @@ export default function TodayPage() {
 
               {adaptiveDifficulty ? (
                 <div className="premium-panel-soft rounded-lg border border-border bg-card p-4 shadow-sm">
-                  <p className="text-xs text-muted-foreground">今日节奏</p>
+                  <p className="text-xs text-muted-foreground">{isZh ? '今日难度' : 'Today difficulty'}</p>
                   <div className="mt-2 flex items-center justify-between gap-3">
                     <p className="text-lg font-semibold text-foreground">{adaptiveDifficulty.labelZh}</p>
                     <Badge variant="secondary" className="rounded-md">
@@ -1169,7 +1173,7 @@ export default function TodayPage() {
             </div>
           </LearningRailSection>
 
-          <LearningRailSection title={isZh ? '弱项地图' : 'Weakness map'}>
+          <LearningRailSection title={isZh ? '问题记录' : 'Practice notes'}>
             <div className="space-y-3">
               {weaknesses.length > 0 ? (
                 weaknesses.map((weakness) => (
@@ -1196,7 +1200,7 @@ export default function TodayPage() {
                 ))
               ) : (
                 <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm leading-6 text-muted-foreground">
-                  先完成一次练习或写作反馈，系统才会生成更可信的弱项图谱。
+                  先完成一次练习或写作反馈，这里会显示需要多练的地方。
                 </div>
               )}
 

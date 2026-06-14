@@ -106,8 +106,8 @@ export function buildWeeklyLearningRecap(args: {
   const highlights: WeeklyLearningRecap['highlights'] = [];
   if (strengthened.size > 0) {
     highlights.push({
-      en: `${strengthened.size} words were strengthened by real learning evidence.`,
-      zh: `${strengthened.size} 个词有真实学习证据支撑。`,
+      en: `${strengthened.size} words were strengthened by completed practice.`,
+      zh: `${strengthened.size} 个词通过练习得到巩固。`,
     });
   }
   if (activeDays > 0) {
@@ -126,8 +126,8 @@ export function buildWeeklyLearningRecap(args: {
   const nextRecommendation =
     !hasEvidence
       ? {
-          en: 'Complete one Today task so next week has real evidence to summarize.',
-          zh: '先完成一个 Today 任务，这样下周才有真实证据可复盘。',
+          en: 'Complete one Today task so next week has records to summarize.',
+          zh: '先完成一个 Today 任务，这样下周才有记录可总结。',
           href: '/dashboard/today',
         }
       : weakestPattern?.label === 'Review debt'
@@ -143,8 +143,8 @@ export function buildWeeklyLearningRecap(args: {
               href: '/dashboard/practice',
             }
           : {
-              en: 'Keep the cadence and add one slightly harder coach drill.',
-              zh: '保持节奏，下周加一个略难的 Coach 训练。',
+              en: 'Keep going and add one slightly harder coach drill next week.',
+              zh: '继续保持，下周加一个略难的教练训练。',
               href: '/dashboard/chat',
             };
 

@@ -16,7 +16,7 @@ describe('DashboardSkeleton', () => {
   it('names the dashboard loading operation', () => {
     render(<DashboardSkeleton />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('正在加载学习工作台');
+    expect(screen.getByRole('status')).toHaveTextContent('正在加载学习内容');
     expect(screen.getByText('读取词书、复习队列和今日任务。')).toBeInTheDocument();
   });
 
@@ -32,7 +32,7 @@ describe('DashboardSkeleton', () => {
 
     render(<DashboardSkeleton />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('Loading your learning workspace');
-    expect(screen.queryByText('正在加载学习工作台')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Loading learning content');
+    expect(screen.queryByText('正在加载学习内容')).not.toBeInTheDocument();
   });
 });

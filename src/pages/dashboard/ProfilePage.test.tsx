@@ -126,7 +126,7 @@ describe('ProfilePage', () => {
     expect(gamificationMocks.getLevelName).toHaveBeenCalledWith(3500);
     expect(screen.getByText('Level 36')).toBeInTheDocument();
     expect(screen.getByText('Canonical Expert → Level 37')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '查看 Pro 等待名单' })).toHaveAttribute('href', '/pricing');
+    expect(screen.getByRole('link', { name: 'View Pro waitlist' })).toHaveAttribute('href', '/pricing');
     expect(screen.queryByText('升级 Pro 解锁无限 AI 功能')).not.toBeInTheDocument();
   });
 });

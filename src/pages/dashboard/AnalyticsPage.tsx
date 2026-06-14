@@ -128,7 +128,7 @@ const ANALYTICS_NOW = Date.now();
 const analyticsCopy = {
   en: {
     headerTitle: 'Learning progress',
-    headerSubtitle: 'Track real learning evidence, not decorative charts.',
+    headerSubtitle: 'Track completed words, reviews, and practice time.',
     timeRanges: { week: 'This week', month: 'This month', year: 'This year', all: 'All time' },
     stats: {
       totalWords: 'Total Words',
@@ -146,8 +146,8 @@ const analyticsCopy = {
       overview: 'Overview',
       words: 'Words',
       retention: 'Retention',
-      coach: 'Coach Impact',
-      insights: 'AI Insights',
+      coach: 'Coach',
+      insights: 'Summary',
       badges: 'Badges',
     },
     charts: {
@@ -178,12 +178,12 @@ const analyticsCopy = {
     empty: {
       activity: {
         title: 'No activity trend yet',
-        description: 'Complete a Today, Review, or Practice task before showing a real activity trend.',
+        description: 'Complete a Today, Review, or Practice task before this chart appears.',
         action: 'Open Today',
       },
       topics: {
         title: 'No topic evidence yet',
-        description: 'Topic breakdown only uses words you actually studied or reviewed, not today\'s candidate list.',
+        description: 'Topic breakdown uses learned and reviewed words.',
         action: 'Start today\'s words',
       },
       duration: {
@@ -193,12 +193,12 @@ const analyticsCopy = {
       },
       wordsTrend: {
         title: 'No vocabulary trend yet',
-        description: 'This trend waits for real learning records instead of counting unfinished candidate words.',
+        description: 'This trend appears after words are learned or reviewed.',
         action: 'Study today\'s words',
       },
       heatmap: {
         title: 'No streak heatmap yet',
-        description: 'After a few completed study days, this heatmap will show your real rhythm.',
+        description: 'After a few study days, this heatmap will show when you practiced.',
         action: 'Open today\'s mission',
       },
       retention: {
@@ -217,9 +217,9 @@ const analyticsCopy = {
         action: 'Open review queue',
       },
       coach: {
-        title: 'No Coach loop evidence yet',
-        description: 'Start a chat or complete a practice task before this page shows whether AI diagnosis turned into reinforcement.',
-        action: 'Open AI Coach',
+        title: 'No coach records yet',
+        description: 'Start a chat or complete a practice task before coach follow-ups appear here.',
+        action: 'Open Coach',
       },
       vocabulary: {
         title: 'No vocabulary mastery evidence yet',
@@ -233,31 +233,31 @@ const analyticsCopy = {
       },
     },
     coach: {
-      description: 'Closed-loop signals from AI diagnosis, completed reinforcement, repeated errors, and FSRS retention.',
-      diagnosed: 'AI diagnosis signals',
-      completed: 'Completed reinforcement',
+      description: 'Chat follow-ups, completed practice, repeated mistakes, and review status.',
+      diagnosed: 'Coach notes',
+      completed: 'Completed follow-ups',
       repeatedErrors: 'Repeated error risk',
       retention: 'Predicted retention',
-      focus: 'Next coaching focus',
-      focusDescription: 'The next Today and Coach Studio actions will prioritize this weak signal.',
+      focus: 'Practice focus',
+      focusDescription: 'Today and Coach will use this weak spot first.',
     },
     insights: {
-      weeklyReport: 'Evidence weekly report',
+      weeklyReport: 'Weekly summary',
       wordsStrengthened: 'Words strengthened',
       activeDays: 'Active days',
       reviewDebt: 'Review debt signals',
-      insufficient: 'Not enough evidence yet. Complete a Today, Review, or Practice task and the weekly report will start forming here.',
-      strongestWaiting: 'Strongest signal: waiting for more evidence',
+      insufficient: 'Not enough activity yet. Complete a Today, Review, or Practice task first.',
+      strongestWaiting: 'Waiting for more activity',
       weakestPrefix: 'Needs attention',
       strongestPrefix: 'Strongest signal',
-      openNext: 'Open next step',
+      openNext: 'Open task',
       vocabDistribution: 'Vocabulary mastery distribution',
       skillRadar: 'Skill radar',
     },
   },
   zh: {
     headerTitle: '学习进度',
-    headerSubtitle: '查看真实学习数据，而不是随机生成的好看图表。',
+    headerSubtitle: '查看已完成的单词、复习和练习时间。',
     timeRanges: { week: '本周', month: '本月', year: '今年', all: '全部' },
     stats: {
       totalWords: '总单词数',
@@ -275,8 +275,8 @@ const analyticsCopy = {
       overview: '概览',
       words: '词汇',
       retention: '记忆保留',
-      coach: '教练闭环',
-      insights: 'AI 洞察',
+      coach: '教练',
+      insights: '总结',
       badges: '成就',
     },
     charts: {
@@ -291,7 +291,7 @@ const analyticsCopy = {
         subtitleAll: '全部历史活动',
       },
       topics: '主题分布',
-      topicsSubtitle: '来自已完成学习证据的主题',
+      topicsSubtitle: '来自已完成学习记录的主题',
       studyTime: '学习时长',
       studyTimeSubtitle: '学习时间',
       wordsTrend: '词汇积累趋势',
@@ -307,12 +307,12 @@ const analyticsCopy = {
     empty: {
       activity: {
         title: '还没有活动曲线',
-        description: '完成一次 Today、Review 或 Practice 后，这里才会显示真实活动趋势。',
+        description: '完成一次 Today、Review 或 Practice 后，这里会显示活动趋势。',
         action: '打开 Today',
       },
       topics: {
-        title: '还没有主题证据',
-        description: '主题分布只使用你真正学过或复习过的词，不会用今日候选词伪装成历史。',
+        title: '还没有主题记录',
+        description: '主题分布只使用已学习或已复习的词。',
         action: '开始今日词汇',
       },
       duration: {
@@ -322,17 +322,17 @@ const analyticsCopy = {
       },
       wordsTrend: {
         title: '还没有词汇趋势',
-        description: '趋势图只在真实学习记录出现后展示，避免把未完成的候选词算进进步。',
+        description: '学过或复习过单词后，这里会显示趋势。',
         action: '学习今日单词',
       },
       heatmap: {
         title: '还没有连续学习热力',
-        description: '完成几天任务后，热力图会显示你真正坚持下来的节奏。',
+        description: '完成几天任务后，热力图会显示你常练习的时间。',
         action: '打开今日任务',
       },
       retention: {
         title: '还没有可计算的记忆保留率',
-        description: '先完成几张复习卡，FSRS 才有足够证据估算当前保持率和遗忘曲线。',
+        description: '先完成几张复习卡，FSRS 才有足够记录估算当前保持率和遗忘曲线。',
         action: '去做复习',
       },
       window: {
@@ -346,12 +346,12 @@ const analyticsCopy = {
         action: '打开复习队列',
       },
       coach: {
-        title: '还没有 Coach 闭环证据',
-        description: '开始一次对话或完成一次练习后，这里会展示 AI 诊断是否真的变成了补强动作。',
-        action: '打开 AI Coach',
+        title: '还没有教练记录',
+        description: '开始一次对话或完成一次练习后，这里会显示跟进记录。',
+        action: '打开教练',
       },
       vocabulary: {
-        title: '还没有词汇掌握证据',
+        title: '还没有词汇掌握记录',
         description: '完成学习或复习后，词汇会进入新学、学习中、复习中和已掌握分布。',
         action: '开始今日词汇',
       },
@@ -362,24 +362,24 @@ const analyticsCopy = {
       },
     },
     coach: {
-      description: '本周 AI 诊断、补强完成、重复错误和 FSRS 保持率的闭环信号。',
-      diagnosed: 'AI 诊断信号',
-      completed: '已完成补强',
+      description: '本周的对话记录、练习完成情况、重复错误和复习状态。',
+      diagnosed: '教练记录',
+      completed: '已完成跟进',
       repeatedErrors: '重复错误风险',
       retention: '预测保持率',
-      focus: '下一步教练重点',
-      focusDescription: '下一轮 Today 与 Coach Studio 会优先围绕这个弱项生成诊断、训练和复盘动作。',
+      focus: '练习重点',
+      focusDescription: 'Today 和教练会优先处理这个薄弱点。',
     },
     insights: {
-      weeklyReport: '证据周报',
+      weeklyReport: '本周总结',
       wordsStrengthened: '强化词数',
       activeDays: '活跃天数',
       reviewDebt: '复习债信号',
-      insufficient: '暂时没有足够证据生成进步结论。完成一次 Today、Review 或 Practice 后，这里会开始沉淀周报。',
-      strongestWaiting: '最强信号：等待更多证据',
+      insufficient: '暂时没有足够记录。先完成一次 Today、Review 或 Practice。',
+      strongestWaiting: '等待更多记录',
       weakestPrefix: '最需要处理',
       strongestPrefix: '最强信号',
-      openNext: '打开下一步',
+      openNext: '打开任务',
       vocabDistribution: '词汇掌握分布',
       skillRadar: '能力雷达图',
     },
@@ -773,7 +773,7 @@ export default function AnalyticsPage() {
 
   const reviewWindowSummary = reviewWindowInsight
     ? reviewWindowInsight.primary.share >= 0.45
-      ? (isZh ? '这个时段已经是你最稳定的学习节奏。' : 'This block is already your most reliable study rhythm.')
+      ? (isZh ? '这个时段是你最常练习的时间。' : 'This is your most common study block.')
       : (isZh ? '这个时段最近最容易完成复习。' : 'This block has the strongest recent signal for getting reviews done.')
     : null;
   const activityTitle =
@@ -818,7 +818,7 @@ export default function AnalyticsPage() {
               </div>
               <div>
                 <p className="font-semibold text-foreground">
-                  {isZh ? '还没有真实学习证据，所以这里先不伪造趋势。' : 'No real learning evidence yet, so trends stay empty.'}
+                  {isZh ? '还没有学习记录，所以这里暂时为空。' : 'No learning records yet, so trends stay empty.'}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {isZh
@@ -1259,12 +1259,12 @@ export default function AnalyticsPage() {
                         <p className="mt-2 text-lg font-semibold">
 	                          {reviewWindowInsight.secondary
                               ? (isZh ? reviewWindowInsight.secondary.labelZh : reviewWindowInsight.secondary.label)
-                              : (isZh ? '先稳定当前节奏' : 'Keep current rhythm')}
+                            : (isZh ? '先固定一个时段' : 'Keep one study block')}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {reviewWindowInsight.secondary
 	                            ? reviewWindowInsight.secondary.hours
-	                            : (isZh ? '先把主时段稳定下来，再扩展第二时段。' : 'Stabilize the primary block before expanding to a second one.')}
+	                            : (isZh ? '先把一个学习时段坚持下来，再增加第二个时段。' : 'Keep one study block before adding a second one.')}
                         </p>
                       </div>
                     </div>

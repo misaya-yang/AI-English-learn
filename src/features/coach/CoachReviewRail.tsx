@@ -82,10 +82,10 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
   if (totalCount === 0) return null;
 
   const isZh = language.startsWith('zh');
-  const heading = isZh ? '教练复习队列' : 'Coach reviews';
+  const heading = isZh ? '补充复习' : 'Extra review';
   const subtitle = isZh
-    ? '由 AI 教练在对话中安排，独立于 FSRS 复习卡。'
-    : 'Scheduled by the AI coach during chat — separate from FSRS due cards.';
+    ? '这些来自对话或练习，和到期复习卡分开处理。'
+    : 'These come from chat or practice and are separate from due review cards.';
   const dueHeading = isZh ? `到期 ${partition.due.length}` : `${partition.due.length} due`;
   const upcomingHeading = isZh ? '即将到来' : 'Upcoming';
 

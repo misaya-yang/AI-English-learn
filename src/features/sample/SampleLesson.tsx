@@ -38,10 +38,10 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
     : 'Small daily habits can ___ exam stress.';
   const copy = {
     eyebrow: isZh ? '60 秒样课' : '60-second sample lesson',
-    title: isZh ? '先体验一次真实学习循环' : 'Try one real learning loop',
+    title: isZh ? '先试一次单词练习' : 'Try one word exercise',
     intro: isZh
-      ? '先看词义，再做一次回想。答完后你会看到 VocabDaily 如何把结果转成后续复习。'
-      : 'Read the word, recall it once, then see how VocabDaily turns the result into the next review.',
+      ? '先看词义，再填一次空。答完后可以保存到今日学习。'
+      : 'Read the word, fill the blank, then save it to today if you want.',
     wordLabel: isZh ? '今日样词' : 'Sample word',
     promptLabel: isZh ? '回想练习' : 'Recall prompt',
     answerLabel: isZh ? '输入缺失的单词' : 'Type the missing word',
@@ -49,10 +49,10 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
     submit: hasFeedback ? (isZh ? '再次检查' : 'Check again') : (isZh ? '检查答案' : 'Check answer'),
     tryAgain: isZh ? '再试一次' : 'Try again',
     save: isZh ? '保存这次进度' : 'Save this progress',
-    correctTitle: isZh ? '答对了，学习循环已完成' : 'Correct. The learning loop is complete.',
+    correctTitle: isZh ? '答对了' : 'Correct.',
     correctBody: isZh
-      ? '真实账户中，这个结果会进入你的今日证据、复习队列和教练下一步。'
-      : 'In a real account, this result would feed your daily evidence, review queue, and coach next step.',
+      ? '登录后，这个词可以加入你的复习队列。'
+      : 'After sign-in, this word can be added to your review queue.',
     wrongTitle: isZh ? '还差一点' : 'Close, not quite.',
     wrongBody: isZh
       ? 'mitigate 表示“减轻”。先把例句读一遍，再重新输入这个词。'

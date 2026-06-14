@@ -86,7 +86,7 @@ const COACH_MODE_BY_CHAT_MODE: Record<ChatMode, CoachStudioMode> = {
 
 const COACH_DISPLAY_LABELS: Record<string, { zh: string; en: string }> = {
   general_improvement: { zh: '综合提升', en: 'General improvement' },
-  ielts_coach: { zh: '雅思教练闭环', en: 'IELTS coaching' },
+  ielts_coach: { zh: '雅思教练', en: 'IELTS coaching' },
   ielts_writing: { zh: '雅思写作', en: 'IELTS writing' },
   grammar_accuracy: { zh: '语法准确性', en: 'Grammar accuracy' },
   lexical: { zh: '词汇资源', en: 'Lexical resource' },

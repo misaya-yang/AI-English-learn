@@ -81,7 +81,7 @@ export function HeroSummary({
         <div>
           <h1 className="text-xl font-semibold tracking-tight">考试冲分 · IELTS Exam Prep</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            先确定当前回合，再进入写作工作台，最后根据反馈做补救和再练。
+            先确定这次练什么，再写作，最后按反馈修改。
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export function HeroSummary({
             <Target className="mr-1.5 h-4 w-4" /> 开始一次完整仿真
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={onShowWeakness}>
-            查看弱项图谱
+            查看问题记录
           </Button>
         </div>
       </div>

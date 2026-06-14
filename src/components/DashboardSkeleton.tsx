@@ -19,10 +19,10 @@ export function DashboardSkeleton() {
       {/* Page header */}
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">
-          {isZh ? '正在加载学习工作台' : 'Loading your learning workspace'}
+          {isZh ? '正在加载学习内容' : 'Loading learning content'}
         </p>
         <p className="text-xs text-muted-foreground">
-          {isZh ? '读取词书、复习队列和今日任务。' : 'Reading your word book, review queue, and today mission.'}
+          {isZh ? '读取词书、复习队列和今日任务。' : 'Reading your word book, review queue, and today tasks.'}
         </p>
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-72" />

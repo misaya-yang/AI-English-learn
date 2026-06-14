@@ -86,8 +86,8 @@ const practiceModes = [
     id: 'writing',
     name: 'Writing Practice',
     nameZh: '写作练习',
-    description: 'Write sentences and get AI feedback',
-    descriptionZh: '写一段输出，获得结构化 AI 反馈。',
+    description: 'Write sentences and get feedback',
+    descriptionZh: '写一段输出，获得结构化反馈。',
     icon: Zap,
   },
 ] as const;
@@ -484,7 +484,7 @@ export default function PracticePage() {
     }
 
     if (feedbackQuotaRemaining <= 0) {
-      toast.error('Today AI writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
+      toast.error('Today\'s writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
       return;
     }
 
@@ -503,7 +503,7 @@ export default function PracticePage() {
       const quotaResult = await consumeExamFeatureQuota(userId, 'aiAdvancedFeedbackPerDay');
       if (!quotaResult.allowed) {
         setFeedbackQuotaRemaining(quotaResult.remaining);
-        toast.error('Today AI writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
+        toast.error('Today\'s writing feedback quota is exhausted. Upgrade to Pro or try tomorrow.');
         return;
       }
 
@@ -541,7 +541,7 @@ export default function PracticePage() {
           issues: feedback.issues.map((issue) => issue.tag),
         },
       });
-      toast.success(`AI feedback ready. Overall band ${feedback.scores.overallBand}`);
+      toast.success(`Feedback ready. Overall band ${feedback.scores.overallBand}`);
     } finally {
       setIsWritingSubmitting(false);
     }
@@ -735,7 +735,7 @@ export default function PracticePage() {
           <div className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
             <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
               <Zap className="h-4 w-4" />
-              <p className="text-sm font-semibold">{isZh ? 'AI 高级反馈额度' : 'Advanced feedback quota'}</p>
+              <p className="text-sm font-semibold">{isZh ? '写作反馈额度' : 'Writing feedback quota'}</p>
             </div>
             <p className="mt-3 text-2xl font-semibold text-foreground">
               {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
@@ -747,7 +747,7 @@ export default function PracticePage() {
   );
 
   const pageTitle = !selectedMode
-    ? '先锁定今天最值得练的一种模式。'
+    ? (isZh ? '先选一种练习。' : 'Pick one practice mode.')
     : !hasStarted
       ? `${isZh ? '准备进入' : 'Prepare'} ${focusedModeLabel}`
       : isComplete
@@ -759,7 +759,7 @@ export default function PracticePage() {
     : !hasStarted
       ? focusedBlueprint.insight
       : isComplete
-        ? '看结果，再决定下一步。'
+        ? (isZh ? '看本轮结果。' : 'Review this round.')
         : undefined;
 
   const heroProgress =
@@ -794,7 +794,7 @@ export default function PracticePage() {
     return (
       <LearningCockpitShell
         language={practiceLanguage}
-        eyebrow="练习"
+        eyebrow={isZh ? '练习' : 'Practice'}
         progress={heroProgress}
         progressLabel={isZh ? '本轮进度' : 'Session progress'}
         mission={{
@@ -894,7 +894,7 @@ export default function PracticePage() {
             </Badge>
             {selectedMode === 'writing' ? (
               <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-                {isZh ? 'AI 反馈额度' : 'AI feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
+                {isZh ? '写作反馈额度' : 'Writing feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
               </Badge>
             ) : null}
           </div>
@@ -911,7 +911,7 @@ export default function PracticePage() {
               label: isZh ? '完成后得到什么' : 'Outcome',
               value: selectedMode === 'writing'
                 ? (isZh ? '结构化评分' : 'Structured scoring')
-                : (isZh ? '正确率 + 下一步建议' : 'Accuracy + next step'),
+                : (isZh ? '正确率和错题' : 'Accuracy and mistakes'),
               hint: '',
             },
           ])}
@@ -949,7 +949,7 @@ export default function PracticePage() {
               </Badge>
             )}
             <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-              {isZh ? 'AI 反馈额度' : 'AI feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
+              {isZh ? '写作反馈额度' : 'Writing feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
             </Badge>
           </div>
         }
@@ -1045,7 +1045,7 @@ export default function PracticePage() {
                     ? (isZh ? '正在生成反馈...' : 'Generating feedback...')
                     : feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0
                       ? (isZh ? '今日额度已用完' : 'Quota exhausted today')
-                      : (isZh ? '获取 IELTS AI 反馈' : 'Get IELTS AI Feedback')}
+                      : (isZh ? '获取 IELTS 反馈' : 'Get IELTS feedback')}
               </Button>
             </div>
           ) : (
@@ -1362,7 +1362,7 @@ export default function PracticePage() {
           icon={Trophy}
           eyebrow={isZh ? '练习总结' : 'Session summary'}
           title={timedMode && timeLeft <= 0 ? (isZh ? '时间到！' : 'Time is up') : (isZh ? '这轮短练习已经完成' : 'This short practice is complete')}
-          description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x，保持这个节奏。` : `Best streak: ${maxCombo}x. Keep the rhythm.`) : (isZh ? '这轮结果已经出来了。' : 'Your result is ready.')}
+          description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x，继续保持。` : `Best streak: ${maxCombo}x. Keep going.`) : (isZh ? '这轮结果已经出来了。' : 'Your result is ready.')}
           metrics={[
             { label: isZh ? '答对' : 'Correct', value: `${score}/${safeTotal}`, accent: 'emerald' },
             { label: isZh ? '正确率' : 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },

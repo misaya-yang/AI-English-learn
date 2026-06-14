@@ -20,7 +20,7 @@ export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProp
   if (analytics.length === 0) {
     return (
       <div className="rounded-2xl border border-border/70 bg-card/80 p-4 text-sm text-muted-foreground">
-        暂无错因图谱。完成一次写作反馈后，这里会显示你的弱项分布。
+        暂无问题记录。完成一次写作反馈后，这里会显示主要问题分布。
       </div>
     );
   }

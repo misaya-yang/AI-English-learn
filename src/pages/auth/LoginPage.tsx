@@ -30,7 +30,7 @@ export default function LoginPage() {
   const copy = isZh
     ? {
         title: '欢迎回来',
-        subtitle: '登录后继续你今天的学习节奏。',
+        subtitle: '登录后继续今天的练习。',
         noAccount: '还没有账号？',
         register: '注册',
         email: '邮箱',
@@ -54,7 +54,7 @@ export default function LoginPage() {
         invalidCredentials: '电子邮箱或密码错误',
         networkError: '网络连接失败，请检查网络后重试',
         loginFailed: '登录失败，请稍后重试',
-        demoSuccess: '演示学习空间已准备好',
+        demoSuccess: '演示已准备好',
         demoUnavailable: '演示账号暂时不可用，请尝试注册新账号',
         missingEmail: '请输入电子邮箱',
         resetSuccess: '重置密码邮件已发送，请检查您的邮箱',
@@ -63,7 +63,7 @@ export default function LoginPage() {
       }
     : {
         title: 'Welcome back',
-        subtitle: 'Sign in to continue your learning rhythm for today.',
+        subtitle: "Sign in to continue today's practice.",
         noAccount: "Don't have an account?",
         register: 'Create account',
         email: 'Email',
@@ -87,7 +87,7 @@ export default function LoginPage() {
         invalidCredentials: 'Incorrect email or password',
         networkError: 'Network connection failed. Check your connection and try again.',
         loginFailed: 'Sign-in failed. Please try again later.',
-        demoSuccess: 'Demo workspace ready!',
+        demoSuccess: 'Demo is ready.',
         demoUnavailable: 'Demo mode is unavailable. Try creating a new account.',
         missingEmail: 'Enter your email',
         resetSuccess: 'Password reset email sent. Check your inbox.',
@@ -185,8 +185,8 @@ export default function LoginPage() {
       <AuthShell
         title="Welcome back"
         titleZh="欢迎回来"
-        subtitle="Sign in to continue your learning rhythm for today."
-        subtitleZh="登录后继续你今天的学习节奏。"
+        subtitle="Sign in to continue today's practice."
+        subtitleZh="登录后继续今天的练习。"
         footer={
           <>
             <span className="opacity-80">{copy.noAccount}</span>{' '}

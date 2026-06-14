@@ -81,7 +81,7 @@ const deadlines: { id: OnboardingDeadline; label: string; labelZh: string }[] = 
 const stepCopy: Record<number, { en: string; zh: string }> = {
   1: { en: 'Tell us your level', zh: '告诉我们你的英语水平' },
   2: { en: 'Choose your learning target', zh: '选择你的学习目标' },
-  3: { en: 'Set a daily rhythm', zh: '设定每日节奏' },
+  3: { en: 'Set daily practice', zh: '设置每日练习' },
   4: { en: 'Pick what you care about', zh: '选择你感兴趣的主题' },
   5: { en: 'Confirm your starter plan', zh: '确认你的起始方案' },
 };
@@ -407,7 +407,7 @@ export default function OnboardingPage() {
                 <Clock className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                {isZh ? '设定每日节奏' : 'Set your daily rhythm'}
+                {isZh ? '设置每日练习' : 'Set daily practice'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {isZh ? '选择每天能稳定完成的词量和时间' : 'Choose a pace you can consistently finish'}

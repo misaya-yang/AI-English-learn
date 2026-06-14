@@ -44,10 +44,10 @@ describe('AuthShell', () => {
       children: <span>panel</span>,
     });
 
-    expect(screen.getByText('A calmer way to practice English every day.')).toBeInTheDocument();
-    expect(screen.getByText('FSRS-based spaced repetition')).toBeInTheDocument();
-    expect(screen.queryByText('把每天的复习、练习、教练反馈整合到一个学习工作台。')).not.toBeInTheDocument();
-    expect(screen.queryByText('· 基于 FSRS 的间隔重复')).not.toBeInTheDocument();
+    expect(screen.getByText('Practice a little English each day.')).toBeInTheDocument();
+    expect(screen.getByText('Review words due today')).toBeInTheDocument();
+    expect(screen.queryByText('每天复习一点，练一点。')).not.toBeInTheDocument();
+    expect(screen.queryByText('· 复习今天到期的词')).not.toBeInTheDocument();
   });
 
   it('renders the localized back-to-home affordance in English mode', () => {
@@ -63,7 +63,7 @@ describe('AuthShell', () => {
     // BrandMark renders twice (mobile inline + desktop aside); both share the
     // same accessible label, so use getAllByLabelText.
     expect(
-      screen.getAllByLabelText('VocabDaily — back to home').length,
+      screen.getAllByLabelText('VocabDaily back to home').length,
     ).toBeGreaterThan(0);
   });
 

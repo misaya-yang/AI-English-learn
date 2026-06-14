@@ -146,8 +146,8 @@ const en = {
     },
     shell: {
       headline: 'A calmer way to practice English every day.',
-      headlineZh: '把每天的复习、练习、教练反馈整合到一个学习工作台。',
-      body: 'VocabDaily keeps your due reviews, new words, and coach feedback in one daily rhythm.',
+      headlineZh: '每天复习一点，练一点。',
+      body: 'VocabDaily keeps your due reviews, new words, and coach feedback in one daily plan.',
       bodyZh: 'VocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。',
       quote: 'Learning sticks when you come back at the right moment, not when you grind harder.',
       quoteZh: '在对的时间回来复习，比一味苦练更能让记忆留下来。',
@@ -609,8 +609,8 @@ const zh = {
     },
     shell: {
       headline: 'A calmer way to practice English every day.',
-      headlineZh: '把每天的复习、练习、教练反馈整合到一个学习工作台。',
-      body: 'VocabDaily keeps your due reviews, new words, and coach feedback in one daily rhythm.',
+      headlineZh: '每天复习一点，练一点。',
+      body: 'VocabDaily keeps your due reviews, new words, and coach feedback in one daily plan.',
       bodyZh: 'VocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。',
       quote: 'Learning sticks when you come back at the right moment, not when you grind harder.',
       quoteZh: '在对的时间回来复习，比一味苦练更能让记忆留下来。',

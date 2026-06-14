@@ -167,7 +167,7 @@ describe('PricingPage — fail-closed pro checkout', () => {
     expect(screen.getByText(FREE_JOB.en)).toBeInTheDocument();
     expect(screen.getByText(PRO_JOB.en)).toBeInTheDocument();
     expect(await screen.findByText(/IELTS Writing and Speaking scoring rubrics/i)).toBeInTheDocument();
-    expect(screen.getByText(/Advanced analytics: review debt, skill trends, error graph/i)).toBeInTheDocument();
+    expect(screen.getByText(/Advanced analytics: review debt, skill trends, mistake patterns/i)).toBeInTheDocument();
     expect(screen.getByText(/Custom wordbook imports plus Anki \/ CSV export/i)).toBeInTheDocument();
     expect(screen.queryByText(/Priority support/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Join the Pro interest list/i)).toBeInTheDocument();

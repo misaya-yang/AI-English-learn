@@ -145,7 +145,7 @@ export default function WritingPage() {
 
           <div className="premium-panel-soft rounded-lg border border-border bg-background/70 p-4">
             <p className="text-xs font-semibold tracking-wider text-muted-foreground">
-              {isZh ? '评分与修订闭环' : 'Scoring loop'}
+              {isZh ? '评分与修改' : 'Scoring and revision'}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {rubricPreview.map((item) => (

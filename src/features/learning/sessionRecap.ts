@@ -115,7 +115,7 @@ const buildReviewRecap = (
       : accuracy >= 0.5
         ? {
             en: `Solid run: ${improvedCount}/${total} held up. The ${struggleCount} that wobbled will be re-queued sooner.`,
-            zh: `节奏稳：${improvedCount}/${total} 通过，${struggleCount} 张较吃力的会被更早安排再练。`,
+            zh: `这一轮不错：${improvedCount}/${total} 通过，${struggleCount} 张较吃力的会被更早安排再练。`,
           }
         : {
             en: `Hard set today (${improvedCount}/${total} confident). FSRS will tighten the interval on the rest — that is exactly what should happen.`,
@@ -257,7 +257,7 @@ const buildPracticeRecap = (
       : accuracy >= 0.5
         ? {
             en: `Steady run: ${correct}/${total}. The ${incorrect} mistakes are queued for the coach to revisit.`,
-            zh: `节奏稳：${correct}/${total}。${incorrect} 道错题已经进入教练的复习队列。`,
+            zh: `这一轮不错：${correct}/${total}。${incorrect} 道错题已经进入教练复习队列。`,
           }
         : {
             en: `Tough drill (${correct}/${total}). The mistakes will surface sooner in review — exactly what should happen.`,

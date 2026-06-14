@@ -18,7 +18,7 @@ describe('SampleLesson', () => {
   it('renders the sample word and recall prompt before feedback', () => {
     renderLesson();
 
-    expect(screen.getByRole('heading', { name: 'Try one real learning loop' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Try one word exercise' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'mitigate' })).toBeInTheDocument();
     expect(screen.getByText('Small daily habits can ___ exam stress.')).toBeInTheDocument();
     expect(screen.queryByTestId('sample-feedback')).not.toBeInTheDocument();
@@ -40,7 +40,7 @@ describe('SampleLesson', () => {
     fireEvent.change(screen.getByLabelText('Type the missing word'), { target: { value: 'Mitigate' } });
     fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
 
-    expect(screen.getByTestId('sample-feedback')).toHaveTextContent('Correct. The learning loop is complete.');
+    expect(screen.getByTestId('sample-feedback')).toHaveTextContent('Correct.');
     expect(screen.getByText('1 recall')).toBeInTheDocument();
     expect(screen.getByText('Feedback generated')).toBeInTheDocument();
     expect(screen.getByText('Review card prepared')).toBeInTheDocument();

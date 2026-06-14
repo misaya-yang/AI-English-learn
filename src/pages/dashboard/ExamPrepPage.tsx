@@ -213,8 +213,8 @@ export default function ExamPrepPage() {
   const selectedErrorNode = errorGraph.find((node) => node.tag === topWeakTag) || errorGraph[0] || null;
 
   const nextActionLabel = selectedErrorNode
-    ? `优先修复 ${ISSUE_LABELS[selectedErrorNode.tag]}，把弱项从"知道"推进到"会用"。`
-    : '先完成一次写作评分，建立你的弱项图谱和下一步训练路径。';
+    ? `先处理 ${ISSUE_LABELS[selectedErrorNode.tag]}，然后重写一段。`
+    : '先完成一次写作评分，再看需要改哪一项。';
 
   const unitObjectives = selectedUnit?.learningObjectives || [];
   const recentHistory = feedbackHistory.slice(0, 6);
@@ -223,29 +223,29 @@ export default function ExamPrepPage() {
 
   const workspaceCopy: WorkspaceCopy = ({
     brief: {
-      eyebrow: '策略规划',
-      title: '先把这次冲分回合排清楚',
-      body: '从轨道、题型、话题和时间预算开始。先确定这次要练什么，再进入写作工作台，避免一上来就被所有工具打断。',
+      eyebrow: '本次练习',
+      title: '先确定这次练什么',
+      body: '选择轨道、题型、话题和时间。题目确定后再写，不用一上来就处理所有工具。',
     },
     draft: {
-      eyebrow: '写作工作台',
-      title: '把草稿写完，再决定是否调用辅助工具',
-      body: '编辑器是主舞台。提纲、词汇升级和教练问答全部折叠在下方，需要时再展开，不抢正文注意力。',
+      eyebrow: '写作',
+      title: '先把正文写完',
+      body: '提纲、词汇和问答放在下方，需要时再展开，不打断正在写的正文。',
     },
     review: {
-      eyebrow: '结果复盘',
-      title: '先看证据，再决定补救动作',
-      body: '评分、错因、改写和下一步行动放在同一层，但只围绕一次反馈展开，避免回顾和新写作混在一起。',
+      eyebrow: '结果',
+      title: '看分数，也看要改哪里',
+      body: '评分、问题、改写和建议放在一起，只围绕这一次反馈展开。',
     },
     insight: {
-      eyebrow: '数据洞察',
-      title: '只看当前需要的那一维数据',
-      body: '弱项图谱、Band 走势、历史回顾分开放置，按需切换，避免一次看完所有指标。',
+      eyebrow: '数据',
+      title: '只看现在有用的数据',
+      body: '问题分布、Band 走势和历史记录分开放置，需要哪一项再切换。',
     },
   })[runtime.workspaceView] ?? {
-    eyebrow: '数据洞察',
-    title: '只看当前需要的那一维数据',
-    body: '弱项图谱、Band 走势、历史回顾分开放置，按需切换，避免一次看完所有指标。',
+    eyebrow: '数据',
+    title: '只看现在有用的数据',
+    body: '问题分布、Band 走势和历史记录分开放置，需要哪一项再切换。',
   };
 
   const sprintSteps: Array<{
@@ -269,14 +269,14 @@ export default function ExamPrepPage() {
     {
       id: 'review',
       label: '评分反馈',
-      description: feedback ? `当前 Band ${feedback.scores.overallBand}` : '提交后查看评分证据',
-      metric: feedback ? `${latestNextActions.length} 个行动项` : '待评分',
+      description: feedback ? `当前 Band ${feedback.scores.overallBand}` : '提交后查看评分',
+      metric: feedback ? `${latestNextActions.length} 条建议` : '待评分',
     },
     {
       id: 'insight',
-      label: '补救复盘',
-      description: selectedErrorNode ? `优先修复 ${ISSUE_LABELS[selectedErrorNode.tag]}` : '沉淀弱项图谱',
-      metric: `${errorAnalytics.length} 类弱项`,
+      label: '问题记录',
+      description: selectedErrorNode ? `先处理 ${ISSUE_LABELS[selectedErrorNode.tag]}` : '暂无问题记录',
+      metric: `${errorAnalytics.length} 类问题`,
     },
   ];
 
@@ -424,7 +424,7 @@ export default function ExamPrepPage() {
       {runtime.showCelebrate && (
         <div className="pointer-events-none fixed inset-x-0 top-5 z-50 flex justify-center px-4">
           <div className="rounded-full border border-emerald-400/50 bg-emerald-500/20 px-4 py-2 text-sm font-medium text-emerald-500 backdrop-blur-sm">
-            <CheckCircle2 className="mr-1 inline h-4 w-4" /> Band 提升 +0.5，继续保持这波节奏！
+            <CheckCircle2 className="mr-1 inline h-4 w-4" /> Band 提升 +0.5，这次写得更稳。
           </div>
         </div>
       )}

@@ -79,7 +79,7 @@ export function ExamBriefPanel({
             <Target className="mr-1.5 h-4 w-4" /> 生成仿真题
           </Button>
           <Button variant="outline" onClick={onOpenDraft}>
-            进入写作工作台
+            开始写作
           </Button>
         </div>
 

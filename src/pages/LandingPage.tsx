@@ -58,13 +58,13 @@ const workflow = [
     step: '02',
     title: 'Follow one clear daily path',
     titleZh: '沿着一条清晰主线学',
-    description: 'The system prioritizes due review, weak tags, and the most efficient next action.',
+    description: 'The app puts due review, new words, and short practice in a clear order.',
   },
   {
     step: '03',
-    title: 'Close the loop with AI',
-    titleZh: '用 AI 完成反馈闭环',
-    description: 'Chat, quiz, writing, and exam prep feed into the same profile and mission engine.',
+    title: 'Practice, review, then adjust',
+    titleZh: '练习、复习，再调整',
+    description: 'Chat, quiz, writing, and exam prep all use the same learning record.',
   },
 ];
 
@@ -78,7 +78,7 @@ const feedbackSamples = [
   },
   {
     label: 'Coach guidance',
-    labelZh: 'AI 家教建议',
+    labelZh: '教练建议',
     title: 'Your recent weakness clusters around collocations and tense control',
     titleZh: '你最近的错误集中在搭配和时态控制',
     note: 'Suggested next step: 3-question quiz + one mini writing drill',
@@ -100,7 +100,7 @@ const plans = [
     points: [
       'Daily mission with new words + review',
       'Core quiz, listening, and chat usage',
-      'Limited IELTS simulation and AI feedback',
+      'Limited IELTS simulation and writing feedback',
     ],
   },
   {
@@ -108,8 +108,8 @@ const plans = [
     price: '$9.99',
     tone: 'border-emerald-500/40 bg-emerald-500/8 shadow-[0_20px_60px_-45px_hsl(var(--primary)/0.95)]',
     points: [
-      'Deep AI feedback and adaptive practice',
-      'Full IELTS score-boost cockpit and writing coach',
+      'Detailed feedback and adaptive practice',
+      'Full IELTS practice and writing coach',
       'Long-term memory, advanced analytics, and premium TTS paths',
     ],
   },
@@ -209,13 +209,13 @@ export default function LandingPage() {
                 General English first · IELTS when it matters
               </Badge>
               <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-                Stop juggling isolated AI features. Start learning through one clear English workflow.
+                One place for the English practice you actually do every day.
               </h1>
               <p className="mt-5 max-w-2xl text-lg text-muted-foreground lg:text-xl">
-                VocabDaily turns vocabulary, review, practice, AI coaching, and IELTS prep into one system that actually remembers your goals and weak spots.
+                VocabDaily keeps vocabulary, review, practice, coaching, and IELTS prep in one daily plan.
               </p>
               <p className="mt-3 max-w-2xl text-base text-muted-foreground">
-                不再是“一个聊天框 + 一堆工具按钮”，而是一个知道你今天该做什么、你卡在哪、下一步怎么补强的学习系统。
+                打开后先看到今天要做什么，再看哪些地方需要多练。
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -306,7 +306,7 @@ export default function LandingPage() {
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">Outcomes first</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight lg:text-4xl">
-                The product should feel like a serious learning cockpit, not a loose collection of AI demos.
+                The product should feel like a useful study app, not a loose collection of tools.
               </h2>
             </div>
             <div className="mt-10 grid gap-4 lg:grid-cols-3">
@@ -343,7 +343,7 @@ export default function LandingPage() {
                   One profile, one mission engine, five learning surfaces.
                 </h2>
                 <p className="mt-4 text-base text-muted-foreground">
-                  无论你今天是在背单词、做复习、刷小测、问 AI 家教，还是练 IELTS 写作，系统都应该共用同一份目标、弱项和反馈闭环。
+                  无论你今天是在背单词、做复习、刷小测、问教练，还是练 IELTS 写作，都应该沿着同一份学习记录推进。
                 </p>
               </div>
 
@@ -422,10 +422,10 @@ export default function LandingPage() {
               <Zap className="h-8 w-8" />
             </div>
             <h2 className="mt-5 text-3xl font-semibold tracking-tight lg:text-4xl">
-              Build momentum first. Then let AI amplify it.
+              Build momentum first. Use feedback when it helps.
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground">
-              从今天的一步开始：先清任务、再补弱项、再让 AI 给你结构化反馈。学习过程应该稳定、透明、可持续。
+              从今天的一步开始：先清任务，再补薄弱点，需要时再看结构化反馈。
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="rounded-md bg-primary px-5 hover:bg-primary/90" asChild>
@@ -440,7 +440,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4 text-orange-500" /> streak-friendly</span>
-              <span className="inline-flex items-center gap-2"><MessageCircleMore className="h-4 w-4 text-emerald-600" /> AI coach integrated</span>
+              <span className="inline-flex items-center gap-2"><MessageCircleMore className="h-4 w-4 text-emerald-600" /> coach integrated</span>
               <span className="inline-flex items-center gap-2"><ChartNoAxesCombined className="h-4 w-4 text-cyan-600" /> outcome-driven analytics</span>
             </div>
           </div>

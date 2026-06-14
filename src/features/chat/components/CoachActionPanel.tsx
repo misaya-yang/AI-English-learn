@@ -44,7 +44,7 @@ export function CoachActionPanel({ actions, language, onRunAction }: CoachAction
   if (!hasCoachActionPanel(data)) return null;
 
   const isZh = language.startsWith('zh');
-  const heading = isZh ? '教练建议的下一步' : 'Coach: next step';
+  const heading = isZh ? '可以继续这样练' : 'Try this next';
 
   return (
     <motion.section

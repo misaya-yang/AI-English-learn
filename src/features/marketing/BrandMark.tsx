@@ -27,8 +27,8 @@ export function BrandMark({
 }: BrandMarkProps) {
   const { i18n } = useTranslation();
   const isZh = i18n.language?.startsWith('zh');
-  const tagline = isZh ? '学习工作台' : 'Learning Cockpit';
-  const linkLabel = isZh ? 'VocabDaily — 返回首页' : 'VocabDaily — back to home';
+  const tagline = isZh ? '每日练习' : 'Daily practice';
+  const linkLabel = isZh ? 'VocabDaily 返回首页' : 'VocabDaily back to home';
 
   const wordmarkClass = cn(
     'text-base font-bold tracking-tight',

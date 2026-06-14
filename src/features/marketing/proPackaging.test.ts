@@ -22,7 +22,7 @@ describe('proPackaging', () => {
     const limitations = FREE_PLAN_LIMITATIONS.map((feature) => feature.en);
 
     expect(limitations).toContain('IELTS writing and speaking scoring');
-    expect(limitations).toContain('Advanced analytics and error graph');
+    expect(limitations).toContain('Advanced analytics and mistake patterns');
     expect(limitations).toContain('Custom wordbook imports');
   });
 

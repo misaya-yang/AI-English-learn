@@ -62,8 +62,8 @@ const plans: Plan[] = [
     id: 'free',
     name: 'Free',
     nameZh: '免费版',
-    description: 'Build the daily learning loop.',
-    descriptionZh: '跑通每日学习闭环。',
+    description: 'Daily review and practice.',
+    descriptionZh: '日常复习和练习。',
     monthlyPrice: 0,
     yearlyPrice: 0,
     features: FREE_PLAN_FEATURES,
@@ -77,7 +77,7 @@ const plans: Plan[] = [
     name: 'Pro',
     nameZh: '专业版',
     description: 'For exam-grade feedback and planning.',
-    descriptionZh: '面向考试级反馈与学习规划。',
+    descriptionZh: '用于考试反馈和学习计划。',
     monthlyPrice: 9.99,
     yearlyPrice: 7.99,
     features: PRO_PLAN_FEATURES,
@@ -280,7 +280,7 @@ export default function PricingPage() {
             {isZh ? '选择你的学习方案' : 'Choose your learning plan'}
           </h1>
           <p className="mt-3 text-lg text-muted-foreground">
-            {isZh ? '免费版跑闭环，Pro 做深度输出、诊断和周计划。' : 'Free runs the loop. Pro adds scored output, diagnostics, and weekly planning.'}
+            {isZh ? '免费版够日常练习，Pro 用于考试评分和周计划。' : 'Free covers daily practice. Pro adds exam scoring and weekly planning.'}
           </p>
           <p className="mt-3 text-base text-muted-foreground">
             {isZh ? '免费开始，Pro 上线后再升级。' : 'Start free, upgrade when Pro is live.'}
@@ -568,7 +568,7 @@ export default function PricingPage() {
 
         <div className="mt-14 text-center">
           <p className="text-sm text-muted-foreground">
-            {isZh ? '需要企业或学校方案？请先使用免费版完成学习闭环验证。' : 'Need an enterprise or school plan? Start with the free learning loop while checkout is being prepared.'}
+            {isZh ? '需要企业或学校方案？先用免费版试完整学习流程。' : 'Need an enterprise or school plan? Start with Free while checkout is being prepared.'}
           </p>
           <Button
             asChild
@@ -588,8 +588,8 @@ export default function PricingPage() {
           <BrandMark variant="compact" />
           <p className="text-xs text-muted-foreground">
             {isZh
-              ? '© 2026 VocabDaily · 英语学习工作台'
-              : '© 2026 VocabDaily · A learning workbench for English.'}
+              ? '© 2026 VocabDaily · 每日英语练习'
+              : '© 2026 VocabDaily · Daily English practice.'}
           </p>
           <nav className="flex items-center gap-3 text-xs text-muted-foreground" aria-label={isZh ? '法律链接' : 'Legal links'}>
             <Link to="/terms" className="transition-colors hover:text-foreground">

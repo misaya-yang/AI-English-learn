@@ -63,38 +63,38 @@ const reasonFromMission = (reason: string): DailyCoachPlanReason => {
 
 const reasonCopy: Record<DailyCoachPlanReason, { title: { en: string; zh: string }; lead: { en: string; zh: string } }> = {
   review_pressure: {
-    title: { en: 'Stabilize retention first', zh: '先稳住记忆压力' },
+    title: { en: 'Review due words first', zh: '先复习到期词' },
     lead: {
-      en: 'Your coach is reducing review pressure before adding more new material.',
-      zh: '教练会先降低复习压力，再决定是否加入新内容。',
+      en: 'Clear the review queue before adding more words.',
+      zh: '先清掉今天到期的词，再决定是否学新词。',
     },
   },
   exam_boost: {
-    title: { en: 'Use today for score impact', zh: '今天优先做提分动作' },
+    title: { en: 'Do one exam task', zh: '做一个考试任务' },
     lead: {
-      en: 'Your coach is routing today toward the highest-impact exam task.',
-      zh: '教练会把今天导向最可能提分的考试任务。',
+      en: 'Use today for one focused exam exercise.',
+      zh: '今天先完成一个明确的考试练习。',
     },
   },
   weakness_drill: {
-    title: { en: 'Turn the weak signal into a drill', zh: '把弱项信号转成训练' },
+    title: { en: 'Practice the weak spot', zh: '练一个薄弱点' },
     lead: {
-      en: 'Your recent evidence points to one weakness worth training now.',
-      zh: '最近证据指向了一个现在值得训练的弱项。',
+      en: 'Pick one recent mistake and practice it now.',
+      zh: '从最近的错题里挑一个，现在练掉。',
     },
   },
   daily_vocabulary: {
-    title: { en: 'Build the next lexical layer', zh: '推进今天的词汇层' },
+    title: { en: 'Learn today\'s words', zh: '学习今日单词' },
     lead: {
-      en: 'Your coach is keeping the daily vocabulary block small and review-ready.',
-      zh: '教练会把今日词汇控制在可完成、可复习的范围内。',
+      en: 'Keep the word list short enough to finish.',
+      zh: '今天的新词数量不多，先学完。',
     },
   },
   coach_checkin: {
-    title: { en: 'Run a short coach check-in', zh: '先做一次教练诊断' },
+    title: { en: 'Check one problem', zh: '先检查一个问题' },
     lead: {
-      en: 'Your coach needs one fresh signal before selecting a harder task.',
-      zh: '教练需要一个新信号，再安排更明确的任务。',
+      en: 'Answer one short prompt before choosing a harder task.',
+      zh: '先答一个短题，再决定下一步练什么。',
     },
   },
 };
@@ -239,8 +239,8 @@ export function buildDailyCoachPlan(args: BuildDailyCoachPlanArgs): DailyCoachPl
     coachPrompt,
     coachHref: `/dashboard/chat?${query}`,
     completion: {
-      en: 'After this task, the coach should turn the result into a retry, review card, or next drill.',
-      zh: '完成后，教练会把结果转成重练、复习卡或下一步训练。',
+      en: 'After this task, save the result and review any mistake later.',
+      zh: '完成后保存结果，错题稍后再复习。',
     },
   };
 }

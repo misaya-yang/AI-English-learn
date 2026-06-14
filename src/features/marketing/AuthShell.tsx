@@ -56,17 +56,17 @@ export function AuthShell({
   const widthClass = size === 'wide' ? 'max-w-xl' : 'max-w-[420px]';
 
   const rail: SideRailCopy = {
-    headline: sideRail?.headline ?? t('auth.shell.headline', { defaultValue: 'A calmer way to practice English every day.' }),
-    headlineZh: sideRail?.headlineZh ?? t('auth.shell.headlineZh', { defaultValue: '把每天的复习、练习、教练反馈整合到一个学习工作台。' }),
+    headline: sideRail?.headline ?? t('auth.shell.headline', { defaultValue: 'Practice a little English each day.' }),
+    headlineZh: sideRail?.headlineZh ?? t('auth.shell.headlineZh', { defaultValue: '每天复习一点，练一点。' }),
     bullets: sideRail?.bullets ?? [
-      { en: t('auth.shell.bullet1', { defaultValue: 'FSRS-based spaced repetition' }), zh: t('auth.shell.bullet1Zh', { defaultValue: '基于 FSRS 的间隔重复' }) },
-      { en: t('auth.shell.bullet2', { defaultValue: 'Coach-graded writing & speaking retries' }), zh: t('auth.shell.bullet2Zh', { defaultValue: '教练批改的写作与口语重练' }) },
-      { en: t('auth.shell.bullet3', { defaultValue: 'Mistake-aware daily missions' }), zh: t('auth.shell.bullet3Zh', { defaultValue: '基于错题的每日学习任务' }) },
+      { en: t('auth.shell.bullet1', { defaultValue: 'Review words due today' }), zh: t('auth.shell.bullet1Zh', { defaultValue: '复习今天到期的词' }) },
+      { en: t('auth.shell.bullet2', { defaultValue: 'Practice writing and speaking' }), zh: t('auth.shell.bullet2Zh', { defaultValue: '练写作和口语' }) },
+      { en: t('auth.shell.bullet3', { defaultValue: 'Come back to recent mistakes' }), zh: t('auth.shell.bullet3Zh', { defaultValue: '回看最近错过的点' }) },
     ],
   };
   const railBody = isZh
-    ? t('auth.shell.bodyZh', { defaultValue: 'VocabDaily 把当日的复习、新词学习与教练反馈安排成一段连贯的练习。' })
-    : t('auth.shell.body', { defaultValue: 'VocabDaily keeps your due reviews, new words, and coach feedback in one daily rhythm.' });
+    ? t('auth.shell.bodyZh', { defaultValue: '登录后会看到今天要复习、要学习和要练习的内容。' })
+    : t('auth.shell.body', { defaultValue: 'Sign in to see the words and practice tasks due today.' });
 
   return (
     <div className="min-h-screen bg-[hsl(var(--surface-sunken))] text-foreground">

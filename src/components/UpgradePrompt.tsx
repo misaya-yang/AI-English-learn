@@ -23,11 +23,11 @@ import {
 // ─── Feature labels ────────────────────────────────────────────────────────────
 
 const FEATURE_LABELS: Record<QuotaFeature, { label: string; labelZh: string }> = {
-  aiWritingGrade:   { label: 'AI Writing Feedback', labelZh: 'AI 写作批改' },
-  aiReadingGen:     { label: 'AI Reading Generation', labelZh: 'AI 阅读生成' },
-  aiChat:           { label: 'AI Coach Chat', labelZh: 'AI 教练对话' },
+  aiWritingGrade:   { label: 'Writing Feedback', labelZh: '写作反馈' },
+  aiReadingGen:     { label: 'Reading Generation', labelZh: '阅读材料生成' },
+  aiChat:           { label: 'Coach Chat', labelZh: '教练对话' },
   aiExamFeedback:   { label: 'Exam Feedback', labelZh: '考试反馈' },
-  aiListeningGen:   { label: 'AI Listening Generation', labelZh: 'AI 听力生成' },
+  aiListeningGen:   { label: 'Listening Generation', labelZh: '听力材料生成' },
 };
 
 // ─── Props ─────────────────────────────────────────────────────────────────────

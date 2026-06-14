@@ -67,7 +67,7 @@ describe('AnalyticsPage empty evidence states', () => {
     await waitFor(() => {
       expect(screen.getByText('还没有活动曲线')).toBeInTheDocument();
     });
-    expect(screen.getByText('还没有主题证据')).toBeInTheDocument();
+    expect(screen.getByText('还没有主题记录')).toBeInTheDocument();
     expect(screen.getByText('还没有学习时长')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: /打开 Today|开始今日词汇|做一次短练习/ }).length).toBeGreaterThan(0);
   });
@@ -94,13 +94,13 @@ describe('AnalyticsPage empty evidence states', () => {
       </MemoryRouter>,
     );
 
-    selectTab('Coach Impact');
+    selectTab('教练');
 
     await waitFor(() => {
-      expect(screen.getByText('还没有 Coach 闭环证据')).toBeInTheDocument();
+      expect(screen.getByText('还没有教练记录')).toBeInTheDocument();
     });
     expect(screen.queryByText('IELTS writing')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '打开 AI Coach' })).toHaveAttribute('href', '/dashboard/chat');
+    expect(screen.getByRole('link', { name: '打开教练' })).toHaveAttribute('href', '/dashboard/chat');
   });
 
   it('renders the same no-evidence states in English without Chinese fallback copy', async () => {

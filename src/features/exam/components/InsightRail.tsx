@@ -61,8 +61,8 @@ export function InsightRail({
           <div className="border-b border-border/70 px-4 py-4">
             <div className="flex flex-col gap-3">
               <div>
-                <p className="text-[11px] tracking-wide text-muted-foreground/80">数据洞察</p>
-                <h2 className="mt-2 text-lg font-semibold">别一次看完所有数据，只看当前需要的洞察</h2>
+                <p className="text-[11px] tracking-wide text-muted-foreground/80">数据</p>
+                <h2 className="mt-2 text-lg font-semibold">只看这次练习相关的记录</h2>
               </div>
               <TabsList className="grid w-full grid-cols-3 rounded-full bg-muted/70 p-1">
                 <TabsTrigger value="weakness" className="rounded-full">弱项</TabsTrigger>
@@ -87,13 +87,13 @@ export function InsightRail({
               )}
 
               <div className="rounded-[20px] border border-border/70 bg-background/35 p-4">
-                <p className="text-sm font-semibold">下一步最优行动</p>
+                <p className="text-sm font-semibold">建议先做</p>
                 {selectedErrorNode ? (
                   <>
                     <div className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.08] p-3">
                       <p className="text-sm font-medium text-emerald-500">优先修复：{ISSUE_LABELS[selectedErrorNode.tag]}</p>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        近期命中 {selectedErrorNode.count} 次，建议先做一次补救微课，再回到写作工作台复写。
+                        近期出现 {selectedErrorNode.count} 次。先做一个小练习，再重写一段。
                       </p>
                     </div>
                     <div className="mt-3 grid gap-2">
@@ -106,7 +106,7 @@ export function InsightRail({
                     </div>
                   </>
                 ) : (
-                  <p className="mt-3 text-sm text-muted-foreground">完成首次反馈后，这里会自动生成下一步行动建议。</p>
+                  <p className="mt-3 text-sm text-muted-foreground">完成首次反馈后，这里会显示建议练习。</p>
                 )}
 
                 {microUnit && (

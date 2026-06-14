@@ -71,8 +71,8 @@ describe('WordOfTheDayPage', () => {
 
     expect(screen.getByRole('link', { name: 'Start Learning' })).toHaveAttribute('href', '/register');
     expect(screen.getByRole('link', { name: 'Save to My Word Bank' })).toHaveAttribute('href', '/register?redirect=%2Fword-of-the-day');
-    expect(screen.getByRole('link', { name: 'Start Free Journey' }).getAttribute('href')).toContain('/register?redirect=%2Fdashboard%2Fpractice');
-    expect(screen.getByRole('link', { name: 'Ask Coach About This Word' }).getAttribute('href')).toContain('/register?redirect=%2Fdashboard%2Fchat');
+    expect(screen.getByRole('link', { name: 'Start free' }).getAttribute('href')).toContain('/register?redirect=%2Fdashboard%2Fpractice');
+    expect(screen.getByRole('link', { name: 'Ask the coach' }).getAttribute('href')).toContain('/register?redirect=%2Fdashboard%2Fchat');
     expect(screen.getByText('Public Word Archive')).toBeInTheDocument();
     expect(screen.getByText('These are public sample words, not your personal learning history.')).toBeInTheDocument();
   });
@@ -88,7 +88,7 @@ describe('WordOfTheDayPage', () => {
     expect(userDataState.addCustomWord).toHaveBeenCalledTimes(1);
     expect(userDataState.markWordAsLearned).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('link', { name: 'Practice This Word' }).getAttribute('href')).toContain('/dashboard/practice?word=');
-    expect(screen.getByRole('link', { name: 'Ask Coach About This Word' }).getAttribute('href')).toContain('/dashboard/chat?focus=');
+    expect(screen.getByRole('link', { name: 'Ask the coach' }).getAttribute('href')).toContain('/dashboard/chat?focus=');
   });
 
   it('does not duplicate the learning signal when the word already has progress', () => {

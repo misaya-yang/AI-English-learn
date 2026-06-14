@@ -322,7 +322,7 @@ export default function ReviewPage() {
       payload,
     });
 
-    toast.success(outcome === 'helped' ? '已记录：这个恢复练习有帮助' : '已记录：仍然混淆，Coach 会继续加练');
+    toast.success(outcome === 'helped' ? '已记录：这个练习有帮助' : '已记录：仍然混淆，稍后继续练');
   }, [currentRecoveryPlan, userId]);
 
   // Global keyboard shortcuts
@@ -364,8 +364,8 @@ export default function ReviewPage() {
             title={isZh ? '当前没有到期 FSRS 复习' : 'No FSRS-due cards right now'}
             description={
               isZh
-                ? '记忆曲线说今天不需要再回头看这些词。建议去 Practice 做一次轻量巩固，把今天学的内容固化下来；如果有教练复习也会显示在右侧。'
-                : 'Your memory curve says these cards don\'t need another touch today. Use Practice to reinforce what you just learned. Coach-scheduled reviews (if any) appear on the right.'
+                ? '今天没有必须复习的卡片。可以去 Practice 做一次短练习；如果有补充复习，会显示在右侧。'
+                : 'No cards are due right now. You can do a short Practice session; extra review items appear on the right.'
             }
             metrics={[
               { label: isZh ? '到期 FSRS 卡' : 'Due FSRS cards', value: 0, accent: 'emerald' },
@@ -393,12 +393,12 @@ export default function ReviewPage() {
               />
               <div className="premium-panel-soft rounded-lg border border-border bg-card p-4">
                 <p className="text-sm font-semibold text-foreground">
-                  {isZh ? '这是正常的好状态，不是没有内容。' : 'This is a healthy state, not missing content.'}
+                  {isZh ? '没有到期卡是正常状态。' : 'No due cards is normal.'}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? 'FSRS 队列只在词真的需要复习时出现。现在更适合去 Practice 做一次主动提取，或者让 Coach 根据弱项补一题。'
-                    : 'FSRS only opens cards when they are worth reviewing. Use Practice for active recall, or ask Coach for one focused drill.'}
+                    ? '复习卡会在到期时出现。现在更适合做一次短练习。'
+                    : 'Review cards appear when they are due. For now, a short practice session is enough.'}
                 </p>
               </div>
             </LearningRailSection>
@@ -456,11 +456,11 @@ export default function ReviewPage() {
       progressLabel={language.startsWith('zh') ? '回合进度' : 'Round progress'}
       mission={{
         title: language.startsWith('zh')
-          ? '先回忆，再揭晓答案。把复习做成一个完整回合。'
-          : 'Recall first, then reveal. Treat this round as one full pass.',
+          ? '先回忆，再揭晓答案。'
+          : 'Recall first, then reveal.',
         description: language.startsWith('zh')
-          ? '本回合只展示由 FSRS 调度的到期卡。教练安排的复习显示在右侧的 Coach reviews 列表中，互不混合。'
-          : 'This round only shows cards FSRS schedules as due. Coach-scheduled reviews live in the right-hand Coach reviews list and are kept separate.',
+          ? '这里展示今天到期的复习卡。补充复习会放在右侧列表。'
+          : 'This round shows cards due today. Extra review items are listed on the right.',
       }}
       metrics={[
         { label: language.startsWith('zh') ? '剩余 FSRS 卡' : 'FSRS remaining', value: remainingCount, accent: 'emerald' },
@@ -550,7 +550,7 @@ export default function ReviewPage() {
                     </Button>
                     <Button variant="outline" className="rounded-md" asChild>
                       <Link to={`/dashboard/chat?focus=stubborn-recovery&word=${encodeURIComponent(currentRecoveryPlan.wordId)}`}>
-                        {isZh ? '找 Coach 加练' : 'Ask Coach for a drill'}
+                        {isZh ? '问一下教练' : 'Ask the coach'}
                       </Link>
                     </Button>
                   </div>
@@ -653,8 +653,8 @@ export default function ReviewPage() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     {currentRecoveryPlan
                       ? (isZh
-                        ? `先完成恢复练习，再评分。结果会同步给 Coach 和后续复习。`
-                        : 'Complete the recovery drill before rating. The result feeds Coach and later reviews.')
+                        ? '先完成这个练习，再给卡片评分。'
+                        : 'Finish this drill before rating the card.')
                       : `这张卡已经遗忘 ${currentItem?.fsrs.lapses || 0} 次，系统会把它放进更短的强化复习回路。`}
                   </p>
                   {currentRecoveryOutcome ? (
@@ -729,7 +729,7 @@ export default function ReviewPage() {
               >
                 <div className="flex items-center gap-2 text-[hsl(var(--accent-memory))] mb-2">
                   <Lightbulb className="h-4 w-4" />
-                  <p className="text-sm font-semibold">AI 助记提示</p>
+                  <p className="text-sm font-semibold">{isZh ? '助记提示' : 'Memory hint'}</p>
                 </div>
                 <p className="text-sm leading-6 text-foreground">
                   {currentItem.word.memoryTip || currentItem.word.etymology}

@@ -73,11 +73,11 @@ export function ScoreCell({
 export function EmptyKickoffCard({ onQuickStart }: { onQuickStart: () => void }) {
   return (
     <div className="rounded-xl border border-dashed border-emerald-400/40 bg-emerald-500/[0.06] p-4 text-sm">
-      <p className="font-semibold text-emerald-500">还没有错因图谱</p>
-      <p className="mt-1 text-muted-foreground">先做 1 次写作反馈，我们会自动生成你的四维弱项分析和下一步冲分建议。</p>
+      <p className="font-semibold text-emerald-500">还没有问题记录</p>
+      <p className="mt-1 text-muted-foreground">先做 1 次写作反馈，这里会显示主要问题和建议练习。</p>
       <Button className="mt-3" size="sm" onClick={onQuickStart}>
         <Sparkles className="mr-1.5 h-4 w-4" />
-        立即开始首次冲分
+        开始第一次练习
       </Button>
     </div>
   );
@@ -87,12 +87,12 @@ export function LoadingPipeline({ stage }: { stage: LoadingStage }) {
   if (stage === 'idle') return null;
 
   const steps: Array<{ id: LoadingStage; label: string; detail: string }> = [
-    { id: 'simulating', label: '生成题目中', detail: '正在构造 IELTS 官方风格仿真题...' },
-    { id: 'outlining', label: '构建提纲中', detail: '正在梳理可执行的段落结构...' },
+    { id: 'simulating', label: '生成题目中', detail: '正在准备 IELTS 风格题目...' },
+    { id: 'outlining', label: '构建提纲中', detail: '正在整理段落结构...' },
     { id: 'vocab', label: '词汇升级中', detail: '正在识别低阶表达并给出替换建议...' },
-    { id: 'tutoring', label: '教练响应中', detail: '正在结合你的草稿生成可执行建议...' },
-    { id: 'grading', label: '评分分析中', detail: '正在按 IELTS 四维标准评分并生成证据...' },
-    { id: 'micro', label: '生成补救课中', detail: '正在根据错因生成 5 分钟微课...' },
+    { id: 'tutoring', label: '教练响应中', detail: '正在根据你的草稿给出建议...' },
+    { id: 'grading', label: '评分中', detail: '正在按 IELTS 标准评分...' },
+    { id: 'micro', label: '生成练习中', detail: '正在根据问题生成 5 分钟练习...' },
   ];
 
   const activeIndex = Math.max(0, steps.findIndex((item) => item.id === stage));

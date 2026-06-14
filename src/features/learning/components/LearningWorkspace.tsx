@@ -124,7 +124,7 @@ export function LearningHeroPanel({
                   </p>
                 </div>
                 <p className="hidden max-w-[8rem] text-right text-sm leading-6 text-muted-foreground lg:block">
-                  {progress >= 100 ? '任务完成' : '保持节奏'}
+                  {progress >= 100 ? '任务完成' : '继续即可'}
                 </p>
               </div>
               <Progress
