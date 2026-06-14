@@ -25,7 +25,7 @@ vi.mock('./supabase', () => ({
   },
 }));
 
-import { getAuthSession, startDemoSession } from './supabase-auth';
+import { getAuthSession, getCurrentUser, startDemoSession } from './supabase-auth';
 
 describe('demo auth session', () => {
   beforeEach(() => {
@@ -51,5 +51,52 @@ describe('demo auth session', () => {
 
     const session = await getAuthSession();
     expect(session.data.session?.user).toMatchObject({ id: user.id, email: user.email });
+
+    const currentUser = await getCurrentUser();
+    expect(currentUser?.displayName).toBe('Demo Learner');
+  });
+
+  it('clears an expired Supabase SDK auth token without calling refresh', async () => {
+    localStorage.setItem(
+      'sb-example-auth-token',
+      JSON.stringify({
+        access_token: 'expired-token',
+        refresh_token: 'stale-refresh-token',
+        expires_at: Math.floor(Date.now() / 1000) - 60,
+        user: { id: 'remote-user', email: 'remote@example.com' },
+      }),
+    );
+
+    const session = await getAuthSession();
+
+    expect(session.data.session).toBeNull();
+    expect(localStorage.getItem('sb-example-auth-token')).toBeNull();
+    expect(authMocks.getSession).not.toHaveBeenCalled();
+  });
+
+  it('restores a fresh Supabase SDK session from local storage without a network refresh', async () => {
+    localStorage.setItem(
+      'sb-example-auth-token',
+      JSON.stringify({
+        access_token: 'fresh-token',
+        refresh_token: 'fresh-refresh-token',
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        user: {
+          id: 'remote-user',
+          email: 'remote@example.com',
+          user_metadata: { display_name: 'Remote Learner' },
+          created_at: '2026-01-01T00:00:00.000Z',
+        },
+      }),
+    );
+
+    const session = await getAuthSession();
+
+    expect(session.data.session?.user).toMatchObject({
+      id: 'remote-user',
+      email: 'remote@example.com',
+    });
+    expect(localStorage.getItem('supabase_user')).toContain('remote-user');
+    expect(authMocks.getSession).not.toHaveBeenCalled();
   });
 });
