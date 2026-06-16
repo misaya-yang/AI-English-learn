@@ -18,6 +18,7 @@ const authMocks = vi.hoisted(() => ({
 
 vi.mock('./supabase', () => ({
   SUPABASE_URL: 'https://example.supabase.co',
+  SUPABASE_DIRECT_URL: 'https://example.supabase.co',
   SUPABASE_ANON_KEY: 'anon-key',
   supabase: {
     auth: authMocks,

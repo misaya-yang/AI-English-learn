@@ -4,7 +4,8 @@
 // Checks the contracts the OPS-03 backlog item asks for:
 //   1. Frontend /login responds 200.
 //   2. Frontend / (app shell) responds 200.
-//   3. Supabase Auth health endpoint responds 200.
+//   3. Supabase Auth health endpoint responds 200 through the same-origin
+//      production proxy.
 //   4. AI chat edge function is reachable. If $JWT is set, expect 200;
 //      otherwise expect 401 — that is the fail-closed contract, not a
 //      failure.
@@ -21,7 +22,13 @@
 // No real user credentials are required unless $JWT is supplied.
 
 const BASE_URL = (process.env.BASE_URL || 'https://www.uuedu.online').replace(/\/$/, '');
-const SUPABASE_URL = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_DIRECT_URL = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_PROXY_DISABLED = process.env.SMOKE_SUPABASE_PROXY_DISABLED === 'true';
+const SUPABASE_PROXY_URL = (
+  process.env.SUPABASE_PROXY_URL ||
+  (SUPABASE_PROXY_DISABLED ? '' : `${BASE_URL}/supabase`)
+).replace(/\/$/, '');
+const SUPABASE_URL = SUPABASE_PROXY_DISABLED ? SUPABASE_DIRECT_URL : SUPABASE_PROXY_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
 const JWT = process.env.JWT || '';
 const TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS || 15000);
@@ -45,7 +52,7 @@ const fetchWithTimeout = async (url, opts = {}) => {
 
 const checks = [];
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+if (!SUPABASE_DIRECT_URL || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.error(
     'Missing Supabase smoke env. Set VITE_SUPABASE_URL/SUPABASE_URL and ' +
       'VITE_SUPABASE_ANON_KEY/SUPABASE_ANON_KEY explicitly.',
@@ -72,6 +79,19 @@ const runCheck = async (name, fn) => {
   }
 };
 
+const runDiagnosticCheck = async (name, fn) => {
+  try {
+    const result = await fn();
+    if (result === true || (result && result.ok)) {
+      recordCheck(name, 'pass', result.evidence || '');
+    } else {
+      recordCheck(name, 'warn', (result && result.evidence) || '');
+    }
+  } catch (error) {
+    recordCheck(name, 'warn', error instanceof Error ? error.message : String(error));
+  }
+};
+
 await runCheck('Frontend /login responds 200', async () => {
   const res = await fetchWithTimeout(`${BASE_URL}/login`, { method: 'GET' });
   return {
@@ -88,7 +108,7 @@ await runCheck('Frontend / (app shell) responds 200', async () => {
   };
 });
 
-await runCheck('Supabase Auth health endpoint responds 200', async () => {
+await runCheck('Supabase proxy Auth health endpoint responds 200', async () => {
   const res = await fetchWithTimeout(`${SUPABASE_URL}/auth/v1/health`, {
     headers: { apikey: SUPABASE_ANON_KEY },
   });
@@ -97,6 +117,18 @@ await runCheck('Supabase Auth health endpoint responds 200', async () => {
     evidence: `GET ${SUPABASE_URL}/auth/v1/health → ${res.status}`,
   };
 });
+
+if (!SUPABASE_PROXY_DISABLED && SUPABASE_DIRECT_URL !== SUPABASE_URL) {
+  await runDiagnosticCheck('Direct Supabase Auth health diagnostic', async () => {
+    const res = await fetchWithTimeout(`${SUPABASE_DIRECT_URL}/auth/v1/health`, {
+      headers: { apikey: SUPABASE_ANON_KEY },
+    });
+    return {
+      ok: res.status === 200,
+      evidence: `GET ${SUPABASE_DIRECT_URL}/auth/v1/health → ${res.status}`,
+    };
+  });
+}
 
 await runCheck('AI chat edge function reachable / fail-closed', async () => {
   const headers = {
@@ -213,6 +245,9 @@ const failed = checks.filter((check) => check.status === 'fail').length;
 console.log('\nProduction smoke report');
 console.log(ANSI.dim(`  base:     ${BASE_URL}`));
 console.log(ANSI.dim(`  supabase: ${SUPABASE_URL}`));
+if (SUPABASE_DIRECT_URL !== SUPABASE_URL) {
+  console.log(ANSI.dim(`  direct:   ${SUPABASE_DIRECT_URL}`));
+}
 console.log(ANSI.dim(`  jwt:      ${JWT ? 'provided' : 'absent (fail-closed assertions used)'}`));
 console.log('');
 

@@ -60,6 +60,39 @@ export function resolveSupabaseEnv(env: {
   };
 }
 
+export function resolveSupabaseRuntimeUrl(options: {
+  configuredUrl: string;
+  prod?: boolean;
+  mode?: string;
+  locationOrigin?: string;
+  locationHostname?: string;
+  proxyPath?: string;
+  proxyDisabled?: string | boolean;
+}): string {
+  const configuredUrl = options.configuredUrl.replace(/\/$/, '');
+  const proxyDisabled = options.proxyDisabled === true || options.proxyDisabled === 'true';
+  const isProd = Boolean(options.prod) || options.mode === 'production';
+
+  if (!isProd || proxyDisabled) {
+    return configuredUrl;
+  }
+
+  const hostname = options.locationHostname || '';
+  const isLocalHost =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname.endsWith('.local');
+
+  if (!options.locationOrigin || isLocalHost) {
+    return configuredUrl;
+  }
+
+  const rawProxyPath = (options.proxyPath || '/supabase').trim() || '/supabase';
+  const proxyPath = rawProxyPath.startsWith('/') ? rawProxyPath : `/${rawProxyPath}`;
+  return `${options.locationOrigin.replace(/\/$/, '')}${proxyPath.replace(/\/$/, '')}`;
+}
+
 const resolved = resolveSupabaseEnv({
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
   VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -68,7 +101,18 @@ const resolved = resolveSupabaseEnv({
   MODE: import.meta.env.MODE,
 });
 
-export const SUPABASE_URL = resolved.url;
+const runtimeSupabaseUrl = resolveSupabaseRuntimeUrl({
+  configuredUrl: resolved.url,
+  prod: import.meta.env.PROD,
+  mode: import.meta.env.MODE,
+  locationOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
+  locationHostname: typeof window !== 'undefined' ? window.location.hostname : undefined,
+  proxyPath: import.meta.env.VITE_SUPABASE_PROXY_PATH,
+  proxyDisabled: import.meta.env.VITE_SUPABASE_PROXY_DISABLED,
+});
+
+export const SUPABASE_DIRECT_URL = resolved.url;
+export const SUPABASE_URL = runtimeSupabaseUrl;
 export const SUPABASE_ANON_KEY = resolved.anonKey;
 
 // Create Supabase client

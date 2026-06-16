@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = 'vocabdaily-v1';
+const CACHE_NAME = 'vocabdaily-2026-06-workbench-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -33,7 +33,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
   // API and Supabase calls: network only
-  if (url.pathname.startsWith('/rest/') || url.pathname.startsWith('/functions/')) return;
+  if (
+    url.pathname.startsWith('/rest/') ||
+    url.pathname.startsWith('/functions/') ||
+    url.pathname.startsWith('/supabase/')
+  ) return;
 
   // Static assets (JS, CSS, images): cache-first
   if (/\.(js|css|png|jpg|svg|woff2?)$/.test(url.pathname)) {

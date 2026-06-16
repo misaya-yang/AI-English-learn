@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveSupabaseEnv } from './supabase';
+import { resolveSupabaseEnv, resolveSupabaseRuntimeUrl } from './supabase';
 
 describe('resolveSupabaseEnv', () => {
   it('throws when non-prod env is missing without explicit fallback opt-in', () => {
@@ -90,5 +90,64 @@ describe('resolveSupabaseEnv', () => {
         PROD: true,
       }),
     ).toThrow(/VITE_SUPABASE_URL.*VITE_SUPABASE_ANON_KEY/);
+  });
+});
+
+describe('resolveSupabaseRuntimeUrl', () => {
+  it('keeps the configured project URL outside production', () => {
+    expect(
+      resolveSupabaseRuntimeUrl({
+        configuredUrl: 'https://example.supabase.co/',
+        mode: 'development',
+        locationOrigin: 'http://localhost:5173',
+        locationHostname: 'localhost',
+      }),
+    ).toBe('https://example.supabase.co');
+  });
+
+  it('uses the same-origin proxy on production browser origins', () => {
+    expect(
+      resolveSupabaseRuntimeUrl({
+        configuredUrl: 'https://example.supabase.co',
+        prod: true,
+        locationOrigin: 'https://www.uuedu.online',
+        locationHostname: 'www.uuedu.online',
+      }),
+    ).toBe('https://www.uuedu.online/supabase');
+  });
+
+  it('supports a custom production proxy path', () => {
+    expect(
+      resolveSupabaseRuntimeUrl({
+        configuredUrl: 'https://example.supabase.co',
+        prod: true,
+        locationOrigin: 'https://www.uuedu.online/',
+        locationHostname: 'www.uuedu.online',
+        proxyPath: 'api/supabase/',
+      }),
+    ).toBe('https://www.uuedu.online/api/supabase');
+  });
+
+  it('keeps the direct project URL when the proxy is disabled', () => {
+    expect(
+      resolveSupabaseRuntimeUrl({
+        configuredUrl: 'https://example.supabase.co',
+        prod: true,
+        locationOrigin: 'https://www.uuedu.online',
+        locationHostname: 'www.uuedu.online',
+        proxyDisabled: 'true',
+      }),
+    ).toBe('https://example.supabase.co');
+  });
+
+  it('keeps localhost production previews direct so Vercel-only rewrites are not assumed', () => {
+    expect(
+      resolveSupabaseRuntimeUrl({
+        configuredUrl: 'https://example.supabase.co',
+        prod: true,
+        locationOrigin: 'http://127.0.0.1:4173',
+        locationHostname: '127.0.0.1',
+      }),
+    ).toBe('https://example.supabase.co');
   });
 });

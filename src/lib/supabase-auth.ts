@@ -1,5 +1,5 @@
 // Supabase Authentication Service
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase';
+import { supabase, SUPABASE_URL, SUPABASE_DIRECT_URL, SUPABASE_ANON_KEY } from './supabase';
 import { buildLocalAuthUserId, isLocalAuthUserId } from './localAuthIdentity';
 
 export interface AuthUser {
@@ -49,7 +49,7 @@ function isBrowserEnvironment(): boolean {
 
 function getSupabaseAuthStorageKey(): string | null {
   try {
-    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
+    const projectRef = new URL(SUPABASE_DIRECT_URL).hostname.split('.')[0];
     return projectRef ? `sb-${projectRef}-auth-token` : null;
   } catch {
     return null;
