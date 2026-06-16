@@ -12,7 +12,7 @@
 
 The global UI upgrade has passed the full local release gate, browser regression, Vercel production deployment, and production bad-token browser smoke. The app is deployed and aliased at `https://www.uuedu.online`.
 
-One provider warning remains: from this network, `zjkbktdmwencnouwfrij.supabase.co` resolves to `198.18.0.17` and TLS fails with `SSL_ERROR_SYSCALL`, so `npm run smoke:prod` cannot reach Supabase Auth, AI chat, or billing functions. The current frontend bundle does not trigger the prior refresh-token storm: production bad-token smoke observed 0 refresh-token requests, cleared the stale token, migrated old dark preference to light, and redirected to login.
+One provider warning remains: the configured Supabase project ref `zjkbktdmwencnouwfrij.supabase.co` is not publicly resolvable. DNS-over-HTTPS returns NXDOMAIN for both A and AAAA records, so `npm run smoke:prod` cannot reach Supabase Auth, AI chat, or billing functions. The app now routes production Supabase traffic through `/api/supabase` and fails closed with a non-sensitive `upstreamHost` diagnostic instead of starting a refresh storm or using an implicit fallback. The current frontend bundle does not trigger the prior refresh-token storm: production bad-token smoke observed 0 refresh-token requests, cleared the stale token, migrated old dark preference to light, and redirected to login.
 
 ## Plan Followed
 
@@ -45,6 +45,7 @@ Plan file: `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-05-regression-evi
 | Protected deployment URL smoke | `BASE_URL=https://ai-english-learn-noxvsc1tw-zedpl28174-3992s-projects.vercel.app npm run smoke:prod` | expected protection | Direct deployment URL returned 401 due Vercel deployment protection; production alias is the user-facing URL. |
 | Production bad-token smoke | Playwright against `https://www.uuedu.online/dashboard/today` | passed | 0 refresh-token requests, 0 console errors, stale token cleared, old dark preference migrated to light, redirected to `/login`. |
 | Production home smoke | Playwright against `https://www.uuedu.online/` | passed | H1 `今天练什么`, root theme `light`, body background `rgb(246, 247, 249)`. |
+| Supabase proxy hardening | `npx vercel --prod --yes` then `npm run smoke:prod` | blocked by provider config | Latest deployment `dpl_DePiLpvEWvHxwZoaTdAqqqzMH65s` is READY and aliased. `/api/supabase/*` returns `502` with `upstreamHost: "zjkbktdmwencnouwfrij.supabase.co"`. Cloudflare DNS-over-HTTPS returns NXDOMAIN for that host; `api.supabase.com` itself is reachable. |
 
 ## Browser Evidence
 
@@ -60,9 +61,9 @@ Plan file: `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-05-regression-evi
 ## Deployment Evidence
 
 - Production URL: `https://www.uuedu.online`
-- Vercel deployment URL: `https://ai-english-learn-noxvsc1tw-zedpl28174-3992s-projects.vercel.app`
-- Vercel deployment id: `dpl_AmbxY5xomBkp4i3thgGBwKBFW6Vg`
-- Inspector: `https://vercel.com/zedpl28174-3992s-projects/ai-english-learn/AmbxY5xomBkp4i3thgGBwKBFW6Vg`
+- Vercel deployment URL: `https://ai-english-learn-avh4hriy0-zedpl28174-3992s-projects.vercel.app`
+- Vercel deployment id: `dpl_DePiLpvEWvHxwZoaTdAqqqzMH65s`
+- Inspector: `https://vercel.com/zedpl28174-3992s-projects/ai-english-learn/DePiLpvEWvHxwZoaTdAqqqzMH65s`
 - Ready state: `READY`
 - Target: `production`
 - Alias: `https://www.uuedu.online`
@@ -73,7 +74,7 @@ Plan file: `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-05-regression-evi
 - Manual dark mode remains available, but it is no longer near-black.
 - Practice first wrong attempt does not reveal the answer; second wrong or explicit reveal shows answer; listening follows the same rule.
 - Specialist modules, dashboard shell, and public/auth surfaces have passed final browser route coverage.
-- Production Supabase reachability remains a network/provider warning from this environment and should be checked from an unrestricted network or Supabase dashboard.
+- Production Supabase reachability is blocked by the configured project ref. Restore the Supabase project DNS or update Vercel Production with a valid `VITE_SUPABASE_URL`/`SUPABASE_URL` plus `VITE_SUPABASE_ANON_KEY`/`SUPABASE_ANON_KEY`, then rerun `npm run smoke:prod`.
 
 ## Rollback Plan
 
@@ -81,5 +82,4 @@ If the UI release must be reverted, roll back Vercel deployment `dpl_AmbxY5xomBk
 
 ## Handoff Notes
 
-No further PRD phases remain. The only unresolved item is external Supabase reachability from this network; frontend bad-token behavior has been verified locally and on production.
-
+No further PRD phases remain. The only unresolved item is external Supabase project configuration: `zjkbktdmwencnouwfrij.supabase.co` returns NXDOMAIN from public DNS, while `api.supabase.com` is reachable. Frontend bad-token behavior has been verified locally and on production.
