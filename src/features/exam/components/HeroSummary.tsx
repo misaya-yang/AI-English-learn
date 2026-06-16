@@ -88,7 +88,7 @@ export function HeroSummary({
         {/* Key metrics row */}
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Band progress */}
-          <div className="rounded-md border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
+          <div className="rounded-md border border-[hsl(var(--accent-exam)/0.24)] bg-[hsl(var(--accent-exam)/0.08)] p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">目标 Band</p>
@@ -98,11 +98,11 @@ export function HeroSummary({
                   {targetBand.toFixed(1)}
                 </p>
               </div>
-              <span className="rounded-md border border-emerald-500/25 bg-emerald-500/[0.12] px-3 py-1 text-sm font-semibold text-emerald-500">
+              <span className="rounded-md border border-[hsl(var(--accent-exam)/0.28)] bg-[hsl(var(--accent-exam)/0.12)] px-3 py-1 text-sm font-semibold text-foreground">
                 {targetProgress}%
               </span>
             </div>
-            <Progress value={targetProgress} className="mt-4 h-2 [&>[data-slot=progress-indicator]]:bg-emerald-500" />
+            <Progress value={targetProgress} className="mt-4 h-2 [&>[data-slot=progress-indicator]]:bg-[hsl(var(--accent-exam))]" />
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{nextActionLabel}</p>
           </div>
 
@@ -153,7 +153,7 @@ export function HeroSummary({
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onContinueWriting} className="bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button onClick={onContinueWriting}>
             继续今日写作
           </Button>
           <Button variant="outline" onClick={onStartSimulation} disabled={isBusy}>
@@ -177,7 +177,7 @@ function QuotaPill({ label, remaining, total }: { label: string; remaining: numb
         'rounded-md border px-2.5 py-0.5 text-xs font-medium',
         isEmpty
           ? 'border-rose-400/40 bg-rose-500/[0.08] text-rose-500'
-          : 'border-emerald-400/40 bg-emerald-500/[0.08] text-emerald-600',
+          : 'border-[hsl(var(--accent-exam)/0.32)] bg-[hsl(var(--accent-exam)/0.08)] text-foreground',
       )}
     >
       {label} {remaining}/{safeTotal}

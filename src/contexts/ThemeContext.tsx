@@ -25,15 +25,34 @@ const initialState: ThemeProviderState = {
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+const THEME_VERSION = '2026-06-workbench-light';
+
+const normalizeTheme = (value: string | null, fallback: Theme): Theme =>
+  value === 'dark' || value === 'light' || value === 'system' ? value : fallback;
+
+const getInitialTheme = (storageKey: string, fallback: Theme): Theme => {
+  const versionKey = `${storageKey}-version`;
+  const storedTheme = localStorage.getItem(storageKey);
+  const storedVersion = localStorage.getItem(versionKey);
+
+  if (storedVersion !== THEME_VERSION && storedTheme && storedTheme !== 'light') {
+    localStorage.setItem(storageKey, 'light');
+    localStorage.setItem(versionKey, THEME_VERSION);
+    return 'light';
+  }
+
+  localStorage.setItem(versionKey, THEME_VERSION);
+  return normalizeTheme(storedTheme, fallback);
+};
 
 export function ThemeProvider({
   children,
   defaultTheme = 'light',
-  storageKey = 'vite-ui-theme',
+  storageKey = 'vocabdaily-theme',
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => getInitialTheme(storageKey, defaultTheme)
   );
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => getSystemResolvedTheme());
   const resolvedTheme = theme === 'system' ? systemTheme : theme;
@@ -42,6 +61,7 @@ export function ThemeProvider({
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(resolvedTheme);
+    root.style.colorScheme = resolvedTheme;
   }, [resolvedTheme]);
 
   // Listen for system theme changes
@@ -60,6 +80,7 @@ export function ThemeProvider({
     theme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
+      localStorage.setItem(`${storageKey}-version`, THEME_VERSION);
       setTheme(theme);
     },
     resolvedTheme,

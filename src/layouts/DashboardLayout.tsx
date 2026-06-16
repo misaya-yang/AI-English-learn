@@ -507,7 +507,7 @@ export default function DashboardLayout() {
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-semibold">{item.label}</p>
                 {item.badge ? (
-                  <span className="rounded-md border border-sidebar-border bg-sidebar-primary/12 px-1.5 py-0.5 text-[10px] font-medium text-sidebar-primary">
+                  <span className="rounded-md border border-sidebar-border bg-sidebar-primary/[0.12] px-1.5 py-0.5 text-[10px] font-medium text-sidebar-primary">
                     {item.badge}
                   </span>
                 ) : null}
@@ -907,7 +907,7 @@ export default function DashboardLayout() {
                 <div>
                   <p className="mt-1 text-base font-semibold">{copy.continueTodayHeading}</p>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-primary/20 bg-sidebar-primary/12 text-sidebar-primary">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-primary/20 bg-sidebar-primary/[0.12] text-sidebar-primary">
                   <ClipboardList className="h-4 w-4" />
                 </div>
               </div>

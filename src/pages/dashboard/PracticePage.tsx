@@ -103,6 +103,18 @@ const lightInputClass =
 
 const lightSelectContentClass = 'border-border bg-background text-foreground';
 
+const practiceFeedbackToneClass: Record<PracticeAttemptOutcome, string> = {
+  firstTryCorrect: 'border-[hsl(var(--success)/0.42)] bg-[hsl(var(--success)/0.13)] text-foreground',
+  recovered: 'border-[hsl(var(--accent-practice)/0.42)] bg-[hsl(var(--accent-practice)/0.14)] text-foreground',
+  tryAgain: 'border-[hsl(var(--accent-practice)/0.34)] bg-[hsl(var(--accent-practice)/0.1)] text-foreground',
+  needsReview: 'border-[hsl(var(--warning)/0.48)] bg-[hsl(var(--warning)/0.14)] text-foreground',
+};
+
+const correctOptionClass =
+  'border-[hsl(var(--success)/0.52)] bg-[hsl(var(--success)/0.13)] text-foreground';
+const blockedOptionClass =
+  'border-destructive/40 bg-destructive/10 text-foreground';
+
 export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
@@ -1485,11 +1497,7 @@ export default function PracticePage() {
                 <div
                   className={cn(
                     'mx-auto max-w-md rounded-md border px-4 py-3 text-left text-sm leading-6',
-                    listeningOutcome === 'needsReview'
-                      ? 'border-amber-300 bg-amber-50 text-amber-900'
-                      : listeningOutcome === 'tryAgain'
-                        ? 'border-blue-200 bg-blue-50 text-blue-900'
-                        : 'border-green-200 bg-green-50 text-green-900',
+                    practiceFeedbackToneClass[listeningOutcome],
                   )}
                 >
                   <p className="font-semibold">
@@ -1702,12 +1710,12 @@ export default function PracticePage() {
                   className={cn(
                     'flex items-center space-x-3 rounded-md border px-4 py-4 transition-all',
                     showCorrect
-                      ? 'border-green-300 bg-green-50 text-foreground'
+                      ? correctOptionClass
                       : blocked
-                        ? 'border-red-200 bg-red-50 text-foreground'
+                        ? blockedOptionClass
                         : selected
                           ? 'border-primary/50 bg-primary/10 text-foreground'
-                          : 'border-border bg-card hover:bg-muted hover:border-border',
+                          : 'border-border bg-[hsl(var(--surface-raised))] hover:border-border hover:bg-muted',
                     (blocked || isChoiceTerminal) && 'cursor-default',
                   )}
                 >
@@ -1726,8 +1734,8 @@ export default function PracticePage() {
                   >
                     {option}
                   </Label>
-                  {showCorrect ? <Check className="h-5 w-5 text-green-700" /> : null}
-                  {blocked ? <X className="h-5 w-5 text-red-600" /> : null}
+                  {showCorrect ? <Check className="h-5 w-5 text-[hsl(var(--success))]" /> : null}
+                  {blocked ? <X className="h-5 w-5 text-destructive" /> : null}
                 </motion.div>
               );
             })}
@@ -1737,13 +1745,7 @@ export default function PracticePage() {
             <div
               className={cn(
                 'rounded-md border px-4 py-3 text-sm leading-6',
-                choiceOutcome === 'needsReview'
-                  ? 'border-amber-300 bg-amber-50 text-amber-950'
-                  : choiceOutcome === 'tryAgain'
-                    ? 'border-blue-200 bg-blue-50 text-blue-950'
-                    : choiceOutcome === 'recovered'
-                      ? 'border-sky-200 bg-sky-50 text-sky-950'
-                      : 'border-green-200 bg-green-50 text-green-950',
+                practiceFeedbackToneClass[choiceOutcome],
               )}
             >
               <p className="font-semibold">

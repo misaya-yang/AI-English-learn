@@ -38,6 +38,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { BrandMark } from '@/features/marketing/BrandMark';
 
 const normalizeWordKey = (value: string): string => value.trim().toLowerCase();
 
@@ -457,20 +458,17 @@ export default function WordOfTheDayPage() {
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <BookOpen className="h-4 w-4" />
-              </span>
-              <span className="text-sm font-semibold">VocabDaily</span>
-            </Link>
-            <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
-              <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
-                {isAuthenticated ? copy.dashboard : copy.startLearning}
-              </Link>
-            </Button>
-            <div className="hidden items-center gap-1 sm:flex">
-              <ThemeToggle />
-              <LanguageSwitcher />
+            <BrandMark />
+            <div className="flex items-center gap-1.5">
+              <div className="hidden items-center gap-1 sm:flex">
+                <ThemeToggle />
+                <LanguageSwitcher />
+              </div>
+              <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+                <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
+                  {isAuthenticated ? copy.dashboard : copy.startLearning}
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

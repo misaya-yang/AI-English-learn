@@ -7,9 +7,9 @@ interface PhonemeIssueListProps {
 }
 
 const severityColor: Record<PhonemeIssue['severity'], string> = {
-  minor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  moderate: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  major: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  minor: 'bg-[hsl(var(--warning)/0.14)] text-[hsl(var(--warning-foreground))] border border-[hsl(var(--warning)/0.24)]',
+  moderate: 'bg-[hsl(var(--accent-exam)/0.14)] text-foreground border border-[hsl(var(--accent-exam)/0.26)]',
+  major: 'bg-[hsl(var(--danger)/0.12)] text-[hsl(var(--danger))] border border-[hsl(var(--danger)/0.24)]',
 };
 
 export function PhonemeIssueList({ issues }: PhonemeIssueListProps) {

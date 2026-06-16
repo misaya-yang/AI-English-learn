@@ -245,7 +245,7 @@ export default function PricingPage() {
             {isAuthenticated ? (
               <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
                 <Link to="/dashboard/today">
-                  {isZh ? '进入控制台' : 'Go to dashboard'}
+                  {isZh ? '进入今日任务' : 'Go to Today'}
                 </Link>
               </Button>
             ) : (

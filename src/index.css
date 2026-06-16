@@ -95,57 +95,57 @@
   }
 
   .dark {
-    --background: 220 15% 16%;
-    --foreground: 214 18% 92%;
-    --card: 220 14% 19%;
-    --card-foreground: 214 22% 92%;
-    --popover: 220 15% 18%;
-    --popover-foreground: 214 22% 92%;
-    --primary: 213 50% 68%;
-    --primary-foreground: 220 24% 12%;
-    --secondary: 220 13% 22%;
-    --secondary-foreground: 214 22% 92%;
-    --muted: 220 13% 22%;
-    --muted-foreground: 216 13% 68%;
-    --accent: 213 50% 68%;
-    --accent-foreground: 220 24% 12%;
-    --destructive: 0 72% 42%;
-    --destructive-foreground: 210 25% 94%;
-    --border: 220 12% 31%;
-    --input: 220 12% 31%;
-    --ring: 213 68% 64%;
-    --accent-practice: 207 48% 64%;
-    --accent-coach: 218 38% 68%;
-    --accent-exam: 36 90% 58%;
-    --accent-memory: 176 46% 58%;
-    --sidebar-background: 220 14% 17%;
-    --sidebar-foreground: 214 18% 90%;
-    --sidebar-primary: 213 50% 68%;
-    --sidebar-primary-foreground: 220 24% 12%;
-    --sidebar-accent: 220 13% 22%;
-    --sidebar-accent-foreground: 214 20% 92%;
-    --sidebar-border: 220 12% 31%;
-    --sidebar-ring: 213 68% 64%;
+    --background: 214 12% 49%;
+    --foreground: 214 28% 96%;
+    --card: 214 12% 56%;
+    --card-foreground: 214 28% 97%;
+    --popover: 214 12% 55%;
+    --popover-foreground: 214 28% 97%;
+    --primary: 211 58% 82%;
+    --primary-foreground: 218 26% 17%;
+    --secondary: 214 10% 62%;
+    --secondary-foreground: 214 28% 96%;
+    --muted: 214 10% 60%;
+    --muted-foreground: 214 20% 88%;
+    --accent: 211 58% 82%;
+    --accent-foreground: 218 26% 17%;
+    --destructive: 0 72% 66%;
+    --destructive-foreground: 210 25% 98%;
+    --border: 214 10% 68%;
+    --input: 214 10% 68%;
+    --ring: 211 74% 82%;
+    --accent-practice: 207 58% 80%;
+    --accent-coach: 218 46% 82%;
+    --accent-exam: 38 92% 70%;
+    --accent-memory: 176 48% 72%;
+    --sidebar-background: 214 11% 52%;
+    --sidebar-foreground: 214 26% 96%;
+    --sidebar-primary: 211 58% 82%;
+    --sidebar-primary-foreground: 218 26% 17%;
+    --sidebar-accent: 214 10% 58%;
+    --sidebar-accent-foreground: 214 28% 97%;
+    --sidebar-border: 214 10% 66%;
+    --sidebar-ring: 211 74% 82%;
 
     /* Semantic status colors — dark */
-    --success: 158 46% 48%;
-    --success-foreground: 220 24% 12%;
+    --success: 158 42% 58%;
+    --success-foreground: 218 26% 17%;
     --warning: 38 92% 55%;
     --warning-foreground: 38 40% 12%;
-    --danger: 0 72% 42%;
+    --danger: 0 68% 58%;
     --danger-foreground: 210 25% 94%;
-    --info: 209 82% 60%;
-    --info-foreground: 220 24% 12%;
+    --info: 209 78% 70%;
+    --info-foreground: 218 26% 17%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 220 14% 21%;
-    --surface-raised: 220 14% 19%;
-    --surface-sunken: 220 15% 15%;
-    --border-strong: 220 12% 38%;
-    --shadow-studio: 220 24% 7%;
-    --gradient-start: 213 68% 64%;
-    --gradient-end: 207 74% 64%;
-    --grid-line-color: 214 22% 92% / 0.03;
+    --surface-elevated: 214 11% 59%;
+    --surface-raised: 214 12% 56%;
+    --surface-sunken: 214 11% 45%;
+    --border-strong: 214 10% 74%;
+    --shadow-studio: 218 18% 24%;
+    --gradient-start: 211 58% 82%;
+    --gradient-end: 202 56% 78%;
+    --grid-line-color: 214 22% 92% / 0.018;
   }
 }
 
@@ -153,6 +153,12 @@
   * {
     @apply border-border;
   }
+  html,
+  #root {
+    min-height: 100%;
+    background: hsl(var(--background));
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-ui);
@@ -189,6 +195,18 @@
     z-index: -1;
     pointer-events: none;
     display: none;
+  }
+
+  .home-study-bg {
+    position: relative;
+    isolation: isolate;
+    background:
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken) / 0.32) 100%);
+  }
+
+  .dark .home-study-bg {
+    background:
+      linear-gradient(180deg, hsl(214 12% 54%) 0%, hsl(var(--background)) 52%, hsl(var(--surface-sunken)) 100%);
   }
 
   .premium-panel,
@@ -283,7 +301,7 @@
   .dark .premium-bottom-nav,
   .dark .premium-bottom-nav-learning,
   .dark .premium-action-bar {
-    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.45);
+    box-shadow: 0 1px 2px hsl(var(--shadow-studio) / 0.22);
   }
 
   .dark .premium-status-chip {
@@ -318,7 +336,7 @@
 .dark .glow-surface {
   box-shadow:
     0 1px 0 hsl(var(--border) / 0.8),
-    0 18px 42px -30px hsl(0 0% 0% / 0.9);
+    0 18px 42px -30px hsl(var(--shadow-studio) / 0.55);
 }
 
 /* ─── Premium Grid Background (deprecated — disabled) ─── */
@@ -413,7 +431,7 @@
   animation: confetti-fall 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* ─── Custom styles for VocabDaily AI ─── */
+/* ─── Custom styles for VocabDaily app ─── */
 .perspective-1000 {
   perspective: 1000px;
 }

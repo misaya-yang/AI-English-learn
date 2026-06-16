@@ -45,10 +45,10 @@ interface LastImportSummary {
 }
 
 const statusColors: Record<string, string> = {
-  new: 'bg-gray-500',
-  learning: 'bg-[hsl(var(--accent-practice))]',
-  review: 'bg-[hsl(var(--warning))]',
-  mastered: 'bg-[hsl(var(--success))]',
+  new: 'border border-border bg-muted text-muted-foreground',
+  learning: 'border border-[hsl(var(--accent-practice)/0.24)] bg-[hsl(var(--accent-practice)/0.12)] text-foreground',
+  review: 'border border-[hsl(var(--warning)/0.28)] bg-[hsl(var(--warning)/0.12)] text-foreground',
+  mastered: 'border border-[hsl(var(--success)/0.28)] bg-[hsl(var(--success)/0.12)] text-foreground',
 };
 
 const statusLabels: Record<string, string> = {
@@ -562,7 +562,7 @@ export default function VocabularyBankPage() {
                       <Badge variant="outline">自定义</Badge>
                     )}
                     {isActive && (
-                      <Badge className="rounded-md bg-[hsl(var(--accent-memory))] text-white hover:bg-[hsl(var(--accent-memory))]">
+                      <Badge className="rounded-md bg-[hsl(var(--accent-memory)/0.14)] text-foreground hover:bg-[hsl(var(--accent-memory)/0.18)]">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         {isZh ? '当前词书' : 'Active'}
                       </Badge>
@@ -717,7 +717,7 @@ export default function VocabularyBankPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-	                        <Badge className={cn(statusColors[status], 'text-white')}>
+	                        <Badge className={statusColors[status]}>
                             {isZh ? (statusLabelsZh[status] || status) : (statusLabels[status] || status)}
                           </Badge>
                         <Button

@@ -14,7 +14,7 @@ interface ErrorGraphProps {
   onSelectTag?: (tag: string) => void;
 }
 
-const COLORS = ['#10b981', '#34d399', '#6ee7b7', '#2dd4bf', '#14b8a6', '#22c55e'];
+const COLORS = ['#36577a', '#c26a1a', '#8d5a2b', '#607d9b', '#9b6a44', '#4f6f73'];
 
 export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProps) {
   if (analytics.length === 0) {
@@ -51,8 +51,8 @@ export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProp
             <Tooltip
               contentStyle={{
                 borderRadius: 10,
-                borderColor: 'hsl(161 84% 40% / 0.35)',
-                background: 'var(--background)',
+                borderColor: 'hsl(var(--primary) / 0.35)',
+                background: 'hsl(var(--background))',
               }}
               formatter={(value: number, _name: string, payload: { payload?: ErrorGraphDatum }) => {
                 const item = payload.payload;
@@ -71,8 +71,8 @@ export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProp
             <Tooltip
               contentStyle={{
                 borderRadius: 10,
-                borderColor: 'hsl(161 84% 40% / 0.35)',
-                background: 'var(--background)',
+                borderColor: 'hsl(var(--primary) / 0.35)',
+                background: 'hsl(var(--background))',
               }}
               formatter={(value: number, _name: string, payload: { payload?: ErrorGraphDatum }) => {
                 const item = payload.payload;
@@ -107,8 +107,8 @@ export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProp
               className={cn(
                 'rounded-md border px-2.5 py-1 text-xs transition-colors',
                 active
-                  ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600'
-                  : 'border-border/60 text-muted-foreground hover:border-emerald-500/40 hover:text-foreground',
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
               )}
             >
               <span className="inline-flex items-center gap-1">

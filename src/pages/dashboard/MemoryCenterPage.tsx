@@ -276,7 +276,7 @@ export default function MemoryCenterPage() {
                     <div className="flex flex-wrap items-center gap-2">
 	                      <Badge variant="outline">{kindLabel(item.kind, language)}</Badge>
 	                      {item.isPinned && (
-	                        <Badge className="bg-emerald-600 text-white">
+	                        <Badge className="border border-[hsl(var(--accent-memory)/0.28)] bg-[hsl(var(--accent-memory)/0.12)] text-foreground hover:bg-[hsl(var(--accent-memory)/0.16)]">
 	                          {isZh ? '置顶' : 'Pinned'}
 	                        </Badge>
 	                      )}

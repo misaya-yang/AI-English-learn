@@ -44,10 +44,10 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? '今日英语练习' : 'Today\'s English practice',
+      title: isZh ? '今天练什么' : 'What to practice today',
       subtitle: isZh
-        ? '先复习，再学新词，最后做一组短练习。'
-        : 'Review due words, add a few new ones, then do one short drill.',
+        ? '先复习 12 个词，再学 5 个新词，最后做 1 个短练习。'
+        : 'Review 12 due words, learn 5 new ones, then finish 1 short drill.',
       primaryCta: isZh ? '开始练习' : 'Start practice',
       secondaryCta: isZh ? '看样课' : 'Try sample',
       evidence: [
@@ -57,9 +57,9 @@ export default function Home() {
       ],
     },
     today: {
-      label: isZh ? '今日学习' : 'Today plan',
-      title: isZh ? '先完成这 3 项' : 'Finish these 3 items',
-      subtitle: isZh ? '登录后会换成你的词库和错题' : 'Uses your words and mistakes after sign-in',
+      label: isZh ? '学习清单' : 'Practice list',
+      title: isZh ? '3 项，约 15 分钟' : '3 tasks, about 15 min',
+      subtitle: isZh ? '登录后换成你的词库和错题' : 'Uses your words and mistakes after sign-in',
       items: [
         {
           title: isZh ? '复习 12 个词' : 'Review 12 words',
@@ -77,9 +77,9 @@ export default function Home() {
           duration: isZh ? '4 分钟' : '4 min',
         },
       ],
-      summary: isZh ? '完成后再加练' : 'Finish these before extra practice',
+      summary: isZh ? '完成后再决定是否加练' : 'Finish these before extra practice',
     },
-    examplesLabel: isZh ? '示例词' : 'Sample words',
+    examplesLabel: isZh ? '例词' : 'Sample words',
     workflow: {
       title: isZh ? '练习顺序' : 'Daily order',
       subtitle: isZh ? '先复习，再学新词，最后做一题输出。' : 'Review first, learn new words, then do one output task.',
@@ -99,7 +99,7 @@ export default function Home() {
       ],
     },
     footerCta: {
-      title: isZh ? '从今日学习开始。' : 'Start with today\'s plan.',
+      title: isZh ? '现在开始今天的练习' : 'Start today\'s practice',
       subtitle: isZh ? '先完成复习、新词和短练习，再决定是否继续。' : 'Review, learn, and practice before adding more.',
       button: isZh ? '开始练习' : 'Start practice',
     },
@@ -115,11 +115,11 @@ export default function Home() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="study-premium-bg min-h-[100dvh] bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-[hsl(var(--surface-raised))]/92 backdrop-blur">
+    <div className="home-study-bg min-h-[100dvh] text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-[hsl(var(--surface-raised)/0.88)] backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary text-primary-foreground">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary/[0.12] text-primary">
               <BookOpen className="h-4 w-4" />
             </span>
             <span className="text-sm font-semibold">VocabDaily</span>
@@ -162,7 +162,7 @@ export default function Home() {
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className="premium-panel-soft border-t border-border bg-card md:hidden">
+          <div className="border-t border-border bg-card md:hidden">
             <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
               <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
                 {copy.nav.workflow}
@@ -189,15 +189,14 @@ export default function Home() {
         )}
       </header>
 
-      <main>
-        <section className="border-b border-border/70">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:py-14">
+      <main id="main-content">
+        <section className="border-b border-border/60">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:py-12">
             <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-border bg-[hsl(var(--surface-raised))]/88 px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <div className="mb-4 inline-flex items-center rounded-md border border-border/70 bg-[hsl(var(--surface-raised)/0.72)] px-2.5 py-1 text-xs font-medium text-muted-foreground">
                 VocabDaily
               </div>
-              <h1 className="max-w-xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl md:text-[2.8rem]">
+              <h1 className="max-w-xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl md:text-[2.7rem]">
                 {copy.hero.title}
               </h1>
               <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
@@ -221,14 +220,14 @@ export default function Home() {
 
               <div className="mt-5 flex flex-wrap gap-2 text-sm text-muted-foreground">
                 {copy.hero.evidence.map((item) => (
-                  <span key={item} className="rounded-md border border-border/80 bg-[hsl(var(--surface-raised))]/70 px-3 py-1">
+                  <span key={item} className="rounded-md border border-border/[0.65] bg-[hsl(var(--surface-raised)/0.58)] px-3 py-1">
                     {item}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-md border border-border bg-[hsl(var(--surface-raised))] p-4 shadow-[0_1px_2px_hsl(var(--shadow-studio)/0.05)] sm:p-5">
+            <div className="relative overflow-hidden rounded-lg border border-border/75 bg-card/[0.88] p-4 shadow-[0_1px_2px_hsl(var(--shadow-studio)/0.045)] sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
@@ -241,12 +240,12 @@ export default function Home() {
                     {copy.today.subtitle}
                   </p>
                 </div>
-                <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-muted/50 text-muted-foreground">
+                <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-muted/[0.45] text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                 </span>
               </div>
 
-              <ul className="mt-5 divide-y divide-border/70" aria-label="Example daily learning queue">
+              <ul className="mt-5 divide-y divide-border/[0.55]" aria-label="Example daily learning queue">
                 <li className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -285,7 +284,7 @@ export default function Home() {
                 </li>
               </ul>
 
-              <div className="mt-4 border-t border-border/70 pt-4">
+              <div className="mt-4 border-t border-border/[0.55] pt-4">
                 <p className="text-xs text-muted-foreground">
                   {copy.today.summary}
                 </p>
@@ -298,9 +297,9 @@ export default function Home() {
             <p className="text-xs font-medium text-muted-foreground">
               {copy.examplesLabel}
             </p>
-            <div className="mt-3 overflow-hidden rounded-md border border-border bg-[hsl(var(--surface-raised))]">
+            <div className="mt-3 overflow-hidden rounded-lg border border-border/75 bg-card/[0.72]">
               {sampleWords.map((w) => (
-                <div key={w.word} className="grid gap-2 border-b border-border px-4 py-3 last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-baseline">
+                <div key={w.word} className="grid gap-2 border-b border-border/[0.55] px-4 py-3 last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-baseline">
                   <div className="flex items-baseline gap-2">
                     <span className="text-base font-semibold">{w.word}</span>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
@@ -312,7 +311,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="workflow" className="border-b border-border/70 bg-[hsl(var(--surface-raised))]/34">
+        <section id="workflow" className="border-b border-border/60 bg-[hsl(var(--surface-raised)/0.28)]">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
             <h2 className="text-xl font-semibold sm:text-2xl">
               {copy.workflow.title}
@@ -341,9 +340,9 @@ export default function Home() {
                   body: copy.workflow.steps[2].body,
                 },
               ].map((step, i) => (
-                <div key={i} className="rounded-md border border-border bg-[hsl(var(--surface-raised))] p-4">
+                <div key={i} className="rounded-lg border border-border/75 bg-card/[0.78] p-4">
                   <span
-                    className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground"
+                    className="flex h-9 w-9 items-center justify-center rounded-md bg-muted/70 text-muted-foreground"
                   >
                     <step.icon className="h-4 w-4" />
                   </span>
@@ -375,7 +374,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-border/70 bg-[hsl(var(--surface-raised))]/88">
+      <footer className="border-t border-border/60 bg-[hsl(var(--surface-raised)/0.72)]">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
           <div className="flex items-center gap-2">
             <span className={cn('flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary')}>

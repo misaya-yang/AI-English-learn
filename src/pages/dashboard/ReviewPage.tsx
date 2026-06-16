@@ -693,7 +693,7 @@ export default function ReviewPage() {
                     <motion.div
                       className={cn(
                         'h-full rounded-full transition-colors',
-                        currentItem.fsrs.retrievability >= 0.75 ? 'bg-emerald-500' :
+                        currentItem.fsrs.retrievability >= 0.75 ? 'bg-[hsl(var(--success))]' :
                         currentItem.fsrs.retrievability >= 0.5  ? 'bg-amber-500' :
                         currentItem.fsrs.retrievability >= 0.25 ? 'bg-orange-500' :
                                                                    'bg-red-500',

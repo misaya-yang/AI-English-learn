@@ -48,7 +48,7 @@ export function ExamReviewPanel({
                 variant="outline"
                 className={cn(
                   'rounded-md',
-                  (feedbackLatencyMs || feedback.latencyMs)! > 8000 ? 'border-amber-400/60 text-amber-500' : 'border-emerald-400/60 text-emerald-500',
+                  (feedbackLatencyMs || feedback.latencyMs)! > 8000 ? 'border-[hsl(var(--warning)/0.48)] text-[hsl(var(--warning))]' : 'border-[hsl(var(--success)/0.48)] text-[hsl(var(--success))]',
                 )}
               >
                 耗时 {(feedbackLatencyMs || feedback.latencyMs)}ms
@@ -111,8 +111,8 @@ export function ExamReviewPanel({
             </div>
           </div>
 
-          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.08] p-4">
-            <p className="text-sm font-semibold text-emerald-500">把这次错因立即转成动作</p>
+          <div className="rounded-lg border border-[hsl(var(--accent-exam)/0.24)] bg-[hsl(var(--accent-exam)/0.08)] p-4">
+            <p className="text-sm font-semibold text-foreground">把这次错因立即转成动作</p>
             <div className="mt-3 grid gap-2">
               <Button onClick={() => void onGenerateMicroLesson()} disabled={isBusy || !feedback}>
                 <Brain className="mr-1.5 h-4 w-4" /> 错题练习

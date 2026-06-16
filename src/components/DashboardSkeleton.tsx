@@ -10,10 +10,10 @@ export function DashboardSkeleton() {
     <div
       role="status"
       aria-live="polite"
-      className="p-4 sm:p-6 animate-in fade-in duration-200"
+      className="bg-background p-4 text-foreground animate-in fade-in duration-200 sm:p-6"
     >
       <div className="mx-auto max-w-5xl space-y-4">
-        <div className="flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3">
+        <div className="flex items-center gap-3 rounded-md border border-border bg-[hsl(var(--surface-raised))] px-4 py-3 shadow-sm">
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <BookOpen className="h-4 w-4" />
           </div>
@@ -25,14 +25,14 @@ export function DashboardSkeleton() {
               {isZh ? '读取词书和本轮进度。' : 'Reading your word book and round progress.'}
             </p>
           </div>
-          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
+          <div className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-muted sm:block">
             <div className="h-full w-1/2 rounded-full bg-primary/55 animate-shimmer" />
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)_260px]">
-          <Skeleton className="h-28 rounded-md bg-muted/70" />
-          <Skeleton className="h-40 rounded-md bg-muted/70" />
-          <Skeleton className="h-28 rounded-md bg-muted/70" />
+          <Skeleton className="h-24 rounded-md bg-muted/70" />
+          <Skeleton className="h-36 rounded-md bg-muted/70" />
+          <Skeleton className="h-24 rounded-md bg-muted/70" />
         </div>
       </div>
     </div>
@@ -41,7 +41,7 @@ export function DashboardSkeleton() {
 
 /**
  * Branded skeleton for public pages (landing, pricing, auth, etc.)
- * Shows VocabDaily logo + emerald progress animation.
+ * Shows VocabDaily logo with a quiet study progress cue.
  */
 export function PageSkeleton() {
   const { i18n } = useTranslation();
@@ -51,7 +51,7 @@ export function PageSkeleton() {
     <div
       role="status"
       aria-live="polite"
-      className="flex min-h-[50vh] flex-col items-center justify-center bg-background animate-in fade-in duration-300"
+      className="flex min-h-[42vh] flex-col items-center justify-center bg-background px-6 text-foreground animate-in fade-in duration-300"
     >
       <div className="flex flex-col items-center gap-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">

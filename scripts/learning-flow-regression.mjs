@@ -5,6 +5,7 @@ import { chromium } from '@playwright/test';
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
 const OUT_DIR = process.env.LEARNING_FLOW_OUT_DIR || 'product-audit-2026-06-14/learning-flow-regression';
 const USER_ID = '00000000-0000-4000-8000-222222222222';
+const THEME_VERSION = '2026-06-workbench-light';
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 960 },
@@ -24,12 +25,16 @@ const routes = [
   { name: 'practice', path: '/dashboard/practice', authState: 'user' },
   { name: 'chat', path: '/dashboard/chat', authState: 'user' },
   { name: 'analytics', path: '/dashboard/analytics', authState: 'user' },
+  { name: 'exam', path: '/dashboard/exam', authState: 'user' },
   { name: 'reading', path: '/dashboard/reading', authState: 'user' },
   { name: 'listening', path: '/dashboard/listening', authState: 'user' },
   { name: 'grammar', path: '/dashboard/grammar', authState: 'user' },
   { name: 'pronunciation', path: '/dashboard/pronunciation', authState: 'user' },
   { name: 'writing', path: '/dashboard/writing', authState: 'user' },
   { name: 'vocabulary', path: '/dashboard/vocabulary', authState: 'user' },
+  { name: 'learning-path', path: '/dashboard/learning-path', authState: 'user' },
+  { name: 'memory', path: '/dashboard/memory', authState: 'user' },
+  { name: 'leaderboard', path: '/dashboard/leaderboard', authState: 'user' },
   { name: 'profile', path: '/dashboard/profile', authState: 'user' },
   { name: 'settings', path: '/dashboard/settings', authState: 'user' },
 ];
@@ -44,10 +49,82 @@ const localUser = {
 const localProfile = {
   userId: USER_ID,
   cefrLevel: 'B1',
-  dailyGoal: 8,
+  dailyGoal: 4,
   preferredTopics: ['daily', 'business'],
   learningStyle: 'visual',
   nativeLanguage: 'zh-CN',
+};
+
+const scenarioWords = [
+  {
+    id: 'e2e-age',
+    word: 'age',
+    phonetic: '/eɪdʒ/',
+    partOfSpeech: 'n.',
+    definition: 'the number of years somebody has lived',
+    definitionZh: '年龄',
+    examples: [{ en: 'People of every age can learn.', zh: '每个年龄的人都能学习。' }],
+    synonyms: [],
+    antonyms: [],
+    collocations: ['at the age of'],
+    level: 'A1',
+    topic: 'daily',
+  },
+  {
+    id: 'e2e-answer',
+    word: 'answer',
+    phonetic: '/ˈɑːnsər/',
+    partOfSpeech: 'n.',
+    definition: 'something that you say or write as a reply',
+    definitionZh: '答案；回答',
+    examples: [{ en: 'Write your answer clearly.', zh: '把你的答案写清楚。' }],
+    synonyms: [],
+    antonyms: [],
+    collocations: ['short answer'],
+    level: 'A1',
+    topic: 'daily',
+  },
+  {
+    id: 'e2e-evening',
+    word: 'evening',
+    phonetic: '/ˈiːvnɪŋ/',
+    partOfSpeech: 'n.',
+    definition: 'the part of the day between afternoon and night',
+    definitionZh: '傍晚；晚上',
+    examples: [{ en: 'We study in the evening.', zh: '我们晚上学习。' }],
+    synonyms: [],
+    antonyms: [],
+    collocations: ['in the evening'],
+    level: 'A1',
+    topic: 'daily',
+  },
+  {
+    id: 'e2e-review',
+    word: 'review',
+    phonetic: '/rɪˈvjuː/',
+    partOfSpeech: 'v.',
+    definition: 'to look at something again in order to remember it',
+    definitionZh: '复习；回顾',
+    examples: [{ en: 'Review the words before class.', zh: '课前复习这些单词。' }],
+    synonyms: [],
+    antonyms: [],
+    collocations: ['review notes'],
+    level: 'A2',
+    topic: 'study',
+  },
+];
+
+const scenarioBook = {
+  id: 'e2e_learning_flow_book',
+  name: 'Learning Flow Regression',
+  source: 'Playwright seeded words',
+  license: 'Local regression fixture',
+  levelRange: ['A1', 'A2'],
+  topicTags: ['daily', 'study'],
+  wordIds: scenarioWords.map((word) => word.id),
+  createdAt: '2026-06-14T00:00:00.000Z',
+  isBuiltIn: false,
+  version: '1.0.0',
 };
 
 async function findCachedHeadlessShell() {
@@ -99,9 +176,10 @@ async function launchBrowser() {
 }
 
 async function seedContext(context, authState, theme) {
-  await context.addInitScript(({ user, profile, state, selectedTheme }) => {
+  await context.addInitScript(({ user, profile, state, selectedTheme, words, book, themeVersion }) => {
     localStorage.setItem('language', 'zh');
     localStorage.setItem('vocabdaily-theme', selectedTheme);
+    localStorage.setItem('vocabdaily-theme-version', themeVersion);
     if (state !== 'user') {
       localStorage.removeItem('vocabdaily-local-auth-user');
       localStorage.removeItem('supabase_user');
@@ -115,7 +193,19 @@ async function seedContext(context, authState, theme) {
       user_metadata: { display_name: user.displayName },
       created_at: user.createdAt,
     }));
-  }, { user: localUser, profile: localProfile, state: authState, selectedTheme: theme });
+    localStorage.setItem('vocabdaily_custom_words', JSON.stringify({ [user.id]: words }));
+    localStorage.setItem('vocabdaily_word_books', JSON.stringify({ [user.id]: [book] }));
+    localStorage.setItem('vocabdaily_user_book_selection', JSON.stringify({
+      [user.id]: { userId: user.id, activeBookId: book.id, dailyGoalOverride: words.length },
+    }));
+    localStorage.setItem('vocabdaily_daily_words', JSON.stringify({
+      [user.id]: {
+        date: new Date().toISOString().slice(0, 10),
+        activeBookId: book.id,
+        wordIds: words.map((word) => word.id),
+      },
+    }));
+  }, { user: localUser, profile: localProfile, state: authState, selectedTheme: theme, words: scenarioWords, book: scenarioBook, themeVersion: THEME_VERSION });
 }
 
 async function inspectPage(page, route, viewport, theme) {
@@ -208,6 +298,168 @@ async function inspectFastRouteSwitch(page, viewport, theme) {
   };
 }
 
+async function openPracticeQuestion(page) {
+  await page.goto(`${BASE_URL}/dashboard/practice`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  await page.getByRole('button', { name: /选择此模式|Choose this mode/i }).first().click();
+  await page.getByRole('button', { name: /开始练习|Start practice/i }).first().click();
+  await page.waitForSelector('h3');
+
+  const questionText = await page.locator('h3').filter({ hasText: /What does|Complete/i }).first().textContent();
+  const match = questionText?.match(/"([^"]+)"/);
+  const currentWord = match
+    ? scenarioWords.find((word) => word.word === match[1])
+    : null;
+  if (!currentWord) {
+    throw new Error(`Could not determine current practice word from question: ${questionText || '(empty)'}`);
+  }
+
+  const wrongDefinitions = scenarioWords
+    .filter((word) => word.id !== currentWord.id)
+    .map((word) => word.definition);
+
+  return { currentWord, wrongDefinitions };
+}
+
+async function inspectPracticeRetryFlow(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 960 },
+    deviceScaleFactor: 1,
+  });
+  await seedContext(context, 'user', 'light');
+  const page = await context.newPage();
+
+  try {
+    const { currentWord, wrongDefinitions } = await openPracticeQuestion(page);
+    await page.getByLabel(wrongDefinitions[0], { exact: true }).click();
+    await page.getByRole('button', { name: /检查答案|Check answer/i }).click();
+    await page.waitForTimeout(250);
+    const firstWrongPath = path.join(OUT_DIR, 'screenshots', 'desktop-light-practice-first-wrong.png');
+    await page.screenshot({ path: firstWrongPath, fullPage: false });
+
+    const firstWrongBody = await page.locator('body').innerText();
+    const firstWrongPassed =
+      /还没对|Not yet|再试一次|Try once more/i.test(firstWrongBody) &&
+      !/正确答案|Correct answer/i.test(firstWrongBody);
+
+    await page.getByLabel(wrongDefinitions[1], { exact: true }).click();
+    await page.getByRole('button', { name: /再试一次|Try again/i }).click();
+    await page.waitForTimeout(250);
+    const secondWrongPath = path.join(OUT_DIR, 'screenshots', 'desktop-light-practice-second-wrong.png');
+    await page.screenshot({ path: secondWrongPath, fullPage: false });
+
+    const secondWrongBody = await page.locator('body').innerText();
+    const secondWrongPassed =
+      /正确答案|Correct answer/i.test(secondWrongBody) &&
+      secondWrongBody.includes(currentWord.definition);
+
+    return [
+      {
+        name: 'practice-first-wrong-hidden-answer',
+        route: '/dashboard/practice',
+        theme: 'light',
+        viewport: 'desktop',
+        screenshotPath: firstWrongPath,
+        passed: firstWrongPassed,
+        visibleTextLength: firstWrongBody.replace(/\s+/g, '').length,
+        note: 'First wrong attempt keeps correct-answer label hidden.',
+      },
+      {
+        name: 'practice-second-wrong-reveals-answer',
+        route: '/dashboard/practice',
+        theme: 'light',
+        viewport: 'desktop',
+        screenshotPath: secondWrongPath,
+        passed: secondWrongPassed,
+        visibleTextLength: secondWrongBody.replace(/\s+/g, '').length,
+        note: 'Second wrong attempt reveals correct-answer label and definition.',
+      },
+    ];
+  } catch (error) {
+    return [{
+      name: 'practice-retry-flow',
+      route: '/dashboard/practice',
+      theme: 'light',
+      viewport: 'desktop',
+      error: error instanceof Error ? error.message : String(error),
+      passed: false,
+    }];
+  } finally {
+    await context.close();
+  }
+}
+
+async function inspectListeningRetryFlow(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 960 },
+    deviceScaleFactor: 1,
+  });
+  await seedContext(context, 'user', 'light');
+  const page = await context.newPage();
+
+  try {
+    await page.goto(`${BASE_URL}/dashboard/practice`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.getByRole('button', { name: /听力测验|Listening Quiz/i }).click();
+    await page.getByRole('button', { name: /开始练习|Start practice/i }).first().click();
+    await page.getByPlaceholder(/输入你听到的单词|Type what you hear/i).fill('wrong');
+    await page.getByRole('button', { name: /检查答案|Check answer/i }).click();
+    await page.waitForTimeout(250);
+    const firstWrongPath = path.join(OUT_DIR, 'screenshots', 'desktop-light-listening-first-wrong.png');
+    await page.screenshot({ path: firstWrongPath, fullPage: false });
+
+    const firstWrongBody = await page.locator('body').innerText();
+    const firstWrongPassed =
+      /再听一次|Listen once more/i.test(firstWrongBody) &&
+      !/答案是|Expected:|正确答案|Correct answer/i.test(firstWrongBody);
+
+    await page.getByPlaceholder(/输入你听到的单词|Type what you hear/i).fill('still wrong');
+    await page.getByRole('button', { name: /再试一次|Try again/i }).click();
+    await page.waitForTimeout(250);
+    const secondWrongPath = path.join(OUT_DIR, 'screenshots', 'desktop-light-listening-second-wrong.png');
+    await page.screenshot({ path: secondWrongPath, fullPage: false });
+
+    const secondWrongBody = await page.locator('body').innerText();
+    const revealedSeededWord = scenarioWords.some((word) =>
+      new RegExp(`(答案是|Expected)\\s*[:：]?\\s*${word.word}`, 'i').test(secondWrongBody),
+    );
+
+    return [
+      {
+        name: 'listening-first-wrong-hidden-expected',
+        route: '/dashboard/practice',
+        theme: 'light',
+        viewport: 'desktop',
+        screenshotPath: firstWrongPath,
+        passed: firstWrongPassed,
+        visibleTextLength: firstWrongBody.replace(/\s+/g, '').length,
+        note: 'First listening miss keeps expected word hidden.',
+      },
+      {
+        name: 'listening-second-wrong-reveals-expected',
+        route: '/dashboard/practice',
+        theme: 'light',
+        viewport: 'desktop',
+        screenshotPath: secondWrongPath,
+        passed: revealedSeededWord,
+        visibleTextLength: secondWrongBody.replace(/\s+/g, '').length,
+        note: 'Second listening miss reveals the expected seeded word.',
+      },
+    ];
+  } catch (error) {
+    return [{
+      name: 'listening-retry-flow',
+      route: '/dashboard/practice',
+      theme: 'light',
+      viewport: 'desktop',
+      error: error instanceof Error ? error.message : String(error),
+      passed: false,
+    }];
+  } finally {
+    await context.close();
+  }
+}
+
 async function main() {
   await fs.mkdir(path.join(OUT_DIR, 'screenshots'), { recursive: true });
   const browser = await launchBrowser();
@@ -261,6 +513,9 @@ async function main() {
         }
       }
     }
+
+    results.push(...await inspectPracticeRetryFlow(browser));
+    results.push(...await inspectListeningRetryFlow(browser));
   } finally {
     await browser.close();
   }

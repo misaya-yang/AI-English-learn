@@ -100,7 +100,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   if (variant === 'modal') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 backdrop-blur-sm p-4">
-        <div className="w-full max-w-sm rounded-md border border-border bg-card p-6 shadow-2xl">
+        <div className="w-full max-w-sm rounded-md border border-border bg-card p-6 shadow-lg">
           <UpgradeCard {...cardProps} />
         </div>
       </div>
@@ -179,7 +179,7 @@ function UpgradeCard({
           pickLocalized(PRO_PLAN_FEATURES[4], language),
         ] as const).map((benefit, i) => (
           <div key={i} className="flex items-center gap-2">
-            <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+            <Check className="h-3.5 w-3.5 text-[hsl(var(--success))] flex-shrink-0" />
             <p className="text-xs text-muted-foreground">{benefit}</p>
           </div>
         ))}

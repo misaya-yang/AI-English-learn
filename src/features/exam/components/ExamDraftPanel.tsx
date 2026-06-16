@@ -143,7 +143,7 @@ export function ExamDraftPanel({
                     <p className="text-sm">
                       <span className="font-medium">{item.from}</span>
                       <span className="mx-1.5 text-muted-foreground">→</span>
-                      <span className="font-medium text-emerald-500">{item.to}</span>
+                      <span className="font-medium text-[hsl(var(--accent-exam))]">{item.to}</span>
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">{item.rationale}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{item.example}</p>
@@ -189,7 +189,6 @@ export function ExamDraftPanel({
         <Button
           onClick={() => void onSubmitWriting()}
           disabled={isBusy}
-          className="bg-emerald-600 text-white hover:bg-emerald-700"
         >
           {loadingStage === 'grading' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
           查看评分反馈

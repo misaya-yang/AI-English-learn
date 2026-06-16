@@ -598,8 +598,8 @@ export default function AnalyticsPage() {
       value: stats.totalWords.toString(),
       change: `+${stats.weeklyWords}`,
       icon: BookOpen,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-100',
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
     },
     {
       title: 'Mastered',
@@ -857,8 +857,8 @@ export default function AnalyticsPage() {
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
                   <div className="flex items-center gap-1 mt-1">
-                    <ChevronUp className="h-3 w-3 text-emerald-500" />
-                    <span className="text-xs text-emerald-600">{stat.change}</span>
+                    <ChevronUp className="h-3 w-3 text-[hsl(var(--success))]" />
+                    <span className="text-xs text-[hsl(var(--success))]">{stat.change}</span>
                   </div>
                 </div>
                 <div className={`w-10 h-10 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
@@ -1116,7 +1116,7 @@ export default function AnalyticsPage() {
                   <p className="text-xs text-muted-foreground">
                     {isZh ? '平均可回忆率' : 'Avg. retrievability'}
                   </p>
-                  <p className="text-[2.25rem] font-semibold text-emerald-500 leading-none">
+                  <p className="text-[2.25rem] font-semibold text-[hsl(var(--success))] leading-none">
                     {Math.round(fsrsStats.avgR * 100)}%
                   </p>
                   <p className="text-xs text-muted-foreground text-center">
@@ -1206,8 +1206,8 @@ export default function AnalyticsPage() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-	                <div className="mt-3 flex gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3">
-	                  <span className="text-lg text-emerald-400">✓</span>
+	                <div className="mt-3 flex gap-2 rounded-lg border border-[hsl(var(--success)/0.24)] bg-[hsl(var(--success)/0.10)] p-3">
+	                  <span className="text-lg text-[hsl(var(--success))]">✓</span>
 	                  <p className="text-sm text-[hsl(var(--success))]">
 	                    {isZh
                         ? 'FSRS-5 会围绕每次复习后的目标保持率安排下一次复习，尽量在遗忘前提醒你。'
@@ -1222,7 +1222,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock3 className="h-5 w-5 text-emerald-500" />
+                  <Clock3 className="h-5 w-5 text-primary" />
 	                  {isZh ? '最佳复习窗口' : 'Best review window'}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">{copy.charts.retentionWindow}</p>
@@ -1230,10 +1230,10 @@ export default function AnalyticsPage() {
               <CardContent>
                 {reviewWindowInsight ? (
                   <div className="space-y-4">
-	                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
+	                    <div className="rounded-lg border border-primary/20 bg-primary/10 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-xs text-green-700">
+                          <p className="text-xs text-primary">
 	                            {isZh ? '主复习时段' : 'Primary window'}
                           </p>
                           <p className="mt-2 text-xl font-semibold">
@@ -1243,7 +1243,7 @@ export default function AnalyticsPage() {
 	                            {reviewWindowInsight.primary.hours}
                           </p>
                         </div>
-	                        <Badge className="rounded-md bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-300">
+	                        <Badge className="rounded-md bg-primary/[0.12] text-primary hover:bg-primary/[0.16]">
 	                          {Math.round(reviewWindowInsight.primary.share * 100)}% {isZh ? '近期学习' : 'of recent activity'}
                         </Badge>
                       </div>
@@ -1327,7 +1327,7 @@ export default function AnalyticsPage() {
                               ? 'bg-red-500/10 text-red-700 dark:text-red-300'
                               : item.riskScore >= 55
                                 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                                : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+                                : 'bg-[hsl(var(--success)/0.10)] text-[hsl(var(--success))]',
                           )}
                         >
 	                          {item.riskScore}% {isZh ? '风险' : 'risk'}
@@ -1419,7 +1419,7 @@ export default function AnalyticsPage() {
 
         <TabsContent value="insights" className="space-y-6">
           {/* Evidence-backed Weekly Report */}
-          <Card className="border-emerald-500/20 bg-emerald-500/[0.04]">
+          <Card className="border-primary/20 bg-primary/[0.04]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CircleGauge className="h-5 w-5 text-muted-foreground" />
@@ -1429,7 +1429,7 @@ export default function AnalyticsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4 text-center">
 	                <div className="rounded-lg bg-background/50 p-3">
-                  <p className="text-2xl font-bold text-emerald-500">{weeklyReport.wordsStrengthened}</p>
+                  <p className="text-2xl font-bold text-[hsl(var(--success))]">{weeklyReport.wordsStrengthened}</p>
                   <p className="text-xs text-muted-foreground">{copy.insights.wordsStrengthened}</p>
                 </div>
 	                <div className="rounded-lg bg-background/50 p-3">
@@ -1450,7 +1450,7 @@ export default function AnalyticsPage() {
                   </p>
                 )}
               </div>
-              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <p className="text-xs text-muted-foreground">
                   {weeklyReport.strongestSkill
                     ? `${copy.insights.strongestPrefix}: ${isZh ? weeklyReport.strongestSkill.labelZh : weeklyReport.strongestSkill.label}`
@@ -1460,7 +1460,7 @@ export default function AnalyticsPage() {
                     ? `${copy.insights.weakestPrefix}: ${isZh ? weeklyReport.weakestPattern.labelZh : weeklyReport.weakestPattern.label}`
                     : (isZh ? weeklyReport.reviewDebtTrend.labelZh : weeklyReport.reviewDebtTrend.label)}
                 </p>
-                <p className="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                <p className="mt-2 text-sm font-medium text-primary">
                   {isZh ? weeklyReport.nextRecommendation.zh : weeklyReport.nextRecommendation.en}
                 </p>
                 <Button size="sm" className="mt-3 rounded-md" asChild>

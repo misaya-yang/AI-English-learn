@@ -102,19 +102,19 @@ export function ExamBriefPanel({
         </div>
 
         {isSimulationMode && (
-          <div className="rounded-md border border-emerald-400/35 bg-emerald-500/[0.08] p-4">
+          <div className="rounded-md border border-[hsl(var(--accent-exam)/0.32)] bg-[hsl(var(--accent-exam)/0.08)] p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p className="text-sm font-medium text-emerald-500">仿真计时进行中</p>
+                <p className="text-sm font-medium text-foreground">仿真计时进行中</p>
                 <p className="text-xs text-muted-foreground">{taskType === 'task1' ? '小作文建议 20 分钟' : '大作文建议 40 分钟'}</p>
               </div>
-              <Badge className="rounded-md bg-emerald-600 text-white">
+              <Badge className="rounded-md bg-[hsl(var(--accent-exam)/0.16)] text-foreground hover:bg-[hsl(var(--accent-exam)/0.20)]">
                 <Timer className="mr-1 h-3.5 w-3.5" /> {formatSeconds(simulationRemainingSec)}
               </Badge>
             </div>
             <Progress
               value={simulationTotalSec ? Math.round(((simulationTotalSec - simulationRemainingSec) / simulationTotalSec) * 100) : 0}
-              className="mt-3 h-2 [&>[data-slot=progress-indicator]]:bg-emerald-500"
+              className="mt-3 h-2 [&>[data-slot=progress-indicator]]:bg-[hsl(var(--accent-exam))]"
             />
           </div>
         )}

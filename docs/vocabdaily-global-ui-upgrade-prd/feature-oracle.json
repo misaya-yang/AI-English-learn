@@ -1,0 +1,94 @@
+{
+  "schema_version": "prd-phase-harness/feature-oracle/v1",
+  "instructions": {
+    "allowed_edits": "Coding agents may update only status, evidence, and notes fields unless the user explicitly changes scope.",
+    "completion_rule": "A feature is passing only after end-to-end evidence exists.",
+    "status_values": ["failing", "passing", "blocked", "waived"]
+  },
+  "features": [
+    {
+      "id": "VGUI-F001",
+      "phase_id": "VGUI-00",
+      "category": "baseline",
+      "description": "All public, auth, dashboard, skill, account, and shared UI routes are inventoried with current-state screenshots, theme notes, route owners, and UI debt.",
+      "steps": [
+        "Run the baseline command set and record results.",
+        "Capture desktop 1440x960 and mobile 390x844 screenshots for every route listed in PRD.md.",
+        "Record route owners, shared UI entry points, theme behavior, loading behavior, and blockers in the phase report."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-00 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-00-baseline-ui-audit-and-inventory-report.md. UI baseline summary: product-audit-2026-06-17/global-ui/baseline/summary.json with 54 route checks, 10 scenario checks, and 0 failures.",
+      "notes": "Baseline is capturable and safe to use for VGUI-01. Exploratory edits in src/index.css and src/pages/Home.tsx remain unaccepted until VGUI-01/VGUI-02."
+    },
+    {
+      "id": "VGUI-F002",
+      "phase_id": "VGUI-01",
+      "category": "visual-system",
+      "description": "The global token system, app shell, theme initialization, skeletons, and shared component rules support a light-first learning workbench and a readable non-black dark mode.",
+      "steps": [
+        "Update global tokens and shell rules using existing CSS and component boundaries.",
+        "Verify public and dashboard shells in light, dark, and system themes.",
+        "Prove route switching does not show a full-screen black or blank fallback."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-01 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-01-design-tokens-and-app-shell-report.md. Theme matrix: product-audit-2026-06-17/global-ui/vgui-01-theme/summary.json with 32 checks and 0 failures.",
+      "notes": "Light-first tokens, readable dusk dark mode, pre-paint theme initialization, root backgrounds, and quiet skeletons are in place. VGUI-02 can use these shared rules for public/auth polish."
+    },
+    {
+      "id": "VGUI-F003",
+      "phase_id": "VGUI-02",
+      "category": "public-auth",
+      "description": "Public, auth, onboarding, legal, pricing, sample, and word-of-the-day surfaces read as an English learning product instead of an AI SaaS template.",
+      "steps": [
+        "Update public and auth route UI within existing route and auth semantics.",
+        "Verify guest and authenticated states where the route supports both.",
+        "Capture screenshots proving no black SaaS hero, no clipped CTA, no nested interactive control, and no accidental mixed-language copy."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-02 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-02-public-and-auth-surfaces-report.md. Public/auth matrix: product-audit-2026-06-17/global-ui/vgui-02-public-auth/summary.json with 40 checks and 0 failures.",
+      "notes": "Public/auth surfaces preserve auth, billing, and legal semantics. Pricing remains fail-closed; BrandMark and concrete Today-task wording are aligned across public entry surfaces."
+    },
+    {
+      "id": "VGUI-F004",
+      "phase_id": "VGUI-03",
+      "category": "dashboard-core",
+      "description": "Today, Review, Practice, Chat, Vocabulary, and Analytics share one learning-workbench hierarchy and preserve the learning feedback loop.",
+      "steps": [
+        "Update core dashboard routes and shared learning components.",
+        "Verify Practice first wrong attempt does not reveal the answer, retry-correct is recovered, and second wrong or reveal shows the answer.",
+        "Capture desktop and mobile route evidence for task clarity, feedback states, empty states, and no horizontal overflow."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-03 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-03-dashboard-core-learning-flow-report.md. Learning-flow regression: product-audit-2026-06-17/global-ui/vgui-03-learning-flow-v3/summary.json with 118 checks and 0 failures, including seeded multiple-choice retry/reveal and listening retry/reveal browser interactions.",
+      "notes": "Practice first wrong attempts keep answers hidden, retry-correct is recovered, second wrong reveals answers, and dark dashboard surfaces are no longer near-black. VGUI-04 should continue module-specific cleanup."
+    },
+    {
+      "id": "VGUI-F005",
+      "phase_id": "VGUI-04",
+      "category": "skill-modules",
+      "description": "Reading, Listening, Grammar, Pronunciation, Writing, Exam, Learning Path, Leaderboard, Memory, Settings, and Profile meet the same UI quality bar as the core dashboard.",
+      "steps": [
+        "Update the module routes within their existing feature boundaries.",
+        "Verify active, empty, loading, error, completion, and account-save states where applicable.",
+        "Capture desktop and mobile evidence that each route has one clear primary action and no old cockpit or nested-card pattern."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-04 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-04-skill-modules-and-utility-screens-report.md. Extended learning-flow regression: product-audit-2026-06-17/global-ui/vgui-04-modules-v2/summary.json with 142 checks and 0 failures, including Exam, Learning Path, Memory, Leaderboard, light/dark/system, desktop/mobile, and retry/reveal interactions.",
+      "notes": "Old stored non-light theme preferences migrate once back to light. Manual dark mode remains available as a readable low-light surface. Module emerald/white/dark hardcoding was cleaned across Exam, Memory, Vocabulary, Analytics, Review, Pronunciation, Chat, UpgradePrompt, BrandMark, CoachReviewRail, and DashboardLayout."
+    },
+    {
+      "id": "VGUI-F006",
+      "phase_id": "VGUI-05",
+      "category": "release-gate",
+      "description": "The full global UI upgrade is proven by automated checks, screenshot contact sheets, theme checks, learning-flow checks, and a release report.",
+      "steps": [
+        "Run lint, i18n, build, full tests, UI regression, and learning-flow regression.",
+        "Generate desktop and mobile contact sheets for all scoped routes.",
+        "Write the release report with known risks, blockers, rollback plan, and deployment recommendation."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-05 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-05-regression-evidence-and-release-gate-report.md. Full validation passed: lint, i18n, build, 103 test files / 810 tests, final UI regression 64 checks / 0 failures, final learning-flow regression 142 checks / 0 failures. Vercel production deployment dpl_AmbxY5xomBkp4i3thgGBwKBFW6Vg is ready and aliased to https://www.uuedu.online.",
+      "notes": "Production frontend smoke passed for public pages, and production bad-token smoke observed 0 refresh-token requests. Supabase provider checks from this network still fail with fetch failed / SSL_ERROR_SYSCALL because the host resolves to 198.18.0.17; this is documented as an external reachability warning, not a frontend refresh-storm regression."
+    }
+  ]
+}

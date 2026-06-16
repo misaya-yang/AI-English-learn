@@ -28,17 +28,17 @@ interface CoachReviewRailProps {
 }
 
 const URGENCY_COLOR: Record<CoachReviewUrgency, string> = {
-  overdue: 'border-red-500/30 bg-red-500/[0.08] text-red-100',
+  overdue: 'border-destructive/35 bg-destructive/[0.08] text-foreground',
   now: 'border-warning/35 bg-warning/[0.10] text-warning',
   soon: 'border-primary/25 bg-primary/[0.08] text-primary',
-  later: 'border-white/10 bg-white/[0.04] text-white/70',
+  later: 'border-border bg-muted/60 text-muted-foreground',
 };
 
 const URGENCY_BADGE: Record<CoachReviewUrgency, string> = {
-  overdue: 'border border-red-500/40 bg-red-500/15 text-red-100',
+  overdue: 'border border-destructive/40 bg-destructive/[0.12] text-destructive',
   now: 'border border-warning/40 bg-warning/15 text-warning',
-  soon: 'border border-primary/40 bg-primary/15 text-primary',
-  later: 'border border-white/15 bg-white/[0.06] text-white/65',
+  soon: 'border border-primary/40 bg-primary/[0.15] text-primary',
+  later: 'border border-border bg-muted text-muted-foreground',
 };
 
 export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
@@ -101,12 +101,12 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
             <Brain className="h-4 w-4" />
           </div>
           <div className="space-y-1.5">
-            <p className="text-sm font-medium text-white/82">{subtitle}</p>
-            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-white/60">
+            <p className="text-sm font-medium text-foreground">{subtitle}</p>
+            <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
               <span className={cn('rounded-full px-2 py-0.5 font-medium', URGENCY_BADGE.now)}>
                 {dueHeading}
               </span>
-              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-medium text-white/65">
+              <span className="rounded-full border border-border bg-muted px-2 py-0.5 font-medium text-muted-foreground">
                 {isZh
                   ? `等待中 ${partition.upcoming.length}`
                   : `${partition.upcoming.length} upcoming`}

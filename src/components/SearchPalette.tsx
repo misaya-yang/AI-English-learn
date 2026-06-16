@@ -77,10 +77,10 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
         placeholder="搜索单词或跳转页面… (Cmd+K)"
         value={query}
         onValueChange={setQuery}
-        className="border-0 text-white placeholder:text-white/35 focus-visible:ring-0"
+        className="border-0 text-foreground placeholder:text-muted-foreground focus-visible:ring-0"
       />
       <CommandList className="max-h-[420px]">
-        <CommandEmpty className="py-8 text-center text-sm text-white/45">
+        <CommandEmpty className="py-8 text-center text-sm text-muted-foreground">
           没有找到匹配的单词或页面
         </CommandEmpty>
 
@@ -94,10 +94,10 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
                 onSelect={() => handleSelect(link.href)}
                 className="flex items-center gap-3 px-3 py-2.5"
               >
-                <link.icon className="h-4 w-4 shrink-0 text-emerald-400" />
+                <link.icon className="h-4 w-4 shrink-0 text-[hsl(var(--accent-practice))]" />
                 <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="font-medium text-white">{isZh ? link.labelZh : link.label}</span>
-                  <span className="text-xs text-white/45">{isZh ? link.label : link.labelZh}</span>
+                  <span className="font-medium text-foreground">{isZh ? link.labelZh : link.label}</span>
+                  <span className="text-xs text-muted-foreground">{isZh ? link.label : link.labelZh}</span>
                 </div>
               </CommandItem>
             ))}
@@ -116,14 +116,14 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
                   onSelect={() => handleSelect('/dashboard/review')}
                   className="flex items-center gap-3 px-3 py-2.5"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/10">
-                    <span className="text-[10px] font-bold text-emerald-300">{word.level}</span>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[hsl(var(--success)/0.32)] bg-[hsl(var(--success)/0.12)]">
+                    <span className="text-[10px] font-bold text-[hsl(var(--success))]">{word.level}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-white">{word.word}</p>
-                    <p className="truncate text-xs text-white/48">{word.definitionZh || word.definition}</p>
+                    <p className="font-semibold text-foreground">{word.word}</p>
+                    <p className="truncate text-xs text-muted-foreground">{word.definitionZh || word.definition}</p>
                   </div>
-                  <span className="shrink-0 font-mono text-[10px] text-white/30">{word.partOfSpeech}</span>
+                  <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{word.partOfSpeech}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -142,14 +142,14 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
                   onSelect={() => handleSelect('/dashboard/today')}
                   className="flex items-center gap-3 px-3 py-2.5"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
-                    <span className="text-[10px] font-bold text-white/50">{word.level}</span>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted">
+                    <span className="text-[10px] font-bold text-muted-foreground">{word.level}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-white">{word.word}</p>
-                    <p className="truncate text-xs text-white/48">{word.definitionZh || word.definition}</p>
+                    <p className="font-semibold text-foreground">{word.word}</p>
+                    <p className="truncate text-xs text-muted-foreground">{word.definitionZh || word.definition}</p>
                   </div>
-                  <span className="shrink-0 font-mono text-[10px] text-white/30">{word.partOfSpeech}</span>
+                  <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{word.partOfSpeech}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

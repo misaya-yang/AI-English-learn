@@ -316,8 +316,8 @@ function InsightPanel({
             <p className="text-sm font-semibold">建议先做</p>
             {selectedErrorNode ? (
               <>
-                <div className="mt-3 rounded-md border border-emerald-500/25 bg-emerald-500/[0.08] p-3">
-                  <p className="text-sm font-medium text-emerald-500">优先修复：{ISSUE_LABELS[selectedErrorNode.tag]}</p>
+                <div className="mt-3 rounded-md border border-[hsl(var(--accent-exam)/0.28)] bg-[hsl(var(--accent-exam)/0.08)] p-3">
+                  <p className="text-sm font-medium text-foreground">优先修复：{ISSUE_LABELS[selectedErrorNode.tag]}</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     近期出现 {selectedErrorNode.count} 次。先做一个小练习，再重写一段。
                   </p>
@@ -417,7 +417,7 @@ function InsightPanel({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-emerald-500"
+                          className="text-primary"
                           onClick={() => {
                             const firstTag = item.issues[0]?.tag;
                             if (firstTag) {

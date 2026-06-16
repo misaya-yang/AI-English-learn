@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { BrandMark } from './BrandMark';
@@ -130,7 +130,10 @@ export function AuthShell({
           </p>
           <ul className="mt-8 space-y-2 text-xs text-muted-foreground">
             {rail.bullets.map((b) => (
-              <li key={b.en}>{isZh ? `· ${b.zh}` : b.en}</li>
+              <li key={b.en} className="flex items-start gap-2">
+                <Check className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden="true" />
+                <span>{isZh ? b.zh : b.en}</span>
+              </li>
             ))}
           </ul>
         </aside>

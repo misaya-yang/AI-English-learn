@@ -46,7 +46,7 @@ export function BrandMark({
       <span
         className={cn(
           'flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors',
-          'group-hover:bg-primary/15',
+          'group-hover:bg-primary/[0.15]',
         )}
         aria-hidden="true"
       >

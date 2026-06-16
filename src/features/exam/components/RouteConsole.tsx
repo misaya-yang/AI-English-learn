@@ -82,8 +82,8 @@ export function RouteConsole({
                     className={cn(
                       'w-full rounded-lg border px-3 py-3 text-left transition-colors',
                       active
-                        ? 'border-emerald-500/60 bg-emerald-500/[0.12]'
-                        : 'border-border/60 bg-background/35 hover:border-emerald-500/30 hover:bg-muted/40',
+                        ? 'border-[hsl(var(--accent-exam)/0.48)] bg-[hsl(var(--accent-exam)/0.10)]'
+                        : 'border-border/60 bg-background/35 hover:border-[hsl(var(--accent-exam)/0.30)] hover:bg-muted/40',
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -93,7 +93,7 @@ export function RouteConsole({
                       </div>
                       <span className="text-xs font-medium text-muted-foreground">{progress}%</span>
                     </div>
-                    <Progress value={progress} className="mt-3 h-1.5 [&>[data-slot=progress-indicator]]:bg-emerald-500" />
+                    <Progress value={progress} className="mt-3 h-1.5 [&>[data-slot=progress-indicator]]:bg-[hsl(var(--accent-exam))]" />
                   </button>
                 );
               })
@@ -140,8 +140,8 @@ export function RouteConsole({
                     className={cn(
                       'w-full rounded-lg border px-3 py-3 text-left transition-colors',
                       active
-                        ? 'border-emerald-500/60 bg-emerald-500/[0.12]'
-                        : 'border-border/60 bg-background/35 hover:border-emerald-500/30 hover:bg-muted/30',
+                        ? 'border-[hsl(var(--accent-exam)/0.48)] bg-[hsl(var(--accent-exam)/0.10)]'
+                        : 'border-border/60 bg-background/35 hover:border-[hsl(var(--accent-exam)/0.30)] hover:bg-muted/30',
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -151,7 +151,7 @@ export function RouteConsole({
                       </div>
                       <span className="text-xs font-medium text-muted-foreground">{progress}%</span>
                     </div>
-                    <Progress value={progress} className="mt-3 h-1.5 [&>[data-slot=progress-indicator]]:bg-emerald-500" />
+                    <Progress value={progress} className="mt-3 h-1.5 [&>[data-slot=progress-indicator]]:bg-[hsl(var(--accent-exam))]" />
                   </button>
                 );
               })
