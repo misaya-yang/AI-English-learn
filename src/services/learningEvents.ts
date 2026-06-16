@@ -335,6 +335,10 @@ export async function recordEvent(
 
   await putLearningEvent(event as StrictLearningEventRecord);
 
+  if (isLocalAuthUserId(userId)) {
+    return event;
+  }
+
   try {
     await syncQueue.enqueue({
       table: 'path_progress_events',
@@ -373,6 +377,7 @@ export async function getEvents(
 export interface PathProgressDerived {
   reviewsCompleted: number;
   practiceCorrect: number;
+  practiceRecovered: number;
   practiceWrong: number;
   mistakesResolved: number;
   sessions: number;
@@ -382,6 +387,7 @@ export function derivePathProgress(events: readonly LearningEvent[]): PathProgre
   const result: PathProgressDerived = {
     reviewsCompleted: 0,
     practiceCorrect: 0,
+    practiceRecovered: 0,
     practiceWrong: 0,
     mistakesResolved: 0,
     sessions: 0,
@@ -394,6 +400,9 @@ export function derivePathProgress(events: readonly LearningEvent[]): PathProgre
         break;
       case 'practice_correct':
         result.practiceCorrect += 1;
+        break;
+      case 'practice_recovered':
+        result.practiceRecovered += 1;
         break;
       case 'practice_wrong':
         result.practiceWrong += 1;

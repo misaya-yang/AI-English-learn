@@ -162,6 +162,7 @@ export interface LearningEventRecord {
   kind:
     | 'review_completed'
     | 'practice_correct'
+    | 'practice_recovered'
     | 'practice_wrong'
     | 'mistake_resolved'
     | 'session_started'

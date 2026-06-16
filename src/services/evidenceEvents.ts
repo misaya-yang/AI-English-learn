@@ -17,6 +17,7 @@ export type EvidenceEventType =
   | 'vocab.hard'
   | 'vocab.bookmarked'
   | 'practice.correct'
+  | 'practice.recovered'
   | 'practice.incorrect'
   | 'review.rated'
   | 'review.recovery_marked'
@@ -35,7 +36,7 @@ export interface VocabEvidenceEvent extends EvidenceEventBase {
 }
 
 export interface PracticeEvidenceEvent extends EvidenceEventBase {
-  type: 'practice.correct' | 'practice.incorrect';
+  type: 'practice.correct' | 'practice.recovered' | 'practice.incorrect';
   wordId: string;
   /** "quiz" / "listening" / "pronunciation" / etc. — free-form for now. */
   mode: string;

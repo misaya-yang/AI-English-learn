@@ -1,0 +1,48 @@
+{
+  "baseUrl": "http://127.0.0.1:4173",
+  "generatedAt": "2026-06-16T13:44:27.743Z",
+  "total": 9,
+  "failed": 0,
+  "consoleErrors": [],
+  "results": [
+    {
+      "name": "initial lexicon content visible",
+      "passed": true,
+      "url": "http://127.0.0.1:4173/dashboard/vocabulary"
+    },
+    {
+      "name": "search filters to seeded word",
+      "passed": true
+    },
+    {
+      "name": "status filter keeps review word visible",
+      "passed": true
+    },
+    {
+      "name": "topic filter keeps academic word visible",
+      "passed": true
+    },
+    {
+      "name": "pronunciation control is clickable",
+      "passed": true
+    },
+    {
+      "name": "practice link carries lexicon source and word id",
+      "passed": true,
+      "href": "/dashboard/practice?source=lexicon&wordId=custom-smoke-mitigate&q=mitigate"
+    },
+    {
+      "name": "active book can switch without console errors",
+      "passed": true,
+      "activeBookId": "builtin_a1_foundation"
+    },
+    {
+      "name": "export dialog opens",
+      "passed": true
+    },
+    {
+      "name": "custom word detail delete control is accessible",
+      "passed": true
+    }
+  ]
+}

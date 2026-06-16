@@ -1,0 +1,50 @@
+{
+  "baseUrl": "http://127.0.0.1:4173",
+  "generatedAt": "2026-06-16T14:54:20.724Z",
+  "total": 8,
+  "failed": 0,
+  "results": [
+    {
+      "name": "desktop chat daily plan handoff",
+      "passed": true,
+      "promptLength": 90
+    },
+    {
+      "name": "desktop writing local fallback",
+      "passed": true,
+      "fallback": "local",
+      "suggestionsVisible": true
+    },
+    {
+      "name": "desktop pronunciation local fallback",
+      "passed": true,
+      "feedback": "local"
+    },
+    {
+      "name": "desktop pronunciation AI feedback",
+      "passed": true,
+      "feedback": "ai"
+    },
+    {
+      "name": "mobile chat daily plan handoff",
+      "passed": true,
+      "promptLength": 90
+    },
+    {
+      "name": "mobile writing local fallback",
+      "passed": true,
+      "fallback": "local",
+      "suggestionsVisible": true
+    },
+    {
+      "name": "mobile pronunciation local fallback",
+      "passed": true,
+      "feedback": "local"
+    },
+    {
+      "name": "mobile pronunciation AI feedback",
+      "passed": true,
+      "feedback": "ai"
+    }
+  ]
+}

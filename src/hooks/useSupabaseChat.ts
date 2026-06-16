@@ -19,6 +19,7 @@ import {
   sortSessionsByUpdate,
 } from '@/features/chat/runtime/persistence';
 import { requestAssistantReplyPipeline } from '@/features/chat/runtime/assistantReply';
+import { shouldUseRemoteChatStorage } from '@/features/chat/runtime/localSyncPolicy';
 import {
   clearRemoteSessionMessages,
   createRemoteSession,
@@ -103,6 +104,7 @@ function generateTitle(content: string): string {
 
 export function useSupabaseChat() {
   const userId = getAnonymousUserId();
+  const useRemoteChatStorage = shouldUseRemoteChatStorage(userId);
 
   const [sessions, setSessions] = useState<ChatSession[]>(() => sortSessionsByUpdate(loadLocalSessions()));
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(() => {
@@ -186,6 +188,9 @@ export function useSupabaseChat() {
       remoteMessageIdsBySession: Map<string, Set<string>>,
       remoteUpdatedAtBySession: Map<string, number>,
     ): Promise<number> => {
+      if (!useRemoteChatStorage) {
+        return 0;
+      }
       return syncLocalSessionsToRemote({
         localSessions,
         remoteSessionIds,
@@ -194,11 +199,19 @@ export function useSupabaseChat() {
         userId,
       });
     },
-    [userId],
+    [useRemoteChatStorage, userId],
   );
 
   const loadSessions = useCallback(async () => {
     const localSessions = loadLocalSessions();
+
+    if (!useRemoteChatStorage) {
+      persistSessions(localSessions);
+      ensureValidCurrentSession(localSessions);
+      setDbReady(true);
+      setSyncState({ source: 'local', pendingSyncCount: 0 });
+      return;
+    }
 
     try {
       const {
@@ -266,7 +279,7 @@ export function useSupabaseChat() {
       setDbReady(false);
       setSyncState({ source: 'local', pendingSyncCount: localSessions.length });
     }
-  }, [ensureValidCurrentSession, persistSessions, syncLocalToRemote, userId]);
+  }, [ensureValidCurrentSession, persistSessions, syncLocalToRemote, useRemoteChatStorage, userId]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -395,24 +408,41 @@ export function useSupabaseChat() {
       updatedAt: now,
     };
 
-    try {
-      await createRemoteSession({ sessionId, userId, title, now });
+    if (useRemoteChatStorage) {
+      try {
+        await createRemoteSession({ sessionId, userId, title, now });
 
-      setSyncState((prev) => ({ ...prev, source: prev.pendingSyncCount > 0 ? 'merged' : 'remote' }));
-    } catch (error) {
-      console.error('Error creating session:', error);
-      setSyncState((prev) => ({
-        source: 'local',
-        pendingSyncCount: Math.max(1, prev.pendingSyncCount + 1),
-      }));
+        setSyncState((prev) => ({ ...prev, source: prev.pendingSyncCount > 0 ? 'merged' : 'remote' }));
+      } catch (error) {
+        console.error('Error creating session:', error);
+        setSyncState((prev) => ({
+          source: 'local',
+          pendingSyncCount: Math.max(1, prev.pendingSyncCount + 1),
+        }));
+      }
+    } else {
+      setSyncState({ source: 'local', pendingSyncCount: 0 });
     }
 
     updateSessions((prev) => [newSession, ...prev]);
     setCurrentSessionId(sessionId);
     return sessionId;
-  }, [updateSessions, userId]);
+  }, [updateSessions, useRemoteChatStorage, userId]);
 
   const updateSessionTitle = useCallback(async (sessionId: string, newTitle: string) => {
+    if (!useRemoteChatStorage) {
+      updateSessions((prev) =>
+        prev.map((session) => {
+          if (session.id === sessionId) {
+            return { ...session, title: newTitle, updatedAt: Date.now() };
+          }
+          return session;
+        }),
+      );
+      setSyncState({ source: 'local', pendingSyncCount: 0 });
+      return;
+    }
+
     let remoteOk = true;
     try {
       await updateRemoteSessionTitle({ sessionId, userId, title: newTitle });
@@ -434,7 +464,7 @@ export function useSupabaseChat() {
         return session;
       }),
     );
-  }, [updateSessions, userId]);
+  }, [updateSessions, useRemoteChatStorage, userId]);
 
   const deleteSession = useCallback((sessionId: string) => {
     const remaining = sessions.filter((session) => session.id !== sessionId);
@@ -454,6 +484,11 @@ export function useSupabaseChat() {
       setChatPerf({ ttftMs: null, nextQuestionMs: null, lastUpdatedAt: null });
     }
 
+    if (!useRemoteChatStorage) {
+      setSyncState({ source: 'local', pendingSyncCount: 0 });
+      return;
+    }
+
     void (async () => {
       let remoteOk = true;
       try {
@@ -470,7 +505,7 @@ export function useSupabaseChat() {
         }));
       }
     })();
-  }, [currentSessionId, persistQuizRuns, sessions, updateSessions, userId]);
+  }, [currentSessionId, persistQuizRuns, sessions, updateSessions, useRemoteChatStorage, userId]);
 
   const switchSession = useCallback((sessionId: string) => {
     setCurrentSessionId(sessionId);
@@ -496,17 +531,19 @@ export function useSupabaseChat() {
         }),
       );
 
-      try {
-        await saveRemoteAssistantMessage({ sessionId, userId, assistantMessage });
-      } catch (error) {
-        console.error('Error saving assistant message:', error);
-        setSyncState((prev) => ({
-          source: 'local',
-          pendingSyncCount: prev.pendingSyncCount + 1,
-        }));
+      if (useRemoteChatStorage) {
+        try {
+          await saveRemoteAssistantMessage({ sessionId, userId, assistantMessage });
+        } catch (error) {
+          console.error('Error saving assistant message:', error);
+          setSyncState((prev) => ({
+            source: 'local',
+            pendingSyncCount: prev.pendingSyncCount + 1,
+          }));
+        }
       }
     },
-    [updateSessions, userId],
+    [updateSessions, useRemoteChatStorage, userId],
   );
 
   const requestAssistantReply = useCallback(
@@ -591,7 +628,7 @@ export function useSupabaseChat() {
       !hideUserMessage && (isNewSession || (sessionSnapshot && sessionSnapshot.messages.length === 0));
     const newTitle = shouldUpdateTitle ? generateTitle(displayContent) : undefined;
 
-    if (!hideUserMessage) {
+    if (!hideUserMessage && useRemoteChatStorage) {
       void (async () => {
         let remoteMessageSaved = true;
         try {
@@ -778,7 +815,7 @@ export function useSupabaseChat() {
       quizRun: options.quizRun,
       trigger,
     });
-  }, [appendAssistantMessage, createSession, currentSessionId, isLoading, requestAssistantReply, sessions, trackExperimentEvent, updateSessions, userId]);
+  }, [appendAssistantMessage, createSession, currentSessionId, isLoading, requestAssistantReply, sessions, trackExperimentEvent, updateSessions, useRemoteChatStorage, userId]);
 
   const retryLastFailedMessage = useCallback(async () => {
     if (isLoading) return;
@@ -841,18 +878,20 @@ export function useSupabaseChat() {
         },
       });
 
-      try {
-        await insertRemoteQuizAttempt(attempt);
-      } catch {
-        setSyncState((prev) => ({
-          source: 'local',
-          pendingSyncCount: prev.pendingSyncCount + 1,
-        }));
+      if (useRemoteChatStorage) {
+        try {
+          await insertRemoteQuizAttempt(attempt);
+        } catch {
+          setSyncState((prev) => ({
+            source: 'local',
+            pendingSyncCount: prev.pendingSyncCount + 1,
+          }));
+        }
       }
 
       return attempt;
     },
-    [persistQuizAttemptMap, trackExperimentEvent, userId],
+    [persistQuizAttemptMap, trackExperimentEvent, useRemoteChatStorage, userId],
   );
 
   const goToNextQuizQuestion = useCallback((args: {
@@ -924,11 +963,13 @@ export function useSupabaseChat() {
     if (!currentSessionId) return;
 
     let remoteOk = true;
-    try {
-      await clearRemoteSessionMessages(currentSessionId);
-    } catch (error) {
-      console.error('Error clearing messages:', error);
-      remoteOk = false;
+    if (useRemoteChatStorage) {
+      try {
+        await clearRemoteSessionMessages(currentSessionId);
+      } catch (error) {
+        console.error('Error clearing messages:', error);
+        remoteOk = false;
+      }
     }
 
     updateSessions((prev) =>
@@ -951,18 +992,20 @@ export function useSupabaseChat() {
         pendingSyncCount: prev.pendingSyncCount + 1,
       }));
     }
-  }, [clearQuizRun, currentSessionId, updateSessions]);
+  }, [clearQuizRun, currentSessionId, updateSessions, useRemoteChatStorage]);
 
   const deleteAllSessions = useCallback(async () => {
     let remoteOk = true;
-    try {
-      await deleteAllRemoteSessionsCascade({
-        userId,
-        sessionIds: sessions.map((session) => session.id),
-      });
-    } catch (error) {
-      console.error('Error deleting all sessions:', error);
-      remoteOk = false;
+    if (useRemoteChatStorage) {
+      try {
+        await deleteAllRemoteSessionsCascade({
+          userId,
+          sessionIds: sessions.map((session) => session.id),
+        });
+      } catch (error) {
+        console.error('Error deleting all sessions:', error);
+        remoteOk = false;
+      }
     }
 
     setSessions([]);
@@ -989,7 +1032,7 @@ export function useSupabaseChat() {
     } else {
       setSyncState({ source: 'remote', pendingSyncCount: 0 });
     }
-  }, [sessions, userId]);
+  }, [sessions, useRemoteChatStorage, userId]);
 
   return {
     sessions,

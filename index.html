@@ -11,6 +11,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
     <title>VocabDaily</title>
+    <script>
+      (() => {
+        try {
+          const key = 'vocabdaily-theme';
+          const stored = localStorage.getItem(key) || 'light';
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const resolved = stored === 'system' ? (prefersDark ? 'dark' : 'light') : stored;
+          document.documentElement.classList.remove('light', 'dark');
+          document.documentElement.classList.add(resolved === 'dark' ? 'dark' : 'light');
+        } catch {
+          document.documentElement.classList.add('light');
+        }
+      })();
+    </script>
   </head>
   <body>
     <a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" onfocus="this.style.cssText='position:fixed;top:1rem;left:1rem;z-index:100;padding:0.5rem 1rem;background:#10b981;color:#fff;border-radius:0.5rem;outline:none'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden'">Skip to content</a>

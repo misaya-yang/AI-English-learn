@@ -16,6 +16,7 @@ import {
   LearningMetricStrip,
   LearningRailSection,
   LearningWorkspaceSurface,
+  type AccentTone,
 } from '@/features/learning/components/LearningWorkspace';
 import {
   HelpCircle,
@@ -54,6 +55,13 @@ import {
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
 import { useTranslation } from 'react-i18next';
 import { buildListeningQueue, buildPracticeQuestions } from '@/features/practice/runtime';
+import {
+  buildPracticeHint,
+  createInitialPracticeAttemptState,
+  gradePracticeAttempt,
+  revealPracticeAnswer,
+  type PracticeAttemptOutcome,
+} from '@/features/practice/attemptState';
 
 const practiceModes = [
   {
@@ -98,7 +106,7 @@ const lightSelectContentClass = 'border-border bg-background text-foreground';
 export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, dueWords, progress, streak, learningProfile, addStudySession, completeMissionTask, reviewWord } = useUserData();
+  const { dailyWords, dueWords, progress, learningProfile, addStudySession, completeMissionTask, reviewWord } = useUserData();
   const { i18n } = useTranslation();
   const practiceLanguage = i18n.language;
   const isZh = practiceLanguage.startsWith('zh');
@@ -106,8 +114,10 @@ export default function PracticePage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [firstTryCorrect, setFirstTryCorrect] = useState(0);
+  const [recoveredCount, setRecoveredCount] = useState(0);
+  const [needsReviewCount, setNeedsReviewCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [dueCoachReviewCount, setDueCoachReviewCount] = useState(0);
   const [writingInput, setWritingInput] = useState('');
@@ -126,6 +136,10 @@ export default function PracticePage() {
     expected: string;
     submitted: string;
   } | null>(null);
+  const [choiceAttemptState, setChoiceAttemptState] = useState(createInitialPracticeAttemptState);
+  const [choiceOutcome, setChoiceOutcome] = useState<PracticeAttemptOutcome | null>(null);
+  const [listeningAttemptState, setListeningAttemptState] = useState(createInitialPracticeAttemptState);
+  const [listeningOutcome, setListeningOutcome] = useState<PracticeAttemptOutcome | null>(null);
   // Gamification state
   const [timedMode, setTimedMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -150,11 +164,17 @@ export default function PracticePage() {
     setHasStarted(false);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
-    setShowResult(false);
+    setChoiceAttemptState(createInitialPracticeAttemptState());
+    setChoiceOutcome(null);
     setScore(0);
+    setFirstTryCorrect(0);
+    setRecoveredCount(0);
+    setNeedsReviewCount(0);
     setIsComplete(false);
     setListeningInput('');
     setListeningResult(null);
+    setListeningAttemptState(createInitialPracticeAttemptState());
+    setListeningOutcome(null);
     setWritingInput('');
     setWritingFeedback(null);
     setWritingRound(1);
@@ -229,19 +249,22 @@ export default function PracticePage() {
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = selectedMode === 'listening' ? listeningWords.length : quizQuestions.length;
   const sessionProgress = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
+  const answeredCount = firstTryCorrect + recoveredCount + needsReviewCount;
+  const completedCorrectCount = firstTryCorrect + recoveredCount;
+  const firstTryAccuracyPct = totalQuestions > 0 ? Math.round((firstTryCorrect / totalQuestions) * 100) : 0;
 
   // Timer for timed challenge mode
   useEffect(() => {
     if (!timedMode || !hasStarted || isComplete) return;
     if (timeLeft <= 0) {
       setIsComplete(true);
-      addStudySession(totalQuestions, score, score * 10, 1);
+      addStudySession(totalQuestions, completedCorrectCount, firstTryCorrect * 10 + recoveredCount * 6, 1);
       completeMissionTask('task_quiz_today');
       return;
     }
     const interval = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [timedMode, hasStarted, isComplete, timeLeft, totalQuestions, score, addStudySession, completeMissionTask]);
+  }, [timedMode, hasStarted, isComplete, timeLeft, totalQuestions, completedCorrectCount, firstTryCorrect, recoveredCount, addStudySession, completeMissionTask]);
 
   // LEARN-05 — emit session_ended + load coach review count once when the
   // practice session finishes. Must stay above any conditional return so the
@@ -251,9 +274,17 @@ export default function PracticePage() {
     void getDueCoachReviews(userId).then((items) => setDueCoachReviewCount(items.length));
     void recordEvent(userId, {
       kind: 'session_ended',
-      payload: { surface: 'practice', mode: selectedMode, score, total: totalQuestions },
+      payload: {
+        surface: 'practice',
+        mode: selectedMode,
+        score,
+        firstTryCorrect,
+        recovered: recoveredCount,
+        needsReview: needsReviewCount,
+        total: totalQuestions,
+      },
     });
-  }, [isComplete, userId, selectedMode, score, totalQuestions]);
+  }, [isComplete, userId, selectedMode, score, firstTryCorrect, recoveredCount, needsReviewCount, totalQuestions]);
 
   const recommendedMode = useMemo(
     () => getRecommendedPracticeMode({
@@ -332,7 +363,6 @@ export default function PracticePage() {
   );
 
   const focusedBlueprint = modeBlueprints[focusedModeId as keyof typeof modeBlueprints];
-  const accuracyPct = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
   const sessionStage = !selectedMode
     ? (isZh ? '先选模式' : 'Pick a mode')
     : !hasStarted
@@ -368,59 +398,133 @@ export default function PracticePage() {
     });
   };
 
+  const commitPracticeOutcome = (args: {
+    outcome: PracticeAttemptOutcome;
+    wordId: string;
+    word: string;
+    mode: string;
+    eventName: string;
+    attempts: number;
+    questionId?: string;
+    userAnswer?: string;
+  }) => {
+    const isCorrectOutcome = args.outcome === 'firstTryCorrect' || args.outcome === 'recovered';
+    const evidenceType =
+      args.outcome === 'firstTryCorrect'
+        ? 'practice.correct'
+        : args.outcome === 'recovered'
+          ? 'practice.recovered'
+          : 'practice.incorrect';
+    const strictKind =
+      args.outcome === 'firstTryCorrect'
+        ? 'practice_correct'
+        : args.outcome === 'recovered'
+          ? 'practice_recovered'
+          : 'practice_wrong';
+
+    void recordLearningEvent({
+      userId,
+      eventName: args.eventName,
+      payload: {
+        mode: args.mode,
+        isCorrect: isCorrectOutcome,
+        outcome: args.outcome,
+        attempts: args.attempts,
+        questionId: args.questionId,
+        word: args.word,
+        answer: args.userAnswer,
+      },
+    });
+    void recordEvidence(
+      createEvidenceEvent({
+        type: evidenceType,
+        userId,
+        wordId: args.wordId,
+        mode: args.mode,
+      }),
+    );
+    void recordEvent(userId, {
+      kind: strictKind,
+      payload: {
+        wordId: args.wordId,
+        word: args.word,
+        mode: args.mode,
+        outcome: args.outcome,
+        attempts: args.attempts,
+      },
+    });
+  };
+
+  const recordNeedsReviewMistake = (args: {
+    word: typeof dailyWords[number];
+    question: string;
+    selectedAnswer: string;
+    correctAnswer: string;
+    mode: string;
+  }) => {
+    setErrorNotebook((prev) => [...prev, {
+      word: args.word.word,
+      question: args.question,
+      correctAnswer: args.correctAnswer,
+    }]);
+    const mistakeRecord = buildPracticeMistakeRecord({
+      word: args.word,
+      isCorrect: false,
+      userAnswer: args.selectedAnswer,
+      correctAnswer: args.correctAnswer,
+      mode: args.mode,
+    });
+    if (mistakeRecord) {
+      try {
+        void addMistake(userId, mistakeRecord);
+      } catch {
+        // localStorage failure is silent — never block the user's drill.
+      }
+    }
+  };
+
   const handleAnswer = () => {
     if (!selectedAnswer || !currentQuestion) return;
 
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-    setShowResult(true);
+    const result = gradePracticeAttempt(choiceAttemptState, selectedAnswer, currentQuestion.correctAnswer);
+    setChoiceAttemptState(result.state);
+    setChoiceOutcome(result.outcome);
 
-    // Combo tracking
-    if (isCorrect) {
+    if (result.outcome === 'tryAgain') {
+      setCombo(0);
+      setSelectedAnswer(null);
+      return;
+    }
+
+    if (result.outcome === 'firstTryCorrect') {
       const newCombo = combo + 1;
       setCombo(newCombo);
       setMaxCombo((prev) => Math.max(prev, newCombo));
       setScore((prev) => prev + 1);
-      const comboBonus = newCombo >= 5
-        ? (isZh ? '，连续 5 题正确' : ', 5 correct in a row')
-        : newCombo >= 3
-          ? (isZh ? '，连续 3 题正确' : ', 3 correct in a row')
-          : '';
-      toast.success(`${isZh ? '回答正确' : 'Correct'}${comboBonus}`);
-      // Bump per-word progress through FSRS so a correct answer is reflected
-      // in the durable progress store, not just the session score.
+      setFirstTryCorrect((prev) => prev + 1);
       try {
         reviewWord(currentQuestion.word.id, 'good');
       } catch {
         // reviewWord guards itself; never let a sync hiccup fail the turn.
       }
+    } else if (result.outcome === 'recovered') {
+      setCombo(0);
+      setRecoveredCount((prev) => prev + 1);
+      try {
+        reviewWord(currentQuestion.word.id, 'hard');
+      } catch {
+        // see above
+      }
     } else {
       setCombo(0);
-      toast.error(isZh ? '回答错误，再试试！' : 'Incorrect. Try again!');
-      // Save to error notebook
-      setErrorNotebook((prev) => [...prev, {
-        word: currentQuestion.word.word,
-        question: currentQuestion.question,
-        correctAnswer: currentQuestion.correctAnswer,
-      }]);
-      // Persist into the shared mistake collector so the AI coach can pick
-      // it up via getChatLearnerProfile() on the next chat turn (COACH-01)
-      // and the Mistakes book stays in sync.
-      const mistakeRecord = buildPracticeMistakeRecord({
+      setNeedsReviewCount((prev) => prev + 1);
+      recordNeedsReviewMistake({
         word: currentQuestion.word,
-        isCorrect: false,
-        userAnswer: selectedAnswer,
+        question: currentQuestion.question,
+        selectedAnswer,
         correctAnswer: currentQuestion.correctAnswer,
         mode: selectedMode || 'quiz',
       });
-      if (mistakeRecord) {
-        try {
-          void addMistake(userId, mistakeRecord);
-        } catch {
-          // localStorage failure is silent — never block the user's drill.
-        }
-      }
-      // Schedule the missed word for an earlier FSRS revisit so the next
-      // review session surfaces it again.
       try {
         reviewWord(currentQuestion.word.id, 'again');
       } catch {
@@ -428,35 +532,46 @@ export default function PracticePage() {
       }
     }
 
-    void recordLearningEvent({
-      userId,
+    commitPracticeOutcome({
+      outcome: result.outcome,
+      wordId: currentQuestion.word.id,
+      word: currentQuestion.word.word,
+      mode: selectedMode || 'quiz',
       eventName: 'practice.quiz_submitted',
-      payload: {
-        mode: selectedMode || 'quiz',
-        isCorrect,
-        questionId: currentQuestion.id,
-        word: currentQuestion.word.word,
-        combo: isCorrect ? combo + 1 : 0,
-      },
+      attempts: result.state.attempts.length,
+      questionId: currentQuestion.id,
+      userAnswer: selectedAnswer,
     });
-    // Typed evidence event in addition to the analytics-style event above.
-    // The two writes serve different consumers: analytics keeps its
-    // historical event names, derivation reads the strict
-    // `evidence.practice.*` rows.
-    void recordEvidence(
-      createEvidenceEvent({
-        type: isCorrect ? 'practice.correct' : 'practice.incorrect',
-        userId,
-        wordId: currentQuestion.word.id,
-        mode: selectedMode || 'quiz',
-      }),
-    );
-    // LEARN-02 strict typed evidence — used by LearningPath progress
-    // derivation. Two writes (analytics + strict) by design — see the
-    // comment block in services/learningEvents.ts.
-    void recordEvent(userId, {
-      kind: isCorrect ? 'practice_correct' : 'practice_wrong',
-      payload: { wordId: currentQuestion.word.id, word: currentQuestion.word.word, mode: selectedMode || 'quiz' },
+  };
+
+  const handleRevealAnswer = () => {
+    if (!currentQuestion) return;
+    const result = revealPracticeAnswer(choiceAttemptState, selectedAnswer || undefined);
+    setChoiceAttemptState(result.state);
+    setChoiceOutcome(result.outcome);
+    setCombo(0);
+    setNeedsReviewCount((prev) => prev + 1);
+    recordNeedsReviewMistake({
+      word: currentQuestion.word,
+      question: currentQuestion.question,
+      selectedAnswer: selectedAnswer || '',
+      correctAnswer: currentQuestion.correctAnswer,
+      mode: selectedMode || 'quiz',
+    });
+    try {
+      reviewWord(currentQuestion.word.id, 'again');
+    } catch {
+      // see above
+    }
+    commitPracticeOutcome({
+      outcome: 'needsReview',
+      wordId: currentQuestion.word.id,
+      word: currentQuestion.word.word,
+      mode: selectedMode || 'quiz',
+      eventName: 'practice.quiz_submitted',
+      attempts: result.state.attempts.length,
+      questionId: currentQuestion.id,
+      userAnswer: selectedAnswer || '',
     });
   };
 
@@ -464,12 +579,13 @@ export default function PracticePage() {
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
-      setShowResult(false);
+      setChoiceAttemptState(createInitialPracticeAttemptState());
+      setChoiceOutcome(null);
       return;
     }
 
     setIsComplete(true);
-    addStudySession(quizQuestions.length, score, score * 10, 15);
+    addStudySession(quizQuestions.length, completedCorrectCount, firstTryCorrect * 10 + recoveredCount * 6, 15);
     completeMissionTask('task_quiz_today');
   };
 
@@ -571,37 +687,53 @@ export default function PracticePage() {
     const currentWord = listeningWords[currentQuestionIndex];
     if (!currentWord || !listeningInput.trim()) return;
 
-    const isCorrect = normalizeListeningAnswer(listeningInput) === normalizeListeningAnswer(currentWord.word);
+    const result = gradePracticeAttempt(
+      listeningAttemptState,
+      normalizeListeningAnswer(listeningInput),
+      normalizeListeningAnswer(currentWord.word),
+    );
+    setListeningAttemptState(result.state);
+    setListeningOutcome(result.outcome);
     setListeningResult({
-      isCorrect,
-      expected: currentWord.word,
+      isCorrect: result.isCorrect,
+      expected: result.shouldRevealAnswer ? currentWord.word : '',
       submitted: listeningInput.trim(),
     });
 
-    if (isCorrect) {
+    if (result.outcome === 'tryAgain') {
+      setCombo(0);
+      setListeningInput('');
+      playAudio(currentWord.word);
+      requestAnimationFrame(() => {
+        listeningInputRef.current?.focus();
+      });
+      return;
+    }
+
+    if (result.outcome === 'firstTryCorrect') {
       setScore((prev) => prev + 1);
-      toast.success(isZh ? '回答正确' : 'Correct');
+      setFirstTryCorrect((prev) => prev + 1);
       try {
         reviewWord(currentWord.id, 'good');
       } catch {
         // see comment in handleAnswer
       }
+    } else if (result.outcome === 'recovered') {
+      setRecoveredCount((prev) => prev + 1);
+      try {
+        reviewWord(currentWord.id, 'hard');
+      } catch {
+        // see comment in handleAnswer
+      }
     } else {
-      toast.error(isZh ? `不对，正确答案：${currentWord.word}` : `Not quite. Correct answer: ${currentWord.word}`);
-      const mistakeRecord = buildPracticeMistakeRecord({
+      setNeedsReviewCount((prev) => prev + 1);
+      recordNeedsReviewMistake({
         word: currentWord,
-        isCorrect: false,
-        userAnswer: listeningInput.trim(),
+        question: isZh ? '听写单词' : 'Listening dictation',
+        selectedAnswer: listeningInput.trim(),
         correctAnswer: currentWord.word,
         mode: 'listening',
       });
-      if (mistakeRecord) {
-        try {
-          void addMistake(userId, mistakeRecord);
-        } catch {
-          // see comment in handleAnswer
-        }
-      }
       try {
         reviewWord(currentWord.id, 'again');
       } catch {
@@ -609,27 +741,54 @@ export default function PracticePage() {
       }
     }
 
-    void recordLearningEvent({
-      userId,
+    commitPracticeOutcome({
+      outcome: result.outcome,
+      wordId: currentWord.id,
+      word: currentWord.word,
+      mode: 'listening',
       eventName: 'practice.listening_submitted',
-      payload: {
-        isCorrect,
-        word: currentWord.word,
-        answer: listeningInput.trim(),
-        questionIndex: currentQuestionIndex + 1,
-      },
+      attempts: result.state.attempts.length,
+      questionId: `listening-${currentQuestionIndex + 1}`,
+      userAnswer: listeningInput.trim(),
     });
-    void recordEvidence(
-      createEvidenceEvent({
-        type: isCorrect ? 'practice.correct' : 'practice.incorrect',
-        userId,
-        wordId: currentWord.id,
-        mode: 'listening',
-      }),
+  };
+
+  const handleListeningReveal = () => {
+    const currentWord = listeningWords[currentQuestionIndex];
+    if (!currentWord) return;
+    const result = revealPracticeAnswer(
+      listeningAttemptState,
+      listeningInput.trim() ? normalizeListeningAnswer(listeningInput) : undefined,
     );
-    void recordEvent(userId, {
-      kind: isCorrect ? 'practice_correct' : 'practice_wrong',
-      payload: { wordId: currentWord.id, word: currentWord.word, mode: 'listening' },
+    setListeningAttemptState(result.state);
+    setListeningOutcome(result.outcome);
+    setListeningResult({
+      isCorrect: false,
+      expected: currentWord.word,
+      submitted: listeningInput.trim(),
+    });
+    setNeedsReviewCount((prev) => prev + 1);
+    recordNeedsReviewMistake({
+      word: currentWord,
+      question: isZh ? '听写单词' : 'Listening dictation',
+      selectedAnswer: listeningInput.trim(),
+      correctAnswer: currentWord.word,
+      mode: 'listening',
+    });
+    try {
+      reviewWord(currentWord.id, 'again');
+    } catch {
+      // see comment in handleAnswer
+    }
+    commitPracticeOutcome({
+      outcome: 'needsReview',
+      wordId: currentWord.id,
+      word: currentWord.word,
+      mode: 'listening',
+      eventName: 'practice.listening_submitted',
+      attempts: result.state.attempts.length,
+      questionId: `listening-${currentQuestionIndex + 1}`,
+      userAnswer: listeningInput.trim(),
     });
   };
 
@@ -639,6 +798,8 @@ export default function PracticePage() {
       setCurrentQuestionIndex(nextIndex);
       setListeningInput('');
       setListeningResult(null);
+      setListeningAttemptState(createInitialPracticeAttemptState());
+      setListeningOutcome(null);
       requestAnimationFrame(() => {
         listeningInputRef.current?.focus();
       });
@@ -650,7 +811,7 @@ export default function PracticePage() {
     }
 
     setIsComplete(true);
-    addStudySession(listeningWords.length, score, score * 10, 10);
+    addStudySession(listeningWords.length, completedCorrectCount, firstTryCorrect * 10 + recoveredCount * 6, 10);
     completeMissionTask('task_quiz_today');
   };
 
@@ -711,26 +872,30 @@ export default function PracticePage() {
 
   const renderInsightRail = () => (
     <div className="space-y-6">
-      <LearningRailSection title={isZh ? '课程进度' : 'Session'}>
+      <LearningRailSection title={isZh ? '本轮结果' : 'This round'}>
         <LearningMetricStrip
           items={[
-            { label: isZh ? '到期' : 'Due', value: dueWords.length, accent: dueWords.length > 0 ? 'warm' : 'default' },
-            { label: isZh ? '待练' : 'Ready', value: dailyWords.length },
-            { label: isZh ? '连续' : 'Streak', value: streak.current, accent: 'emerald' },
+            { label: isZh ? '已完成' : 'Answered', value: `${answeredCount}/${totalQuestions || focusedBlueprint.estimatedQuestions}` },
+            { label: isZh ? '首答正确' : 'First try', value: firstTryCorrect, accent: 'success' },
+            { label: isZh ? '已修正' : 'Recovered', value: recoveredCount, accent: 'practice' },
+            { label: isZh ? '需复习' : 'Review', value: needsReviewCount, accent: needsReviewCount > 0 ? 'danger' : 'default' },
           ]}
           className="border-t-0 pt-0"
         />
-        <div className="premium-panel-soft rounded-lg border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">{isZh ? '当前模式' : 'Current mode'}</p>
-          <p className="mt-2 text-lg font-semibold text-foreground">{focusedModeLabel}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{focusedModeDescription}</p>
+        <div className="rounded-md border border-border bg-card p-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{isZh ? '首答正确率' : 'First-try accuracy'}</span>
+            <span>{firstTryAccuracyPct}%</span>
+          </div>
+          <Progress value={firstTryAccuracyPct} className="mt-3 h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--success))]" />
         </div>
-        <div className="premium-panel-soft rounded-lg border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">{isZh ? '当前阶段' : 'Stage'}</p>
-          <p className="mt-2 text-lg font-semibold text-foreground">{sessionStage}</p>
+        <div className="rounded-md border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">{isZh ? '当前' : 'Now'}</p>
+          <p className="mt-2 text-base font-semibold text-foreground">{focusedModeLabel}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{sessionStage}</p>
         </div>
         {selectedMode === 'writing' ? (
-          <div className="premium-panel-soft rounded-lg border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
+          <div className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
             <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
               <PenTool className="h-4 w-4" />
               <p className="text-sm font-semibold">{isZh ? '写作反馈额度' : 'Writing feedback quota'}</p>
@@ -769,7 +934,7 @@ export default function PracticePage() {
 
   const renderPageShell = (mainContent: ReactNode) => {
     const primaryAction = !selectedMode
-      ? { label: isZh ? '查看此模式' : 'Review this mode', onClick: () => pickMode(focusedModeId) }
+      ? { label: isZh ? '选择此模式' : 'Choose this mode', onClick: () => pickMode(focusedModeId) }
       : !hasStarted
         ? { label: isZh ? '开始练习' : 'Start practice', onClick: startFocusedMode }
         : null;
@@ -803,14 +968,15 @@ export default function PracticePage() {
           secondaryActions,
         }}
         metrics={[
-          { label: isZh ? '当前模式' : 'Mode', value: focusedModeLabel, accent: 'emerald' },
+          { label: isZh ? '当前模式' : 'Mode', value: focusedModeLabel, accent: 'practice' },
           ...(hasStarted && timedMode ? [{ label: isZh ? '剩余时间' : 'Time left', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
-          ...(hasStarted && combo > 0 ? [{ label: isZh ? '连击' : 'Streak', value: `${combo}x`, accent: 'emerald' as const }] : []),
+          ...(hasStarted && combo > 0 ? [{ label: isZh ? '连击' : 'Streak', value: `${combo}x`, accent: 'success' as const }] : []),
           ...(!hasStarted ? [
             { label: isZh ? '预计' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}` },
             { label: isZh ? '题量' : 'Prompts', value: focusedBlueprint.estimatedQuestions },
           ] : [
-            { label: isZh ? '得分' : 'Score', value: `${score}/${totalQuestions}` },
+            { label: isZh ? '首答' : 'First try', value: `${firstTryCorrect}/${totalQuestions}`, accent: 'success' as const },
+            ...(recoveredCount > 0 ? [{ label: isZh ? '已修正' : 'Recovered', value: recoveredCount, accent: 'practice' as const }] : []),
           ]),
         ]}
       >
@@ -823,7 +989,7 @@ export default function PracticePage() {
     );
   };
 
-  const renderFactStrip = (items: { label: string; value: ReactNode; hint: string; accent?: 'default' | 'emerald' | 'warm' }[]) => (
+  const renderFactStrip = (items: { label: string; value: ReactNode; hint: string; accent?: AccentTone }[]) => (
     <LearningMetricStrip items={items.map((item) => ({ label: item.label, value: item.value, hint: item.hint, accent: item.accent }))} />
   );
 
@@ -857,13 +1023,13 @@ export default function PracticePage() {
                 : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label),
               hint: '',
             },
-            { label: isZh ? '预计时长' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'emerald' },
+            { label: isZh ? '预计时长' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'practice' },
             { label: isZh ? '今日素材' : 'Today material', value: `${dailyWords.length}${isZh ? ' 个词' : ' words'}`, hint: '' },
           ])}
 
           <div className="border-t border-border pt-5">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => pickMode(focusedModeId)}>
-              {isZh ? '查看此模式' : 'Review this mode'}
+              {isZh ? '选择此模式' : 'Choose this mode'}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -903,7 +1069,7 @@ export default function PracticePage() {
               label: isZh ? '为什么现在做' : 'Why now',
               value: isZh ? focusedBlueprint.labelZh : focusedBlueprint.label,
               hint: '',
-              accent: 'emerald',
+              accent: 'practice',
             },
             {
               label: isZh ? '完成后得到什么' : 'Outcome',
@@ -936,8 +1102,8 @@ export default function PracticePage() {
 
   if (selectedMode === 'writing') {
     return renderPageShell(
-      <LearningWorkspaceSurface
-        eyebrow={isZh ? '写作工作区' : 'Writing workspace'}
+        <LearningWorkspaceSurface
+        eyebrow={isZh ? '写作' : 'Writing'}
         title={isZh ? 'IELTS 写作练习' : 'IELTS Writing Practice'}
         actions={
           <div className="flex items-center gap-2">
@@ -1246,12 +1412,17 @@ export default function PracticePage() {
 
   if (selectedMode === 'listening') {
     const currentWord = listeningWords[currentQuestionIndex];
+    const isListeningTerminal =
+      listeningOutcome === 'firstTryCorrect' ||
+      listeningOutcome === 'recovered' ||
+      listeningOutcome === 'needsReview';
+    const isListeningRetrying = listeningOutcome === 'tryAgain';
 
     if (!currentWord) {
       return renderPageShell(
         <LearningEmptyState
           icon={Target}
-          eyebrow={isZh ? '听力工作区' : 'Listening workspace'}
+          eyebrow={isZh ? '听力' : 'Listening'}
           title={isZh ? '没有可用的听辨素材' : 'No listening material yet'}
           description={isZh ? '先准备一组词。' : 'Learn a small word set first.'}
           actions={
@@ -1269,7 +1440,7 @@ export default function PracticePage() {
 
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow={isZh ? '听力工作区' : 'Listening workspace'}
+        eyebrow={isZh ? '听力' : 'Listening'}
         title={isZh ? '听后输入' : 'Listen, then type'}
       >
         <div className="space-y-6">
@@ -1298,42 +1469,75 @@ export default function PracticePage() {
                   onChange={(event) => setListeningInput(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key !== 'Enter') return;
-                    if (!listeningResult) {
-                      handleListeningCheck();
-                    } else {
+                    if (isListeningTerminal) {
                       handleListeningNext();
+                    } else {
+                      handleListeningCheck();
                     }
                   }}
                   placeholder={isZh ? '输入你听到的单词...' : 'Type what you hear...'}
+                  disabled={isListeningTerminal}
                   className={cn('h-14 rounded-md px-5 text-center text-lg', lightInputClass)}
                 />
               </div>
 
-              {!listeningResult ? (
-                <Button
-                  variant="outline"
-                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
-                  onClick={handleListeningCheck}
-                  disabled={!listeningInput.trim()}
+              {listeningOutcome ? (
+                <div
+                  className={cn(
+                    'mx-auto max-w-md rounded-md border px-4 py-3 text-left text-sm leading-6',
+                    listeningOutcome === 'needsReview'
+                      ? 'border-amber-300 bg-amber-50 text-amber-900'
+                      : listeningOutcome === 'tryAgain'
+                        ? 'border-blue-200 bg-blue-50 text-blue-900'
+                        : 'border-green-200 bg-green-50 text-green-900',
+                  )}
                 >
-                  {isZh ? '检查答案' : 'Check answer'}
-                </Button>
-              ) : (
-                <div className="space-y-3">
-                  <div
-                    className={cn(
-                      'mx-auto max-w-md rounded-lg px-4 py-3 text-sm',
-                      listeningResult.isCorrect ? 'bg-green-50 text-green-600' : 'bg-destructive/10 text-destructive',
-                    )}
-                  >
-                    {listeningResult.isCorrect ? (isZh ? '回答正确！' : 'Correct!') : (isZh ? `正确答案：${listeningResult.expected}` : `Expected: ${listeningResult.expected}`)}
-                  </div>
+                  <p className="font-semibold">
+                    {listeningOutcome === 'firstTryCorrect'
+                      ? (isZh ? '首答正确' : 'First try correct')
+                      : listeningOutcome === 'recovered'
+                        ? (isZh ? '重试后答对' : 'Recovered after retry')
+                        : listeningOutcome === 'needsReview'
+                          ? (isZh ? '正确答案' : 'Correct answer')
+                          : (isZh ? '再听一次' : 'Listen once more')}
+                  </p>
+                  <p className="mt-1">
+                    {listeningOutcome === 'needsReview'
+                      ? (isZh ? `答案是：${listeningResult?.expected || currentWord.word}` : `Expected: ${listeningResult?.expected || currentWord.word}`)
+                      : listeningOutcome === 'tryAgain'
+                        ? buildPracticeHint(currentWord, { mode: 'listening', isZh })
+                        : (isZh ? '这题会按正确记录。' : 'This answer is recorded as correct.')}
+                  </p>
+                </div>
+              ) : null}
+
+              <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+                {!isListeningTerminal ? (
+                  <>
+                    <Button
+                      className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={handleListeningCheck}
+                      disabled={!listeningInput.trim()}
+                    >
+                      {isListeningRetrying ? (isZh ? '再试一次' : 'Try again') : (isZh ? '检查答案' : 'Check answer')}
+                    </Button>
+                    {listeningAttemptState.attempts.length > 0 ? (
+                      <Button
+                        variant="outline"
+                        className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                        onClick={handleListeningReveal}
+                      >
+                        {isZh ? '看答案' : 'Show answer'}
+                      </Button>
+                    ) : null}
+                  </>
+                ) : (
                   <Button onClick={handleListeningNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
                     {currentQuestionIndex < listeningWords.length - 1 ? (isZh ? '下一题' : 'Next question') : (isZh ? '完成听力练习' : 'Finish listening quiz')}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -1343,15 +1547,19 @@ export default function PracticePage() {
 
   if (isComplete) {
     const safeTotal = Math.max(totalQuestions, 1);
-    const accuracy = Math.round((score / safeTotal) * 100);
-    const incorrect = Math.max(0, totalQuestions - score);
+    const accuracy = Math.round((firstTryCorrect / safeTotal) * 100);
 
     return renderPageShell(
       <>
         <SessionRecapCard
           input={{
             kind: 'practice',
-            stats: { total: totalQuestions, correct: score, incorrect },
+            stats: {
+              total: totalQuestions,
+              firstTryCorrect,
+              recovered: recoveredCount,
+              needsReview: needsReviewCount,
+            },
             language: practiceLanguage,
             coachReviews: { dueCount: dueCoachReviewCount },
           }}
@@ -1362,9 +1570,11 @@ export default function PracticePage() {
           title={timedMode && timeLeft <= 0 ? (isZh ? '时间到！' : 'Time is up') : (isZh ? '这轮短练习已经完成' : 'This short practice is complete')}
           description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x，继续保持。` : `Best streak: ${maxCombo}x. Keep going.`) : (isZh ? '这轮结果已经出来了。' : 'Your result is ready.')}
           metrics={[
-            { label: isZh ? '答对' : 'Correct', value: `${score}/${safeTotal}`, accent: 'emerald' },
-            { label: isZh ? '正确率' : 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
-            { label: isZh ? '最高连击' : 'Best streak', value: `${maxCombo}x`, accent: maxCombo >= 5 ? 'emerald' : undefined },
+            { label: isZh ? '首答正确' : 'First try', value: `${firstTryCorrect}/${safeTotal}`, accent: 'success' },
+            { label: isZh ? '已修正' : 'Recovered', value: recoveredCount, accent: 'practice' },
+            { label: isZh ? '需复习' : 'Needs review', value: needsReviewCount, accent: needsReviewCount > 0 ? 'danger' : undefined },
+            { label: isZh ? '首答正确率' : 'First-try accuracy', value: `${accuracy}%`, accent: 'success' },
+            { label: isZh ? '最高连击' : 'Best streak', value: `${maxCombo}x`, accent: maxCombo >= 5 ? 'success' : undefined },
             { label: isZh ? '模式' : 'Mode', value: `${focusedModeLabel}${timedMode ? (isZh ? ' · 限时' : ' · timed') : ''}` },
           ]}
           actions={
@@ -1414,7 +1624,7 @@ export default function PracticePage() {
     return renderPageShell(
       <LearningEmptyState
         icon={Target}
-        eyebrow={isZh ? '练习工作区' : 'Practice workspace'}
+        eyebrow={isZh ? '练习' : 'Practice'}
         title="没有足够的练习素材"
         description="先学一组单词。"
         actions={
@@ -1430,9 +1640,16 @@ export default function PracticePage() {
     );
   }
 
+  const isChoiceTerminal =
+    choiceOutcome === 'firstTryCorrect' ||
+    choiceOutcome === 'recovered' ||
+    choiceOutcome === 'needsReview';
+  const isChoiceRetrying = choiceOutcome === 'tryAgain';
+  const shouldRevealChoiceAnswer = choiceOutcome === 'needsReview' && choiceAttemptState.revealed;
+
   return renderPageShell(
     <LearningWorkspaceSurface
-      eyebrow={isZh ? '练习工作区' : 'Practice workspace'}
+      eyebrow={isZh ? '练习' : 'Practice'}
       title={focusedModeLabel}
       actions={
         <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
@@ -1460,47 +1677,113 @@ export default function PracticePage() {
 
           <RadioGroup
             value={selectedAnswer || ''}
-            onValueChange={setSelectedAnswer}
-            disabled={showResult}
+            onValueChange={(value) => {
+              if (choiceAttemptState.blockedAnswers.includes(value)) return;
+              setSelectedAnswer(value);
+            }}
+            disabled={isChoiceTerminal}
             className="space-y-2"
           >
-            {currentQuestion?.options.map((option, index) => (
-              <motion.div
-                key={index}
-                animate={
-                  showResult && option === currentQuestion.correctAnswer
-                    ? { scale: [1, 1.02, 1], transition: { duration: 0.3 } }
-                    : showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer
-                      ? { x: [0, -4, 4, -4, 4, 0], transition: { duration: 0.4 } }
-                      : {}
-                }
-                className={cn(
-                  'flex items-center space-x-3 rounded-lg border px-4 py-4 transition-all',
-                  showResult && option === currentQuestion.correctAnswer
-                    ? 'border-green-200 bg-green-50 text-green-600'
-                    : showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer
-                      ? 'border-destructive/20 bg-destructive/10 text-destructive'
-                      : selectedAnswer === option
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-card hover:bg-muted hover:border-border',
-                )}
-              >
-                <RadioGroupItem value={option} id={`option-${index}`} className="border-border text-primary" />
-                <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-sm leading-6 text-foreground">
-                  {option}
-                </Label>
-                {showResult && option === currentQuestion.correctAnswer ? <Check className="h-5 w-5 text-green-600" /> : null}
-                {showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer ? <X className="h-5 w-5 text-destructive" /> : null}
-              </motion.div>
-            ))}
+            {currentQuestion?.options.map((option, index) => {
+              const blocked = choiceAttemptState.blockedAnswers.includes(option);
+              const selected = selectedAnswer === option;
+              const isCorrectOption = option === currentQuestion.correctAnswer;
+              const showCorrect = (shouldRevealChoiceAnswer && isCorrectOption) || (isChoiceTerminal && selected && isCorrectOption);
+              return (
+                <motion.div
+                  key={index}
+                  animate={
+                    showCorrect
+                      ? { scale: [1, 1.01, 1], transition: { duration: 0.2 } }
+                      : blocked
+                        ? { x: [0, -3, 3, 0], transition: { duration: 0.22 } }
+                        : {}
+                  }
+                  className={cn(
+                    'flex items-center space-x-3 rounded-md border px-4 py-4 transition-all',
+                    showCorrect
+                      ? 'border-green-300 bg-green-50 text-foreground'
+                      : blocked
+                        ? 'border-red-200 bg-red-50 text-foreground'
+                        : selected
+                          ? 'border-primary/50 bg-primary/10 text-foreground'
+                          : 'border-border bg-card hover:bg-muted hover:border-border',
+                    (blocked || isChoiceTerminal) && 'cursor-default',
+                  )}
+                >
+                  <RadioGroupItem
+                    value={option}
+                    id={`option-${index}`}
+                    disabled={blocked || isChoiceTerminal}
+                    className="border-border text-primary"
+                  />
+                  <Label
+                    htmlFor={`option-${index}`}
+                    className={cn(
+                      'flex-1 text-sm leading-6 text-foreground',
+                      blocked || isChoiceTerminal ? 'cursor-default' : 'cursor-pointer',
+                    )}
+                  >
+                    {option}
+                  </Label>
+                  {showCorrect ? <Check className="h-5 w-5 text-green-700" /> : null}
+                  {blocked ? <X className="h-5 w-5 text-red-600" /> : null}
+                </motion.div>
+              );
+            })}
           </RadioGroup>
+
+          {choiceOutcome ? (
+            <div
+              className={cn(
+                'rounded-md border px-4 py-3 text-sm leading-6',
+                choiceOutcome === 'needsReview'
+                  ? 'border-amber-300 bg-amber-50 text-amber-950'
+                  : choiceOutcome === 'tryAgain'
+                    ? 'border-blue-200 bg-blue-50 text-blue-950'
+                    : choiceOutcome === 'recovered'
+                      ? 'border-sky-200 bg-sky-50 text-sky-950'
+                      : 'border-green-200 bg-green-50 text-green-950',
+              )}
+            >
+              <p className="font-semibold">
+                {choiceOutcome === 'firstTryCorrect'
+                  ? (isZh ? '首答正确' : 'First try correct')
+                  : choiceOutcome === 'recovered'
+                    ? (isZh ? '重试后答对' : 'Recovered after retry')
+                    : choiceOutcome === 'needsReview'
+                      ? (isZh ? '正确答案' : 'Correct answer')
+                      : (isZh ? '还没对，再试一次' : 'Not yet. Try once more')}
+              </p>
+              <p className="mt-1">
+                {choiceOutcome === 'needsReview'
+                  ? currentQuestion?.correctAnswer
+                  : choiceOutcome === 'tryAgain' && currentQuestion
+                    ? buildPracticeHint(currentQuestion.word, { mode: selectedMode === 'fill_blank' ? 'fill_blank' : 'quiz', isZh })
+                    : choiceOutcome === 'recovered'
+                      ? (isZh ? '这题会标记为已修正，稍后会再安排巩固。' : 'Marked as recovered; it will come back for reinforcement.')
+                      : (isZh ? '这题会按首答正确记录。' : 'Recorded as first-try correct.')}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-3 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
-          {!showResult ? (
-            <Button onClick={handleAnswer} disabled={!selectedAnswer} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
-              {isZh ? '检查答案' : 'Check answer'}
-            </Button>
+          {!isChoiceTerminal ? (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button onClick={handleAnswer} disabled={!selectedAnswer} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
+                {isChoiceRetrying ? (isZh ? '再试一次' : 'Try again') : (isZh ? '检查答案' : 'Check answer')}
+              </Button>
+              {choiceAttemptState.attempts.length > 0 ? (
+                <Button
+                  variant="outline"
+                  onClick={handleRevealAnswer}
+                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                >
+                  {isZh ? '看答案' : 'Show answer'}
+                </Button>
+              ) : null}
+            </div>
           ) : (
             <Button onClick={handleNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
               {isZh ? '下一题' : 'Next question'}
@@ -1509,9 +1792,11 @@ export default function PracticePage() {
           )}
 
           <div className="text-sm leading-6 text-muted-foreground">
-            {showResult
-              ? (isZh ? `当前正确率 ${accuracyPct}%` : `Current accuracy ${accuracyPct}%`)
-              : (isZh ? '先选一个最合适的答案，再检查。' : 'Choose the best answer, then check.')}
+            {isChoiceTerminal
+              ? (isZh ? `首答正确率 ${firstTryAccuracyPct}%` : `First-try accuracy ${firstTryAccuracyPct}%`)
+              : isChoiceRetrying
+                ? (isZh ? '换一个选项，不会直接显示答案。' : 'Choose another option; the answer stays hidden.')
+                : (isZh ? '先选一个最合适的答案，再检查。' : 'Choose the best answer, then check.')}
           </div>
         </div>
       </div>

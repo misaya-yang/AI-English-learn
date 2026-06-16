@@ -21,8 +21,13 @@ export interface ReviewSessionStats {
 
 export interface PracticeSessionStats {
   total: number;
-  correct: number;
-  incorrect: number;
+  /** Legacy aggregate. Prefer firstTryCorrect + recovered for new callers. */
+  correct?: number;
+  /** Legacy aggregate. Prefer needsReview for new callers. */
+  incorrect?: number;
+  firstTryCorrect?: number;
+  recovered?: number;
+  needsReview?: number;
 }
 
 export interface CoachReviewSummary {
@@ -219,28 +224,34 @@ const buildPracticeRecap = (
   stats: PracticeSessionStats,
   args: BaseRecapInput,
 ): SessionRecap => {
-  const correct = Math.max(0, stats.correct);
-  const incorrect = Math.max(0, stats.incorrect);
+  const firstTryCorrect = Math.max(0, stats.firstTryCorrect ?? stats.correct ?? 0);
+  const recovered = Math.max(0, stats.recovered ?? 0);
+  const needsReviewCount = Math.max(0, stats.needsReview ?? stats.incorrect ?? 0);
+  const improvedCount = firstTryCorrect + recovered;
   const total = Math.max(0, stats.total);
-  const accuracy = total > 0 ? correct / total : 0;
+  const firstTryAccuracy = total > 0 ? firstTryCorrect / total : 0;
 
-  const improved: SessionRecapHighlight | null = correct > 0
+  const improved: SessionRecapHighlight | null = improvedCount > 0
     ? {
         label: {
-          en: `${correct} answer${correct > 1 ? 's' : ''} correct`,
-          zh: `答对 ${correct} 题`,
+          en: recovered > 0
+            ? `${firstTryCorrect} first-try correct · ${recovered} recovered`
+            : `${firstTryCorrect} first-try correct`,
+          zh: recovered > 0
+            ? `首答正确 ${firstTryCorrect} 题 · 重试修正 ${recovered} 题`
+            : `首答正确 ${firstTryCorrect} 题`,
         },
-        count: correct,
+        count: improvedCount,
       }
     : null;
 
-  const needsReview: SessionRecapHighlight | null = incorrect > 0
+  const needsReview: SessionRecapHighlight | null = needsReviewCount > 0
     ? {
         label: {
-          en: `${incorrect} mistake${incorrect > 1 ? 's' : ''} captured for review`,
-          zh: `${incorrect} 道错题已加入复习`,
+          en: `${needsReviewCount} item${needsReviewCount > 1 ? 's' : ''} need another pass`,
+          zh: `${needsReviewCount} 题需要再复习`,
         },
-        count: incorrect,
+        count: needsReviewCount,
       }
     : null;
 
@@ -249,19 +260,19 @@ const buildPracticeRecap = (
         en: 'No questions answered. Start a short drill to create a baseline.',
         zh: '本次没有作答记录，先做个短练习建立基线。',
       }
-    : accuracy >= 0.8
+    : firstTryAccuracy >= 0.8
       ? {
-          en: `${correct}/${total} correct. That is a tight retrieval session, so push for harder content next.`,
-          zh: `${correct}/${total} 正确，检索很扎实，下一轮可以挑战更难的内容。`,
+          en: `${firstTryCorrect}/${total} first-try correct. Retrieval is stable; move to harder prompts next.`,
+          zh: `${firstTryCorrect}/${total} 首答正确，检索稳定，下一轮可以加难度。`,
         }
-      : accuracy >= 0.5
+      : firstTryAccuracy >= 0.5
         ? {
-            en: `Steady run: ${correct}/${total}. The ${incorrect} mistakes are queued for review.`,
-            zh: `这一轮不错：${correct}/${total}。${incorrect} 道错题已进入复习队列。`,
+            en: `First try: ${firstTryCorrect}/${total}. ${recovered} recovered after a retry; ${needsReviewCount} need review.`,
+            zh: `首答 ${firstTryCorrect}/${total}。重试修正 ${recovered} 题，${needsReviewCount} 题需要复习。`,
           }
         : {
-            en: `Tough drill (${correct}/${total}). The mistakes will surface sooner in review, which is exactly what should happen.`,
-            zh: `这一轮偏难（${correct}/${total}）。这些错题会更早出现在复习里，正是该有的处理。`,
+            en: `Tough drill (${firstTryCorrect}/${total} first-try correct). Keep the review queue tight and retry the weak items.`,
+            zh: `这一轮偏难（${firstTryCorrect}/${total} 首答正确）。先把需要复习的题补掉。`,
           };
 
   const coachDue = args.coachReviews?.dueCount ?? 0;
@@ -283,7 +294,7 @@ const buildPracticeRecap = (
     };
   }
 
-  if (incorrect > 0) {
+  if (needsReviewCount > 0) {
     return {
       kind: 'practice',
       improved,
@@ -294,8 +305,8 @@ const buildPracticeRecap = (
         ctaZh: '复盘错题',
         href: '/dashboard/chat',
         reason: {
-          en: `${incorrect} mistake${incorrect > 1 ? 's are' : ' is'} fresh. Review them while the details are still clear.`,
-          zh: `${incorrect} 道错题刚记下，现在复盘最省力。`,
+          en: `${needsReviewCount} item${needsReviewCount > 1 ? 's are' : ' is'} fresh. Review while the details are still clear.`,
+          zh: `${needsReviewCount} 题刚暴露，现在复盘最省力。`,
         },
       },
     };

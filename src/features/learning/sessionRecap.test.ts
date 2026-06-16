@@ -109,6 +109,20 @@ describe('buildSessionRecap (practice)', () => {
     expect(recap.nextAction.ctaEn.toLowerCase()).toContain('review');
   });
 
+  it('separates first-try correct, recovered, and needs-review practice outcomes', () => {
+    const recap = buildSessionRecap({
+      kind: 'practice',
+      stats: basePractice({ total: 5, firstTryCorrect: 2, recovered: 2, needsReview: 1 }),
+    });
+
+    expect(recap.improved?.count).toBe(4);
+    expect(recap.improved?.label.zh).toContain('首答正确 2 题');
+    expect(recap.improved?.label.zh).toContain('重试修正 2 题');
+    expect(recap.needsReview?.count).toBe(1);
+    expect(recap.encouragement.zh).toContain('2/5 首答正确');
+    expect(recap.nextAction.href).toBe('/dashboard/chat');
+  });
+
   it('routes to scheduled reviews when the queue has due items even after a mistake-free session', () => {
     const recap = buildSessionRecap({
       kind: 'practice',

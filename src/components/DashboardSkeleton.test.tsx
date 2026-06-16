@@ -16,8 +16,8 @@ describe('DashboardSkeleton', () => {
   it('names the dashboard loading operation', () => {
     render(<DashboardSkeleton />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('正在加载学习内容');
-    expect(screen.getByText('读取词书、复习队列和今日任务。')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('正在打开学习任务');
+    expect(screen.getByText('读取词书和本轮进度。')).toBeInTheDocument();
   });
 
   it('names the public-page loading operation', () => {
@@ -32,7 +32,7 @@ describe('DashboardSkeleton', () => {
 
     render(<DashboardSkeleton />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('Loading learning content');
-    expect(screen.queryByText('正在加载学习内容')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Opening learning task');
+    expect(screen.queryByText('正在打开学习任务')).not.toBeInTheDocument();
   });
 });

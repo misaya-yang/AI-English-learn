@@ -13,6 +13,7 @@ product-audit-*/**/*.png
 product-audit-*/**/*.jpg
 product-audit-*/**/*.jpeg
 product-audit-*/**/*.webp
+product-audit-*/**/downloads/
 product-ui-audit-*/**/*.png
 product-ui-audit-*/**/*.jpg
 product-ui-audit-*/**/*.jpeg

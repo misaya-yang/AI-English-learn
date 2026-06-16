@@ -80,6 +80,71 @@ export function uniqueWordRatio(text: string): number {
 
 // ─── Local scoring fallback ─────────────────────────────────────────────────
 
+function firstSentence(text: string): string {
+  return text.split(/[.!?]+/).find((sentence) => sentence.trim().length > 0)?.trim() || text.trim();
+}
+
+export function buildLocalWritingSuggestions(
+  text: string,
+  type: WritingType,
+): WritingSuggestion[] {
+  const wc = countWords(text);
+  const sc = countSentences(text);
+  const uniqueRatio = uniqueWordRatio(text);
+  const suggestions: WritingSuggestion[] = [];
+  const sample = firstSentence(text).slice(0, 140) || 'Current draft';
+  const targetWords = type === 'ielts' ? 250 : type === 'business' ? 120 : 80;
+
+  if (wc < targetWords) {
+    suggestions.push({
+      id: 'local-length',
+      original: `${wc} words`,
+      suggested:
+        type === 'ielts'
+          ? 'Add one clear example, one counterpoint, and a final sentence that answers the prompt directly.'
+          : 'Add one concrete detail and one closing sentence so the reader can follow the point.',
+      reason: 'The draft is too short for a reliable score.',
+      reasonZh: '当前篇幅偏短，评分只能先参考结构和词汇信号。',
+      type: 'style',
+    });
+  }
+
+  if (sc <= 1 && wc >= 10) {
+    suggestions.push({
+      id: 'local-coherence',
+      original: sample,
+      suggested: `${sample}. Then add a second sentence that explains why this point matters.`,
+      reason: 'Split the idea into claim and explanation so the paragraph has clearer flow.',
+      reasonZh: '把观点和解释拆开，段落推进会更清楚。',
+      type: 'coherence',
+    });
+  }
+
+  if (uniqueRatio < 0.72 && wc >= 12) {
+    suggestions.push({
+      id: 'local-vocabulary',
+      original: 'Repeated vocabulary',
+      suggested: 'Replace repeated words with one precise synonym or a phrase that names the exact situation.',
+      reason: 'Several words repeat, which weakens lexical range.',
+      reasonZh: '重复词偏多，会拉低词汇丰富度。',
+      type: 'vocabulary',
+    });
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push({
+      id: 'local-next-step',
+      original: sample,
+      suggested: 'Keep this idea, then revise one sentence for more precise verbs and clearer linking.',
+      reason: 'The local checker found a workable draft; the next useful step is sentence-level polish.',
+      reasonZh: '本地检查显示草稿可用，下一步适合做句子级精修。',
+      type: 'style',
+    });
+  }
+
+  return suggestions.slice(0, 3);
+}
+
 export function gradeLocally(text: string, type: WritingType): WritingGradeResult {
   const wc = countWords(text);
   const sc = countSentences(text);
@@ -104,7 +169,7 @@ export function gradeLocally(text: string, type: WritingType): WritingGradeResul
       lexicalResource: { score: lexicalScore, label: 'Lexical Resource', labelZh: '词汇丰富度', feedback: 'Try using more varied vocabulary.', feedbackZh: '尝试使用更丰富的词汇。' },
       grammaticalRange: { score: grammarScore, label: 'Grammatical Range', labelZh: '语法多样性', feedback: 'Use a mix of simple and complex sentences.', feedbackZh: '混合使用简单句和复合句。' },
     },
-    suggestions: [],
+    suggestions: buildLocalWritingSuggestions(text, type),
     wordCount: wc,
     sentenceCount: sc,
     hasAiFeedback: false,

@@ -14,16 +14,18 @@ export function RequireAuth() {
       <div
         role="status"
         aria-live="polite"
-        className="flex h-screen items-center justify-center bg-background px-6"
+        className="flex min-h-screen items-start justify-center bg-background px-6 pt-24"
       >
-        <div className="max-w-sm rounded-lg border border-border bg-card p-6 text-center shadow-sm">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-muted border-b-primary" />
-          <p className="mt-5 text-sm font-semibold text-foreground">
-            {isZh ? '正在确认登录状态' : 'Confirming your sign-in status'}
-          </p>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            {isZh ? '确认后会继续打开刚才的学习任务。' : 'After confirmation, we will reopen the learning task you requested.'}
-          </p>
+        <div className="flex w-full max-w-md items-center gap-3 rounded-md border border-border bg-card px-4 py-3 shadow-sm">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-b-primary" />
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              {isZh ? '正在确认登录状态' : 'Confirming your sign-in status'}
+            </p>
+            <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
+              {isZh ? '确认后继续打开学习任务。' : 'Your learning task will reopen after confirmation.'}
+            </p>
+          </div>
         </div>
       </div>
     );

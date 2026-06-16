@@ -215,6 +215,32 @@ interface AiPronunciationResponse {
   phonemeIssues: PhonemeIssue[];
 }
 
+type PronunciationAssessPayload = {
+  expected: string;
+  recognized: string;
+  confidence: number;
+  durationMs: number;
+};
+
+type PronunciationAssessMock = (
+  payload: PronunciationAssessPayload,
+) => AiPronunciationResponse | Promise<AiPronunciationResponse>;
+
+declare global {
+  interface Window {
+    __VOCABDAILY_PRONUNCIATION_ASSESS_MOCK__?: PronunciationAssessMock;
+  }
+}
+
+function getLocalPronunciationAssessMock(): PronunciationAssessMock | null {
+  if (typeof window === 'undefined') return null;
+  const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (!isLocalHost) return null;
+  return typeof window.__VOCABDAILY_PRONUNCIATION_ASSESS_MOCK__ === 'function'
+    ? window.__VOCABDAILY_PRONUNCIATION_ASSESS_MOCK__
+    : null;
+}
+
 /**
  * Send recognized speech to AI gateway for phoneme-level analysis.
  * Falls back to local scoring on failure.
@@ -227,16 +253,20 @@ export async function scoreWithAi(
   const localResult = scoreLocally(expected, listenResult);
 
   try {
-    const aiResult = await invokeEdgeFunction<AiPronunciationResponse>(
-      'pronunciation-assess',
-      {
-        expected,
-        recognized: listenResult.transcript,
-        confidence: listenResult.confidence,
-        durationMs: listenResult.durationMs,
-      },
-      { signal },
-    );
+    const payload = {
+      expected,
+      recognized: listenResult.transcript,
+      confidence: listenResult.confidence,
+      durationMs: listenResult.durationMs,
+    };
+    const localMock = getLocalPronunciationAssessMock();
+    const aiResult = localMock
+      ? await localMock(payload)
+      : await invokeEdgeFunction<AiPronunciationResponse>(
+          'pronunciation-assess',
+          payload,
+          { signal },
+        );
 
     const accuracy = aiResult.accuracy ?? localResult.dimensions.accuracy;
     const fluency = aiResult.fluency ?? localResult.dimensions.fluency;

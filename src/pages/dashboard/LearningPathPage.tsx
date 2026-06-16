@@ -185,7 +185,7 @@ export default function LearningPathPage() {
             {
               label: isZh ? '可选路径' : 'Available paths',
               value: learningPaths.length,
-              accent: 'emerald',
+              accent: 'practice',
             },
             {
               label: isZh ? '已开启' : 'In progress',
@@ -269,7 +269,7 @@ export default function LearningPathPage() {
           {
             label: isZh ? '课程进度' : 'Progress',
             value: `${doneCount}/${totalLessons}`,
-            accent: 'emerald',
+            accent: 'success',
           },
           {
             label: isZh ? '完成率' : 'Completion',

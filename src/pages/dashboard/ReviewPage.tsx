@@ -367,7 +367,7 @@ export default function ReviewPage() {
                 : 'No cards are due right now. You can do a short Practice session; extra review items appear on the right.'
             }
             metrics={[
-              { label: isZh ? '到期卡片' : 'Due cards', value: 0, accent: 'emerald' },
+              { label: isZh ? '到期卡片' : 'Due cards', value: 0, accent: 'memory' },
             ]}
             actions={
               <>
@@ -384,7 +384,7 @@ export default function ReviewPage() {
             <LearningRailSection title={isZh ? '队列为什么为空' : 'Why the queue is empty'}>
               <LearningMetricStrip
                 items={[
-                  { label: isZh ? '到期卡' : 'Due cards', value: 0, accent: 'emerald' },
+                  { label: isZh ? '到期卡' : 'Due cards', value: 0, accent: 'memory' },
                   { label: isZh ? '今日新词' : 'Today words', value: dailyWords.length },
                   { label: isZh ? '任务目标' : 'Mission target', value: reviewTaskTarget },
                 ]}
@@ -427,8 +427,8 @@ export default function ReviewPage() {
           title="本轮复习已经完成"
           description="这一轮已经结束。"
           metrics={[
-            { label: isZh ? '已复习' : 'Reviewed', value: totalReviewed, accent: 'emerald' },
-            { label: isZh ? '正确率' : 'Accuracy', value: `${accuracy}%`, accent: 'emerald' },
+            { label: isZh ? '已复习' : 'Reviewed', value: totalReviewed, accent: 'memory' },
+            { label: isZh ? '正确率' : 'Accuracy', value: `${accuracy}%`, accent: 'success' },
             { label: isZh ? '遗忘 / 较难' : 'Again / Hard', value: `${sessionStats.again} / ${sessionStats.hard}`, accent: 'warm' },
           ]}
           actions={
@@ -462,7 +462,7 @@ export default function ReviewPage() {
           : 'This round shows cards due today. Extra review items are listed on the right.',
       }}
       metrics={[
-        { label: language.startsWith('zh') ? '剩余卡片' : 'Remaining', value: remainingCount, accent: 'emerald' },
+        { label: language.startsWith('zh') ? '剩余卡片' : 'Remaining', value: remainingCount, accent: 'memory' },
         { label: language.startsWith('zh') ? '任务目标' : 'Mission target', value: reviewTaskTarget },
         { label: language.startsWith('zh') ? '当前卡片' : 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
         ...(isCurrentCardStubborn ? [{ label: language.startsWith('zh') ? '强化路径' : 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
@@ -604,7 +604,7 @@ export default function ReviewPage() {
               items={[
                 { label: isZh ? '遗忘' : 'Again', value: sessionStats.again, accent: 'warm' },
                 { label: isZh ? '较难' : 'Hard', value: sessionStats.hard, accent: 'warm' },
-                { label: isZh ? '良好' : 'Good', value: sessionStats.good, accent: 'emerald' },
+                { label: isZh ? '良好' : 'Good', value: sessionStats.good, accent: 'success' },
               ]}
               className="border-t-0 pt-0"
             />

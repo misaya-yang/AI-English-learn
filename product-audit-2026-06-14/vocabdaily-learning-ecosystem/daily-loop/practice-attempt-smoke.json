@@ -1,0 +1,39 @@
+{
+  "baseUrl": "http://127.0.0.1:4173",
+  "generatedAt": "2026-06-16T14:31:21.314Z",
+  "activeBookId": "builtin_a1_foundation",
+  "total": 6,
+  "failed": 0,
+  "results": [
+    {
+      "name": "desktop choice first wrong and recovered",
+      "passed": true,
+      "word": "abandon"
+    },
+    {
+      "name": "desktop choice second wrong reveal",
+      "passed": true,
+      "word": "abandon"
+    },
+    {
+      "name": "desktop listening retry and reveal",
+      "passed": true,
+      "expected": "abandon"
+    },
+    {
+      "name": "mobile choice first wrong and recovered",
+      "passed": true,
+      "word": "abandon"
+    },
+    {
+      "name": "mobile choice second wrong reveal",
+      "passed": true,
+      "word": "abandon"
+    },
+    {
+      "name": "mobile listening retry and reveal",
+      "passed": true,
+      "expected": "abandon"
+    }
+  ]
+}

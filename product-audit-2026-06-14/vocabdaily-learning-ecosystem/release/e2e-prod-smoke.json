@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-06-16T15:37:50.083Z",
+  "baseUrl": "https://www.uuedu.online",
+  "authCredentialsSource": "none",
+  "publicChecks": [
+    {
+      "route": "/",
+      "status": 200,
+      "finalUrl": "https://www.uuedu.online/",
+      "errorCount": 0,
+      "errors": []
+    },
+    {
+      "route": "/pricing",
+      "status": 200,
+      "finalUrl": "https://www.uuedu.online/pricing",
+      "errorCount": 0,
+      "errors": []
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "finalUrl": "https://www.uuedu.online/login",
+      "errorCount": 0,
+      "errors": []
+    },
+    {
+      "route": "/register",
+      "status": 200,
+      "finalUrl": "https://www.uuedu.online/register",
+      "errorCount": 0,
+      "errors": []
+    },
+    {
+      "route": "/word-of-the-day",
+      "status": 200,
+      "finalUrl": "https://www.uuedu.online/word-of-the-day",
+      "errorCount": 0,
+      "errors": []
+    }
+  ],
+  "authChecks": {
+    "enabled": false,
+    "credentialsSource": "none",
+    "loginOk": false,
+    "chat": {
+      "aiStatus": null,
+      "fallbackVisible": false,
+      "requestTimedOut": false,
+      "sessionHistoryVisible": false,
+      "multiTurnOk": false,
+      "multiTurnRounds": 0,
+      "quizCanvasVisible": false,
+      "quizLeakedAnswer": false
+    },
+    "practice": {
+      "writingQuotaResolved": false
+    },
+    "pricing": {
+      "stripeUrl": "",
+      "stripeUrlMalformed": false,
+      "alipayUrl": ""
+    },
+    "errors": []
+  }
+}

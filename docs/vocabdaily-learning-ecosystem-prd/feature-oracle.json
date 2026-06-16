@@ -1,0 +1,68 @@
+{
+  "schema_version": "prd-phase-harness/feature-oracle/v1",
+  "features": [
+    {
+      "id": "VLE-00-baseline",
+      "phase_id": "VLE-00",
+      "category": "baseline",
+      "description": "Current product, UI, route, data, and regression baseline is recorded for later phases.",
+      "steps": ["Inventory routes and capabilities", "Record baseline evidence", "Write phase report"],
+      "status": "passing",
+      "evidence": "docs/vocabdaily-learning-ecosystem-prd/reports/vle-00-baseline-product-audit-report.md"
+    },
+    {
+      "id": "VLE-01-lexicon",
+      "phase_id": "VLE-01",
+      "category": "lexicon",
+      "description": "Vocabulary is upgraded into a learner-owned lexicon with wordbook metadata, mastery lanes, detail actions, and browser evidence.",
+      "steps": ["Upgrade vocabulary UI", "Add focused tests", "Capture browser evidence", "Write phase report"],
+      "status": "passing",
+      "evidence": "docs/vocabdaily-learning-ecosystem-prd/reports/vle-01-lexicon-and-wordbook-ecosystem-report.md"
+    },
+    {
+      "id": "VLE-02-import-export",
+      "phase_id": "VLE-02",
+      "category": "import-export",
+      "description": "CSV and APKG import/export should expose preview, mapping, error, safety, and portability confidence.",
+      "steps": ["Audit import dialogs and parsers", "Improve preview and mapping states", "Run import/export tests", "Record portability evidence"],
+      "status": "passing",
+      "evidence": "docs/vocabdaily-learning-ecosystem-prd/reports/vle-02-anki-import-export-experience-report.md"
+    },
+    {
+      "id": "VLE-03-daily-loop",
+      "phase_id": "VLE-03",
+      "category": "practice-routing",
+      "description": "Today, Review, Practice, dictation, and mistakes should share one honest answer retry and evidence loop.",
+      "steps": ["Audit attempt semantics", "Verify retry and reveal behavior", "Connect recap evidence", "Run learning-flow regression"],
+      "status": "passing",
+      "evidence": "docs/vocabdaily-learning-ecosystem-prd/reports/vle-03-daily-loop-and-practice-routing-report.md"
+    },
+    {
+      "id": "VLE-04-ai-coach",
+      "phase_id": "VLE-04",
+      "category": "ai-coaching",
+      "description": "AI coach and skill feedback should read and write bounded learner evidence across vocabulary and skill routes.",
+      "steps": ["Define evidence contract", "Implement bounded context surfaces", "Run eval traces", "Record privacy gates"],
+      "status": "passing",
+      "evidence": "docs/vocabdaily-learning-ecosystem-prd/reports/vle-04-ai-english-coach-and-skill-feedback-report.md"
+    },
+    {
+      "id": "VLE-05-workbench-ui",
+      "phase_id": "VLE-05",
+      "category": "ui-system",
+      "description": "Dashboard routes should follow the Modern Learning Workbench UI contract without old cockpit or admin patterns.",
+      "steps": ["Audit route surfaces", "Apply workbench tokens", "Capture desktop and mobile screenshots", "Record visual regression evidence"],
+      "status": "passing",
+      "evidence": "docs/vocabdaily-learning-ecosystem-prd/reports/vle-05-learning-workbench-ui-system-report.md"
+    },
+    {
+      "id": "VLE-06-release",
+      "phase_id": "VLE-06",
+      "category": "release",
+      "description": "Release should be gated by full regression, eval, smoke, rollback, and deployment evidence.",
+      "steps": ["Run full validation", "Run production smoke", "Write rollback report", "Request deployment approval"],
+      "status": "passing",
+      "evidence": "docs/vocabdaily-learning-ecosystem-prd/reports/vle-06-regression-eval-and-release-report.md"
+    }
+  ]
+}

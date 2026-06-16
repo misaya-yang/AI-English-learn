@@ -4,6 +4,7 @@ import {
   computeAccuracy,
   computeFluency,
   scoreLocally,
+  scoreWithAi,
   isSpeechRecognitionSupported,
   type ListenResult,
 } from '@/services/pronunciationScorer';
@@ -95,6 +96,37 @@ describe('pronunciationScorer', () => {
       const result = scoreLocally('hello world', listenResult);
       // accuracy=100, fluency=100, intonation=100 → overall=100
       expect(result.overallScore).toBe(100);
+    });
+  });
+
+  describe('scoreWithAi', () => {
+    it('uses the localhost pronunciation mock for browser regression checks', async () => {
+      window.__VOCABDAILY_PRONUNCIATION_ASSESS_MOCK__ = () => ({
+        accuracy: 92,
+        fluency: 84,
+        intonation: 86,
+        phonemeIssues: [
+          {
+            phoneme: 'ʌ',
+            word: 'pronunciation',
+            severity: 'minor',
+            tip: 'Keep the stressed vowel short.',
+            tipZh: '重读元音保持短促。',
+          },
+        ],
+      });
+
+      const result = await scoreWithAi('pronunciation', {
+        transcript: 'pronunciation',
+        confidence: 0.8,
+        durationMs: 1100,
+      });
+
+      expect(result.hasAiFeedback).toBe(true);
+      expect(result.phonemeIssues).toHaveLength(1);
+      expect(result.dimensions.accuracy).toBe(92);
+
+      delete window.__VOCABDAILY_PRONUNCIATION_ASSESS_MOCK__;
     });
   });
 

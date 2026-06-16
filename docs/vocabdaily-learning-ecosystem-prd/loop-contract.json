@@ -1,0 +1,21 @@
+{
+  "schema_version": "prd-phase-harness/runtime/v1",
+  "goal": "Execute the VocabDaily Learning Ecosystem Upgrade one phase and one feature at a time with durable validation evidence.",
+  "cycle": ["observe", "select", "execute", "verify", "record", "decide"],
+  "max_iterations": 7,
+  "state_file": "docs/vocabdaily-learning-ecosystem-prd/loop-state.json",
+  "oracle_file": "docs/vocabdaily-learning-ecosystem-prd/feature-oracle.json",
+  "done_when": [
+    "The active phase acceptance gates pass and the phase report records evidence.",
+    "Required validation commands and browser checks pass or a named waiver records the remaining risk."
+  ],
+  "continue_when": [
+    "The active feature has a concrete next action in loop-state.json.",
+    "The next phase dependency is passed or explicitly waived in the previous phase report."
+  ],
+  "stop_when": [
+    "A stop condition in the active phase file is triggered.",
+    "A production deployment, production migration, billing change, or external deck download is required without explicit approval.",
+    "Validation cannot distinguish environment failure from product failure after a documented retry."
+  ]
+}

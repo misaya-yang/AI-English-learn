@@ -4,7 +4,17 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
-export type AccentTone = 'default' | 'emerald' | 'warm';
+export type AccentTone =
+  | 'default'
+  | 'emerald'
+  | 'warm'
+  | 'memory'
+  | 'practice'
+  | 'coach'
+  | 'exam'
+  | 'success'
+  | 'warning'
+  | 'danger';
 
 export interface MetricItem {
   label: string;
@@ -73,6 +83,13 @@ const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
   emerald: 'text-primary',
   warm: 'text-amber-600 dark:text-amber-300',
+  memory: 'text-[hsl(var(--accent-memory))]',
+  practice: 'text-[hsl(var(--accent-practice))]',
+  coach: 'text-[hsl(var(--accent-coach))]',
+  exam: 'text-amber-600 dark:text-amber-300',
+  success: 'text-[hsl(var(--success))]',
+  warning: 'text-amber-600 dark:text-amber-300',
+  danger: 'text-destructive',
 };
 
 export function LearningShellFrame({ children, className }: LearningShellFrameProps) {

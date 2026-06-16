@@ -852,7 +852,7 @@ export default function TodayPage() {
         {
           label: language.startsWith('zh') ? '新词剩余' : 'Words left',
           value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
-          accent: 'emerald',
+          accent: 'practice',
         },
         {
           label: language.startsWith('zh') ? '到期复习' : 'Due reviews',
@@ -928,7 +928,7 @@ export default function TodayPage() {
 
                 <LearningMetricStrip
                   items={[
-                    { label: isZh ? '已学会' : 'Learned', value: learnedWords.size, accent: 'emerald' },
+                    { label: isZh ? '已学会' : 'Learned', value: learnedWords.size, accent: 'success' },
                     { label: isZh ? '较难' : 'Hard', value: hardWords.size, accent: 'warm' },
                     { label: isZh ? '已收藏' : 'Saved', value: bookmarkedWords.size },
                   ]}
@@ -1005,7 +1005,7 @@ export default function TodayPage() {
               title="今天的新词任务已完成"
               description={`今天的 ${words.length} 个单词已经完成。`}
               metrics={[
-                { label: isZh ? '已学词数' : 'Words completed', value: words.length, accent: 'emerald' },
+                { label: isZh ? '已学词数' : 'Words completed', value: words.length, accent: 'success' },
                 { label: isZh ? '较难词' : 'Hard words', value: hardWords.size, accent: 'warm' },
                 { label: isZh ? '任务完成度' : 'Mission progress', value: `${missionProgress}%` },
               ]}

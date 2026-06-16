@@ -2,10 +2,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-/**
- * Skeleton placeholder shown while dashboard pages are lazy-loading.
- * Mimics the typical dashboard page layout: header + cards grid.
- */
 export function DashboardSkeleton() {
   const { i18n } = useTranslation();
   const isZh = i18n.language?.startsWith('zh');
@@ -14,34 +10,30 @@ export function DashboardSkeleton() {
     <div
       role="status"
       aria-live="polite"
-      className="space-y-6 p-4 sm:p-6 animate-in fade-in duration-300"
+      className="p-4 sm:p-6 animate-in fade-in duration-200"
     >
-      {/* Page header */}
-      <div className="space-y-2">
-        <p className="text-sm font-medium text-foreground">
-          {isZh ? '正在加载学习内容' : 'Loading learning content'}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {isZh ? '读取词书、复习队列和今日任务。' : 'Reading your word book, review queue, and today tasks.'}
-        </p>
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-72" />
-      </div>
-
-      {/* Hero card */}
-      <Skeleton className="h-44 w-full rounded-xl" />
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-lg" />
-        ))}
-      </div>
-
-      {/* Content cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Skeleton className="h-60 rounded-lg" />
-        <Skeleton className="h-60 rounded-lg" />
+      <div className="mx-auto max-w-5xl space-y-4">
+        <div className="flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <BookOpen className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {isZh ? '正在打开学习任务' : 'Opening learning task'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {isZh ? '读取词书和本轮进度。' : 'Reading your word book and round progress.'}
+            </p>
+          </div>
+          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
+            <div className="h-full w-1/2 rounded-full bg-primary/55 animate-shimmer" />
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)_260px]">
+          <Skeleton className="h-28 rounded-md bg-muted/70" />
+          <Skeleton className="h-40 rounded-md bg-muted/70" />
+          <Skeleton className="h-28 rounded-md bg-muted/70" />
+        </div>
       </div>
     </div>
   );

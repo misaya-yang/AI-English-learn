@@ -30,7 +30,7 @@ describe('RequireAuth', () => {
     );
 
     expect(screen.getByRole('status')).toHaveTextContent('正在确认登录状态');
-    expect(screen.getByText('确认后会继续打开刚才的学习任务。')).toBeInTheDocument();
+    expect(screen.getByText('确认后继续打开学习任务。')).toBeInTheDocument();
     expect(screen.queryByText('Private dashboard')).not.toBeInTheDocument();
   });
 

@@ -5,6 +5,7 @@ import {
   averageWordLength,
   uniqueWordRatio,
   buildSuggestionsFromFeedback,
+  buildLocalWritingSuggestions,
   gradeLocally,
   inferIeltsTaskType,
   mapIeltsFeedbackToWritingGradeResult,
@@ -62,12 +63,25 @@ describe('writingAnalytics', () => {
       expect(result.bandScore).toBeNull();
       expect(result.dimensions.taskAchievement).toBeDefined();
       expect(result.dimensions.lexicalResource).toBeDefined();
+      expect(result.suggestions.length).toBeGreaterThan(0);
     });
 
     it('returns band score for IELTS type', () => {
       const result = gradeLocally('Some text about a topic.', 'ielts');
       expect(result.bandScore).toBeGreaterThanOrEqual(0);
       expect(result.bandScore).toBeLessThanOrEqual(9);
+    });
+
+    it('returns actionable local suggestions when AI grading is unavailable', () => {
+      const suggestions = buildLocalWritingSuggestions(
+        'English English English English helps work work work work because English is useful',
+        'ielts',
+      );
+
+      expect(suggestions.map((item) => item.type)).toEqual(
+        expect.arrayContaining(['style', 'coherence', 'vocabulary']),
+      );
+      expect(suggestions[0].suggested).toContain('example');
     });
   });
 

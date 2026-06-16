@@ -125,6 +125,17 @@ describe('deriveLessonCompletion', () => {
     expect(result.metBy).toContain('practice.correct');
   });
 
+  it('does not count recovered practice as first-try correct', () => {
+    const events: EvidenceEvent[] = [
+      createEvidenceEvent({ type: 'practice.recovered', userId: 'u1', wordId: 'a', mode: 'quiz' }),
+      createEvidenceEvent({ type: 'practice.correct', userId: 'u1', wordId: 'b', mode: 'quiz' }),
+    ];
+    const result = deriveLessonCompletion(events, { lessonId: 'l1', practiceCorrectCount: 2 });
+
+    expect(result.completed).toBe(false);
+    expect(result.metBy).not.toContain('practice.correct');
+  });
+
   it('treats only good/easy ratings as review successes', () => {
     const events: EvidenceEvent[] = [
       createEvidenceEvent({ type: 'review.rated', userId: 'u1', wordId: 'a', rating: 'good' }),

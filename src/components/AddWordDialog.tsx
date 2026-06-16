@@ -98,7 +98,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-emerald-600 hover:bg-emerald-700">
+        <Button>
           <Plus className="h-4 w-4 mr-2" />
           {isZh ? '添加单词' : 'Add Word'}
         </Button>
@@ -290,7 +290,7 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
           <Button variant="outline" onClick={() => setOpen(false)}>
             {isZh ? '取消' : 'Cancel'}
           </Button>
-          <Button onClick={handleAdd} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={handleAdd}>
             {isZh ? '添加单词' : 'Add Word'}
           </Button>
         </DialogFooter>

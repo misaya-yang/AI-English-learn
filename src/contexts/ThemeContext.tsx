@@ -19,7 +19,7 @@ const getSystemResolvedTheme = (): ResolvedTheme =>
   window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
 const initialState: ThemeProviderState = {
-  theme: 'system',
+  theme: 'light',
   setTheme: () => null,
   resolvedTheme: 'light',
 };
@@ -28,7 +28,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = 'system',
+  defaultTheme = 'light',
   storageKey = 'vite-ui-theme',
   ...props
 }: ThemeProviderProps) {

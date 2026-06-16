@@ -14,7 +14,28 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportRowError } from '@/data/wordBooks';
+import type {
+  AnkiDeckSummary,
+  AnkiFieldMapping,
+  AnkiFieldMappingKey,
+  AnkiImportOptions,
+  AnkiImportResult,
+  AnkiProgressMode,
+  ImportRowError,
+} from '@/data/wordBooks';
+
+const AUTO_FIELD = '__auto__';
+
+const MAPPING_FIELDS: Array<{ key: AnkiFieldMappingKey; label: string }> = [
+  { key: 'word', label: '词面' },
+  { key: 'definition', label: '英文释义' },
+  { key: 'definitionZh', label: '中文释义' },
+  { key: 'phonetic', label: '音标' },
+  { key: 'partOfSpeech', label: '词性' },
+  { key: 'examples', label: '例句' },
+  { key: 'topic', label: '主题' },
+  { key: 'tags', label: '标签' },
+];
 
 interface ImportAnkiApkgDialogProps {
   onInspect: (file: File) => Promise<AnkiDeckSummary[]>;
@@ -36,19 +57,36 @@ export function ImportAnkiApkgDialog({
   const [isImporting, setIsImporting] = useState(false);
   const [decks, setDecks] = useState<AnkiDeckSummary[]>([]);
   const [selectedDeckId, setSelectedDeckId] = useState<string>('');
+  const [progressMode, setProgressMode] = useState<AnkiProgressMode>('coarse');
+  const [fieldMapping, setFieldMapping] = useState<AnkiFieldMapping>({});
 
   const selectedDeck = useMemo(
     () => decks.find((deck) => deck.deckId === selectedDeckId) || null,
     [decks, selectedDeckId],
   );
+  const selectedDeckFieldNames = selectedDeck?.fieldNames ?? [];
 
   const resetState = () => {
     setBookName('Imported Anki Deck');
     setFile(null);
     setDecks([]);
     setSelectedDeckId('');
+    setProgressMode('coarse');
+    setFieldMapping({});
     setIsInspecting(false);
     setIsImporting(false);
+  };
+
+  const updateFieldMapping = (key: AnkiFieldMappingKey, value: string) => {
+    setFieldMapping((current) => {
+      const next = { ...current };
+      if (value === AUTO_FIELD) {
+        delete next[key];
+      } else {
+        next[key] = value;
+      }
+      return next;
+    });
   };
 
   const handleInspect = async () => {
@@ -70,6 +108,7 @@ export function ImportAnkiApkgDialog({
 
       setDecks(inspectedDecks);
       setSelectedDeckId(inspectedDecks[0].deckId);
+      setFieldMapping({});
       toast.success(`Found ${inspectedDecks.length} deck(s)`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to inspect .apkg file';
@@ -95,7 +134,8 @@ export function ImportAnkiApkgDialog({
         source: `Anki APKG Import: ${file.name}`,
         license: 'User provided',
         fileName: file.name,
-        progressMode: 'coarse',
+        progressMode,
+        fieldMapping,
       });
 
       if (result.unmappedRows.length > 0) {
@@ -134,7 +174,7 @@ export function ImportAnkiApkgDialog({
           导入 Anki (.apkg)
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Anki 卡组导入 (.apkg)</DialogTitle>
           <DialogDescription>
@@ -153,6 +193,7 @@ export function ImportAnkiApkgDialog({
                 setFile(e.target.files?.[0] || null);
                 setDecks([]);
                 setSelectedDeckId('');
+                setFieldMapping({});
               }}
             />
             <p className="text-xs text-muted-foreground">文件大小上限 50MB（本地浏览器解析）</p>
@@ -185,7 +226,14 @@ export function ImportAnkiApkgDialog({
 
           <div className="space-y-2">
             <Label htmlFor="anki-deck-select">选择导入 deck</Label>
-            <Select value={selectedDeckId} onValueChange={setSelectedDeckId} disabled={decks.length === 0 || isImporting}>
+            <Select
+              value={selectedDeckId}
+              onValueChange={(value) => {
+                setSelectedDeckId(value);
+                setFieldMapping({});
+              }}
+              disabled={decks.length === 0 || isImporting}
+            >
               <SelectTrigger id="anki-deck-select">
                 <Layers className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="请先解析 .apkg 文件" />
@@ -198,6 +246,108 @@ export function ImportAnkiApkgDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {selectedDeck && (
+            <div className="rounded-md border border-border bg-muted/35 p-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="font-medium">导入预览</p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedDeck.noteCount} notes · {selectedDeck.cardCount} cards · 映射信心 {selectedDeck.mappingConfidence || 'low'}
+                  </p>
+                </div>
+                <span className="rounded-md border border-border bg-background px-2 py-1 text-xs">
+                  {selectedDeck.progressPreview?.coarseMappedCount ?? 0} 条可粗略映射进度
+                </span>
+              </div>
+
+              {selectedDeckFieldNames.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs text-muted-foreground">字段</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {selectedDeckFieldNames.slice(0, 8).map((fieldName) => (
+                      <span key={fieldName} className="rounded-md bg-background px-2 py-1 text-xs">
+                        {fieldName}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedDeckFieldNames.length > 0 && (
+                <div className="mt-3 border-t border-border pt-3">
+                  <div className="flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                      <p className="text-xs font-medium">字段映射</p>
+                      <p className="text-xs text-muted-foreground">自动识别不准时，手动指定列。</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {Object.keys(fieldMapping).length > 0 ? `已指定 ${Object.keys(fieldMapping).length} 项` : '默认自动识别'}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {MAPPING_FIELDS.map((field) => (
+                      <div key={field.key} className="space-y-1">
+                        <Label htmlFor={`anki-field-${field.key}`} className="text-xs">
+                          {field.label}
+                        </Label>
+                        <Select
+                          value={fieldMapping[field.key] || AUTO_FIELD}
+                          onValueChange={(value) => updateFieldMapping(field.key, value)}
+                          disabled={isImporting}
+                        >
+                          <SelectTrigger id={`anki-field-${field.key}`} className="h-9 bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={AUTO_FIELD}>自动识别</SelectItem>
+                            {selectedDeckFieldNames.map((fieldName) => (
+                              <SelectItem key={`${field.key}-${fieldName}`} value={fieldName}>
+                                {fieldName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedDeck.sampleRows && selectedDeck.sampleRows.length > 0 && (
+                <div className="mt-3 space-y-1">
+                  <p className="text-xs text-muted-foreground">样例</p>
+                  {selectedDeck.sampleRows.slice(0, 2).map((row, index) => (
+                    <div key={`${row.word}-${index}`} className="rounded-md bg-background p-2 text-xs">
+                      <span className="font-medium">{row.word || '未识别词面'}</span>
+                      <span className="text-muted-foreground"> · {row.definition || '未识别释义'}</span>
+                      {row.definitionZh ? <span className="text-muted-foreground"> · {row.definitionZh}</span> : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="anki-progress-mode">进度映射</Label>
+            <Select
+              value={progressMode}
+              onValueChange={(value) => setProgressMode(value as AnkiProgressMode)}
+              disabled={isImporting}
+            >
+              <SelectTrigger id="anki-progress-mode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="coarse">粗略导入：用 Anki 复习次数和间隔估算学习状态</SelectItem>
+                <SelectItem value="none">不导入进度：只导入词条内容</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              粗略导入不会覆盖无关词条，只会给本次导入的词建立初始学习状态。
+            </p>
           </div>
         </div>
 

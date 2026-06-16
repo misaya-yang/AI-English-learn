@@ -322,22 +322,96 @@ async function captureScenarioFailure(page, viewport, name, error) {
 }
 
 async function answerVisibleQuestionCards(page, textAnswer = 'practice answer') {
-  const interactiveCards = page.locator('div.rounded-xl.border.p-4').filter({ has: page.locator('button, input') });
-  const questionCards = (await interactiveCards.count())
-    ? interactiveCards
-    : page.locator('div.rounded-xl').filter({ hasText: /Q\d+\./ });
-  const cardCount = await questionCards.count();
-
-  for (let index = 0; index < cardCount; index += 1) {
-    const card = questionCards.nth(index);
-    const input = card.locator('input').first();
-    if (await input.count()) {
-      await input.fill(textAnswer);
-      continue;
+  const optionButtons = page.getByRole('button').filter({
+    hasText: /^(True|False|Not Given|[A-D][.)]\s)/,
+  });
+  const optionCount = await optionButtons.count();
+  for (let index = 0; index < optionCount; index += 1) {
+    const option = optionButtons.nth(index);
+    if ((await option.isVisible()) && (await option.isEnabled())) {
+      await option.click();
     }
-
-    await card.locator('button').first().click();
   }
+
+  const inputs = page.locator('input:visible:not([disabled])');
+  const inputCount = await inputs.count();
+  for (let index = 0; index < inputCount; index += 1) {
+    const input = inputs.nth(index);
+    await input.fill(textAnswer);
+  }
+}
+
+function imageCell(item) {
+  const fileName = path.basename(item.screenshotPath || '');
+  const label = item.route ? `${item.name} ${item.route}` : item.name;
+  const statusClass = item.passed ? 'pass' : 'fail';
+  return `
+    <figure class="${statusClass}">
+      <img src="screenshots/${fileName}" alt="${item.viewport} ${label}" loading="lazy" />
+      <figcaption>
+        <strong>${item.viewport} / ${label}</strong>
+        <span>${item.passed ? 'passed' : 'failed'}</span>
+      </figcaption>
+    </figure>
+  `;
+}
+
+async function writeContactSheet(report, viewportName) {
+  const routeItems = report.checks.filter((item) => item.viewport === viewportName);
+  const scenarioItems = report.scenarios.filter((item) => item.viewport === viewportName);
+  const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VocabDaily ${viewportName} UI contact sheet</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f6f7f9;
+        color: #20242c;
+      }
+      body { margin: 0; padding: 32px; }
+      h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: 0; }
+      h2 { margin: 32px 0 16px; font-size: 18px; letter-spacing: 0; }
+      p { margin: 0; color: #606979; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+      figure {
+        margin: 0;
+        overflow: hidden;
+        border: 1px solid #d9dee7;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+      figure.fail { border-color: #d94b4b; }
+      img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: top left; }
+      figcaption {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        font-size: 12px;
+        color: #4b5565;
+      }
+      strong { color: #20242c; font-weight: 650; }
+      span { text-transform: uppercase; letter-spacing: .06em; font-size: 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>VocabDaily ${viewportName} UI contact sheet</h1>
+    <p>Generated from ${BASE_URL} at ${report.timestamp}.</p>
+    <h2>Routes</h2>
+    <section class="grid">${routeItems.map(imageCell).join('')}</section>
+    <h2>Learning flows</h2>
+    <section class="grid">${scenarioItems.map(imageCell).join('')}</section>
+  </body>
+</html>`;
+
+  const sheetPath = path.join(OUT_DIR, `contact-sheet-${viewportName}.html`);
+  await fs.writeFile(sheetPath, html, 'utf8');
+  return sheetPath;
 }
 
 const scenarioDefinitions = [
@@ -345,9 +419,9 @@ const scenarioDefinitions = [
     name: 'reading-completion',
     run: async (page, viewport) => {
       await gotoPage(page, `${BASE_URL}/dashboard/reading`);
-      await page.getByRole('button', { name: /开始推荐文章|Start recommended passage/ }).click();
+      await page.getByRole('button', { name: /开始推荐文章|开始这篇|Start recommended passage|Start this passage/ }).click();
       await answerVisibleQuestionCards(page, 'hippocampus');
-      await page.getByRole('button', { name: /提交答案/ }).click();
+      await page.getByRole('button', { name: /提交答案|Submit answers/i }).click();
       await page.getByText('阅读复盘').waitFor({ timeout: 10000 });
       return captureScenario(page, viewport, 'reading-completion', /阅读复盘|Reading recap/);
     },
@@ -356,10 +430,10 @@ const scenarioDefinitions = [
     name: 'listening-completion',
     run: async (page, viewport) => {
       await gotoPage(page, `${BASE_URL}/dashboard/listening`);
-      await page.getByRole('button', { name: /开始推荐听力|Start recommended audio/ }).click();
+      await page.getByRole('button', { name: /开始推荐听力|开始这段|Start recommended audio|Start this clip/ }).click();
       await page.getByRole('button', { name: /开始答题|Start Questions/ }).click();
       await answerVisibleQuestionCards(page, '15');
-      await page.getByRole('button', { name: /提交答案/ }).click();
+      await page.getByRole('button', { name: /提交答案|Submit Answers/i }).click();
       await page.getByText('听力复盘').waitFor({ timeout: 10000 });
       return captureScenario(page, viewport, 'listening-completion', /听力复盘|Listening recap/);
     },
@@ -368,12 +442,12 @@ const scenarioDefinitions = [
     name: 'grammar-completion',
     run: async (page, viewport) => {
       await gotoPage(page, `${BASE_URL}/dashboard/grammar`);
-      await page.getByRole('button', { name: /开始推荐规则练习/ }).click();
+      await page.getByRole('button', { name: /开始推荐规则练习|开始这组|Start this set/ }).click();
       const answers = ['a', 'The', 'the', 'an'];
       for (let index = 0; index < answers.length; index += 1) {
         await page.locator('input').nth(index).fill(answers[index]);
       }
-      await page.getByRole('button', { name: /检查答案/ }).click();
+      await page.getByRole('button', { name: /检查答案|Check Answers/i }).click();
       await page.getByText('语法复盘').waitFor({ timeout: 10000 });
       return captureScenario(page, viewport, 'grammar-completion', /语法复盘|Grammar recap/);
     },
@@ -476,6 +550,11 @@ async function main() {
   }
 
   const summaryPath = path.join(OUT_DIR, 'summary.json');
+  await fs.writeFile(summaryPath, JSON.stringify(report, null, 2), 'utf8');
+  report.contactSheets = [];
+  for (const viewport of viewports) {
+    report.contactSheets.push(await writeContactSheet(report, viewport.name));
+  }
   await fs.writeFile(summaryPath, JSON.stringify(report, null, 2), 'utf8');
   console.log(JSON.stringify(report, null, 2));
 

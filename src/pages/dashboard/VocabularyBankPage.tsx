@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AddWordDialog } from '@/components/AddWordDialog';
 import { ImportAnkiApkgDialog } from '@/components/ImportAnkiApkgDialog';
 import { ImportWordBookDialog } from '@/components/ImportWordBookDialog';
@@ -37,11 +37,18 @@ interface VocabularyItem {
   progress: UserProgress | null;
 }
 
+interface LastImportSummary {
+  source: 'csv' | 'anki';
+  successCount: number;
+  mappedProgressCount?: number;
+  errorCount: number;
+}
+
 const statusColors: Record<string, string> = {
   new: 'bg-gray-500',
-  learning: 'bg-blue-500',
-  review: 'bg-yellow-500',
-  mastered: 'bg-emerald-500',
+  learning: 'bg-[hsl(var(--accent-practice))]',
+  review: 'bg-[hsl(var(--warning))]',
+  mastered: 'bg-[hsl(var(--success))]',
 };
 
 const statusLabels: Record<string, string> = {
@@ -143,6 +150,7 @@ export default function VocabularyBankPage() {
   }, [vocabulary]);
 
   const [exportOpen, setExportOpen] = useState(false);
+  const [lastImportSummary, setLastImportSummary] = useState<LastImportSummary | null>(null);
 
   const handleExport = (format: 'csv' | 'csv-progress' | 'anki') => {
     const words = filteredVocabulary.map((v) => v.word);
@@ -236,9 +244,15 @@ export default function VocabularyBankPage() {
   };
 
   const totalWords = vocabulary.length;
+  const newCount = vocabulary.filter((item) => (item.progress?.status || 'new') === 'new').length;
   const masteredCount = vocabulary.filter((item) => (item.progress?.status || 'new') === 'mastered').length;
   const learningCount = vocabulary.filter((item) => (item.progress?.status || 'new') === 'learning').length;
-  const reviewCount = vocabulary.filter((item) => (item.progress?.status || 'new') === 'review').length;
+  const needsReviewCount = vocabulary.filter((item) => {
+    const status = item.progress?.status || 'new';
+    const incorrectCount = item.progress?.incorrectCount ?? 0;
+    const correctCount = item.progress?.correctCount ?? 0;
+    return status === 'review' || incorrectCount > correctCount;
+  }).length;
   const featuredItem = filteredVocabulary[0] || vocabulary[0] || null;
   const featuredEntry = featuredItem ? toLexicalEntry(featuredItem.word) : null;
   const featuredSense = featuredEntry?.senses[0];
@@ -262,6 +276,12 @@ export default function VocabularyBankPage() {
             onInspect={handleInspectAnki}
             onImport={handleImportAnki}
             onSuccess={(result) => {
+              setLastImportSummary({
+                source: 'anki',
+                successCount: result.successCount,
+                mappedProgressCount: result.mappedProgressCount,
+                errorCount: result.unmappedRows.length,
+              });
               toast.success(
                 `Anki 导入完成：${result.successCount} 词，映射进度 ${result.mappedProgressCount} 条`,
               );
@@ -277,6 +297,11 @@ export default function VocabularyBankPage() {
             onImport={handleImportBook}
             onSuccess={(result) => {
               if (result.createdBookId) {
+                setLastImportSummary({
+                  source: 'csv',
+                  successCount: result.successCount,
+                  errorCount: result.errorRows.length,
+                });
                 toast.success('词书导入成功并已设为当前词书');
               }
             }}
@@ -317,6 +342,36 @@ export default function VocabularyBankPage() {
         </div>
       </div>
 
+      {lastImportSummary && (
+        <section className="rounded-md border border-[hsl(var(--accent-practice)/0.28)] bg-[hsl(var(--accent-practice)/0.08)] p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {lastImportSummary.source === 'anki' ? 'Anki 已导入' : '词书已导入'}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {lastImportSummary.successCount} 个词已设为当前词书
+                {typeof lastImportSummary.mappedProgressCount === 'number'
+                  ? ` · ${lastImportSummary.mappedProgressCount} 条学习进度已映射`
+                  : ''}
+                {lastImportSummary.errorCount > 0 ? ` · ${lastImportSummary.errorCount} 条错误已导出报告` : ''}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm">
+                <Link to="/dashboard/today">今天学这本</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/dashboard/review">复习到期词</Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setExportOpen(true)}>
+                导出备份
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="rounded-md border border-border bg-card p-4 sm:p-5">
         {featuredEntry && featuredSense ? (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_320px] lg:items-stretch">
@@ -347,7 +402,7 @@ export default function VocabularyBankPage() {
                   size="icon"
                   className="h-10 w-10 rounded-md border-border bg-card text-foreground hover:bg-muted"
                   onClick={() => playAudio(featuredEntry.headword)}
-                  aria-label={isZh ? '播放发音' : 'Play pronunciation'}
+                  aria-label={isZh ? `播放 ${featuredEntry.headword} 发音` : `Play pronunciation for ${featuredEntry.headword}`}
                 >
                   <Volume2 className="h-4 w-4" />
                 </Button>
@@ -398,7 +453,7 @@ export default function VocabularyBankPage() {
               {[
                 { label: isZh ? '当前词书' : 'Active book', value: activeBook?.name || '-' },
                 { label: isZh ? '词条总数' : 'Total words', value: totalWords },
-                { label: isZh ? '待复习' : 'In review', value: reviewCount },
+                { label: isZh ? '需要复习' : 'Needs review', value: needsReviewCount },
               ].map((item) => (
                 <div key={item.label} className="rounded-md border border-border bg-background p-4">
                   <p className="text-xs text-muted-foreground">{item.label}</p>
@@ -420,6 +475,60 @@ export default function VocabularyBankPage() {
                 ? '导入词书或添加自定义词后，这里会显示释义、例句和练习入口。'
                 : 'Import a word book or add a custom word to see definitions, examples, and practice actions.'}
             </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <AddWordDialog onAddWord={handleAddWord} />
+              <ImportWordBookDialog
+                onImport={handleImportBook}
+                onSuccess={(result) => {
+                  if (result.createdBookId) {
+                    setLastImportSummary({
+                      source: 'csv',
+                      successCount: result.successCount,
+                      errorCount: result.errorRows.length,
+                    });
+                    toast.success('词书导入成功并已设为当前词书');
+                  }
+                }}
+                onError={(errors) => {
+                  if (errors.length > 0) {
+                    toast.warning(`有 ${errors.length} 行导入失败，请检查格式`);
+                    downloadImportErrors(errors);
+                  }
+                }}
+              />
+              <ImportAnkiApkgDialog
+                onInspect={handleInspectAnki}
+                onImport={handleImportAnki}
+                onSuccess={(result) => {
+                  setLastImportSummary({
+                    source: 'anki',
+                    successCount: result.successCount,
+                    mappedProgressCount: result.mappedProgressCount,
+                    errorCount: result.unmappedRows.length,
+                  });
+                  toast.success(
+                    `Anki 导入完成：${result.successCount} 词，映射进度 ${result.mappedProgressCount} 条`,
+                  );
+                }}
+                onError={(errors) => {
+                  if (errors.length > 0) {
+                    toast.warning(`Anki 导入有 ${errors.length} 条无法映射，已导出错误报告`);
+                    downloadImportErrors(errors);
+                  }
+                }}
+              />
+              {wordBooks.filter((book) => book.isBuiltIn).slice(0, 2).map((book) => (
+                <Button
+                  key={book.id}
+                  type="button"
+                  variant="secondary"
+                  className="rounded-md"
+                  onClick={() => setActiveBook(book.id)}
+                >
+                  {isZh ? `使用 ${book.name}` : `Use ${book.name}`}
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </section>
@@ -440,8 +549,8 @@ export default function VocabularyBankPage() {
               <div
                 key={book.id}
                 className={cn(
-                  'border rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3',
-                  isActive && 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20',
+                  'rounded-md border border-border bg-card p-3 transition-colors flex flex-col md:flex-row md:items-start md:justify-between gap-3',
+                  isActive && 'border-[hsl(var(--accent-memory)/0.55)] bg-[hsl(var(--accent-memory)/0.08)]',
                 )}
               >
                 <div className="space-y-1">
@@ -453,15 +562,30 @@ export default function VocabularyBankPage() {
                       <Badge variant="outline">自定义</Badge>
                     )}
                     {isActive && (
-                      <Badge className="bg-emerald-600 text-white">
+                      <Badge className="rounded-md bg-[hsl(var(--accent-memory))] text-white hover:bg-[hsl(var(--accent-memory))]">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
-                        当前词书
+                        {isZh ? '当前词书' : 'Active'}
                       </Badge>
                     )}
                   </div>
-	                  <p className="text-xs text-muted-foreground">
-	                    {book.wordIds.length} {isZh ? '个词' : 'words'} · {isZh ? '来源' : 'Source'}: {book.source} · {isZh ? '许可' : 'License'}: {book.license}
-	                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {book.levelRange.map((level) => (
+                      <Badge key={level} variant="outline" className="rounded-md text-xs">
+                        {level}
+                      </Badge>
+                    ))}
+                    {book.topicTags.slice(0, 4).map((topic) => (
+                      <Badge key={topic} variant="secondary" className="rounded-md text-xs">
+                        {topic}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {book.wordIds.length} {isZh ? '个词' : 'words'} · {isZh ? '版本' : 'Version'} {book.version}
+                  </p>
+                  <p className="max-w-3xl text-xs text-muted-foreground">
+                    {isZh ? '来源' : 'Source'}: {book.source} · {isZh ? '许可' : 'License'}: {book.license}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -529,7 +653,7 @@ export default function VocabularyBankPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <p className="text-2xl font-bold">{totalWords}</p>
@@ -538,14 +662,20 @@ export default function VocabularyBankPage() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-emerald-600">{masteredCount}</p>
+            <p className="text-2xl font-bold text-foreground">{newCount}</p>
+            <p className="text-sm text-muted-foreground">新词</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-2xl font-bold text-[hsl(var(--success))]">{masteredCount}</p>
             <p className="text-sm text-muted-foreground">已掌握</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-yellow-600">{reviewCount}</p>
-            <p className="text-sm text-muted-foreground">复习中</p>
+            <p className="text-2xl font-bold text-[hsl(var(--warning))]">{needsReviewCount}</p>
+            <p className="text-sm text-muted-foreground">需要复习</p>
           </CardContent>
         </Card>
         <Card>
@@ -564,11 +694,20 @@ export default function VocabularyBankPage() {
           const entry = toLexicalEntry(item.word);
           const sense = entry.senses[0];
           const firstExample = sense.examples[0];
+          const sourceBooks = wordBooks.filter((book) => book.wordIds.includes(item.word.id));
+          const sourceBookLabel = sourceBooks.length > 0
+            ? sourceBooks.map((book) => book.name).join(' / ')
+            : (activeBook?.name || (isZh ? '未归属词书' : 'No source book'));
 
           return (
             <Dialog key={item.word.id}>
               <DialogTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <Card
+                  role="button"
+                  tabIndex={0}
+                  aria-label={isZh ? `打开 ${entry.headword} 词条详情` : `Open ${entry.headword} details`}
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -588,6 +727,7 @@ export default function VocabularyBankPage() {
                             e.stopPropagation();
                             playAudio(entry.headword);
                           }}
+                          aria-label={isZh ? `播放 ${entry.headword} 发音` : `Play pronunciation for ${entry.headword}`}
                         >
                           <Volume2 className="h-4 w-4" />
                         </Button>
@@ -622,15 +762,38 @@ export default function VocabularyBankPage() {
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-3">
                     {entry.headword}
-                    <Button variant="ghost" size="icon" onClick={() => playAudio(entry.headword)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => playAudio(entry.headword)}
+                      aria-label={isZh ? `播放 ${entry.headword} 发音` : `Play pronunciation for ${entry.headword}`}
+                    >
                       <Volume2 className="h-4 w-4" />
                     </Button>
                   </DialogTitle>
+                  <DialogDescription>
+                    {isZh
+                      ? '查看这个词的释义、例句、来源词书和下一步练习动作。'
+                      : 'Review definitions, examples, source book, and next practice actions for this word.'}
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     {sense.partOfSpeech || '-'} • {entry.phonetic || '-'} • {entry.cefrLevel} • {entry.topic}
                   </p>
+
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="rounded-md border border-border bg-muted/35 p-3">
+                      <p className="text-xs text-muted-foreground">{isZh ? '学习状态' : 'Learning status'}</p>
+                      <p className="mt-1 text-sm font-medium text-foreground">
+                        {isZh ? (statusLabelsZh[status] || status) : (statusLabels[status] || status)}
+                      </p>
+                    </div>
+                    <div className="rounded-md border border-border bg-muted/35 p-3">
+                      <p className="text-xs text-muted-foreground">{isZh ? '来源词书' : 'Source book'}</p>
+                      <p className="mt-1 text-sm font-medium text-foreground">{sourceBookLabel}</p>
+                    </div>
+                  </div>
 
                   <div>
                     <h4 className="font-semibold mb-2">{isZh ? '词义 / Sense' : 'Sense'}</h4>
@@ -731,6 +894,7 @@ export default function VocabularyBankPage() {
                         variant="outline"
                         className="text-red-600 hover:text-red-700"
                         onClick={() => handleDeleteWord(item.word.id)}
+                        aria-label={isZh ? `删除自定义词 ${entry.headword}` : `Delete custom word ${entry.headword}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

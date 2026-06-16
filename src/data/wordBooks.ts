@@ -38,9 +38,32 @@ export interface AnkiDeckSummary {
   deckName: string;
   cardCount: number;
   noteCount: number;
+  fieldNames?: string[];
+  sampleRows?: Array<{
+    word: string;
+    definition: string;
+    definitionZh?: string;
+  }>;
+  mappingConfidence?: 'high' | 'medium' | 'low';
+  progressPreview?: {
+    coarseMappedCount: number;
+    reviewedCardCount: number;
+  };
 }
 
 export type AnkiProgressMode = 'none' | 'coarse';
+
+export type AnkiFieldMappingKey =
+  | 'word'
+  | 'definition'
+  | 'definitionZh'
+  | 'phonetic'
+  | 'partOfSpeech'
+  | 'examples'
+  | 'topic'
+  | 'tags';
+
+export type AnkiFieldMapping = Partial<Record<AnkiFieldMappingKey, string>>;
 
 export interface AnkiImportOptions {
   selectedDeckId: string;
@@ -50,6 +73,7 @@ export interface AnkiImportOptions {
   version?: string;
   fileName?: string;
   progressMode?: AnkiProgressMode;
+  fieldMapping?: AnkiFieldMapping;
 }
 
 export interface AnkiImportResult extends ImportResult {

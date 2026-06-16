@@ -1,0 +1,9 @@
+{
+  "schema_version": "prd-phase-harness/runtime-state/v1",
+  "active_phase": "VLE-06",
+  "active_feature": "VLE-06-release",
+  "iteration": 1,
+  "status": "verified",
+  "last_decision": "VLE-06 shipped the frontend upgrade to Vercel production with full local validation, UI regression, learning-flow regression, public production smoke, and bad-token smoke. Supabase project reachability remains a documented provider/network blocker.",
+  "next_action": "Monitor production frontend health and investigate Supabase TLS reachability for zjkbktdmwencnouwfrij.supabase.co from affected user networks."
+}

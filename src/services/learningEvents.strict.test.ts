@@ -5,9 +5,10 @@
 // IndexedDB is unavailable in jsdom, so writes round-trip via the same
 // helpers used in production.
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { clearLearningEventsForUser } from '@/lib/localDb';
+import { syncQueue } from '@/services/syncQueue';
 import {
   recordEvent,
   getEvents,
@@ -16,6 +17,7 @@ import {
 } from './learningEvents';
 
 const USER = 'test-user-strict-events';
+const LOCAL_USER = '00000000-0000-4000-8000-123456789abc';
 
 describe('learningEvents — strict typed contract', () => {
   beforeEach(async () => {
@@ -37,8 +39,22 @@ describe('learningEvents — strict typed contract', () => {
     expect(event.created_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
+  it('keeps local-auth strict events local instead of enqueueing remote sync', async () => {
+    const enqueueSpy = vi.spyOn(syncQueue, 'enqueue');
+
+    await recordEvent(LOCAL_USER, {
+      kind: 'practice_recovered',
+      payload: { word: 'abandon' },
+    });
+
+    expect(enqueueSpy).not.toHaveBeenCalled();
+    enqueueSpy.mockRestore();
+    await clearLearningEventsForUser(LOCAL_USER);
+  });
+
   it('filters events by kind', async () => {
     await recordEvent(USER, { kind: 'practice_correct', payload: { word: 'a' } });
+    await recordEvent(USER, { kind: 'practice_recovered', payload: { word: 'a' } });
     await recordEvent(USER, { kind: 'practice_wrong', payload: { word: 'b' } });
     await recordEvent(USER, { kind: 'review_completed' });
 
@@ -63,15 +79,17 @@ describe('learningEvents — strict typed contract', () => {
     const events: LearningEvent[] = [
       { id: '1', user_id: USER, kind: 'practice_correct', created_at: 't' },
       { id: '2', user_id: USER, kind: 'practice_correct', created_at: 't' },
-      { id: '3', user_id: USER, kind: 'practice_wrong', created_at: 't' },
+      { id: '3', user_id: USER, kind: 'practice_recovered', created_at: 't' },
       { id: '4', user_id: USER, kind: 'review_completed', created_at: 't' },
       { id: '5', user_id: USER, kind: 'mistake_resolved', created_at: 't' },
       { id: '6', user_id: USER, kind: 'session_started', created_at: 't' },
       { id: '7', user_id: USER, kind: 'session_ended', created_at: 't' },
+      { id: '8', user_id: USER, kind: 'practice_wrong', created_at: 't' },
     ];
     expect(derivePathProgress(events)).toEqual({
       reviewsCompleted: 1,
       practiceCorrect: 2,
+      practiceRecovered: 1,
       practiceWrong: 1,
       mistakesResolved: 1,
       sessions: 1,
@@ -82,6 +100,7 @@ describe('learningEvents — strict typed contract', () => {
     expect(derivePathProgress([])).toEqual({
       reviewsCompleted: 0,
       practiceCorrect: 0,
+      practiceRecovered: 0,
       practiceWrong: 0,
       mistakesResolved: 0,
       sessions: 0,

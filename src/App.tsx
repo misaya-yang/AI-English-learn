@@ -57,7 +57,7 @@ const withUserDataRoute = (element: React.ReactNode, skeleton?: React.ReactNode)
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="vocabdaily-theme">
+      <ThemeProvider defaultTheme="light" storageKey="vocabdaily-theme">
         <AuthProvider>
           <Router>
             <Routes>

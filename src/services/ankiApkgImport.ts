@@ -1,4 +1,6 @@
 import type {
+  AnkiFieldMapping,
+  AnkiFieldMappingKey,
   AnkiDeckSummary,
   AnkiImportOptions,
   AnkiProgressMode,
@@ -184,12 +186,20 @@ const addDaysIso = (days: number): string => {
   return now.toISOString().split('T')[0];
 };
 
-const getTextByPriority = (fieldMap: Map<string, string>, priority: string[]): string => {
+const getTextByPriority = (
+  fieldMap: Map<string, string>,
+  priority: string[],
+  allowAnyFallback = true,
+): string => {
   for (const key of priority) {
     const found = fieldMap.get(key);
     if (found && found.length > 0) {
       return found;
     }
+  }
+
+  if (!allowAnyFallback) {
+    return '';
   }
 
   for (const value of fieldMap.values()) {
@@ -199,6 +209,48 @@ const getTextByPriority = (fieldMap: Map<string, string>, priority: string[]): s
   }
 
   return '';
+};
+
+const getTextByMapping = (
+  fieldMap: Map<string, string>,
+  mapping: AnkiFieldMapping | undefined,
+  key: AnkiFieldMappingKey,
+  fallbackPriority: string[],
+  allowAnyFallback = true,
+): string => {
+  const mappedField = mapping?.[key];
+  if (mappedField) {
+    const mappedValue = fieldMap.get(normalizeFieldName(mappedField));
+    if (mappedValue !== undefined) {
+      return mappedValue;
+    }
+  }
+
+  if (fallbackPriority.length === 0) {
+    return '';
+  }
+
+  return getTextByPriority(fieldMap, fallbackPriority, allowAnyFallback);
+};
+
+const hasPriorityField = (fieldMap: Map<string, string>, priority: string[]): boolean =>
+  priority.some((key) => (fieldMap.get(key) || '').trim().length > 0);
+
+const getModelFieldNames = (model: Record<string, unknown> | undefined): string[] => {
+  const fields = Array.isArray(model?.flds) ? model?.flds : [];
+  return fields
+    .map((field) => (typeof field === 'object' && field && 'name' in field ? String(field.name) : ''))
+    .map((name) => name.trim())
+    .filter(Boolean);
+};
+
+const mergeConfidence = (
+  current: AnkiDeckSummary['mappingConfidence'],
+  next: AnkiDeckSummary['mappingConfidence'],
+): AnkiDeckSummary['mappingConfidence'] => {
+  if (current === 'high' || next === 'high') return 'high';
+  if (current === 'medium' || next === 'medium') return 'medium';
+  return current || next || 'low';
 };
 
 const createFieldMap = (
@@ -405,8 +457,79 @@ export const inspectApkg = async (file: File): Promise<InspectApkgResult> => {
   const collection = await openCollection(file);
 
   try {
+    const deckSummaries = collection.deckSummaries.map((deck) => {
+      const cards = collection.cardsByDeck.get(deck.deckId) || [];
+      const noteIdList = Array.from(
+        new Set(
+          cards
+            .map((card) => Number.parseInt(card.nid, 10))
+            .filter((noteId) => Number.isFinite(noteId) && noteId > 0),
+        ),
+      ).slice(0, 12);
+
+      if (noteIdList.length === 0) {
+        return {
+          ...deck,
+          fieldNames: [],
+          sampleRows: [],
+          mappingConfidence: 'low' as const,
+          progressPreview: {
+            coarseMappedCount: 0,
+            reviewedCardCount: cards.filter((card) => Math.max(0, toCeilInteger(card.reps)) > 0).length,
+          },
+        };
+      }
+
+      const noteRowsRaw = queryRows(
+        collection.db,
+        `SELECT CAST(id AS TEXT) AS id, CAST(mid AS TEXT) AS mid, flds, CAST(sfld AS TEXT) AS sfld, tags FROM notes WHERE id IN (${noteIdList.join(',')})`,
+      );
+
+      const fieldNames = new Set<string>();
+      const sampleRows: NonNullable<AnkiDeckSummary['sampleRows']> = [];
+      let mappingConfidence: AnkiDeckSummary['mappingConfidence'] = 'low';
+
+      noteRowsRaw.slice(0, 3).forEach((row) => {
+        const note: NoteRow = {
+          id: String(row.id || ''),
+          mid: String(row.mid || ''),
+          flds: String(row.flds || ''),
+          sfld: String(row.sfld || ''),
+          tags: String(row.tags || ''),
+        };
+        const model = collection.models[note.mid] as Record<string, unknown> | undefined;
+        getModelFieldNames(model).forEach((name) => fieldNames.add(name));
+        const fieldMap = createFieldMap(model, note.flds, note.sfld);
+        const word = getTextByPriority(fieldMap, WORD_FIELD_PRIORITY);
+        const definition = getTextByPriority(fieldMap, DEFINITION_FIELD_PRIORITY);
+        const definitionZh = getTextByPriority(fieldMap, DEFINITION_ZH_FIELD_PRIORITY, false);
+        const hasWordPriority = hasPriorityField(fieldMap, WORD_FIELD_PRIORITY);
+        const hasDefinitionPriority = hasPriorityField(fieldMap, DEFINITION_FIELD_PRIORITY);
+
+        if (word || definition) {
+          sampleRows.push({ word, definition, definitionZh });
+        }
+
+        mappingConfidence = mergeConfidence(
+          mappingConfidence,
+          hasWordPriority && hasDefinitionPriority ? 'high' : word && definition ? 'medium' : 'low',
+        );
+      });
+
+      return {
+        ...deck,
+        fieldNames: Array.from(fieldNames),
+        sampleRows,
+        mappingConfidence,
+        progressPreview: {
+          coarseMappedCount: cards.filter((card) => mapCardProgress(card, 'coarse') !== null).length,
+          reviewedCardCount: cards.filter((card) => Math.max(0, toCeilInteger(card.reps)) > 0).length,
+        },
+      };
+    });
+
     return {
-      decks: collection.deckSummaries,
+      decks: deckSummaries,
     };
   } finally {
     collection.db.close();
@@ -418,6 +541,7 @@ export const importApkg = async (
   options: AnkiImportOptions,
 ): Promise<ImportApkgParsedResult> => {
   const progressMode: AnkiProgressMode = options.progressMode || 'coarse';
+  const fieldMapping = options.fieldMapping;
   const collection = await openCollection(file);
 
   try {
@@ -478,10 +602,11 @@ export const importApkg = async (
 
       const model = collection.models[note.mid] as Record<string, unknown> | undefined;
       const fieldMap = createFieldMap(model, note.flds, note.sfld);
-      const tags = parseTags(note.tags);
+      const mappedTagText = getTextByMapping(fieldMap, fieldMapping, 'tags', [], false);
+      const tags = [...parseTags(note.tags), ...splitListField(mappedTagText)];
 
-      const word = getTextByPriority(fieldMap, WORD_FIELD_PRIORITY);
-      const definition = getTextByPriority(fieldMap, DEFINITION_FIELD_PRIORITY);
+      const word = getTextByMapping(fieldMap, fieldMapping, 'word', WORD_FIELD_PRIORITY);
+      const definition = getTextByMapping(fieldMap, fieldMapping, 'definition', DEFINITION_FIELD_PRIORITY);
 
       if (!word || !definition) {
         skippedCards += 1;
@@ -510,10 +635,16 @@ export const importApkg = async (
       }
       seenWordKeys.add(key);
 
-      const examplesValue = getTextByPriority(fieldMap, EXAMPLES_FIELD_PRIORITY);
-      const levelValue = getTextByPriority(fieldMap, LEVEL_FIELD_PRIORITY);
-      const topicValue = getTextByPriority(fieldMap, TOPIC_FIELD_PRIORITY);
-      const definitionZh = getTextByPriority(fieldMap, DEFINITION_ZH_FIELD_PRIORITY);
+      const examplesValue = getTextByMapping(fieldMap, fieldMapping, 'examples', EXAMPLES_FIELD_PRIORITY, false);
+      const levelValue = getTextByPriority(fieldMap, LEVEL_FIELD_PRIORITY, false);
+      const topicValue = getTextByMapping(fieldMap, fieldMapping, 'topic', TOPIC_FIELD_PRIORITY, false);
+      const definitionZh = getTextByMapping(
+        fieldMap,
+        fieldMapping,
+        'definitionZh',
+        DEFINITION_ZH_FIELD_PRIORITY,
+        false,
+      );
 
       const mappedWord: WordData = {
         id: '',
@@ -522,14 +653,14 @@ export const importApkg = async (
         definitionZh,
         level: parseLevel(levelValue),
         topic: topicValue || tags[0] || 'daily',
-        partOfSpeech: getTextByPriority(fieldMap, POS_FIELD_PRIORITY) || 'n.',
-        phonetic: getTextByPriority(fieldMap, PHONETIC_FIELD_PRIORITY),
+        partOfSpeech: getTextByMapping(fieldMap, fieldMapping, 'partOfSpeech', POS_FIELD_PRIORITY, false) || 'n.',
+        phonetic: getTextByMapping(fieldMap, fieldMapping, 'phonetic', PHONETIC_FIELD_PRIORITY, false),
         examples: splitExamples(examplesValue),
-        synonyms: splitListField(getTextByPriority(fieldMap, SYNONYMS_FIELD_PRIORITY)),
-        antonyms: splitListField(getTextByPriority(fieldMap, ANTONYMS_FIELD_PRIORITY)),
-        collocations: splitListField(getTextByPriority(fieldMap, COLLOCATIONS_FIELD_PRIORITY)),
-        memoryTip: getTextByPriority(fieldMap, MEMORY_TIP_FIELD_PRIORITY) || undefined,
-        etymology: getTextByPriority(fieldMap, ETYMOLOGY_FIELD_PRIORITY) || undefined,
+        synonyms: splitListField(getTextByPriority(fieldMap, SYNONYMS_FIELD_PRIORITY, false)),
+        antonyms: splitListField(getTextByPriority(fieldMap, ANTONYMS_FIELD_PRIORITY, false)),
+        collocations: splitListField(getTextByPriority(fieldMap, COLLOCATIONS_FIELD_PRIORITY, false)),
+        memoryTip: getTextByPriority(fieldMap, MEMORY_TIP_FIELD_PRIORITY, false) || undefined,
+        etymology: getTextByPriority(fieldMap, ETYMOLOGY_FIELD_PRIORITY, false) || undefined,
       };
 
       rows.push({
@@ -538,7 +669,7 @@ export const importApkg = async (
         noteId: note.id,
         cardId: card.id,
         progress: mapCardProgress(card, progressMode),
-        raw: `${note.id}|${note.flds}`,
+        raw: `${note.id}|${Array.from(fieldMap.values()).join(FIELD_SEPARATOR)}`,
       });
     });
 
