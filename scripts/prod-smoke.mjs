@@ -26,7 +26,7 @@ const SUPABASE_DIRECT_URL = (process.env.VITE_SUPABASE_URL || process.env.SUPABA
 const SUPABASE_PROXY_DISABLED = process.env.SMOKE_SUPABASE_PROXY_DISABLED === 'true';
 const SUPABASE_PROXY_URL = (
   process.env.SUPABASE_PROXY_URL ||
-  (SUPABASE_PROXY_DISABLED ? '' : `${BASE_URL}/supabase`)
+  (SUPABASE_PROXY_DISABLED ? '' : `${BASE_URL}/api/supabase`)
 ).replace(/\/$/, '');
 const SUPABASE_URL = SUPABASE_PROXY_DISABLED ? SUPABASE_DIRECT_URL : SUPABASE_PROXY_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';

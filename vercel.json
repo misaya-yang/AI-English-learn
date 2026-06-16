@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/supabase/:path*",
-      "destination": "https://zjkbktdmwencnouwfrij.supabase.co/:path*"
+      "destination": "/api/supabase/:path*"
     },
     {
       "source": "/(.*)",

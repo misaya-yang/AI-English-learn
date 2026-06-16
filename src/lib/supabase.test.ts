@@ -113,7 +113,7 @@ describe('resolveSupabaseRuntimeUrl', () => {
         locationOrigin: 'https://www.uuedu.online',
         locationHostname: 'www.uuedu.online',
       }),
-    ).toBe('https://www.uuedu.online/supabase');
+    ).toBe('https://www.uuedu.online/api/supabase');
   });
 
   it('supports a custom production proxy path', () => {

@@ -88,7 +88,7 @@ export function resolveSupabaseRuntimeUrl(options: {
     return configuredUrl;
   }
 
-  const rawProxyPath = (options.proxyPath || '/supabase').trim() || '/supabase';
+  const rawProxyPath = (options.proxyPath || '/api/supabase').trim() || '/api/supabase';
   const proxyPath = rawProxyPath.startsWith('/') ? rawProxyPath : `/${rawProxyPath}`;
   return `${options.locationOrigin.replace(/\/$/, '')}${proxyPath.replace(/\/$/, '')}`;
 }

@@ -36,7 +36,8 @@ self.addEventListener('fetch', (event) => {
   if (
     url.pathname.startsWith('/rest/') ||
     url.pathname.startsWith('/functions/') ||
-    url.pathname.startsWith('/supabase/')
+    url.pathname.startsWith('/supabase/') ||
+    url.pathname.startsWith('/api/supabase/')
   ) return;
 
   // Static assets (JS, CSS, images): cache-first
