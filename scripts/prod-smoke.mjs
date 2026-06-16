@@ -64,6 +64,12 @@ const recordCheck = (name, status, evidence = '') => {
   checks.push({ name, status, evidence });
 };
 
+const readFailureSnippet = async (res) => {
+  if (res.status < 400) return '';
+  const text = await res.text().catch(() => '');
+  return text ? `, body=${text.slice(0, 240).replace(/\s+/g, ' ')}` : '';
+};
+
 const runCheck = async (name, fn) => {
   try {
     const result = await fn();
@@ -112,9 +118,10 @@ await runCheck('Supabase proxy Auth health endpoint responds 200', async () => {
   const res = await fetchWithTimeout(`${SUPABASE_URL}/auth/v1/health`, {
     headers: { apikey: SUPABASE_ANON_KEY },
   });
+  const failureSnippet = await readFailureSnippet(res);
   return {
     ok: res.status === 200,
-    evidence: `GET ${SUPABASE_URL}/auth/v1/health → ${res.status}`,
+    evidence: `GET ${SUPABASE_URL}/auth/v1/health → ${res.status}${failureSnippet}`,
   };
 });
 
@@ -152,9 +159,10 @@ await runCheck('AI chat edge function reachable / fail-closed', async () => {
     };
   }
   // No JWT — fail-closed contract is 401.
+  const failureSnippet = await readFailureSnippet(res);
   return {
     ok: res.status === 401,
-    evidence: `POST ai-chat (no JWT) → ${res.status} (expected 401)`,
+    evidence: `POST ai-chat (no JWT) → ${res.status} (expected 401)${failureSnippet}`,
   };
 });
 
@@ -207,9 +215,10 @@ await runCheck('Billing checkout fail-closed without provider secrets', async ()
     body: JSON.stringify({ plan: 'pro_monthly', provider: 'stripe' }),
   });
   if (!JWT) {
+    const failureSnippet = await readFailureSnippet(res);
     return {
       ok: res.status === 401,
-      evidence: `POST billing-create-checkout (no JWT) → ${res.status} (expected 401)`,
+      evidence: `POST billing-create-checkout (no JWT) → ${res.status} (expected 401)${failureSnippet}`,
     };
   }
   // With JWT and no provider secrets, expect 503; with provider secrets,

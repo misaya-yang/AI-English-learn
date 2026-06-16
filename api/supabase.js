@@ -1,4 +1,3 @@
-const DEFAULT_SUPABASE_URL = 'https://zjkbktdmwencnouwfrij.supabase.co';
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
   'content-length',
@@ -12,6 +11,13 @@ const HOP_BY_HOP_HEADERS = new Set([
   'upgrade',
 ]);
 
+class SupabaseProxyConfigError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'SupabaseProxyConfigError';
+  }
+}
+
 export const config = {
   api: {
     bodyParser: false,
@@ -19,7 +25,25 @@ export const config = {
 };
 
 function getSupabaseUrl() {
-  return (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, '');
+  const rawUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const trimmedUrl = rawUrl.trim();
+
+  if (!trimmedUrl) {
+    throw new SupabaseProxyConfigError('Missing VITE_SUPABASE_URL or SUPABASE_URL');
+  }
+
+  try {
+    const url = new URL(trimmedUrl);
+    if (url.protocol !== 'https:') {
+      throw new SupabaseProxyConfigError('Supabase URL must use https');
+    }
+    return url.toString().replace(/\/$/, '');
+  } catch (error) {
+    if (error instanceof SupabaseProxyConfigError) {
+      throw error;
+    }
+    throw new SupabaseProxyConfigError('Invalid Supabase URL');
+  }
 }
 
 function getPath(req) {
@@ -83,8 +107,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  const targetUrl = new URL(`/${getPath(req)}`, getSupabaseUrl());
-  appendQueryParams(targetUrl, req.query);
+  let targetUrl;
+  try {
+    targetUrl = new URL(`/${getPath(req)}`, getSupabaseUrl());
+    appendQueryParams(targetUrl, req.query);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Supabase proxy is not configured';
+    res.status(503).json({ error: 'supabase_proxy_not_configured', message });
+    return;
+  }
 
   try {
     const upstream = await fetch(targetUrl, {
@@ -106,6 +137,10 @@ export default async function handler(req, res) {
     res.send(body);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Supabase proxy failed';
-    res.status(502).json({ error: 'supabase_proxy_failed', message });
+    res.status(502).json({
+      error: 'supabase_proxy_failed',
+      message,
+      upstreamHost: targetUrl.hostname,
+    });
   }
 }
