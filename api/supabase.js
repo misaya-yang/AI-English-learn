@@ -1,5 +1,6 @@
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
+  'content-encoding',
   'content-length',
   'host',
   'keep-alive',
@@ -75,6 +76,9 @@ function buildForwardHeaders(req) {
   if (anonKey && !headers.has('apikey')) {
     headers.set('apikey', anonKey);
   }
+  // Node fetch transparently decodes compressed upstream bodies. Keep the
+  // proxy response body and response headers in the same encoding space.
+  headers.set('accept-encoding', 'identity');
 
   return headers;
 }
