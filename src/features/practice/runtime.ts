@@ -17,6 +17,7 @@ export interface PracticeRuntimeOptions {
   progress?: UserProgress[];
   limit?: number;
   now?: Date;
+  focusWordId?: string;
 }
 
 const normalizeSeed = (seed: string): number => {
@@ -143,7 +144,7 @@ export const buildPracticeWordOrder = (
       seededIndex: index,
       priority: progressPriority(word.id, progressMap, now),
     }))
-    .filter((entry) => Number.isFinite(entry.priority))
+    .filter((entry) => Number.isFinite(entry.priority) || entry.word.id === options.focusWordId)
     .sort((left, right) => {
       if (right.priority !== left.priority) return right.priority - left.priority;
       return left.seededIndex - right.seededIndex;
@@ -151,6 +152,13 @@ export const buildPracticeWordOrder = (
 
   const remaining = [...ranked];
   const ordered: WordData[] = [];
+
+  if (options.focusWordId) {
+    const focusIndex = remaining.findIndex((entry) => entry.word.id === options.focusWordId);
+    if (focusIndex >= 0) {
+      ordered.push(remaining.splice(focusIndex, 1)[0].word);
+    }
+  }
 
   while (remaining.length > 0 && ordered.length < limit) {
     const previous = ordered[ordered.length - 1];

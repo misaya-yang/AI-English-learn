@@ -101,10 +101,11 @@ vi.mock('sonner', () => ({
 }));
 
 import PracticePage from './PracticePage';
+import { buildPracticeQuestions } from '@/features/practice/runtime';
 
-const renderPractice = () => {
+const renderPractice = (initialEntry = '/dashboard/practice') => {
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <PracticePage />
     </MemoryRouter>,
   );
@@ -198,5 +199,19 @@ describe('PracticePage retry and reveal behavior', () => {
     expect(screen.getByText(/Expected: abandon/i)).toBeInTheDocument();
     expect(reviewWordMock).toHaveBeenCalledWith('w-abandon', 'again');
     expect(addMistakeMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses a URL wordId as the first practice focus when launched from an IELTS Anki card', () => {
+    renderPractice('/dashboard/practice?source=ielts-anki&wordId=ielts_anki_alleviate&q=alleviate');
+    clickFirst(/Start with this/i);
+
+    expect(buildPracticeQuestions).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'ielts_anki_alleviate', word: 'alleviate' }),
+      ]),
+      'quiz',
+      'practice-test-user:quiz',
+      expect.objectContaining({ focusWordId: 'ielts_anki_alleviate' }),
+    );
   });
 });

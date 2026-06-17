@@ -97,13 +97,28 @@ VocabDaily should feel like a practical English learning workbench: clear next t
 - Production VD-03 learning-flow regression passed 160/160 with `BASE_URL=https://www.uuedu.online`; summary is `product-audit-2026-06-17/vd-03-production-learning-flow/summary.json`.
 - VD-03 unlocks VD-04. The next product gap is useful IELTS Anki-style vocabulary content, not another shell-only polish pass.
 
+## Phase VD-04 IELTS Anki Card Facts
+
+- VD-04 added `src/data/ieltsAnkiCards.ts` with `IeltsAnkiCard`, `IeltsAnkiDeck`, difficulty/focus types, 12 original IELTS cards, a deck object, `WordData` mapping, and lookup helpers.
+- The deck ID is `builtin_ielts_anki_foundation`; the deck name is `IELTS Anki 写作/口语核心`; source/license are recorded as original VocabDaily educational content.
+- The first deck includes: `alleviate`, `detrimental`, `feasible`, `constraint`, `whereas`, `subsequently`, `nuanced`, `tangible`, `proportion`, `urbanization`, `cohesive`, and `trade-off`.
+- `src/data/words.ts` appends IELTS Anki `WordData` into `wordsDatabase`.
+- `src/data/wordBooks.ts` adds `BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION` and a built-in book template that filters `topic === 'ielts'`.
+- `src/pages/dashboard/VocabularyBankPage.tsx` now shows an `IELTS Anki 卡片` section with metadata, three preview cards, active-book CTA, Today link, and first-card Practice link.
+- `src/features/practice/runtime.ts` supports optional `focusWordId`, preserving default ranking while keeping a URL-requested card first.
+- `src/pages/dashboard/PracticePage.tsx` reads `wordId` and `q` from the URL, builds a focused candidate list with fallback distractors, and keeps existing `good` / `hard` / `again` FSRS review ratings.
+- `src/pages/dashboard/ReviewPage.tsx` reads `wordId` and `q` as an explicit manual review card. Default Review remains due-only; no random fallback was restored.
+- `scripts/learning-flow-regression.mjs` now requires the vocabulary route to show the IELTS Anki section and first-card Practice link.
+- Local VD-04 validation passed: `npm run lint`, `npm run check:i18n`, `npm run build`, `npm test -- --run` with 106 files / 825 tests, focused VD-04 tests 18/18, and `LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-04-learning-flow npm run test:learning-flow-regression` with 160/160 checks.
+- Screenshot evidence is under `product-audit-2026-06-17/vd-04-learning-flow/screenshots/`; representative files include `desktop-light-vocabulary.png` and `mobile-light-vocabulary.png`.
+
 ## Assumptions and Decisions
 
 - Keep the existing Supabase project instead of creating a new one because it was recoverable.
 - Do not print or commit Supabase anon keys, refresh tokens, access tokens, or account details.
 - Do not perform database schema migrations until a phase contract explicitly requires them.
-- Do not start IELTS Anki implementation until UI redesign has evidence. VD-03 now has local route, screenshot, and validation evidence; VD-04 is unlocked.
-- VD-03 is complete locally because core UI routes, copy, responsive checks, and regression evidence passed. VD-04 is now the active next phase.
+- Do not re-open IELTS Anki implementation unless VD-04 tests or browser evidence regress. The first deck foundation is locally passing and ready for deployment.
+- VD-03 is complete locally and in production. VD-04 is locally complete; production deploy/smoke evidence still needs to be recorded after release.
 - Product Design context has no saved user-context file; current screenshots, production pages, and repo source are the design source for now.
 
 ## Risk Tags
@@ -112,7 +127,7 @@ VocabDaily should feel like a practical English learning workbench: clear next t
 - VD-01: `auth`, `security`, `frontend`, `browser`, `release`
 - VD-02: `ui`, `frontend`, `browser`, `accessibility`
 - VD-03: `ui`, `frontend`, `browser`, `accessibility`, `product`
-- VD-04: `learning-content`, `frontend`, `data`, `eval`
+- VD-04: `learning-content`, `frontend`, `data`, `eval`, `release`
 
 ## Trust Boundary
 

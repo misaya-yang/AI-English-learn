@@ -25,7 +25,8 @@ import {
 import { cn } from '@/lib/utils';
 import { wordsDatabase, type WordData } from '@/data/words';
 import type { UserProgress } from '@/data/localStorage';
-import type { AnkiDeckSummary, AnkiImportOptions, AnkiImportResult, ImportResult, ImportRowError } from '@/data/wordBooks';
+import { BUILT_IN_WORD_BOOK_IDS, type AnkiDeckSummary, type AnkiImportOptions, type AnkiImportResult, type ImportResult, type ImportRowError } from '@/data/wordBooks';
+import { getIeltsAnkiDeck } from '@/data/ieltsAnkiCards';
 import { toast } from 'sonner';
 import { speakEnglishText } from '@/services/tts';
 import { exportToCSV, exportToAnkiTSV, downloadFile } from '@/services/wordBookExport';
@@ -258,6 +259,10 @@ export default function VocabularyBankPage() {
   const featuredSense = featuredEntry?.senses[0];
   const featuredExample = featuredSense?.examples[0];
   const featuredStatus = featuredItem?.progress?.status || 'new';
+  const ieltsAnkiDeck = useMemo(() => getIeltsAnkiDeck(), []);
+  const ieltsAnkiBook = wordBooks.find((book) => book.id === BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION) || null;
+  const isIeltsAnkiActive = activeBook?.id === BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION;
+  const firstIeltsCard = ieltsAnkiDeck.cards[0];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -371,6 +376,83 @@ export default function VocabularyBankPage() {
           </div>
         </section>
       )}
+
+      <section aria-labelledby="ielts-anki-heading" className="rounded-md border border-border bg-card p-4 sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="rounded-md border border-[hsl(var(--accent-exam)/0.28)] bg-[hsl(var(--accent-exam)/0.12)] text-foreground hover:bg-[hsl(var(--accent-exam)/0.12)]">
+                IELTS
+              </Badge>
+              <Badge variant="outline" className="rounded-md">
+                {ieltsAnkiDeck.cards.length} {isZh ? '张卡片' : 'cards'}
+              </Badge>
+              <Badge variant="outline" className="rounded-md">
+                B2-C1
+              </Badge>
+            </div>
+            <h2 id="ielts-anki-heading" className="mt-3 text-xl font-semibold text-foreground">
+              {isZh ? 'IELTS Anki 卡片' : 'IELTS Anki cards'}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              {isZh
+                ? '先背一组写作和口语都能迁移的表达：正面回忆词义和用法，背面看搭配、句型和中文提示。'
+                : 'Study transferable writing and speaking expressions: recall the meaning first, then check collocations, phrase patterns, and the Chinese hint.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {ieltsAnkiBook ? (
+              <Button
+                type="button"
+                variant={isIeltsAnkiActive ? 'secondary' : 'default'}
+                className="rounded-md"
+                onClick={() => setActiveBook(BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION)}
+                disabled={isIeltsAnkiActive}
+              >
+                {isIeltsAnkiActive ? (isZh ? '正在使用' : 'Active deck') : (isZh ? '设为当前词书' : 'Set as active')}
+              </Button>
+            ) : null}
+            <Button asChild variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted">
+              <Link to="/dashboard/today">{isZh ? '今天学这套' : 'Study today'}</Link>
+            </Button>
+            {firstIeltsCard ? (
+              <Button asChild variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted">
+                <Link to={`/dashboard/practice?source=ielts-anki&wordId=${encodeURIComponent(firstIeltsCard.id)}&q=${encodeURIComponent(firstIeltsCard.word)}`}>
+                  {isZh ? '练第一张' : 'Practice first card'}
+                </Link>
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {ieltsAnkiDeck.cards.slice(0, 3).map((card) => (
+            <article key={card.id} className="rounded-md border border-border bg-background p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-lg font-semibold text-foreground">{card.word}</p>
+                  <p className="mt-1 font-mono text-xs text-muted-foreground">{card.partOfSpeech} · {card.phonetic}</p>
+                </div>
+                <Badge variant="outline" className="rounded-md">
+                  {card.difficulty}
+                </Badge>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-foreground">{card.meaning}</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{card.chineseHint}</p>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                <Badge className="rounded-md border border-border bg-muted text-muted-foreground hover:bg-muted">
+                  {card.ieltsTag}
+                </Badge>
+                {card.collocations.slice(0, 2).map((item) => (
+                  <Badge key={item} variant="outline" className="rounded-md">
+                    {item}
+                  </Badge>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="rounded-md border border-border bg-card p-4 sm:p-5">
         {featuredEntry && featuredSense ? (

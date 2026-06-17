@@ -95,6 +95,23 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
     expect(back).toHaveAttribute('href', '/dashboard/today');
   });
 
+  it('allows a URL wordId to be manually reviewed without adding random fallback cards', () => {
+    useUserDataMock.mockReturnValue({ ...baseUserData });
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/review?source=lexicon&wordId=w1&q=abandon']}>
+        <ReviewPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /abandon/i }));
+    expect(screen.getByText(/to leave somebody/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Good/i }));
+    expect(reviewWordMock).toHaveBeenCalledWith('w1', 'good');
+    expect(screen.queryByText(/No review cards due right now/i)).not.toBeInTheDocument();
+  });
+
   it('surfaces a stubborn-word recovery drill and records whether it helped', async () => {
     useUserDataMock.mockReturnValue({
       ...baseUserData,

@@ -1,4 +1,5 @@
 import { wordsDatabase, type WordData } from './words';
+import { IELTS_ANKI_DECK_ID, getIeltsAnkiDeck } from './ieltsAnkiCards';
 
 export interface WordBook {
   id: string;
@@ -90,6 +91,7 @@ interface BuiltInBookTemplate {
   license: string;
   levelRange: string[];
   topicTags: string[];
+  version?: string;
   filter: (word: WordData) => boolean;
 }
 
@@ -100,6 +102,7 @@ export const BUILT_IN_WORD_BOOK_IDS = {
   BUSINESS_ENGLISH: 'builtin_business_english',
   TECHNOLOGY_ENGLISH: 'builtin_technology_english',
   IELTS_ACADEMIC_CORE: 'builtin_ielts_academic_core',
+  IELTS_ANKI_FOUNDATION: IELTS_ANKI_DECK_ID,
 } as const;
 
 const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
@@ -160,6 +163,16 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
       return ['B1', 'B2', 'C1'].includes(word.level) && (topic === 'academic' || topic === 'stem');
     },
   },
+  {
+    id: BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION,
+    name: getIeltsAnkiDeck().name,
+    source: getIeltsAnkiDeck().source,
+    license: getIeltsAnkiDeck().license,
+    levelRange: ['B2', 'C1'],
+    topicTags: ['ielts', 'anki', 'writing', 'speaking'],
+    version: getIeltsAnkiDeck().version,
+    filter: (word) => word.topic === 'ielts',
+  },
 ];
 
 export const DEFAULT_ACTIVE_BOOK_ID = BUILT_IN_TEMPLATES[0].id;
@@ -182,7 +195,7 @@ export const getBuiltInWordBooks = (allWords: WordData[] = wordsDatabase): WordB
       wordIds,
       createdAt,
       isBuiltIn: true,
-      version: '1.0.0',
+      version: template.version || '1.0.0',
     };
   });
 };

@@ -1,4 +1,5 @@
 import { academicWordsDatabase } from './academicWords';
+import { ieltsAnkiWordData } from './ieltsAnkiCards';
 
 export interface WordData {
   id: string;
@@ -1789,6 +1790,7 @@ export const getPreviousWords = (count: number = 7): { date: string; word: WordD
 
 // Merge academic / IELTS / GRE words into the main database
 wordsDatabase.push(...academicWordsDatabase);
+wordsDatabase.push(...ieltsAnkiWordData);
 
 export const searchWords = (query: string): WordData[] => {
   const lowerQuery = query.toLowerCase();

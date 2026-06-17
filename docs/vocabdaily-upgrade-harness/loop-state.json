@@ -3,7 +3,7 @@
   "active_phase": "VD-04",
   "active_feature": "VD-F005",
   "iteration": 1,
-  "status": "planned",
-  "last_decision": "VD-03 Product UI Redesign is passing and deployed. Local learning-flow regression passed 160/160 checks across public, auth-adjacent, core dashboard, learning module, account/tool, fast route switch, Practice retry/reveal, and Listening retry/reveal flows at desktop 1440x960, mobile 390x844, and light/dark/system. Required local gates passed: npm run lint, npm run check:i18n, npm run build, and npm test -- --run. Production deployment dpl_HF6dRPDSm8v5o5NavXa2cjoyzUA4 was aliased to https://www.uuedu.online; production smoke passed 8/8, production auth-flow passed for 2 fresh accounts with DB bootstrap, and production learning-flow regression passed 160/160.",
-  "next_action": "Start VD-04 IELTS Anki-style card foundation: define the first card schema, seed useful IELTS-oriented cards, wire them into vocabulary/review/practice entry points without breaking FSRS, and add tests plus UI evidence."
+  "status": "verified",
+  "last_decision": "VD-04 IELTS Anki Card Foundation is locally passing. Added an original 12-card IELTS Anki-style deck, mapped it into WordData and built-in word books, surfaced it on /dashboard/vocabulary, and wired URL wordId focus into Practice and Review while preserving existing FSRS rating semantics. Local gates passed: npm run lint, npm run check:i18n, npm run build, npm test -- --run, and VD-04 learning-flow regression 160/160.",
+  "next_action": "Commit VD-04, push the branch, deploy to Vercel production, run production smoke, and then record production evidence before final handoff."
 }

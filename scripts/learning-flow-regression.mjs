@@ -235,6 +235,8 @@ async function inspectPage(page, route, viewport, theme) {
     const hasErrorBoundary = /Something went wrong|Unexpected error|出现错误|错误边界/i.test(bodyText);
     const hasLongSkeleton = /Opening learning task|正在打开学习任务|Loading learning content|正在加载学习内容/i.test(bodyText);
     const isBlank = visibleTextLength < 35 || rect.height < 120;
+    const hasIeltsAnkiEntry = /IELTS Anki 卡片|IELTS Anki cards/i.test(bodyText);
+    const hasIeltsAnkiPracticeLink = /练第一张|Practice first card/i.test(bodyText);
 
     return {
       htmlClass: doc.className,
@@ -246,6 +248,8 @@ async function inspectPage(page, route, viewport, theme) {
       hasErrorBoundary,
       hasLongSkeleton,
       isBlank,
+      hasIeltsAnkiEntry,
+      hasIeltsAnkiPracticeLink,
     };
   });
 
@@ -268,7 +272,8 @@ async function inspectPage(page, route, viewport, theme) {
       !result.hasLongSkeleton &&
       !result.nearBlackBackground &&
       !result.isBlank &&
-      result.horizontalOverflowPx <= 2,
+      result.horizontalOverflowPx <= 2 &&
+      (route.name !== 'vocabulary' || (result.hasIeltsAnkiEntry && result.hasIeltsAnkiPracticeLink)),
   };
 }
 

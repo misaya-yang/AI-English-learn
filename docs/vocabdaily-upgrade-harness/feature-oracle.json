@@ -82,9 +82,9 @@
         "Wire the deck into existing review/practice flows without breaking FSRS or current word data.",
         "Add tests for card shape, deck availability, and at least one UI entry point."
       ],
-      "status": "failing",
-      "evidence": "",
-      "notes": "This phase must not invent fake expert claims or fake precision. Content should be useful and inspectable."
+      "status": "passing",
+      "evidence": "VD-04 added an original 12-card IELTS Anki-style seed deck in src/data/ieltsAnkiCards.ts, mapped it into WordData and built-in word books, surfaced it on /dashboard/vocabulary, and wired URL wordId entry points into Practice and Review without changing existing FSRS ratings. Focused tests passed for card schema, built-in deck mapping, vocabulary UI entry, Practice URL focus, Review URL focus, and practice runtime focus ordering. Required local gates passed: npm run lint, npm run check:i18n, npm run build, npm test -- --run with 106 test files and 825 tests. LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-04-learning-flow npm run test:learning-flow-regression passed 160/160 checks and now asserts the vocabulary IELTS Anki section plus practice link.",
+      "notes": "Content is original and inspectable in source. No external copyrighted deck, new dependency, database migration, auth change, or billing change was introduced."
     }
   ]
 }

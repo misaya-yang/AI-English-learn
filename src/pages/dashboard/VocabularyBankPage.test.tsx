@@ -3,7 +3,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { UserProgress } from '@/data/localStorage';
-import type { WordBook } from '@/data/wordBooks';
+import { getIeltsAnkiDeck } from '@/data/ieltsAnkiCards';
+import { BUILT_IN_WORD_BOOK_IDS, type WordBook } from '@/data/wordBooks';
 import type { WordData } from '@/data/words';
 
 const mitigateWord: WordData = {
@@ -66,6 +67,19 @@ const builtInBook: WordBook = {
   createdAt: '2026-01-01T00:00:00.000Z',
   isBuiltIn: true,
   version: '1.0.0',
+};
+
+const ieltsAnkiBook: WordBook = {
+  id: BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION,
+  name: getIeltsAnkiDeck().name,
+  source: getIeltsAnkiDeck().source,
+  license: getIeltsAnkiDeck().license,
+  levelRange: ['B2', 'C1'],
+  topicTags: ['ielts', 'anki', 'writing', 'speaking'],
+  wordIds: getIeltsAnkiDeck().cards.map((card) => card.id),
+  createdAt: '2026-01-01T00:00:00.000Z',
+  isBuiltIn: true,
+  version: getIeltsAnkiDeck().version,
 };
 
 const progress: UserProgress[] = [
@@ -138,7 +152,7 @@ const renderPage = () => {
 describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    userDataState.wordBooks = [activeBook, builtInBook];
+    userDataState.wordBooks = [activeBook, builtInBook, ieltsAnkiBook];
     userDataState.activeBook = activeBook;
     userDataState.customWords = [mitigateWord, preciseWord];
     userDataState.progress = progress;
@@ -205,5 +219,22 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
     expect(screen.getAllByRole('button', { name: /导入词书/ }).length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByRole('button', { name: /导入 Anki/ }).length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole('button', { name: /使用 A1基础/ })).toBeInTheDocument();
+  });
+
+  it('surfaces the IELTS Anki card foundation with study and practice entry points', () => {
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'IELTS Anki 卡片' })).toBeInTheDocument();
+    expect(screen.getByText('12 张卡片')).toBeInTheDocument();
+    expect(screen.getAllByText('alleviate').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('写解决方案时用，比 make better 更正式。')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '设为当前词书' }));
+    expect(userDataState.setActiveBook).toHaveBeenCalledWith(BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION);
+
+    expect(screen.getByRole('link', { name: '今天学这套' }).getAttribute('href')).toBe('/dashboard/today');
+    const firstCardLink = screen.getByRole('link', { name: '练第一张' });
+    expect(firstCardLink.getAttribute('href')).toContain('/dashboard/practice?source=ielts-anki');
+    expect(firstCardLink.getAttribute('href')).toContain('wordId=ielts_anki_alleviate');
   });
 });

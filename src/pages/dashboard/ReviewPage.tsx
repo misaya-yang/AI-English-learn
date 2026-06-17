@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, type KeyboardEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo, type KeyboardEvent } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,8 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { wordsDatabase } from '@/data/words';
 import { speakEnglishText } from '@/services/tts';
-import { isStubbornWord } from '@/services/fsrs';
+import { initCard, isStubbornWord } from '@/services/fsrs';
+import { ensureFSRS } from '@/services/fsrsMigration';
 import { buildReviewSession, type ReviewSessionItem } from '@/features/learning/reviewQueue';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { recordEvent, recordLearningEvent } from '@/services/learningEvents';
@@ -195,10 +196,13 @@ const ratingMeta = {
 export default function ReviewPage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, reviewWord, dueWords, dailyMission, completeMissionTask } = useUserData();
+  const { dailyWords, reviewWord, dueWords, dailyMission, completeMissionTask, progress = [], customWords = [] } = useUserData();
   const { i18n } = useTranslation();
   const language = i18n.language;
   const isZh = language.startsWith('zh');
+  const [searchParams] = useSearchParams();
+  const focusWordId = searchParams.get('wordId') || undefined;
+  const focusQuery = searchParams.get('q')?.trim().toLowerCase() || undefined;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [sessionStats, setSessionStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 });
@@ -207,14 +211,53 @@ export default function ReviewPage() {
   const [recoveryOutcomes, setRecoveryOutcomes] = useState<Record<string, StubbornRecoveryOutcome>>({});
 
   const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
-  const reviewItems = sessionQueue ?? buildReviewSession({
-    dueWords,
-    // dailyWords is included so a "due" entry from today's bundle still
-    // resolves a WordData. The full wordsDatabase covers the rest. Neither
-    // contributes a card on its own — buildReviewSession refuses to
-    // fall back to fillers (LEARN-04).
-    wordCatalog: [...dailyWords, ...wordsDatabase],
-  });
+  const reviewWordCatalog = useMemo(() => {
+    const seen = new Set<string>();
+    const out: typeof dailyWords = [];
+
+    for (const word of [...dailyWords, ...customWords, ...wordsDatabase]) {
+      if (!word?.id || seen.has(word.id)) continue;
+      seen.add(word.id);
+      out.push(word);
+    }
+
+    return out;
+  }, [customWords, dailyWords]);
+  const baseReviewItems = useMemo(
+    () => buildReviewSession({
+      dueWords,
+      // dailyWords is included so a "due" entry from today's bundle still
+      // resolves a WordData. The full wordsDatabase covers the rest. Neither
+      // contributes a card on its own — buildReviewSession refuses to
+      // fall back to fillers (LEARN-04).
+      wordCatalog: reviewWordCatalog,
+    }),
+    [dueWords, reviewWordCatalog],
+  );
+  const focusedReviewItem = useMemo(() => {
+    if (!focusWordId && !focusQuery) return null;
+    const word = reviewWordCatalog.find((item) => (
+      (focusWordId && item.id === focusWordId) ||
+      (focusQuery && item.word.toLowerCase() === focusQuery)
+    ));
+    if (!word) return null;
+
+    const wordProgress = progress.find((item) => item.wordId === word.id);
+    return {
+      wordId: word.id,
+      word,
+      reviewCount: wordProgress?.reviewCount ?? 0,
+      fsrs: wordProgress ? ensureFSRS(wordProgress) : initCard(),
+    };
+  }, [focusQuery, focusWordId, progress, reviewWordCatalog]);
+  const reviewItems = useMemo(
+    () => sessionQueue ?? (
+      focusedReviewItem
+        ? [focusedReviewItem, ...baseReviewItems.filter((item) => item.wordId !== focusedReviewItem.wordId)]
+        : baseReviewItems
+    ),
+    [baseReviewItems, focusedReviewItem, sessionQueue],
+  );
   const isComplete = reviewItems.length > 0 && currentIndex >= reviewItems.length;
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,7 @@ import {
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
 import { useTranslation } from 'react-i18next';
 import { buildListeningQueue, buildPracticeQuestions } from '@/features/practice/runtime';
+import { wordsDatabase } from '@/data/words';
 import {
   buildPracticeHint,
   createInitialPracticeAttemptState,
@@ -118,10 +120,13 @@ const blockedOptionClass =
 export default function PracticePage() {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
-  const { dailyWords, dueWords, progress, learningProfile, addStudySession, completeMissionTask, reviewWord } = useUserData();
+  const { dailyWords, dueWords, progress, learningProfile, addStudySession, completeMissionTask, reviewWord, customWords = [] } = useUserData();
   const { i18n } = useTranslation();
   const practiceLanguage = i18n.language;
   const isZh = practiceLanguage.startsWith('zh');
+  const [searchParams] = useSearchParams();
+  const focusWordId = searchParams.get('wordId') || undefined;
+  const focusQuery = searchParams.get('q')?.trim().toLowerCase() || undefined;
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -160,16 +165,64 @@ export default function PracticePage() {
   const [errorNotebook, setErrorNotebook] = useState<Array<{ word: string; question: string; correctAnswer: string }>>([]);
 
   const listeningInputRef = useRef<HTMLInputElement | null>(null);
+  const practiceWordCatalog = useMemo(() => {
+    const seen = new Set<string>();
+    const out: typeof dailyWords = [];
+
+    for (const word of [...dailyWords, ...customWords, ...wordsDatabase]) {
+      if (!word?.id || seen.has(word.id)) continue;
+      seen.add(word.id);
+      out.push(word);
+    }
+
+    return out;
+  }, [customWords, dailyWords]);
+  const focusedPracticeWord = useMemo(() => {
+    if (!focusWordId && !focusQuery) return null;
+    return practiceWordCatalog.find((word) => (
+      (focusWordId && word.id === focusWordId) ||
+      (focusQuery && word.word.toLowerCase() === focusQuery)
+    )) || null;
+  }, [focusQuery, focusWordId, practiceWordCatalog]);
+  const practiceWords = useMemo(() => {
+    if (!focusedPracticeWord) return dailyWords;
+    const seen = new Set([focusedPracticeWord.id]);
+    const out = [
+      focusedPracticeWord,
+      ...dailyWords.filter((word) => {
+        if (seen.has(word.id)) return false;
+        seen.add(word.id);
+        return true;
+      }),
+    ];
+
+    for (const word of practiceWordCatalog) {
+      if (out.length >= 10) break;
+      if (seen.has(word.id)) continue;
+      seen.add(word.id);
+      out.push(word);
+    }
+
+    return out;
+  }, [dailyWords, focusedPracticeWord, practiceWordCatalog]);
   const quizQuestions = useMemo(
     () =>
       selectedMode === 'quiz' || selectedMode === 'fill_blank'
-        ? buildPracticeQuestions(dailyWords, selectedMode, `${userId}:${selectedMode}`, { progress })
+        ? buildPracticeQuestions(practiceWords, selectedMode, `${userId}:${selectedMode}`, {
+          progress,
+          focusWordId: focusedPracticeWord?.id,
+        })
         : [],
-    [dailyWords, progress, selectedMode, userId],
+    [focusedPracticeWord?.id, practiceWords, progress, selectedMode, userId],
   );
   const listeningWords = useMemo(
-    () => (selectedMode === 'listening' ? buildListeningQueue(dailyWords, `${userId}:listening`, { progress }) : []),
-    [dailyWords, progress, selectedMode, userId],
+    () => (selectedMode === 'listening'
+      ? buildListeningQueue(practiceWords, `${userId}:listening`, {
+        progress,
+        focusWordId: focusedPracticeWord?.id,
+      })
+      : []),
+    [focusedPracticeWord?.id, practiceWords, progress, selectedMode, userId],
   );
 
   const resetPracticeRuntime = () => {

@@ -5,7 +5,7 @@ Use this prompt to start a fresh Codex, Claude Code, or Agent Skills-compatible 
 ```text
 Use $prd-phase-harness to continue the harness at `docs/vocabdaily-upgrade-harness`.
 
-Target phase: VD-04 IELTS Anki Card Foundation
+Target phase: VD-04 IELTS Anki Card Foundation release verification
 Target phase file: `docs/vocabdaily-upgrade-harness/phase-04-ielts-anki-card-foundation.md`
 Target feature-oracle item: VD-F005
 
@@ -32,7 +32,8 @@ Execution rule:
 - Update the phase report, progress log, handoff file, continuity ledger, and oracle evidence before claiming completion.
 - VD-F002 is passing again: the prepared Supabase SQL was executed after user authorization and `AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow` passed with both `functionalPassed` and `dbBootstrapPassed`.
 - VD-F004 is passing and deployed: VD-03 completed the product UI redesign baseline, local learning-flow passed 160/160, production learning-flow on `https://www.uuedu.online` passed 160/160, production smoke passed 8/8, and production auth-flow passed for 2 fresh accounts with DB bootstrap.
-- Continue VD-04 IELTS Anki Card Foundation. Define the first card schema, seed useful IELTS-oriented cards, wire them into vocabulary/review/practice entry points, and add tests.
+- VD-04 IELTS Anki Card Foundation is locally implemented and passing: original 12-card deck, WordData/built-in book mapping, vocabulary entry point, Practice URL focus, Review manual URL focus, focused tests, full tests, and local learning-flow 160/160.
+- Continue only release verification if this window resumes before final handoff: commit, push, Vercel production deploy, `npm run smoke:prod`, and production evidence writeback.
 - Do not rework UI shell or Supabase/auth unless the existing verification commands regress.
 - Stop and document blockers instead of guessing when credentials, production systems, destructive commands, or out-of-scope edits are required.
 ```
