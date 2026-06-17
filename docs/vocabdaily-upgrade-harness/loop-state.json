@@ -1,0 +1,9 @@
+{
+  "schema_version": "prd-phase-harness/loop-state/v1",
+  "active_phase": "VD-02",
+  "active_feature": "VD-F003",
+  "iteration": 2,
+  "status": "planned",
+  "last_decision": "VD-01 Registration and Login Recovery is passing after production UI registration/login checks created and logged in 3 synthetic accounts.",
+  "next_action": "Execute VD-02 by following docs/vocabdaily-upgrade-harness/phase-02-dark-mode-repair.md. Do not start full UI redesign or IELTS Anki work until VD-02 has a passing report or an explicit blocker."
+}

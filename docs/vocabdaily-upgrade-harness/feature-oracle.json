@@ -1,0 +1,90 @@
+{
+  "schema_version": "prd-phase-harness/feature-oracle/v1",
+  "instructions": {
+    "allowed_edits": "Coding agents may update only status, evidence, and notes fields unless the user explicitly changes scope.",
+    "completion_rule": "A feature is passing only after end-to-end evidence exists.",
+    "status_values": [
+      "failing",
+      "passing",
+      "blocked",
+      "waived"
+    ]
+  },
+  "features": [
+    {
+      "id": "VD-F001",
+      "phase_id": "VD-00",
+      "category": "external-service",
+      "description": "Production Supabase project is active and the Vercel Supabase proxy returns readable Auth and Edge Function responses.",
+      "steps": [
+        "Confirm the project ref used by production is reachable at https://zjkbktdmwencnouwfrij.supabase.co.",
+        "Confirm https://www.uuedu.online/api/supabase/auth/v1/health returns 200 with the configured anon key.",
+        "Confirm the production proxy does not forward stale compression headers that break JSON body parsing.",
+        "Confirm production smoke passes after deployment."
+      ],
+      "status": "passing",
+      "evidence": "Supabase project misaya-yang's Project was resumed from paused state; npm run smoke:prod passed 8/8 on https://www.uuedu.online; commit a766cf1 deployed as Vercel dpl_5LxAb5cj72MRod4coXbGpMatvxGq; registration and login API probes returned HTTP 200 with user/access_token.",
+      "notes": "No new Supabase project was created. Old project ref zjkbktdmwencnouwfrij remains the production ref."
+    },
+    {
+      "id": "VD-F002",
+      "phase_id": "VD-01",
+      "category": "auth",
+      "description": "A real user can register, log in, reload, and enter the dashboard without relying on the demo account.",
+      "steps": [
+        "Create a timestamped test account through the production registration UI.",
+        "Log out or use a fresh browser context, then log in with that account through the production login UI.",
+        "Verify the dashboard opens, reload keeps the session, and Supabase refresh does not storm.",
+        "Verify invalid credentials produce a readable inline error and do not fall back to a fake success state."
+      ],
+      "status": "passing",
+      "evidence": "Production UI check created 3 synthetic accounts through https://www.uuedu.online/register. Each account registered into /dashboard/today, logged in from a fresh context through /login, and stayed on /dashboard/today after reload. Invalid-credential check stayed on /login and showed a readable error.",
+      "notes": "Do not print test account emails, passwords, or tokens. One profile REST request was aborted during page transition per login; it did not block login, reload persistence, or produce a refresh storm."
+    },
+    {
+      "id": "VD-F003",
+      "phase_id": "VD-02",
+      "category": "ui-theme",
+      "description": "Dark mode is readable, restrained, non-glowy, and does not flash black blocks during theme or route changes.",
+      "steps": [
+        "Audit light, dark, and system theme initialization before paint.",
+        "Check dashboard route switching for full-screen black surfaces or long skeletons.",
+        "Capture desktop 1440x960 and mobile 390x844 screenshots.",
+        "Verify contrast of buttons, cards, form labels, feedback panels, and loading states."
+      ],
+      "status": "failing",
+      "evidence": "",
+      "notes": "User screenshots show dark mode and public page colors are still unacceptable."
+    },
+    {
+      "id": "VD-F004",
+      "phase_id": "VD-03",
+      "category": "product-ui",
+      "description": "Core app screens stop reading as an AI template and become a focused English learning workspace with clear layout and plain copy.",
+      "steps": [
+        "Inventory every public page and dashboard route named in the phase contract.",
+        "Remove AI-sounding copy and unclear labels from primary workflows.",
+        "Rebuild information hierarchy for Today, Practice, Review, Chat, Analytics, Profile, Settings, and learning modules.",
+        "Verify desktop and mobile layouts have no overlap, horizontal overflow, card nesting, or clipped button text."
+      ],
+      "status": "failing",
+      "evidence": "",
+      "notes": "Do not start this phase until VD-02 has stabilized visual tokens and loading states."
+    },
+    {
+      "id": "VD-F005",
+      "phase_id": "VD-04",
+      "category": "learning-content",
+      "description": "VocabDaily ships an IELTS-oriented Anki-style card foundation that adds practical study value beyond generic practice screens.",
+      "steps": [
+        "Define a first IELTS card schema with word, meaning, part of speech, collocations, example, Chinese hint, difficulty, and review tags.",
+        "Seed a first deck that is useful without external imports.",
+        "Wire the deck into existing review/practice flows without breaking FSRS or current word data.",
+        "Add tests for card shape, deck availability, and at least one UI entry point."
+      ],
+      "status": "failing",
+      "evidence": "",
+      "notes": "This phase must not invent fake expert claims or fake precision. Content should be useful and inspectable."
+    }
+  ]
+}
