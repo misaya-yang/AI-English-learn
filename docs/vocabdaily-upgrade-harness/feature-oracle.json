@@ -37,9 +37,9 @@
         "Verify the dashboard opens, reload keeps the session, and Supabase refresh does not storm.",
         "Verify invalid credentials produce a readable inline error and do not fall back to a fake success state."
       ],
-      "status": "passing",
-      "evidence": "Production UI check created 3 synthetic accounts through https://www.uuedu.online/register. Each account registered into /dashboard/today, logged in from a fresh context through /login, and stayed on /dashboard/today after reload. Invalid-credential check stayed on /login and showed a readable error. A later production revalidation created 3 additional synthetic accounts and all 3 passed registration, fresh-context login, and reload persistence with 0 console errors and 0 failed Supabase requests.",
-      "notes": "Do not print test account emails, passwords, or tokens. Earlier page-transition profile aborts were not blocking; the latest production revalidation showed no failed Supabase requests."
+      "status": "blocked",
+      "evidence": "Production UI checks after deployments 35a7758 and 588d341 show 3/3 fresh synthetic accounts can complete register -> onboarding -> dashboard -> fresh login -> dashboard/today -> dashboard/practice -> dashboard/review. Strict network capture still shows live Supabase public.users self-upsert returning 403 under an authenticated JWT whose sub matches the requested users.id, followed by public.profiles 409 because the users parent row is missing. Migration supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql is prepared but not executed.",
+      "notes": "Functional auth is passing, but database-policy cleanup is blocked on explicit approval to execute the prepared Supabase RLS/trigger SQL. Do not print test account emails, passwords, or tokens."
     },
     {
       "id": "VD-F003",

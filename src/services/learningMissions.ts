@@ -94,15 +94,20 @@ export const saveLearningProfile = async (
   }
 
   try {
-    await supabase.from('user_learning_profiles').upsert({
-      user_id: userId,
-      level: next.level,
-      target: next.target,
-      tracks: next.tracks,
-      daily_minutes: next.dailyMinutes,
-      language_preference: next.languagePreference,
-      updated_at: next.updatedAt,
-    });
+    await supabase
+      .from('user_learning_profiles')
+      .upsert(
+        {
+          user_id: userId,
+          level: next.level,
+          target: next.target,
+          tracks: next.tracks,
+          daily_minutes: next.dailyMinutes,
+          language_preference: next.languagePreference,
+          updated_at: next.updatedAt,
+        },
+        { onConflict: 'user_id' },
+      );
   } catch (err) {
     logger.warn('[learningMissions] saveLearningProfile remote sync fallback:', err);
   }

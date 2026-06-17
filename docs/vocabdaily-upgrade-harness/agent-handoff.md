@@ -15,6 +15,7 @@
 
 - Do not use Chrome unless the user explicitly asks for it. Use the in-app browser or CLI/browser test contexts.
 - VD-00, VD-01, and VD-02 are complete and should not be reworked unless smoke, auth UI checks, or theme checks regress.
+- VD-01 was revisited after a stricter production check. New accounts can complete registration, onboarding, fresh login, and dashboard route checks, but live Supabase still rejects authenticated `public.users` self-upsert with RLS 403 and then `public.profiles` fails with 409. Migration `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql` is prepared but not executed. Execute it only after explicit user confirmation, then rerun 2-3 fresh account checks and require no `users/profiles` 403/409.
 - VD-02 deployed production `dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ`; production smoke passed 8/8 and production logged-in UI regression passed 25/25.
 - For VD-03, focus on the actual product UI: layout hierarchy, copy, typography, task clarity, core page ergonomics, and full route visual review.
 - Do not treat VD-03 as another token-only pass. The user explicitly rejected the current UI as AI-feeling and poorly laid out.

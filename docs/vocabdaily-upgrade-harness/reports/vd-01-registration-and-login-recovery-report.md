@@ -2,7 +2,7 @@
 
 ## Status
 
-passing
+functional-passing / database-policy-sql-pending
 
 ## Scope
 
@@ -57,6 +57,12 @@ Prove production UI registration and login works for real new accounts, not only
   - Root cause 1: `registerUser` updated the `users` table after signup, but a zero-row update does not error; `profiles.user_id` could then fail its `users(id)` foreign key during onboarding.
   - Root cause 2: `saveLearningProfile` sent `learning_style` to `user_learning_profiles`, but the shipped migration table does not include that column.
   - Follow-up fix: registration and login now explicitly upsert the public `users` row by auth user id, and remote `user_learning_profiles` sync now sends only columns present in the current schema.
+- 2026-06-17 stricter production recheck after deployment `dpl_4GgdvnNx8imSzGW28zDPHPrmxC8j`:
+  - 3 new synthetic accounts again completed the full functional path.
+  - Remaining server errors: `users?on_conflict=id` returned 403 under an authenticated user JWT, and `profiles?on_conflict=user_id` returned 409 because the public `users` parent row was still missing.
+  - JWT probe confirmed the request used role `authenticated` and `sub` matched the `users.id` being written; the failure is a live Supabase RLS/trigger mismatch, not a missing browser session.
+  - Added migration `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql` to repair the live database policy/trigger. It has not been executed on production yet because schema/RLS changes require explicit user confirmation.
+  - Code-only follow-up: `user_learning_profiles` now upserts with `onConflict: 'user_id'` to avoid duplicate-key 409 on repeated saves.
 
 ## Observations
 
@@ -70,6 +76,8 @@ Prove production UI registration and login works for real new accounts, not only
   - `src/pages/auth/RegisterPage.tsx`
   - `src/lib/supabase-auth.ts`
   - `src/services/learningMissions.ts`
+- Database migration prepared, pending execution:
+  - `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql`
 - Regression coverage:
   - `src/pages/auth/AuthPages.i18n.test.tsx`
   - `src/services/learningMissions.test.ts`
@@ -85,17 +93,19 @@ Prove production UI registration and login works for real new accounts, not only
 
 - Used synthetic test accounts only.
 - Did not print account emails, passwords, refresh tokens, access tokens, or Supabase secrets.
-- Did not change provider settings, schema, billing, or production env vars.
+- Did not execute production schema/RLS changes without confirmation. A migration has been prepared for review.
+- Did not change billing or production env vars.
 - Did not use Chrome for authenticated browser checks.
 
 ## Rollback Plan
 
-- No code rollback required.
+- Code rollback: revert commits `35a7758`, `588d341`, and the pending `user_learning_profiles` upsert change if auth regressions appear.
+- SQL rollback, if the prepared migration is later executed: drop the newly named `Authenticated users can ...` and `Service role can manage ...` policies, then restore the previous `handle_new_auth_user()` function definition from the prior schema snapshot.
 - If future auth UI checks regress, keep VD-00 proxy fix intact and inspect `src/lib/supabase-auth.ts`, `src/contexts/AuthContext.tsx`, and auth pages before touching provider settings.
 
 ## Oracle Update
 
-`VD-F002` is marked `passing` in `feature-oracle.json`.
+`VD-F002` is functionally passing for registration/login navigation, but database-policy verification remains pending until the prepared Supabase SQL is executed and 2-3 fresh accounts show no `users/profiles` 403/409 errors.
 
 ## Next Phase Handoff
 

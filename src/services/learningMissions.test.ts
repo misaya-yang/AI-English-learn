@@ -198,6 +198,7 @@ describe('learningMissions', () => {
       expect(payload.user_id).toBe(TEST_USER);
       expect(payload.level).toBe('B2');
       expect(payload).not.toHaveProperty('learning_style');
+      expect(upsertMock.mock.calls[0][1]).toEqual({ onConflict: 'user_id' });
     });
 
     it('keeps local fallback profiles local-only', async () => {
