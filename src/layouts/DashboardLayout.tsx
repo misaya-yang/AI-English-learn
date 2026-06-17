@@ -160,8 +160,8 @@ const dashboardLayoutCopy = {
     demo: 'Demo',
     todayMissionProgress: "Today's mission progress",
     coreLearning: 'Core learning',
-    skillPractice: 'Skill practice',
-    tools: 'Tools',
+    skillPractice: 'Skills',
+    tools: 'More',
     continueTodayMission: 'Today plan',
     mission: 'Mission',
     due: 'Due',
@@ -185,8 +185,8 @@ const dashboardLayoutCopy = {
     demo: '演示',
     todayMissionProgress: '今日任务进度',
     coreLearning: '核心学习',
-    skillPractice: '专项技能',
-    tools: '工具',
+    skillPractice: '技能',
+    tools: '更多',
     continueTodayMission: '今日任务',
     mission: '任务',
     due: '到期',
@@ -614,7 +614,7 @@ export default function DashboardLayout() {
 
   const learningMobileSheetBody = (
     <div className="flex h-full flex-col gap-6 bg-sidebar text-sidebar-foreground">
-      <div className="premium-side-card rounded-md border border-sidebar-border bg-sidebar-accent p-3">
+      <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 p-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 rounded-md">
             <AvatarFallback className="rounded-md bg-sidebar-primary/14 text-sidebar-primary">
@@ -706,7 +706,7 @@ export default function DashboardLayout() {
             </div>
           </Link>
 
-          <div className="premium-side-card mt-3 rounded-md border border-sidebar-border bg-sidebar-accent p-3">
+          <div className="mt-3 rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 p-3">
             <h2 className="text-base font-semibold">{activeShell.title}</h2>
             <div className="mt-3 grid grid-cols-3 gap-2 border-t border-sidebar-border pt-3">
               <div>
@@ -749,7 +749,7 @@ export default function DashboardLayout() {
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="premium-side-card rounded-md border border-sidebar-border bg-sidebar-accent p-3 space-y-3">
+              <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 p-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <StreakCounter
                     current={streak?.current || 0}
@@ -764,7 +764,7 @@ export default function DashboardLayout() {
             </div>
           </ScrollArea>
 
-          <div className="premium-side-card mt-3 rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-2.5">
+          <div className="mt-3 rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-2.5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -902,7 +902,7 @@ export default function DashboardLayout() {
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="premium-side-card rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-3">
+            <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="mt-1 text-base font-semibold">{copy.continueTodayHeading}</p>
@@ -931,7 +931,7 @@ export default function DashboardLayout() {
               </Button>
             </div>
 
-            <div className="premium-side-card rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-3 space-y-3">
+            <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-3 space-y-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
                 <Badge variant="outline" className="rounded-md border-sidebar-border bg-sidebar-accent text-sidebar-foreground">
@@ -943,7 +943,7 @@ export default function DashboardLayout() {
 
             <div className="space-y-2">
               <p className="px-2 text-xs text-sidebar-foreground/55">{copy.coreLearning}</p>
-              {primaryNav.map((item) => renderStandardNavItem(item))}
+              {primaryNav.map((item) => renderStandardNavItem(item, true))}
             </div>
 
             <div className="space-y-2">
@@ -953,7 +953,7 @@ export default function DashboardLayout() {
           </div>
         </ScrollArea>
 
-        <div className="premium-side-card mt-3 rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-2.5">
+        <div className="mt-3 rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">

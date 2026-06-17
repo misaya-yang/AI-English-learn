@@ -8,7 +8,7 @@ import {
 import { MissionWhyBadge } from '@/features/learning/components/MissionWhyBadge';
 import { cn } from '@/lib/utils';
 
-// LearningCockpitShell — the mission-first wrapper every learning surface
+// LearningCockpitShell — the session-first wrapper every learning surface
 // (Today / Review / Practice / LearningPath, eventually Chat header) uses
 // to enforce the "5-second answer" invariant: the learner must see what
 // to do, why it matters, how long it should take, and the next button —
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 //
 // Pages that need the existing flexibility of `LearningShellFrame` +
 // `LearningHeroPanel` directly can still use those primitives — the
-// cockpit is a *facade*, not a replacement.
+// shell is a *facade*, not a replacement.
 
 export interface CockpitMissionAction {
   label: string;
@@ -86,7 +86,7 @@ const renderAction = (action: CockpitMissionAction, key: string) => {
         variant={action.variant === 'outline' ? 'outline' : 'default'}
         className={className}
         data-testid={action.testId}
-        data-cockpit-action={actionRole}
+        data-session-action={actionRole}
       >
         <Link to={action.href}>{action.label}</Link>
       </Button>
@@ -100,7 +100,7 @@ const renderAction = (action: CockpitMissionAction, key: string) => {
       className={className}
       onClick={action.onClick}
       data-testid={action.testId}
-      data-cockpit-action={actionRole}
+      data-session-action={actionRole}
     >
       {action.label}
     </Button>
@@ -140,7 +140,7 @@ export function LearningCockpitShell({
 
   return (
     <section
-      data-testid="learning-cockpit"
+      data-testid="learning-session-shell"
       className={cn('space-y-4 lg:space-y-5', className)}
     >
       {mission.why ? (

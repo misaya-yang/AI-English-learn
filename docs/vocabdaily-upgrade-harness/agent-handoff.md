@@ -9,7 +9,7 @@
 - Five phases are fixed in `phase-manifest.md`.
 - Product Design brief is already known from the user: English learning app, practical learning workbench, no AI-template copy, no glowy dark mode, desktop and mobile validation.
 - Product Design user-context preflight found no saved context file, so current screenshots, production pages, and repo source are the source of truth.
-- Next target phase is `VD-03 Product UI Redesign`.
+- Next target phase is `VD-04 IELTS Anki Card Foundation`.
 
 ## Generator Notes
 
@@ -19,17 +19,19 @@
 - VD-02 deployed production `dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ`; production smoke passed 8/8 and production logged-in UI regression passed 25/25.
 - For VD-03, focus on the actual product UI: layout hierarchy, copy, typography, task clarity, core page ergonomics, and full route visual review.
 - Do not treat VD-03 as another token-only pass. The user explicitly rejected the current UI as AI-feeling and poorly laid out.
+- VD-03 is now passing locally. It produced `reports/vd-03-product-ui-redesign-report.md`, expanded `scripts/learning-flow-regression.mjs`, and passed 160/160 learning-flow checks across public, auth-adjacent, dashboard, module, account/tool, route-switch, Practice retry/reveal, and Listening retry/reveal flows.
+- The local validation gates passed after VD-03 edits: `npm run lint`, `npm run check:i18n`, `npm run build`, and `npm test -- --run`.
+- VD-04 should focus on the IELTS Anki-style card foundation instead of another broad shell polish pass.
 - Keep test account data synthetic. Do not expose tokens.
 
 ## Evaluator Notes
 
-- Reject VD-03 if it only changes the home page or only changes colors.
-- Require desktop `1440x960`, mobile `390x844`, and light/dark/system checks across public, dashboard, and learning-module routes.
-- Require concrete product copy and visible workflow improvements. Do not accept vague AI-style text.
+- VD-03 acceptance gates are satisfied locally. If rechecking, require desktop `1440x960`, mobile `390x844`, and light/dark/system checks across public, auth-adjacent, dashboard, and learning-module routes.
+- For VD-04, reject content work if it only creates import buttons without a useful seeded IELTS card schema/deck and at least one review/practice entry point.
 
 ## Next Handoff
 
 - Active role: generator/evaluator
-- Active phase: VD-03
-- Active feature-oracle item: VD-F004
-- Required evidence before unlock: route inventory, product/UI redesign report, copy audit, desktop/mobile screenshots, light/dark/system checks, repo checks, oracle update, continuity ledger update, and report `reports/vd-03-product-ui-redesign-report.md`.
+- Active phase: VD-04
+- Active feature-oracle item: VD-F005
+- Required evidence before unlock: IELTS card schema, seeded useful card/deck data, vocabulary/review/practice entry point, tests for schema/deck availability/UI entry, validation output, oracle update, continuity ledger update, and report `reports/vd-04-ielts-anki-card-foundation-report.md`.

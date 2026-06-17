@@ -67,9 +67,9 @@
         "Rebuild information hierarchy for Today, Practice, Review, Chat, Analytics, Profile, Settings, and learning modules.",
         "Verify desktop and mobile layouts have no overlap, horizontal overflow, card nesting, or clipped button text."
       ],
-      "status": "failing",
-      "evidence": "",
-      "notes": "Do not start this phase until VD-02 has stabilized visual tokens and loading states."
+      "status": "passing",
+      "evidence": "VD-03 completed the Product UI Redesign pass across shared learning shell, dashboard navigation, Today, Practice, theme migration, and learning-flow regression. Updated scripts/learning-flow-regression.mjs now covers public, auth-adjacent, core dashboard, learning module, account/tool, fast route switch, Practice retry/reveal, and Listening retry/reveal checks. LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-03-learning-flow npm run test:learning-flow-regression passed 160/160 checks across desktop 1440x960, mobile 390x844, and light/dark/system. Required local gates passed: npm run lint, npm run check:i18n, npm run build, and npm test -- --run with 104 test files and 818 tests. Report: docs/vocabdaily-upgrade-harness/reports/vd-03-product-ui-redesign-report.md.",
+      "notes": "VD-03 establishes the safer learning workspace UI baseline. Deeper route-specific product upgrades can continue later, but VD-04 should now focus on the IELTS Anki-style card foundation."
     },
     {
       "id": "VD-F005",

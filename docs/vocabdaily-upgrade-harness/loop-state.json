@@ -1,9 +1,9 @@
 {
   "schema_version": "prd-phase-harness/loop-state/v1",
-  "active_phase": "VD-03",
-  "active_feature": "VD-F004",
+  "active_phase": "VD-04",
+  "active_feature": "VD-F005",
   "iteration": 1,
   "status": "planned",
-  "last_decision": "VD-01 revisit is passing. After user authorization, executed supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql in the Supabase in-app browser SQL Editor; Supabase returned Success. No rows returned. Post-SQL AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow passed with functionalPassed true, dbBootstrapPassed true, and each account reported db4xx=0 dbFailed=0.",
-  "next_action": "Resume VD-03 Product UI Redesign: inventory core routes, remove AI-template copy, redesign learning layout hierarchy, and verify desktop/mobile light/dark/system UI checks before unlocking VD-04."
+  "last_decision": "VD-03 Product UI Redesign is passing. Local learning-flow regression passed 160/160 checks across public, auth-adjacent, core dashboard, learning module, account/tool, fast route switch, Practice retry/reveal, and Listening retry/reveal flows at desktop 1440x960, mobile 390x844, and light/dark/system. Required local gates passed: npm run lint, npm run check:i18n, npm run build, and npm test -- --run.",
+  "next_action": "Start VD-04 IELTS Anki-style card foundation: define the first card schema, seed useful IELTS-oriented cards, wire them into vocabulary/review/practice entry points without breaking FSRS, and add tests plus UI evidence."
 }

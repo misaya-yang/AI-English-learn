@@ -116,7 +116,7 @@ const clickFirst = (name: RegExp) => {
 
 const startQuiz = () => {
   renderPractice();
-  clickFirst(/Choose this mode/i);
+  clickFirst(/Start with this/i);
   clickFirst(/Start practice/i);
 };
 

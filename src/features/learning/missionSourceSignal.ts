@@ -5,7 +5,7 @@
 // to surface a one-glance label answering "what signal drove this pick?",
 // constrained to: due backlog | weak topic | exam target | streak recovery.
 //
-// Pure module so the cockpit shell can render it without React state and
+// Pure module so the session shell can render it without React state and
 // the unit test can pin the mapping for each `learnerModel` profile.
 
 export type MissionSourceSignal =

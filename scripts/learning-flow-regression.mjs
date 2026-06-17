@@ -5,7 +5,7 @@ import { chromium } from '@playwright/test';
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
 const OUT_DIR = process.env.LEARNING_FLOW_OUT_DIR || 'product-audit-2026-06-14/learning-flow-regression';
 const USER_ID = '00000000-0000-4000-8000-222222222222';
-const THEME_VERSION = '2026-06-workbench-dark-v3';
+const THEME_VERSION = '2026-06-workbench-dark-v4';
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 960 },
@@ -18,6 +18,9 @@ const routes = [
   { name: 'home', path: '/', authState: 'guest' },
   { name: 'login', path: '/login', authState: 'guest' },
   { name: 'register', path: '/register', authState: 'guest' },
+  { name: 'magic-link', path: '/magic-link', authState: 'guest' },
+  { name: 'auth-callback', path: '/auth/callback', authState: 'guest' },
+  { name: 'onboarding', path: '/onboarding', authState: 'user' },
   { name: 'pricing', path: '/pricing', authState: 'guest' },
   { name: 'word-of-the-day', path: '/word-of-the-day', authState: 'user' },
   { name: 'today', path: '/dashboard/today', authState: 'user' },
@@ -318,7 +321,7 @@ async function inspectFastRouteSwitch(page, viewport, theme) {
 async function openPracticeQuestion(page) {
   await page.goto(`${BASE_URL}/dashboard/practice`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await page.getByRole('button', { name: /选择此模式|Choose this mode/i }).first().click();
+  await page.getByRole('button', { name: /用这个开始|Start with this|选择此模式|Choose this mode/i }).first().click();
   await page.getByRole('button', { name: /开始练习|Start practice/i }).first().click();
   await page.waitForSelector('h3');
 

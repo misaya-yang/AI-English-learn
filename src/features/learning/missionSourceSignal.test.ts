@@ -1,7 +1,7 @@
 // LEARN-01 — three-profile coverage for the Today hero source-signal label.
 //
 // Pins the mapping for low / medium / high burnout learners so a future
-// picker change can't silently swap the framing the cockpit shows.
+// picker change can't silently swap the framing the session shell shows.
 
 import { describe, expect, it } from 'vitest';
 

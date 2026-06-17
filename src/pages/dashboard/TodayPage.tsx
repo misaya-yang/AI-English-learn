@@ -53,7 +53,6 @@ import {
 } from '@/services/todayWorkbenchPersistence';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
-import { deriveMissionSourceSignal } from '@/features/learning/missionSourceSignal';
 import {
   buildDailyCoachPlan,
   getDailyCoachEvidenceToneClass,
@@ -757,13 +756,6 @@ export default function TodayPage() {
 
   const todayXP = learnedWords.size * 5;
 
-  // LEARN-01 — single-label "source signal" for the hero metric strip.
-  const sourceSignal = deriveMissionSourceSignal({
-    reason: missionCard?.primaryAction.reason,
-    learnerMode: learnerModel?.mode || null,
-    burnoutRisk: learnerModel?.burnoutRisk,
-    examType: learningProfile.target,
-  });
   const primaryMissionTask = dailyCoachPlan?.primaryTask ?? missionCard?.primaryAction ?? null;
   const primaryMissionLabel = primaryMissionTask
     ? sanitizeTaskCopy(language.startsWith('zh') ? primaryMissionTask.ctaZh : primaryMissionTask.cta)
@@ -841,16 +833,11 @@ export default function TodayPage() {
       }}
       metrics={[
         {
-          label: language.startsWith('zh') ? '优先级' : 'Priority',
-          value: language.startsWith('zh') ? sourceSignal.label.zh : sourceSignal.label.en,
-          accent: sourceSignal.signal === 'streak recovery' ? 'warm' : 'default',
-        },
-        {
           label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
           value: language.startsWith('zh') ? `${heroEstimatedMinutes} 分钟` : `${heroEstimatedMinutes} min`,
         },
         {
-          label: language.startsWith('zh') ? '新词剩余' : 'Words left',
+          label: language.startsWith('zh') ? '今日新词' : 'Today words',
           value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
           accent: 'practice',
         },
@@ -895,6 +882,7 @@ export default function TodayPage() {
             <LearningWorkspaceSurface
               eyebrow={isZh ? '今日单词' : 'Today words'}
               title={currentWord ? currentWord.word : (isZh ? '今日单词' : 'Today words')}
+              className="border-0 bg-transparent shadow-none"
             >
             <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-4">

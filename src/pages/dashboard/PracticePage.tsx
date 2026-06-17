@@ -922,7 +922,7 @@ export default function PracticePage() {
   );
 
   const pageTitle = !selectedMode
-    ? (isZh ? '先选一种练习。' : 'Pick one practice mode.')
+    ? (isZh ? '今天练什么' : 'Choose today\'s practice')
     : !hasStarted
       ? `${isZh ? '准备进入' : 'Prepare'} ${focusedModeLabel}`
       : isComplete
@@ -930,7 +930,7 @@ export default function PracticePage() {
         : `${focusedModeLabel} ${isZh ? '进行中' : 'in progress'}`;
 
   const pageDescription = !selectedMode
-    ? undefined
+    ? (isZh ? '先做一轮最有用的短练习，做错先给提示，再决定是否看答案。' : 'Start with the most useful short drill. Mistakes get a hint before the answer.')
     : !hasStarted
       ? focusedBlueprint.insight
       : isComplete
@@ -945,11 +945,9 @@ export default function PracticePage() {
         : null;
 
   const renderPageShell = (mainContent: ReactNode) => {
-    const primaryAction = !selectedMode
-      ? { label: isZh ? '选择此模式' : 'Choose this mode', onClick: () => pickMode(focusedModeId) }
-      : !hasStarted
-        ? { label: isZh ? '开始练习' : 'Start practice', onClick: startFocusedMode }
-        : null;
+    const primaryAction = selectedMode && !hasStarted
+      ? { label: isZh ? '开始练习' : 'Start practice', onClick: startFocusedMode }
+      : null;
     const secondaryActions: Array<{ label: string; onClick?: () => void; href?: string; variant?: 'outline' }> = [];
     if (selectedMode && !hasStarted && (selectedMode === 'quiz' || selectedMode === 'fill_blank')) {
       secondaryActions.push({
@@ -1008,8 +1006,10 @@ export default function PracticePage() {
   if (!selectedMode) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow={isZh ? '练习' : 'Practice'}
-        title={focusedModeLabel}
+        eyebrow={isZh ? '推荐练习' : 'Suggested practice'}
+        title={isZh ? `先练：${focusedModeLabel}` : `Start with ${focusedModeLabel}`}
+        description={focusedModeDescription}
+        className="border-0 bg-transparent shadow-none"
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
@@ -1041,7 +1041,7 @@ export default function PracticePage() {
 
           <div className="border-t border-border pt-5">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => pickMode(focusedModeId)}>
-              {isZh ? '选择此模式' : 'Choose this mode'}
+              {isZh ? '用这个开始' : 'Start with this'}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>

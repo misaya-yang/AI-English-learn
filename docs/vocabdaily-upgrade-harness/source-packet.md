@@ -71,7 +71,7 @@ VocabDaily should feel like a practical English learning workbench: clear next t
 
 - Dark-mode foundation is deployed and production-verified as Vercel `dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ`, aliased to `https://www.uuedu.online`.
 - Dark tokens now use restrained graphite surfaces, not pure black or neon/glow defaults.
-- Theme version is aligned across `index.html`, `src/contexts/ThemeContext.tsx`, and `scripts/learning-flow-regression.mjs` as `2026-06-workbench-dark-v3`.
+- Theme version was aligned across `index.html`, `src/contexts/ThemeContext.tsx`, and `scripts/learning-flow-regression.mjs` as `2026-06-workbench-dark-v3` during VD-02, then bumped to `2026-06-workbench-dark-v4` during VD-03 so previously stored non-light preferences migrate back to light after the broader UI pass.
 - Stale stored dark preferences migrate back to light before render, preventing existing users from continuing to land on the rejected dark home page by default.
 - Local regression passed 142/142 checks across desktop, mobile, light, dark, system, route switching, Practice retry/reveal, and listening retry/reveal.
 - Production smoke passed 8/8 after sourcing local `.env` without printing secrets.
@@ -79,13 +79,27 @@ VocabDaily should feel like a practical English learning workbench: clear next t
 - Production dark home/today/practice/route-switch backgrounds measured `rgb(63, 67, 75)`, brightness 67, overflow 0.
 - VD-02 intentionally does not solve the broader UI/product problem; VD-03 must redesign layout hierarchy, copy, typography, and practical learning flows across all core routes.
 
+## Phase VD-03 Product UI Facts
+
+- VD-03 uses the Modern Learning Workbench direction: light-first, learner-task hierarchy, restrained dark mode, fewer nested cards, and plain study copy.
+- Shared learning components were softened in `src/features/learning/components/LearningWorkspace.tsx`: lighter surfaces, compact metric strips, flatter panels, and fewer `premium-*` style effects.
+- `LearningCockpitShell` keeps its export name for import compatibility, but visible/test-facing semantics now use "session" language and `data-testid="learning-session-shell"`.
+- Dashboard navigation and standard sidebars in `src/layouts/DashboardLayout.tsx` now use shorter learner-facing labels and less heavy card chrome.
+- `src/pages/dashboard/TodayPage.tsx` focuses the hero metrics on estimated time, today words, and due reviews, and removes one outer card layer from the daily word surface.
+- `src/pages/dashboard/PracticePage.tsx` uses `今天练什么` / `Choose today's practice`, one clear start CTA in the recommendation content, and inline retry/reveal feedback. The earlier retry-state behavior remains intact.
+- Theme version is now `2026-06-workbench-dark-v4`; stale non-light theme preferences migrate to light on next load, while users can still manually choose dark or system.
+- `scripts/learning-flow-regression.mjs` covers public routes, auth-adjacent routes, core dashboard, modules, account/tool routes, fast route switching, Practice wrong/retry/reveal, and Listening wrong/retry/reveal.
+- Local VD-03 visual regression passed 160/160 checks with screenshots under `product-audit-2026-06-17/vd-03-learning-flow/screenshots/` and summary at `product-audit-2026-06-17/vd-03-learning-flow/summary.json`.
+- Required local gates passed: `npm run lint`, `npm run check:i18n`, `npm run build`, and `npm test -- --run` with 104 test files and 818 tests.
+- VD-03 unlocks VD-04. The next product gap is useful IELTS Anki-style vocabulary content, not another shell-only polish pass.
+
 ## Assumptions and Decisions
 
 - Keep the existing Supabase project instead of creating a new one because it was recoverable.
 - Do not print or commit Supabase anon keys, refresh tokens, access tokens, or account details.
 - Do not perform database schema migrations until a phase contract explicitly requires them.
-- Do not start IELTS Anki implementation until UI redesign has evidence.
-- VD-03 is now unlocked because auth and dark-mode foundations have production evidence.
+- Do not start IELTS Anki implementation until UI redesign has evidence. VD-03 now has local route, screenshot, and validation evidence; VD-04 is unlocked.
+- VD-03 is complete locally because core UI routes, copy, responsive checks, and regression evidence passed. VD-04 is now the active next phase.
 - Product Design context has no saved user-context file; current screenshots, production pages, and repo source are the design source for now.
 
 ## Risk Tags

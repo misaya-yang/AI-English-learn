@@ -25,11 +25,11 @@ const renderShell = (props: Partial<React.ComponentProps<typeof LearningCockpitS
   );
 
 describe('LearningCockpitShell', () => {
-  it('renders the cockpit container with the mission title and body', () => {
+  it('renders the learning session container with the mission title and body', () => {
     renderShell();
-    const cockpit = screen.getByTestId('learning-cockpit');
-    expect(cockpit).toBeInTheDocument();
-    expect(within(cockpit).getByText('Pick the highest-impact next step')).toBeInTheDocument();
+    const shell = screen.getByTestId('learning-session-shell');
+    expect(shell).toBeInTheDocument();
+    expect(within(shell).getByText('Pick the highest-impact next step')).toBeInTheDocument();
     expect(screen.getByTestId('page-body')).toBeInTheDocument();
   });
 
@@ -86,7 +86,7 @@ describe('LearningCockpitShell', () => {
     expect(screen.getByRole('link', { name: 'Third' })).toBeInTheDocument();
   });
 
-  it('marks exactly one primary cockpit action when secondary actions exist', () => {
+  it('marks exactly one primary session action when secondary actions exist', () => {
     renderShell({
       mission: {
         title: 'Open dashboard',
@@ -98,9 +98,9 @@ describe('LearningCockpitShell', () => {
       },
     });
 
-    const cockpit = screen.getByTestId('learning-cockpit');
-    expect(cockpit.querySelectorAll('[data-cockpit-action="primary"]')).toHaveLength(1);
-    expect(cockpit.querySelectorAll('[data-cockpit-action="secondary"]')).toHaveLength(2);
+    const shell = screen.getByTestId('learning-session-shell');
+    expect(shell.querySelectorAll('[data-session-action="primary"]')).toHaveLength(1);
+    expect(shell.querySelectorAll('[data-session-action="secondary"]')).toHaveLength(2);
   });
 
   it('renders the why-badge above the hero when whyBadge is supplied', () => {
@@ -130,7 +130,7 @@ describe('LearningCockpitShell', () => {
     expect(screen.getByTestId('mission-why-badge').getAttribute('data-variant')).toBe('recovery');
   });
 
-  it('keeps why-badge text readable in the light-first cockpit system', () => {
+  it('keeps why-badge text readable in the light-first session system', () => {
     renderShell({
       mission: {
         title: 'Reduce backlog with a lighter review block',
@@ -145,7 +145,7 @@ describe('LearningCockpitShell', () => {
     expect(badge.className).toContain('text-foreground');
   });
 
-  it('uses semantic primary tokens for the main cockpit action', () => {
+  it('uses semantic primary tokens for the main session action', () => {
     renderShell();
     const link = screen.getByRole('link', { name: 'Continue' });
     expect(link.className).toContain('bg-primary');

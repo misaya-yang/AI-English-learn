@@ -15,8 +15,8 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 | VD-00 | VD-F001 | none | VD-01 | passing | production Supabase and proxy evidence | source packet, oracle, report |
 | VD-01 | VD-F002 | VD-00 | VD-02 | passing | UI auth flow and database bootstrap pass for fresh production accounts | auth code facts, browser evidence, SQL execution evidence, report |
 | VD-02 | VD-F003 | VD-01 | VD-03 | passing | theme token and loading-state evidence | theme decisions, screenshots, report |
-| VD-03 | VD-F004 | VD-02 | VD-04 | ready | full UI audit and redesign evidence | route inventory, screenshots, copy audit, report |
-| VD-04 | VD-F005 | VD-03 | none | locked | IELTS card schema/content evidence | content schema, tests, UI entry point, report |
+| VD-03 | VD-F004 | VD-02 | VD-04 | passing | full UI audit and redesign evidence | route inventory, screenshots, copy audit, report |
+| VD-04 | VD-F005 | VD-03 | none | ready | IELTS card schema/content evidence | content schema, tests, UI entry point, report |
 
 ## Interface Boundary Ledger
 
@@ -30,7 +30,7 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 | Auth UI revalidation | Production UI created 3 additional synthetic accounts; all registered to `/dashboard/today`, logged in from fresh contexts, and reloaded on dashboard with 0 console errors and 0 failed Supabase requests. | `reports/vd-01-registration-and-login-recovery-report.md` | 2026-06-17 | VD-01 |
 | Auth database policy | After user authorization, executed `20260617153000_auth_profile_bootstrap_rls.sql` in the Supabase in-app browser SQL Editor; Supabase returned `Success. No rows returned`. Post-SQL verifier `AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow` passed for 3 fresh accounts with `functionalPassed: true`, `dbBootstrapPassed: true`, and each account reported `db4xx=0 dbFailed=0`. | `reports/vd-01-registration-and-login-recovery-report.md`; `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql`; `scripts/prod-auth-flow.mjs` | 2026-06-17 | VD-01 |
 | Theme tokens | Dark mode now uses restrained graphite tokens, stale dark preferences migrate to light, and production logged-in route checks passed 25/25 after deployment `dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ`. | `reports/vd-02-dark-mode-repair-report.md`; `product-audit-2026-06-17/vd-02-production-online/summary.json` | 2026-06-17 | VD-02 |
-| Product UI | User rejected current UI as AI-feeling, monotonous, and poorly laid out. | screenshots and user feedback | 2026-06-17 | VD-03 |
+| Product UI | VD-03 established a light-first learning workspace baseline, reduced heavy cards/glow/cockpit language, simplified Today/Practice, bumped theme version to `2026-06-workbench-dark-v4`, and passed 160/160 local learning-flow checks across desktop/mobile light/dark/system and all inventory routes. | `reports/vd-03-product-ui-redesign-report.md`; `product-audit-2026-06-17/vd-03-learning-flow/summary.json` | 2026-06-17 | VD-03 |
 | IELTS Anki content | No accepted first deck or schema yet. | user request | pending | VD-04 |
 
 ## Code Summary Writeback Rules
@@ -41,7 +41,7 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 
 ## Current Continuity Status
 
-- Active phase: VD-03
-- Active feature-oracle item: VD-F004
-- Current decision: VD-01 database-policy recovery is complete; VD-03 Product UI Redesign is the next active phase.
-- Next action: Inventory core routes, remove AI-template copy, redesign learning layout hierarchy, and verify desktop/mobile light/dark/system UI checks before unlocking VD-04.
+- Active phase: VD-04
+- Active feature-oracle item: VD-F005
+- Current decision: VD-03 Product UI Redesign is locally passing and VD-04 is unlocked.
+- Next action: Define the first IELTS Anki-style card schema, seed a useful deck, wire it into vocabulary/review/practice entry points, add tests, and record validation before completion.

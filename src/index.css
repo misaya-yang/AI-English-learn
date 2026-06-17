@@ -95,36 +95,36 @@
   }
 
   .dark {
-    --background: 220 9% 27%;
+    --background: 220 8% 34%;
     --foreground: 220 22% 96%;
-    --card: 220 9% 32%;
+    --card: 220 8% 39%;
     --card-foreground: 220 22% 97%;
-    --popover: 220 9% 32%;
+    --popover: 220 8% 39%;
     --popover-foreground: 220 22% 97%;
     --primary: 211 50% 82%;
     --primary-foreground: 220 18% 22%;
-    --secondary: 220 8% 38%;
+    --secondary: 220 8% 43%;
     --secondary-foreground: 220 22% 96%;
-    --muted: 220 8% 38%;
+    --muted: 220 8% 43%;
     --muted-foreground: 220 16% 86%;
     --accent: 211 50% 82%;
     --accent-foreground: 220 18% 22%;
     --destructive: 0 72% 66%;
     --destructive-foreground: 210 25% 98%;
-    --border: 220 8% 48%;
-    --input: 220 8% 48%;
+    --border: 220 8% 55%;
+    --input: 220 8% 55%;
     --ring: 211 58% 82%;
     --accent-practice: 207 50% 80%;
     --accent-coach: 218 40% 82%;
     --accent-exam: 38 88% 70%;
     --accent-memory: 176 38% 72%;
-    --sidebar-background: 220 8% 29%;
+    --sidebar-background: 220 8% 35%;
     --sidebar-foreground: 220 22% 96%;
     --sidebar-primary: 211 50% 82%;
     --sidebar-primary-foreground: 220 18% 22%;
-    --sidebar-accent: 220 8% 34%;
+    --sidebar-accent: 220 8% 40%;
     --sidebar-accent-foreground: 220 22% 97%;
-    --sidebar-border: 220 8% 45%;
+    --sidebar-border: 220 8% 53%;
     --sidebar-ring: 211 58% 82%;
 
     /* Semantic status colors — dark */
@@ -138,10 +138,10 @@
     --info-foreground: 220 18% 22%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 220 8% 35%;
-    --surface-raised: 220 9% 32%;
-    --surface-sunken: 220 10% 23%;
-    --border-strong: 220 8% 56%;
+    --surface-elevated: 220 8% 42%;
+    --surface-raised: 220 8% 39%;
+    --surface-sunken: 220 8% 32%;
+    --border-strong: 220 8% 60%;
     --shadow-studio: 220 16% 14%;
     --gradient-start: 211 50% 82%;
     --gradient-end: 202 46% 78%;
