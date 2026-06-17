@@ -415,6 +415,62 @@ export function validateEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+function buildUsername(email: string, userId: string, withSuffix = false): string {
+  const base = email.split('@')[0]?.trim() || 'learner';
+  return withSuffix ? `${base}-${userId.slice(0, 8)}` : base;
+}
+
+async function ensureRemoteUserRecord(args: {
+  userId: string;
+  email: string;
+  displayName?: string;
+  createdAt?: string;
+}): Promise<boolean> {
+  if (isLocalAuthUserId(args.userId)) {
+    return true;
+  }
+
+  const now = new Date().toISOString();
+  const payload = {
+    id: args.userId,
+    email: args.email,
+    username: buildUsername(args.email, args.userId),
+    display_name: args.displayName || args.email.split('@')[0],
+    created_at: args.createdAt || now,
+    updated_at: now,
+  };
+
+  const { error } = await supabase
+    .from('users')
+    .upsert(payload, { onConflict: 'id' });
+
+  if (!error) {
+    return true;
+  }
+
+  if (error.code === '23505') {
+    const { error: retryError } = await supabase
+      .from('users')
+      .upsert(
+        {
+          ...payload,
+          username: buildUsername(args.email, args.userId, true),
+        },
+        { onConflict: 'id' },
+      );
+
+    if (!retryError) {
+      return true;
+    }
+
+    console.warn('Remote user record sync fallback:', retryError);
+    return false;
+  }
+
+  console.warn('Remote user record sync fallback:', error);
+  return false;
+}
+
 // Register new user
 export async function registerUser(
   email: string, 
@@ -465,37 +521,16 @@ export async function registerUser(
       return { user: null, error: '注册失败，请稍后重试' };
     }
     
-    // Wait a moment for auth trigger to create user, then update it
+    // Wait a moment for auth trigger to create the row, then upsert explicitly.
+    // Supabase update does not fail when it matches 0 rows, so upsert is needed
+    // to prevent first-run profile writes from missing their users(id) parent.
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Update user record in our users table (trigger should have created it)
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        display_name: displayName,
-        username: email.split('@')[0],
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', authData.user.id);
-    
-    if (updateError) {
-      console.error('User update error:', updateError);
-      // Try to insert if update failed
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email: email,
-          display_name: displayName,
-          username: email.split('@')[0],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      
-      if (insertError) {
-        console.error('User insert error:', insertError);
-      }
-    }
+    await ensureRemoteUserRecord({
+      userId: authData.user.id,
+      email,
+      displayName,
+      createdAt: authData.user.created_at,
+    });
 
     // Keep a local fallback profile so onboarding/settings work
     // even when project-level RLS or triggers are not fully configured.
@@ -581,6 +616,13 @@ export async function loginUser(
       displayName: data.user.user_metadata?.display_name || email.split('@')[0],
       createdAt: data.user.created_at || new Date().toISOString(),
     };
+
+    await ensureRemoteUserRecord({
+      userId: user.id,
+      email: user.email || email,
+      displayName: user.displayName,
+      createdAt: user.createdAt,
+    });
     
     return { user, error: null };
   } catch (error: unknown) {
@@ -746,7 +788,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     saveLocalProfile(profile);
     return profile;
   } catch (error) {
-    console.error('Get profile error:', error);
+    console.warn('Get profile fallback:', error);
     return loadLocalProfile(userId);
   }
 }
@@ -785,11 +827,11 @@ export async function updateUserProfile(
       .upsert(mappedUpdates, { onConflict: 'user_id' });
     
     if (error) {
-      console.error('Update profile remote error, kept local fallback:', error);
+      console.warn('Update profile remote fallback:', error);
     }
     return true;
   } catch (error) {
-    console.error('Update profile error, kept local fallback:', error);
+    console.warn('Update profile fallback:', error);
     return true;
   }
 }

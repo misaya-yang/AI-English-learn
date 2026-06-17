@@ -100,12 +100,11 @@ export const saveLearningProfile = async (
       target: next.target,
       tracks: next.tracks,
       daily_minutes: next.dailyMinutes,
-      learning_style: next.learningStyle,
       language_preference: next.languagePreference,
       updated_at: next.updatedAt,
     });
   } catch (err) {
-    logger.error('[learningMissions] saveLearningProfile sync failed:', err);
+    logger.warn('[learningMissions] saveLearningProfile remote sync fallback:', err);
   }
 
   return next;

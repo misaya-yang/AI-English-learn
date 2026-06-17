@@ -51,6 +51,12 @@ Prove production UI registration and login works for real new accounts, not only
   - The new account correctly reached first-run onboarding. A separate run exposed a race where AuthContext could mark the user authenticated before the register handler navigated to onboarding, briefly sending the new account to `/dashboard/today` loading state.
   - Fixed the race by locking the registration flow to onboarding before calling `register()`, then resetting that lock only on registration failure.
   - Added an auth-page regression test for the race.
+- 2026-06-17 post-deploy recheck:
+  - 3 new synthetic accounts completed `register -> onboarding -> dashboard -> fresh login -> dashboard/today -> dashboard/practice -> dashboard/review`.
+  - The functional path passed for all 3 accounts, but console/network capture still showed remote profile sync errors.
+  - Root cause 1: `registerUser` updated the `users` table after signup, but a zero-row update does not error; `profiles.user_id` could then fail its `users(id)` foreign key during onboarding.
+  - Root cause 2: `saveLearningProfile` sent `learning_style` to `user_learning_profiles`, but the shipped migration table does not include that column.
+  - Follow-up fix: registration and login now explicitly upsert the public `users` row by auth user id, and remote `user_learning_profiles` sync now sends only columns present in the current schema.
 
 ## Observations
 
@@ -62,8 +68,11 @@ Prove production UI registration and login works for real new accounts, not only
 
 - Production code:
   - `src/pages/auth/RegisterPage.tsx`
+  - `src/lib/supabase-auth.ts`
+  - `src/services/learningMissions.ts`
 - Regression coverage:
   - `src/pages/auth/AuthPages.i18n.test.tsx`
+  - `src/services/learningMissions.test.ts`
 - Harness evidence updated:
   - `feature-oracle.json`
   - `loop-state.json`

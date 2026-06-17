@@ -197,7 +197,7 @@ describe('learningMissions', () => {
       const payload = upsertMock.mock.calls[0][0];
       expect(payload.user_id).toBe(TEST_USER);
       expect(payload.level).toBe('B2');
-      expect(payload.learning_style).toBe('visual');
+      expect(payload).not.toHaveProperty('learning_style');
     });
 
     it('keeps local fallback profiles local-only', async () => {
