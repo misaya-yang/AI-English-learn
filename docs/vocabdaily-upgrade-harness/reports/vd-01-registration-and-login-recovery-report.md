@@ -2,7 +2,7 @@
 
 ## Status
 
-functional-passing / database-policy-sql-pending
+passing
 
 ## Scope
 
@@ -70,7 +70,13 @@ Prove production UI registration and login works for real new accounts, not only
 - 2026-06-17 verifier hardening:
   - Added `npm run smoke:prod:auth-flow` for repeatable production auth verification.
   - Pre-SQL self-check with `AUTH_FLOW_ACCOUNTS=1` produced `functionalPassed: true` and `dbBootstrapPassed: false`, with the remaining bad responses limited to `users` 403 and `profiles` 409.
-  - After SQL execution, this command must pass with 2-3 accounts before VD-F002 returns to `passing`.
+- 2026-06-17 post-SQL production verification:
+  - User authorized business operations for the goal, excluding malicious deletion.
+  - Executed `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql` in the Supabase in-app browser SQL Editor for project `zjkbktdmwencnouwfrij`.
+  - Supabase returned `Success. No rows returned`.
+  - Ran `AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow`.
+  - All 3 fresh synthetic accounts returned `functional=pass dbBootstrap=pass db4xx=0 dbFailed=0`.
+  - Final verifier output: `functionalPassed: true`, `dbBootstrapPassed: true`.
 
 ## Observations
 
@@ -87,7 +93,7 @@ Prove production UI registration and login works for real new accounts, not only
 - Production verification scripts:
   - `scripts/prod-auth-flow.mjs`
   - `package.json` script `smoke:prod:auth-flow`
-- Database migration prepared, pending execution:
+- Database migration executed:
   - `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql`
 - Regression coverage:
   - `src/pages/auth/AuthPages.i18n.test.tsx`
@@ -104,20 +110,20 @@ Prove production UI registration and login works for real new accounts, not only
 
 - Used synthetic test accounts only.
 - Did not print account emails, passwords, refresh tokens, access tokens, or Supabase secrets.
-- Did not execute production schema/RLS changes without confirmation. A migration has been prepared for review.
+- Executed production schema/RLS repair only after user authorization.
 - Did not change billing or production env vars.
 - Did not use Chrome for authenticated browser checks.
 
 ## Rollback Plan
 
-- Code rollback: revert commits `35a7758`, `588d341`, and the pending `user_learning_profiles` upsert change if auth regressions appear.
-- SQL rollback, if the prepared migration is later executed: drop the newly named `Authenticated users can ...` and `Service role can manage ...` policies, then restore the previous `handle_new_auth_user()` function definition from the prior schema snapshot.
+- Code rollback: revert commits `35a7758`, `588d341`, and the `user_learning_profiles` upsert change if auth regressions appear.
+- SQL rollback: drop the newly named `Authenticated users can ...` and `Service role can manage ...` policies, then restore the previous `handle_new_auth_user()` function definition from the prior schema snapshot.
 - If future auth UI checks regress, keep VD-00 proxy fix intact and inspect `src/lib/supabase-auth.ts`, `src/contexts/AuthContext.tsx`, and auth pages before touching provider settings.
 
 ## Oracle Update
 
-`VD-F002` is functionally passing for registration/login navigation, but database-policy verification remains pending until the prepared Supabase SQL is executed and 2-3 fresh accounts show no `users/profiles` 403/409 errors.
+`VD-F002` is passing. Production registration/login works for fresh accounts, and post-SQL database bootstrap verification passed for 3 new accounts with no `users/profiles` 403/409 errors.
 
 ## Next Phase Handoff
 
-`VD-02 Dark Mode Repair` is unlocked. The next phase should focus only on theme tokens, loading states, route transition flashes, and readability. Do not start the broader product UI redesign until VD-02 has evidence.
+`VD-03 Product UI Redesign` is unblocked. The next phase should focus on full route inventory, learning-workbench hierarchy, non-AI copy, desktop/mobile layout quality, and light/dark/system visual checks before VD-04 starts.

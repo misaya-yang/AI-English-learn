@@ -1,9 +1,9 @@
 {
   "schema_version": "prd-phase-harness/loop-state/v1",
-  "active_phase": "VD-01",
-  "active_feature": "VD-F002",
-  "iteration": 4,
-  "status": "blocked",
-  "last_decision": "Strict production auth recheck proved functional registration/login for new accounts but exposed live Supabase public.users RLS 403 and dependent public.profiles 409. Prepared supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql, fixed user_learning_profiles upsert onConflict in code, and added npm run smoke:prod:auth-flow as a repeatable verifier.",
-  "next_action": "Ask the user to confirm execution of the prepared Supabase SQL. After execution, run AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow and require dbBootstrapPassed before returning to VD-03."
+  "active_phase": "VD-03",
+  "active_feature": "VD-F004",
+  "iteration": 1,
+  "status": "planned",
+  "last_decision": "VD-01 revisit is passing. After user authorization, executed supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql in the Supabase in-app browser SQL Editor; Supabase returned Success. No rows returned. Post-SQL AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow passed with functionalPassed true, dbBootstrapPassed true, and each account reported db4xx=0 dbFailed=0.",
+  "next_action": "Resume VD-03 Product UI Redesign: inventory core routes, remove AI-template copy, redesign learning layout hierarchy, and verify desktop/mobile light/dark/system UI checks before unlocking VD-04."
 }

@@ -37,9 +37,9 @@
         "Verify the dashboard opens, reload keeps the session, and Supabase refresh does not storm.",
         "Verify invalid credentials produce a readable inline error and do not fall back to a fake success state."
       ],
-      "status": "blocked",
-      "evidence": "Production UI checks after deployments 35a7758 and 588d341 show 3/3 fresh synthetic accounts can complete register -> onboarding -> dashboard -> fresh login -> dashboard/today -> dashboard/practice -> dashboard/review. Code-only deployment dpl_BxFZXXKqCd3FiQRWHhbh7bwovizc keeps the functional path working and removes user_learning_profiles from bad responses. Added npm run smoke:prod:auth-flow as the repeatable production verifier; pre-SQL self-check with one account reports functionalPassed true and dbBootstrapPassed false with remaining users 403 / profiles 409. Migration supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql is prepared but not executed.",
-      "notes": "Functional auth is passing, but database-policy cleanup is blocked on explicit approval to execute the prepared Supabase RLS/trigger SQL. Do not print test account emails, passwords, or tokens."
+      "status": "passing",
+      "evidence": "Production UI checks after deployments 35a7758 and 588d341 show 3/3 fresh synthetic accounts can complete register -> onboarding -> dashboard -> fresh login -> dashboard/today -> dashboard/practice -> dashboard/review. Code-only deployment dpl_BxFZXXKqCd3FiQRWHhbh7bwovizc keeps the functional path working and removes user_learning_profiles from bad responses. Added npm run smoke:prod:auth-flow as the repeatable production verifier; pre-SQL self-check with one account reported functionalPassed true and dbBootstrapPassed false with remaining users 403 / profiles 409. After user authorization, executed supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql in the Supabase in-app browser SQL Editor; Supabase returned Success. No rows returned. Post-SQL AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow passed with functionalPassed true, dbBootstrapPassed true, and each account reported db4xx=0 dbFailed=0.",
+      "notes": "Production registration/login and database bootstrap are both passing for fresh synthetic accounts. Do not print test account emails, passwords, or tokens."
     },
     {
       "id": "VD-F003",
