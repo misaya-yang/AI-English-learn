@@ -5,9 +5,9 @@ Use this prompt to start a fresh Codex, Claude Code, or Agent Skills-compatible 
 ```text
 Use $prd-phase-harness to continue the harness at `docs/vocabdaily-upgrade-harness`.
 
-Target phase: VD-02
-Target phase file: `docs/vocabdaily-upgrade-harness/phase-02-dark-mode-repair.md`
-Target feature-oracle item: VD-F003
+Target phase: VD-03
+Target phase file: `docs/vocabdaily-upgrade-harness/phase-03-product-ui-redesign.md`
+Target feature-oracle item: VD-F004
 
 Cold-start protocol:
 1. Open `docs/vocabdaily-upgrade-harness/README.md`.
@@ -27,6 +27,6 @@ Execution rule:
 - Run the required validation and runtime checks.
 - Summarize code facts back into the source packet and continuity ledger before handoff.
 - Update the phase report, progress log, handoff file, continuity ledger, and oracle evidence before claiming completion.
-- Do not work on full UI redesign or IELTS Anki cards until VD-02 is passing or explicitly blocked/waived.
+- Do not work on IELTS Anki cards until VD-03 is passing or explicitly blocked/waived.
 - Stop and document blockers instead of guessing when credentials, production systems, destructive commands, or out-of-scope edits are required.
 ```

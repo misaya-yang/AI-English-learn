@@ -38,8 +38,8 @@
         "Verify invalid credentials produce a readable inline error and do not fall back to a fake success state."
       ],
       "status": "passing",
-      "evidence": "Production UI check created 3 synthetic accounts through https://www.uuedu.online/register. Each account registered into /dashboard/today, logged in from a fresh context through /login, and stayed on /dashboard/today after reload. Invalid-credential check stayed on /login and showed a readable error.",
-      "notes": "Do not print test account emails, passwords, or tokens. One profile REST request was aborted during page transition per login; it did not block login, reload persistence, or produce a refresh storm."
+      "evidence": "Production UI check created 3 synthetic accounts through https://www.uuedu.online/register. Each account registered into /dashboard/today, logged in from a fresh context through /login, and stayed on /dashboard/today after reload. Invalid-credential check stayed on /login and showed a readable error. A later production revalidation created 3 additional synthetic accounts and all 3 passed registration, fresh-context login, and reload persistence with 0 console errors and 0 failed Supabase requests.",
+      "notes": "Do not print test account emails, passwords, or tokens. Earlier page-transition profile aborts were not blocking; the latest production revalidation showed no failed Supabase requests."
     },
     {
       "id": "VD-F003",
@@ -52,9 +52,9 @@
         "Capture desktop 1440x960 and mobile 390x844 screenshots.",
         "Verify contrast of buttons, cards, form labels, feedback panels, and loading states."
       ],
-      "status": "failing",
-      "evidence": "",
-      "notes": "User screenshots show dark mode and public page colors are still unacceptable."
+      "status": "passing",
+      "evidence": "VD-02 changed dark tokens, theme pre-paint versioning, and regression checks. Local learning-flow regression passed 142/142 across desktop 1440x960, mobile 390x844, light/dark/system, route switching, Practice retry/reveal, and listening retry/reveal. Production deployment dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ is Ready and aliased to https://www.uuedu.online. Production smoke passed 8/8. Production logged-in UI check created a synthetic account, logged in through /login, and passed 25/25 light/dark/system desktop/mobile checks for /, /dashboard/today, /dashboard/practice, and fast dashboard route switching. Dark background is rgb(63,67,75), brightness 67, overflow 0. Stale dark preferences migrate to light before render.",
+      "notes": "VD-02 fixes the dark-mode foundation only. Remaining visual/product issues are scheduled for VD-03 Product UI Redesign."
     },
     {
       "id": "VD-F004",

@@ -27,8 +27,8 @@ rg -n "ACCEPTANCE_GATES:" docs/vocabdaily-upgrade-harness
 | --- | --- | --- |
 | VD-00 | `reports/vd-00-supabase-database-recovery-report.md` | passing |
 | VD-01 | `reports/vd-01-registration-and-login-recovery-report.md` | passing |
-| VD-02 | `reports/vd-02-dark-mode-repair-report.md` | next |
-| VD-03 | `reports/vd-03-product-ui-redesign-report.md` | locked |
+| VD-02 | `reports/vd-02-dark-mode-repair-report.md` | passing |
+| VD-03 | `reports/vd-03-product-ui-redesign-report.md` | next |
 | VD-04 | `reports/vd-04-ielts-anki-card-foundation-report.md` | locked |
 
 ## Dependency Flow
@@ -84,7 +84,7 @@ VD-00 Supabase Database Recovery
 Use the exact phase prompt from the target phase file. Current next phase:
 
 ```text
-Complete VD-02 Dark Mode Repair by following `docs/vocabdaily-upgrade-harness/phase-02-dark-mode-repair.md`; use VD-F003; repair theme tokens and loading states only after VD-01 passes.
+Complete VD-03 Product UI Redesign by following `docs/vocabdaily-upgrade-harness/phase-03-product-ui-redesign.md`; use VD-F004; redesign the core UI only after VD-02 passes.
 ```
 
 For a fresh agent, first read `README.md`, `phase-manifest.md`, `loop-contract.json`, `loop-state.json`, `feature-oracle.json`, `progress-log.md`, `agent-handoff.md`, `continuity-ledger.md`, and the target phase file. Work on one phase and one feature-oracle item only.

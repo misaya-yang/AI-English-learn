@@ -36,6 +36,14 @@ Prove production UI registration and login works for real new accounts, not only
 - Invalid credentials:
   - Final path: `/login`.
   - Readable error detected: yes.
+- Revalidation after VD-02 planning:
+  - Production site: `https://www.uuedu.online`.
+  - 3 additional synthetic accounts were created through the visible `/register` form.
+  - All 3 registration runs ended at `/dashboard/today`.
+  - All 3 fresh-context login runs ended at `/dashboard/today`.
+  - All 3 reload checks stayed on `/dashboard/today`.
+  - Console error count: 0 for each registration and login run.
+  - Failed Supabase request count: 0 for each registration and login run.
 - Production smoke from VD-00 remains passing: `npm run smoke:prod` passed 8/8 after deployment `dpl_5LxAb5cj72MRod4coXbGpMatvxGq`.
 
 ## Observations

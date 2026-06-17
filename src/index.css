@@ -95,57 +95,57 @@
   }
 
   .dark {
-    --background: 214 12% 49%;
-    --foreground: 214 28% 96%;
-    --card: 214 12% 56%;
-    --card-foreground: 214 28% 97%;
-    --popover: 214 12% 55%;
-    --popover-foreground: 214 28% 97%;
-    --primary: 211 58% 82%;
-    --primary-foreground: 218 26% 17%;
-    --secondary: 214 10% 62%;
-    --secondary-foreground: 214 28% 96%;
-    --muted: 214 10% 60%;
-    --muted-foreground: 214 20% 88%;
-    --accent: 211 58% 82%;
-    --accent-foreground: 218 26% 17%;
+    --background: 220 9% 27%;
+    --foreground: 220 22% 96%;
+    --card: 220 9% 32%;
+    --card-foreground: 220 22% 97%;
+    --popover: 220 9% 32%;
+    --popover-foreground: 220 22% 97%;
+    --primary: 211 50% 82%;
+    --primary-foreground: 220 18% 22%;
+    --secondary: 220 8% 38%;
+    --secondary-foreground: 220 22% 96%;
+    --muted: 220 8% 38%;
+    --muted-foreground: 220 16% 86%;
+    --accent: 211 50% 82%;
+    --accent-foreground: 220 18% 22%;
     --destructive: 0 72% 66%;
     --destructive-foreground: 210 25% 98%;
-    --border: 214 10% 68%;
-    --input: 214 10% 68%;
-    --ring: 211 74% 82%;
-    --accent-practice: 207 58% 80%;
-    --accent-coach: 218 46% 82%;
-    --accent-exam: 38 92% 70%;
-    --accent-memory: 176 48% 72%;
-    --sidebar-background: 214 11% 52%;
-    --sidebar-foreground: 214 26% 96%;
-    --sidebar-primary: 211 58% 82%;
-    --sidebar-primary-foreground: 218 26% 17%;
-    --sidebar-accent: 214 10% 58%;
-    --sidebar-accent-foreground: 214 28% 97%;
-    --sidebar-border: 214 10% 66%;
-    --sidebar-ring: 211 74% 82%;
+    --border: 220 8% 48%;
+    --input: 220 8% 48%;
+    --ring: 211 58% 82%;
+    --accent-practice: 207 50% 80%;
+    --accent-coach: 218 40% 82%;
+    --accent-exam: 38 88% 70%;
+    --accent-memory: 176 38% 72%;
+    --sidebar-background: 220 8% 29%;
+    --sidebar-foreground: 220 22% 96%;
+    --sidebar-primary: 211 50% 82%;
+    --sidebar-primary-foreground: 220 18% 22%;
+    --sidebar-accent: 220 8% 34%;
+    --sidebar-accent-foreground: 220 22% 97%;
+    --sidebar-border: 220 8% 45%;
+    --sidebar-ring: 211 58% 82%;
 
     /* Semantic status colors — dark */
-    --success: 158 42% 58%;
-    --success-foreground: 218 26% 17%;
+    --success: 158 36% 62%;
+    --success-foreground: 220 18% 22%;
     --warning: 38 92% 55%;
     --warning-foreground: 38 40% 12%;
     --danger: 0 68% 58%;
     --danger-foreground: 210 25% 94%;
-    --info: 209 78% 70%;
-    --info-foreground: 218 26% 17%;
+    --info: 209 68% 74%;
+    --info-foreground: 220 18% 22%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 214 11% 59%;
-    --surface-raised: 214 12% 56%;
-    --surface-sunken: 214 11% 45%;
-    --border-strong: 214 10% 74%;
-    --shadow-studio: 218 18% 24%;
-    --gradient-start: 211 58% 82%;
-    --gradient-end: 202 56% 78%;
-    --grid-line-color: 214 22% 92% / 0.018;
+    --surface-elevated: 220 8% 35%;
+    --surface-raised: 220 9% 32%;
+    --surface-sunken: 220 10% 23%;
+    --border-strong: 220 8% 56%;
+    --shadow-studio: 220 16% 14%;
+    --gradient-start: 211 50% 82%;
+    --gradient-end: 202 46% 78%;
+    --grid-line-color: 220 22% 92% / 0.012;
   }
 }
 
@@ -206,7 +206,7 @@
 
   .dark .home-study-bg {
     background:
-      linear-gradient(180deg, hsl(214 12% 54%) 0%, hsl(var(--background)) 52%, hsl(var(--surface-sunken)) 100%);
+      linear-gradient(180deg, hsl(220 9% 30%) 0%, hsl(var(--background)) 58%, hsl(220 10% 24%) 100%);
   }
 
   .premium-panel,
@@ -301,7 +301,7 @@
   .dark .premium-bottom-nav,
   .dark .premium-bottom-nav-learning,
   .dark .premium-action-bar {
-    box-shadow: 0 1px 2px hsl(var(--shadow-studio) / 0.22);
+    box-shadow: 0 1px 1px hsl(var(--shadow-studio) / 0.16);
   }
 
   .dark .premium-status-chip {
@@ -335,8 +335,8 @@
 .dark .glow-card,
 .dark .glow-surface {
   box-shadow:
-    0 1px 0 hsl(var(--border) / 0.8),
-    0 18px 42px -30px hsl(var(--shadow-studio) / 0.55);
+    0 1px 0 hsl(var(--border) / 0.62),
+    0 8px 18px -16px hsl(var(--shadow-studio) / 0.32);
 }
 
 /* ─── Premium Grid Background (deprecated — disabled) ─── */

@@ -5,7 +5,7 @@ import { chromium } from '@playwright/test';
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
 const OUT_DIR = process.env.LEARNING_FLOW_OUT_DIR || 'product-audit-2026-06-14/learning-flow-regression';
 const USER_ID = '00000000-0000-4000-8000-222222222222';
-const THEME_VERSION = '2026-06-workbench-light';
+const THEME_VERSION = '2026-06-workbench-dark-v3';
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 960 },
@@ -222,6 +222,11 @@ async function inspectPage(page, route, viewport, theme) {
     const rect = document.body.getBoundingClientRect();
     const style = getComputedStyle(document.body);
     const background = style.backgroundColor;
+    const backgroundChannels = background.match(/[\d.]+/g)?.slice(0, 3).map(Number) || [255, 255, 255];
+    const backgroundBrightness = Math.round(
+      (backgroundChannels[0] * 299 + backgroundChannels[1] * 587 + backgroundChannels[2] * 114) / 1000,
+    );
+    const nearBlackBackground = doc.classList.contains('dark') && backgroundBrightness < 58;
     const visibleTextLength = bodyText.replace(/\s+/g, '').length;
     const horizontalOverflowPx = Math.max(0, doc.scrollWidth - doc.clientWidth);
     const hasErrorBoundary = /Something went wrong|Unexpected error|出现错误|错误边界/i.test(bodyText);
@@ -231,6 +236,8 @@ async function inspectPage(page, route, viewport, theme) {
     return {
       htmlClass: doc.className,
       background,
+      backgroundBrightness,
+      nearBlackBackground,
       visibleTextLength,
       horizontalOverflowPx,
       hasErrorBoundary,
@@ -256,6 +263,7 @@ async function inspectPage(page, route, viewport, theme) {
       !redirectedToLogin &&
       !result.hasErrorBoundary &&
       !result.hasLongSkeleton &&
+      !result.nearBlackBackground &&
       !result.isBlank &&
       result.horizontalOverflowPx <= 2,
   };
@@ -275,11 +283,19 @@ async function inspectFastRouteSwitch(page, viewport, theme) {
   const result = await page.evaluate(() => {
     const bodyText = document.body.innerText || '';
     const doc = document.documentElement;
+    const background = getComputedStyle(document.body).backgroundColor;
+    const backgroundChannels = background.match(/[\d.]+/g)?.slice(0, 3).map(Number) || [255, 255, 255];
+    const backgroundBrightness = Math.round(
+      (backgroundChannels[0] * 299 + backgroundChannels[1] * 587 + backgroundChannels[2] * 114) / 1000,
+    );
     return {
       visibleTextLength: bodyText.replace(/\s+/g, '').length,
       horizontalOverflowPx: Math.max(0, doc.scrollWidth - doc.clientWidth),
       hasLongSkeleton: /Opening learning task|正在打开学习任务|Loading learning content|正在加载学习内容/i.test(bodyText),
       hasErrorBoundary: /Something went wrong|Unexpected error|出现错误|错误边界/i.test(bodyText),
+      background,
+      backgroundBrightness,
+      nearBlackBackground: doc.classList.contains('dark') && backgroundBrightness < 58,
     };
   });
 
@@ -294,6 +310,7 @@ async function inspectFastRouteSwitch(page, viewport, theme) {
       result.visibleTextLength >= 35 &&
       result.horizontalOverflowPx <= 2 &&
       !result.hasLongSkeleton &&
+      !result.nearBlackBackground &&
       !result.hasErrorBoundary,
   };
 }

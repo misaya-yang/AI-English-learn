@@ -60,12 +60,32 @@ VocabDaily should feel like a practical English learning workbench: clear next t
 - Regression test: `src/lib/supabaseProxy.test.ts` verifies the proxy strips stale compression metadata and forwards identity encoding.
 - Deployment: commit `a766cf1 Fix Supabase proxy response encoding` pushed to `codex/ai-ielts-coach-studio` and deployed to production as Vercel `dpl_5LxAb5cj72MRod4coXbGpMatvxGq`.
 
+## Phase VD-01 UI Auth Facts
+
+- Production UI registration/login is verified on `https://www.uuedu.online`, not only through direct API probes.
+- First VD-01 pass: 3 synthetic accounts registered through `/register`, logged in through `/login` from fresh contexts, and stayed on `/dashboard/today` after reload. Invalid credentials stayed on `/login` with readable error.
+- Revalidation during VD-02: 3 additional synthetic accounts registered to `/dashboard/today`, logged in from fresh contexts, and reloaded on dashboard with 0 console errors and 0 failed Supabase requests.
+- No test account emails, passwords, refresh tokens, access tokens, or provider secrets are recorded in docs.
+
+## Phase VD-02 Theme Facts
+
+- Dark-mode foundation is deployed and production-verified as Vercel `dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ`, aliased to `https://www.uuedu.online`.
+- Dark tokens now use restrained graphite surfaces, not pure black or neon/glow defaults.
+- Theme version is aligned across `index.html`, `src/contexts/ThemeContext.tsx`, and `scripts/learning-flow-regression.mjs` as `2026-06-workbench-dark-v3`.
+- Stale stored dark preferences migrate back to light before render, preventing existing users from continuing to land on the rejected dark home page by default.
+- Local regression passed 142/142 checks across desktop, mobile, light, dark, system, route switching, Practice retry/reveal, and listening retry/reveal.
+- Production smoke passed 8/8 after sourcing local `.env` without printing secrets.
+- Production logged-in UI regression created one synthetic account and passed 25/25 checks across desktop/mobile, light/dark/system, `/`, `/dashboard/today`, `/dashboard/practice`, and fast dashboard route switching.
+- Production dark home/today/practice/route-switch backgrounds measured `rgb(63, 67, 75)`, brightness 67, overflow 0.
+- VD-02 intentionally does not solve the broader UI/product problem; VD-03 must redesign layout hierarchy, copy, typography, and practical learning flows across all core routes.
+
 ## Assumptions and Decisions
 
 - Keep the existing Supabase project instead of creating a new one because it was recoverable.
 - Do not print or commit Supabase anon keys, refresh tokens, access tokens, or account details.
 - Do not perform database schema migrations until a phase contract explicitly requires them.
-- Do not start dark mode, UI redesign, or IELTS Anki implementation until auth has UI-level evidence.
+- Do not start IELTS Anki implementation until UI redesign has evidence.
+- VD-03 is now unlocked because auth and dark-mode foundations have production evidence.
 - Product Design context has no saved user-context file; current screenshots, production pages, and repo source are the design source for now.
 
 ## Risk Tags
