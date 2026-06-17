@@ -9,7 +9,7 @@
 - Five phases are fixed in `phase-manifest.md`.
 - Product Design brief is already known from the user: English learning app, practical learning workbench, no AI-template copy, no glowy dark mode, desktop and mobile validation.
 - Product Design user-context preflight found no saved context file, so current screenshots, production pages, and repo source are the source of truth.
-- All five planned phases now have local implementation evidence. VD-04 still needs release evidence after commit/deploy.
+- All five planned phases have implementation and release evidence.
 
 ## Generator Notes
 
@@ -22,18 +22,18 @@
 - VD-03 is now passing and deployed. It produced `reports/vd-03-product-ui-redesign-report.md`, expanded `scripts/learning-flow-regression.mjs`, and passed 160/160 learning-flow checks across public, auth-adjacent, dashboard, module, account/tool, route-switch, Practice retry/reveal, and Listening retry/reveal flows locally and on `https://www.uuedu.online`.
 - VD-03 production deployment `dpl_HF6dRPDSm8v5o5NavXa2cjoyzUA4` was Ready and aliased to `https://www.uuedu.online`; production smoke passed 8/8 and production auth-flow passed for 2 fresh accounts with DB bootstrap.
 - The local validation gates passed after VD-03 edits: `npm run lint`, `npm run check:i18n`, `npm run build`, and `npm test -- --run`.
-- VD-04 is locally implemented. It added an original 12-card IELTS Anki-style seed deck, WordData/built-in word book mapping, vocabulary entry point, Practice URL focus, Review URL focus, and regression checks.
-- Do not broaden VD-04 into a large content system. The next release step is commit, push, Vercel production deploy, and production smoke.
+- VD-04 is implemented and deployed. It added an original 12-card IELTS Anki-style seed deck, WordData/built-in word book mapping, vocabulary entry point, Practice URL focus, Review URL focus, and regression checks. Commit `7158bf6` was pushed and Vercel deployment `dpl_Dd97VG7hdoqTEojyXs2pSFCsEvVm` is aliased to `https://www.uuedu.online`.
+- Do not broaden VD-04 into a large content system unless the user explicitly starts a new phase.
 - Keep test account data synthetic. Do not expose tokens.
 
 ## Evaluator Notes
 
 - VD-03 acceptance gates are satisfied locally. If rechecking, require desktop `1440x960`, mobile `390x844`, and light/dark/system checks across public, auth-adjacent, dashboard, and learning-module routes.
-- VD-04 local acceptance gates are satisfied: schema/deck exists, content is original and inspectable, vocabulary UI entry exists, Practice and Review consume URL `wordId`, focused tests pass, full tests pass, and local learning-flow regression passed 160/160.
+- VD-04 acceptance gates are satisfied: schema/deck exists, content is original and inspectable, vocabulary UI entry exists, Practice and Review consume URL `wordId`, focused tests pass, full tests pass, local learning-flow regression passed 160/160, production smoke passed 8/8, and focused production vocabulary checks passed 4/4.
 
 ## Next Handoff
 
 - Active role: generator/evaluator
 - Active phase: VD-04
 - Active feature-oracle item: VD-F005
-- Required before final user handoff: commit, push `codex/ai-ielts-coach-studio`, deploy to Vercel production, run production smoke, record deployment evidence in `reports/vd-04-ielts-anki-card-foundation-report.md`, then mark the goal complete.
+- Required before final user handoff: none remaining for the five-phase goal. If another agent resumes, start with user feedback or a new requested phase.

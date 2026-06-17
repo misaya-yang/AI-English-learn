@@ -111,14 +111,17 @@ VocabDaily should feel like a practical English learning workbench: clear next t
 - `scripts/learning-flow-regression.mjs` now requires the vocabulary route to show the IELTS Anki section and first-card Practice link.
 - Local VD-04 validation passed: `npm run lint`, `npm run check:i18n`, `npm run build`, `npm test -- --run` with 106 files / 825 tests, focused VD-04 tests 18/18, and `LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-04-learning-flow npm run test:learning-flow-regression` with 160/160 checks.
 - Screenshot evidence is under `product-audit-2026-06-17/vd-04-learning-flow/screenshots/`; representative files include `desktop-light-vocabulary.png` and `mobile-light-vocabulary.png`.
+- VD-04 was committed as `7158bf6 Add IELTS Anki card foundation`, pushed to `codex/ai-ielts-coach-studio`, and deployed to Vercel production as `dpl_Dd97VG7hdoqTEojyXs2pSFCsEvVm`, aliased to `https://www.uuedu.online`.
+- Production smoke passed 8/8 after deployment.
+- Focused production vocabulary validation passed 4/4 across desktop/mobile and light/dark. Summary: `product-audit-2026-06-17/vd-04-production-focused/summary.json`.
 
 ## Assumptions and Decisions
 
 - Keep the existing Supabase project instead of creating a new one because it was recoverable.
 - Do not print or commit Supabase anon keys, refresh tokens, access tokens, or account details.
 - Do not perform database schema migrations until a phase contract explicitly requires them.
-- Do not re-open IELTS Anki implementation unless VD-04 tests or browser evidence regress. The first deck foundation is locally passing and ready for deployment.
-- VD-03 is complete locally and in production. VD-04 is locally complete; production deploy/smoke evidence still needs to be recorded after release.
+- Do not re-open IELTS Anki implementation unless VD-04 tests, production smoke, or vocabulary browser evidence regress.
+- VD-03 and VD-04 are complete and deployed for this harness.
 - Product Design context has no saved user-context file; current screenshots, production pages, and repo source are the design source for now.
 
 ## Risk Tags

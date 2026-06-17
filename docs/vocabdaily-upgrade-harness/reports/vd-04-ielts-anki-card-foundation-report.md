@@ -92,7 +92,10 @@ Seed cards:
 ## Evidence
 
 - Local visual regression summary: `product-audit-2026-06-17/vd-04-learning-flow/summary.json`
+- Production focused vocabulary summary: `product-audit-2026-06-17/vd-04-production-focused/summary.json`
 - Screenshot directory: `product-audit-2026-06-17/vd-04-learning-flow/screenshots/`
+- Production focused screenshot directory: `product-audit-2026-06-17/vd-04-production-focused/screenshots/`
+- Production deployment: `dpl_Dd97VG7hdoqTEojyXs2pSFCsEvVm`, aliased to `https://www.uuedu.online`
 - Representative screenshots:
   - `desktop-light-vocabulary.png`
   - `mobile-light-vocabulary.png`
@@ -113,8 +116,12 @@ All required local validation commands passed.
 | `npm test -- --run` | pass, 106 test files and 825 tests |
 | `npm test -- --run src/data/ieltsAnkiCards.test.ts src/features/practice/runtime.test.ts src/pages/dashboard/VocabularyBankPage.test.tsx src/pages/dashboard/PracticePage.test.tsx src/pages/dashboard/ReviewPage.test.tsx` | pass, 5 files and 18 tests |
 | `LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-04-learning-flow npm run test:learning-flow-regression` | pass, 160/160 checks |
+| `set -a; source .env; set +a; npm run smoke:prod` | pass, 8/8 checks on `https://www.uuedu.online` |
+| Production focused vocabulary check | pass, 4/4 checks across desktop/mobile and light/dark; `/dashboard/vocabulary` showed IELTS Anki card section, 12-card count, `alleviate`, and first-card Practice link |
 
 The first local browser-regression attempt failed with `ERR_CONNECTION_REFUSED` because the Vite dev server was not running. After starting `npm run dev -- --host 127.0.0.1 --port 5173`, the same regression passed 160/160.
+
+The full production learning-flow matrix was started after deployment but was manually interrupted because it ran far longer than the local and previous production runs without producing a summary. It was replaced with a narrower production vocabulary check targeted to the VD-04 risk area, plus production smoke.
 
 ## Changed Files
 
@@ -138,8 +145,8 @@ The first local browser-regression attempt failed with `ERR_CONNECTION_REFUSED` 
 
 - The seed deck is intentionally small. A later phase can add deck management, larger editorial review, import/export to real `.apkg`, or per-deck learning plans.
 - The current vocabulary section previews three cards. That is enough for entry-point validation, but a dedicated deck-detail page would be cleaner if the deck grows.
-- Production deployment and smoke should be run after commit, because this report currently records local VD-04 validation only.
+- A larger future content release should add an editorial review checklist, because the current seed deck is original but small.
 
 ## Decision
 
-VD-F005 can be marked passing after deployment and production smoke are recorded. The local implementation, tests, and browser evidence are passing.
+VD-F005 is passing. The local implementation, tests, browser evidence, production deployment, production smoke, and focused production vocabulary check are complete.

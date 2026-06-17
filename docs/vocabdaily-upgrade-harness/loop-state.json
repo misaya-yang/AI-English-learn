@@ -4,6 +4,6 @@
   "active_feature": "VD-F005",
   "iteration": 1,
   "status": "verified",
-  "last_decision": "VD-04 IELTS Anki Card Foundation is locally passing. Added an original 12-card IELTS Anki-style deck, mapped it into WordData and built-in word books, surfaced it on /dashboard/vocabulary, and wired URL wordId focus into Practice and Review while preserving existing FSRS rating semantics. Local gates passed: npm run lint, npm run check:i18n, npm run build, npm test -- --run, and VD-04 learning-flow regression 160/160.",
-  "next_action": "Commit VD-04, push the branch, deploy to Vercel production, run production smoke, and then record production evidence before final handoff."
+  "last_decision": "VD-04 IELTS Anki Card Foundation is passing. Added an original 12-card IELTS Anki-style deck, mapped it into WordData and built-in word books, surfaced it on /dashboard/vocabulary, and wired URL wordId focus into Practice and Review while preserving existing FSRS rating semantics. Local gates passed: npm run lint, npm run check:i18n, npm run build, npm test -- --run, and VD-04 learning-flow regression 160/160. Commit 7158bf6 was pushed and production deployment dpl_Dd97VG7hdoqTEojyXs2pSFCsEvVm is aliased to https://www.uuedu.online; production smoke passed 8/8 and focused production vocabulary checks passed 4/4.",
+  "next_action": "Final handoff to the user."
 }

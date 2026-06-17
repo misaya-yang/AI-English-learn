@@ -16,7 +16,7 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 | VD-01 | VD-F002 | VD-00 | VD-02 | passing | UI auth flow and database bootstrap pass for fresh production accounts | auth code facts, browser evidence, SQL execution evidence, report |
 | VD-02 | VD-F003 | VD-01 | VD-03 | passing | theme token and loading-state evidence | theme decisions, screenshots, report |
 | VD-03 | VD-F004 | VD-02 | VD-04 | passing | full UI audit and redesign evidence | route inventory, screenshots, copy audit, report |
-| VD-04 | VD-F005 | VD-03 | none | passing locally | IELTS card schema/content evidence | content schema, tests, UI entry point, report, production evidence |
+| VD-04 | VD-F005 | VD-03 | none | passing | IELTS card schema/content evidence | content schema, tests, UI entry point, report, production evidence |
 
 ## Interface Boundary Ledger
 
@@ -31,7 +31,7 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 | Auth database policy | After user authorization, executed `20260617153000_auth_profile_bootstrap_rls.sql` in the Supabase in-app browser SQL Editor; Supabase returned `Success. No rows returned`. Post-SQL verifier `AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow` passed for 3 fresh accounts with `functionalPassed: true`, `dbBootstrapPassed: true`, and each account reported `db4xx=0 dbFailed=0`. | `reports/vd-01-registration-and-login-recovery-report.md`; `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql`; `scripts/prod-auth-flow.mjs` | 2026-06-17 | VD-01 |
 | Theme tokens | Dark mode now uses restrained graphite tokens, stale dark preferences migrate to light, and production logged-in route checks passed 25/25 after deployment `dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ`. | `reports/vd-02-dark-mode-repair-report.md`; `product-audit-2026-06-17/vd-02-production-online/summary.json` | 2026-06-17 | VD-02 |
 | Product UI | VD-03 established a light-first learning workspace baseline, reduced heavy cards/glow/cockpit language, simplified Today/Practice, bumped theme version to `2026-06-workbench-dark-v4`, deployed production `dpl_HF6dRPDSm8v5o5NavXa2cjoyzUA4`, and passed 160/160 learning-flow checks locally and on `https://www.uuedu.online`. | `reports/vd-03-product-ui-redesign-report.md`; `product-audit-2026-06-17/vd-03-learning-flow/summary.json`; `product-audit-2026-06-17/vd-03-production-learning-flow/summary.json` | 2026-06-17 | VD-03 |
-| IELTS Anki content | First deck exists as `builtin_ielts_anki_foundation` with 12 original IELTS cards in `src/data/ieltsAnkiCards.ts`, mapped to `WordData` and a built-in word book. Vocabulary shows the deck, Practice honors URL `wordId`, and Review supports explicit manual URL review while default due-only behavior remains. | `reports/vd-04-ielts-anki-card-foundation-report.md`; `src/data/ieltsAnkiCards.ts`; `src/features/practice/runtime.ts` | 2026-06-17 | VD-04 |
+| IELTS Anki content | First deck exists as `builtin_ielts_anki_foundation` with 12 original IELTS cards in `src/data/ieltsAnkiCards.ts`, mapped to `WordData` and a built-in word book. Vocabulary shows the deck, Practice honors URL `wordId`, and Review supports explicit manual URL review while default due-only behavior remains. Deployed via `dpl_Dd97VG7hdoqTEojyXs2pSFCsEvVm`; production focused vocabulary checks passed 4/4. | `reports/vd-04-ielts-anki-card-foundation-report.md`; `src/data/ieltsAnkiCards.ts`; `src/features/practice/runtime.ts`; `product-audit-2026-06-17/vd-04-production-focused/summary.json` | 2026-06-17 | VD-04 |
 
 ## Code Summary Writeback Rules
 
@@ -43,5 +43,5 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 
 - Active phase: VD-04
 - Active feature-oracle item: VD-F005
-- Current decision: VD-04 IELTS Anki Card Foundation is locally passing with required validation and browser evidence.
-- Next action: Commit, push, deploy to Vercel production, run production smoke, record production evidence, and complete the goal.
+- Current decision: VD-04 IELTS Anki Card Foundation is passing, pushed, deployed, and production-smoked.
+- Next action: Final handoff or user-directed next phase.
