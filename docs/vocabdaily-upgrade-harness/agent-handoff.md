@@ -19,7 +19,8 @@
 - VD-02 deployed production `dpl_vNSef9xouqZ7NS5LdEbHfwe4LZZQ`; production smoke passed 8/8 and production logged-in UI regression passed 25/25.
 - For VD-03, focus on the actual product UI: layout hierarchy, copy, typography, task clarity, core page ergonomics, and full route visual review.
 - Do not treat VD-03 as another token-only pass. The user explicitly rejected the current UI as AI-feeling and poorly laid out.
-- VD-03 is now passing locally. It produced `reports/vd-03-product-ui-redesign-report.md`, expanded `scripts/learning-flow-regression.mjs`, and passed 160/160 learning-flow checks across public, auth-adjacent, dashboard, module, account/tool, route-switch, Practice retry/reveal, and Listening retry/reveal flows.
+- VD-03 is now passing and deployed. It produced `reports/vd-03-product-ui-redesign-report.md`, expanded `scripts/learning-flow-regression.mjs`, and passed 160/160 learning-flow checks across public, auth-adjacent, dashboard, module, account/tool, route-switch, Practice retry/reveal, and Listening retry/reveal flows locally and on `https://www.uuedu.online`.
+- VD-03 production deployment `dpl_HF6dRPDSm8v5o5NavXa2cjoyzUA4` was Ready and aliased to `https://www.uuedu.online`; production smoke passed 8/8 and production auth-flow passed for 2 fresh accounts with DB bootstrap.
 - The local validation gates passed after VD-03 edits: `npm run lint`, `npm run check:i18n`, `npm run build`, and `npm test -- --run`.
 - VD-04 should focus on the IELTS Anki-style card foundation instead of another broad shell polish pass.
 - Keep test account data synthetic. Do not expose tokens.

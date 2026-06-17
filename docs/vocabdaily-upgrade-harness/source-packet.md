@@ -91,6 +91,10 @@ VocabDaily should feel like a practical English learning workbench: clear next t
 - `scripts/learning-flow-regression.mjs` covers public routes, auth-adjacent routes, core dashboard, modules, account/tool routes, fast route switching, Practice wrong/retry/reveal, and Listening wrong/retry/reveal.
 - Local VD-03 visual regression passed 160/160 checks with screenshots under `product-audit-2026-06-17/vd-03-learning-flow/screenshots/` and summary at `product-audit-2026-06-17/vd-03-learning-flow/summary.json`.
 - Required local gates passed: `npm run lint`, `npm run check:i18n`, `npm run build`, and `npm test -- --run` with 104 test files and 818 tests.
+- Production deployment `dpl_HF6dRPDSm8v5o5NavXa2cjoyzUA4` was Ready and aliased to `https://www.uuedu.online`.
+- Production smoke passed 8/8 after sourcing local `.env` without printing secrets.
+- Production auth-flow verifier passed for 2 fresh synthetic accounts with `functionalPassed: true`, `dbBootstrapPassed: true`, and each account reporting `db4xx=0 dbFailed=0`.
+- Production VD-03 learning-flow regression passed 160/160 with `BASE_URL=https://www.uuedu.online`; summary is `product-audit-2026-06-17/vd-03-production-learning-flow/summary.json`.
 - VD-03 unlocks VD-04. The next product gap is useful IELTS Anki-style vocabulary content, not another shell-only polish pass.
 
 ## Assumptions and Decisions

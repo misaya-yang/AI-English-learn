@@ -10,7 +10,7 @@
 
 ## Outcome
 
-VD-03 is complete for the current phase scope. The app now uses a lighter, task-first English learning UI foundation across the public entry, dashboard shell, Today, Practice, and standard module pages. The work removes the previous black AI-cockpit feel, reduces duplicated cards and glowy surfaces, keeps visible copy learner-facing, and preserves the Practice retry/reveal learning loop.
+VD-03 is complete for the current phase scope and deployed to production. The app now uses a lighter, task-first English learning UI foundation across the public entry, dashboard shell, Today, Practice, and standard module pages. The work removes the previous black AI-cockpit feel, reduces duplicated cards and glowy surfaces, keeps visible copy learner-facing, and preserves the Practice retry/reveal learning loop.
 
 This phase does not claim the product is finished. It establishes the shared UI baseline required before VD-04 can add useful IELTS Anki-style content.
 
@@ -49,7 +49,10 @@ All routes below were covered by the updated learning-flow regression at desktop
 ## Evidence
 
 - Visual regression summary: `product-audit-2026-06-17/vd-03-learning-flow/summary.json`
+- Production visual regression summary: `product-audit-2026-06-17/vd-03-production-learning-flow/summary.json`
 - Screenshot directory: `product-audit-2026-06-17/vd-03-learning-flow/screenshots/`
+- Production screenshot directory: `product-audit-2026-06-17/vd-03-production-learning-flow/screenshots/`
+- Production deployment: `dpl_HF6dRPDSm8v5o5NavXa2cjoyzUA4`, aliased to `https://www.uuedu.online`
 - Representative screenshots:
   - `desktop-light-today.png`
   - `desktop-light-practice.png`
@@ -73,6 +76,9 @@ All validation commands below passed locally.
 | `npm run build` | pass |
 | `npm test -- --run` | pass, 104 test files and 818 tests |
 | `LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-03-learning-flow npm run test:learning-flow-regression` | pass, 160/160 checks |
+| `BASE_URL=https://www.uuedu.online LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-03-production-learning-flow npm run test:learning-flow-regression` | pass, 160/160 checks |
+| `set -a; source .env; set +a; npm run smoke:prod` | pass, 8/8 checks |
+| `AUTH_FLOW_ACCOUNTS=2 npm run smoke:prod:auth-flow` | pass, 2/2 fresh accounts with `functionalPassed=true`, `dbBootstrapPassed=true`, `db4xx=0`, `dbFailed=0` |
 | Focused retry/theme tests | pass, `ThemeToggle`, `LearningCockpitShell`, `PracticePage` |
 
 `npm run build` still prints the existing Browserslist data age warning; it is non-fatal and did not fail the build.

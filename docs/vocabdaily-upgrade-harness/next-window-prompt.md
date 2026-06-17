@@ -31,7 +31,7 @@ Execution rule:
 - Summarize code facts back into the source packet and continuity ledger before handoff.
 - Update the phase report, progress log, handoff file, continuity ledger, and oracle evidence before claiming completion.
 - VD-F002 is passing again: the prepared Supabase SQL was executed after user authorization and `AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow` passed with both `functionalPassed` and `dbBootstrapPassed`.
-- VD-F004 is passing: VD-03 completed the product UI redesign baseline and `LEARNING_FLOW_OUT_DIR=product-audit-2026-06-17/vd-03-learning-flow npm run test:learning-flow-regression` passed 160/160 checks.
+- VD-F004 is passing and deployed: VD-03 completed the product UI redesign baseline, local learning-flow passed 160/160, production learning-flow on `https://www.uuedu.online` passed 160/160, production smoke passed 8/8, and production auth-flow passed for 2 fresh accounts with DB bootstrap.
 - Continue VD-04 IELTS Anki Card Foundation. Define the first card schema, seed useful IELTS-oriented cards, wire them into vocabulary/review/practice entry points, and add tests.
 - Do not rework UI shell or Supabase/auth unless the existing verification commands regress.
 - Stop and document blockers instead of guessing when credentials, production systems, destructive commands, or out-of-scope edits are required.
