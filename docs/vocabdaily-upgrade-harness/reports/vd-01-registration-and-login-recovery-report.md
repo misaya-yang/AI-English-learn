@@ -67,6 +67,10 @@ Prove production UI registration and login works for real new accounts, not only
   - Production smoke passed 8/8.
   - A one-account production check confirmed the functional route still works and `user_learning_profiles` no longer appears in the bad-response list.
   - Remaining errors are limited to `users?on_conflict=id` 403 and `profiles?on_conflict=user_id` 409, which are the prepared SQL migration's scope.
+- 2026-06-17 verifier hardening:
+  - Added `npm run smoke:prod:auth-flow` for repeatable production auth verification.
+  - Pre-SQL self-check with `AUTH_FLOW_ACCOUNTS=1` produced `functionalPassed: true` and `dbBootstrapPassed: false`, with the remaining bad responses limited to `users` 403 and `profiles` 409.
+  - After SQL execution, this command must pass with 2-3 accounts before VD-F002 returns to `passing`.
 
 ## Observations
 
@@ -80,6 +84,9 @@ Prove production UI registration and login works for real new accounts, not only
   - `src/pages/auth/RegisterPage.tsx`
   - `src/lib/supabase-auth.ts`
   - `src/services/learningMissions.ts`
+- Production verification scripts:
+  - `scripts/prod-auth-flow.mjs`
+  - `package.json` script `smoke:prod:auth-flow`
 - Database migration prepared, pending execution:
   - `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql`
 - Regression coverage:

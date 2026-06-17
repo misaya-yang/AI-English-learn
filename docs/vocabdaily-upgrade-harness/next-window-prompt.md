@@ -30,7 +30,7 @@ Execution rule:
 - Summarize code facts back into the source packet and continuity ledger before handoff.
 - Update the phase report, progress log, handoff file, continuity ledger, and oracle evidence before claiming completion.
 - First ask for explicit confirmation before executing the prepared Supabase SQL. Do not execute schema/RLS changes without confirmation.
-- After SQL execution, re-run 2-3 fresh production accounts through register -> onboarding -> dashboard -> fresh login -> core dashboard routes, and require no `users/profiles` 403/409.
+- After SQL execution, run `AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow` and require both `functionalPassed` and `dbBootstrapPassed`.
 - Return to VD-03 Product UI Redesign only after VD-F002 is passing again.
 - Do not work on IELTS Anki cards until VD-03 is passing or explicitly blocked/waived.
 - Stop and document blockers instead of guessing when credentials, production systems, destructive commands, or out-of-scope edits are required.

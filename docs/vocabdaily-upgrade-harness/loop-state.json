@@ -4,6 +4,6 @@
   "active_feature": "VD-F002",
   "iteration": 4,
   "status": "blocked",
-  "last_decision": "Strict production auth recheck proved functional registration/login for 3 new accounts but exposed live Supabase public.users RLS 403 and dependent public.profiles 409. Prepared supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql and fixed user_learning_profiles upsert onConflict in code.",
-  "next_action": "Ask the user to confirm execution of the prepared Supabase SQL. After execution, rerun 2-3 fresh production account checks and require no users/profiles 403/409 before returning to VD-03."
+  "last_decision": "Strict production auth recheck proved functional registration/login for new accounts but exposed live Supabase public.users RLS 403 and dependent public.profiles 409. Prepared supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql, fixed user_learning_profiles upsert onConflict in code, and added npm run smoke:prod:auth-flow as a repeatable verifier.",
+  "next_action": "Ask the user to confirm execution of the prepared Supabase SQL. After execution, run AUTH_FLOW_ACCOUNTS=3 npm run smoke:prod:auth-flow and require dbBootstrapPassed before returning to VD-03."
 }

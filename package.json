@@ -15,7 +15,8 @@
     "test:ui-regression": "node scripts/ui-regression.mjs",
     "test:learning-flow-regression": "node scripts/learning-flow-regression.mjs",
     "test:e2e:smoke": "node scripts/e2e-smoke.mjs",
-    "smoke:prod": "node scripts/prod-smoke.mjs"
+    "smoke:prod": "node scripts/prod-smoke.mjs",
+    "smoke:prod:auth-flow": "node scripts/prod-auth-flow.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
