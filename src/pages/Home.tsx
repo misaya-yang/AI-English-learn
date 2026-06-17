@@ -46,7 +46,7 @@ export default function Home() {
     hero: {
       title: isZh ? '今天练什么' : 'What to practice today',
       subtitle: isZh
-        ? '先复习 12 个词，再学 5 个新词，最后做 1 个短练习。'
+        ? '复习 12 个到期词，学 5 个新词，做 1 个短练。'
         : 'Review 12 due words, learn 5 new ones, then finish 1 short drill.',
       primaryCta: isZh ? '开始练习' : 'Start practice',
       secondaryCta: isZh ? '看样课' : 'Try sample',
@@ -77,30 +77,30 @@ export default function Home() {
           duration: isZh ? '4 分钟' : '4 min',
         },
       ],
-      summary: isZh ? '完成后再决定是否加练' : 'Finish these before extra practice',
+      summary: isZh ? '完成清单后再加练' : 'Finish the list before extra practice',
     },
     examplesLabel: isZh ? '例词' : 'Sample words',
     workflow: {
-      title: isZh ? '练习顺序' : 'Daily order',
-      subtitle: isZh ? '先复习，再学新词，最后做一题输出。' : 'Review first, learn new words, then do one output task.',
+      title: isZh ? '每天的顺序' : 'Daily order',
+      subtitle: isZh ? '到期词、新词、短练，一次做完。' : 'Due words, new words, one short output task.',
       steps: [
         {
           title: isZh ? '复习到期词' : 'Review due words',
-          body: isZh ? '只处理今天该复习的词。' : 'Only work through words due today.',
+          body: isZh ? '清掉今天该复习的词。' : 'Clear the words due today.',
         },
         {
-          title: isZh ? '补几个新词' : 'Add a few words',
+          title: isZh ? '学几个新词' : 'Add a few words',
           body: isZh ? '新词会进入后续复习。' : 'New words enter later review sessions.',
         },
         {
-          title: isZh ? '做一个小练习' : 'Do one short drill',
+          title: isZh ? '做一个短练' : 'Do one short drill',
           body: isZh ? '用刚学过的词写一句、听一段或答一道题。' : 'Use recent words in a sentence, a clip, or one question.',
         },
       ],
     },
     footerCta: {
-      title: isZh ? '现在开始今天的练习' : 'Start today\'s practice',
-      subtitle: isZh ? '先完成复习、新词和短练习，再决定是否继续。' : 'Review, learn, and practice before adding more.',
+      title: isZh ? '从今天这组开始' : 'Start today\'s practice',
+      subtitle: isZh ? '约 15 分钟，完成后再加练。' : 'About 15 minutes. Add more after the list is done.',
       button: isZh ? '开始练习' : 'Start practice',
     },
   };

@@ -213,7 +213,7 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
 
     renderPage();
 
-    expect(screen.getByText('先添加第一个词')).toBeInTheDocument();
+    expect(screen.getByText('添加第一个词')).toBeInTheDocument();
     expect(screen.getByText('导入词书或添加自定义词后，这里会显示释义、例句和练习入口。')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /添加单词/ }).length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByRole('button', { name: /导入词书/ }).length).toBeGreaterThanOrEqual(2);

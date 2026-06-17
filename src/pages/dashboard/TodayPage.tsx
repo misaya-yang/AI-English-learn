@@ -711,20 +711,20 @@ export default function TodayPage() {
         <LearningEmptyState
           icon={ClipboardList}
           eyebrow={isZh ? '今日任务' : 'Today mission'}
-          title={isZh ? '先准备今天的单词' : 'Prepare today\'s words first'}
+          title={isZh ? '准备今日单词' : 'Prepare today\'s words'}
           description={
             activeBook
               ? (isZh
-                ? '先准备今天的新词，再看是否需要复习。'
+                ? '生成今天的新词和复习。'
                 : 'Prepare today\'s words, then check reviews.')
               : (isZh
-                ? '你还没有激活词书。先选词书或导入 deck。'
+                ? '你还没有激活词书。选择词书或导入 deck。'
                 : 'No active word book yet. Pick a word book or import a deck.')
           }
           metrics={[
-            { label: isZh ? '到期复习' : 'Due reviews', value: dueWords.length, hint: isZh ? '先看有没有今天该复习的词。' : 'Check whether any words are due.' },
+            { label: isZh ? '到期复习' : 'Due reviews', value: dueWords.length, hint: isZh ? '今天到期的词。' : 'Words due today.' },
             { label: isZh ? '今日目标' : 'Daily target', value: activeBookSummary.dailyGoal, hint: isZh ? '控制在今天能完成的数量。' : 'Keep today small enough to finish.' },
-            { label: isZh ? '目标' : 'Target', value: learningProfile.target, hint: isZh ? '任务会按这个目标排序。' : 'Tasks are ordered around this goal.' },
+            { label: isZh ? '目标' : 'Target', value: learningProfile.target, hint: isZh ? '影响词书和练习排序。' : 'Tasks are ordered around this goal.' },
           ]}
           actions={
             <>
@@ -780,7 +780,7 @@ export default function TodayPage() {
     ? (isPlanLoading
       ? '正在读取今日任务'
       : dueWords.length > 0
-        ? `先复习 ${dueWords.length} 个到期词`
+        ? `复习 ${dueWords.length} 个到期词`
         : remainingWords > 0
           ? `学完 ${remainingWords} 个新词`
           : '做一组短练习')
@@ -795,9 +795,9 @@ export default function TodayPage() {
     ? (isPlanLoading
       ? '正在读取词书、到期复习和最近错题。'
       : dueWords.length > 0
-        ? '到期词优先处理，做完再学新词。'
+        ? '复习完再看新词。'
         : remainingWords > 0
-          ? '先把今日新词过完，再进入复习或专项练习。'
+          ? '完成今日新词，再做短练。'
           : '新词已完成，可以用刚学的词做一次输出。')
     : (isPlanLoading
       ? 'Reading your word book, due reviews, and recent mistakes.'
@@ -811,7 +811,7 @@ export default function TodayPage() {
   return (
     <LearningCockpitShell
       language={language}
-      eyebrow={`${language.startsWith('zh') ? '今日任务' : 'Today mission'} · ${new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}`}
+      eyebrow={`${language.startsWith('zh') ? '今天' : 'Today'} ${new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}`}
       progress={missionProgress}
       progressLabel={language.startsWith('zh') ? '任务进度' : 'Mission progress'}
       mission={{
@@ -1226,7 +1226,7 @@ export default function TodayPage() {
                 ))
               ) : (
                 <div className="rounded-md border border-dashed border-border px-4 py-5 text-sm leading-6 text-muted-foreground">
-                  先完成一次练习或写作反馈，这里会显示需要多练的地方。
+                  完成练习或写作反馈后，这里会显示需要多练的地方。
                 </div>
               )}
 
@@ -1235,13 +1235,13 @@ export default function TodayPage() {
                   <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
                     <Target className="h-4 w-4" />
                     <p className="text-sm font-semibold">
-                      {isZh ? '专项讲解：' : 'Focused lesson: '}
+                      {isZh ? '专项：' : 'Focused lesson: '}
                       {isZh ? getExamUnitTitle(recommendedUnit) : recommendedUnit.title}
                     </p>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">{recommendedUnit.estimatedMinutes} 分钟</p>
                   <Button variant="outline" size="sm" className="mt-3 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
-                    <Link to="/dashboard/exam">去补强</Link>
+                    <Link to="/dashboard/exam">{isZh ? '打开' : 'Open'}</Link>
                   </Button>
                 </div>
               ) : null}

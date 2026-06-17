@@ -425,7 +425,7 @@ async function inspectListeningRetryFlow(browser) {
   try {
     await page.goto(`${BASE_URL}/dashboard/practice`, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await page.getByRole('button', { name: /听力测验|Listening Quiz/i }).click();
+    await page.getByRole('button', { name: /听写|听力测验|Listening Quiz/i }).click();
     await page.getByRole('button', { name: /开始练习|Start practice/i }).first().click();
     await page.getByPlaceholder(/输入你听到的单词|Type what you hear/i).fill('wrong');
     await page.getByRole('button', { name: /检查答案|Check answer/i }).click();

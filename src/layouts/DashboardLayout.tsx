@@ -81,15 +81,15 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
   },
   '/dashboard/review': {
     title: { en: 'Review', zh: '复习' },
-    description: { en: 'Clear due reviews before forgetting piles up.', zh: '清掉到期复习，别让遗忘继续堆积。' },
+    description: { en: 'Cards that are due today.', zh: '今天到期的词卡。' },
   },
   '/dashboard/practice': {
     title: { en: 'Practice', zh: '练习' },
-    description: { en: 'Use short drills for the parts that still feel shaky.', zh: '用短练习处理还不稳的部分。' },
+    description: { en: 'Short quizzes, listening, and writing.', zh: '短测、听写和写作。' },
   },
   '/dashboard/chat': {
     title: { en: 'Help', zh: '答疑' },
-    description: { en: 'Use guided practice with context, questions, and retries.', zh: '做一轮带上下文的引导练习，把问题讲透。' },
+    description: { en: 'Ask questions, revise sentences, and drill mistakes.', zh: '提问、改句和错题短练。' },
   },
   '/dashboard/exam': {
     title: { en: 'Exam Prep', zh: '考试训练' },
@@ -194,8 +194,8 @@ const dashboardLayoutCopy = {
     learning: '学习',
     learner: '学习者',
     continueTodayHeading: '今日任务',
-    continuePanelDue: (count: number) => `${count} 个到期复习优先处理，做完后再推进新内容。`,
-    continuePanelFresh: '先完成下一步，需要时再加一组短练习。',
+    continuePanelDue: (count: number) => `${count} 个词到期，优先复习。`,
+    continuePanelFresh: '完成下一步，有余力再短练。',
     taskProgress: '任务进度',
     todayPlan: '今日任务',
     continue: '继续',
@@ -258,20 +258,20 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/today',
         label: t('nav.today'),
-        description: pickLocalized({ en: "Today's task and follow-up", zh: '今日任务与后续练习' }, isZh),
+        description: pickLocalized({ en: "Today's list", zh: '今天要做的事' }, isZh),
         icon: CalendarDays,
       },
       {
         path: '/dashboard/review',
         label: t('nav.review'),
-        description: pickLocalized({ en: 'Due reviews and stable retention', zh: '到期复习与稳态记忆' }, isZh),
+        description: pickLocalized({ en: 'Cards due today', zh: '到期词卡' }, isZh),
         icon: Brain,
         badge: dueWords.length > 0 ? dueWords.length : null,
       },
       {
         path: '/dashboard/practice',
         label: t('nav.practice'),
-        description: pickLocalized({ en: 'Quiz, listening, and writing micro drills', zh: '测验、听力、写作短练习' }, isZh),
+        description: pickLocalized({ en: 'Short quiz, dictation, writing', zh: '短测、听写、写作' }, isZh),
         icon: LayoutGrid,
       },
       {
@@ -307,7 +307,7 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/chat',
         label: t('nav.coach'),
-        description: pickLocalized({ en: 'Explanations, guidance, and micro quizzes', zh: '解释、引导和短测都从这里进入' }, isZh),
+        description: pickLocalized({ en: 'Questions, revision, and drills', zh: '提问、改句、短测' }, isZh),
         icon: MessageCircleMore,
       },
       {

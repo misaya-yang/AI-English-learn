@@ -316,7 +316,7 @@ const en = {
         },
         listening: {
           name: 'Listening Quiz',
-          desc: 'Listen and identify the correct word',
+          desc: 'Listen and type the word',
         },
         writing: {
           name: 'Writing Practice',
@@ -778,8 +778,8 @@ const zh = {
           desc: '用正确的单词完成句子',
         },
         listening: {
-          name: '听力测验',
-          desc: '听并识别正确的单词',
+          name: '听写',
+          desc: '听发音，写单词',
         },
         writing: {
           name: '写作练习',

@@ -271,8 +271,8 @@ export default function VocabularyBankPage() {
           <h1 className="text-2xl font-bold">{isZh ? '词典' : 'Lexicon'}</h1>
           <p className="text-muted-foreground">
             {isZh
-              ? `词典、词书与复习词 · ${filteredVocabulary.length} 个词条`
-              : `Dictionary, word books, and review words · ${filteredVocabulary.length} words`}
+              ? `${filteredVocabulary.length} 个词条`
+              : `${filteredVocabulary.length} words`}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -396,8 +396,8 @@ export default function VocabularyBankPage() {
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
               {isZh
-                ? '先背一组写作和口语都能迁移的表达：正面回忆词义和用法，背面看搭配、句型和中文提示。'
-                : 'Study transferable writing and speaking expressions: recall the meaning first, then check collocations, phrase patterns, and the Chinese hint.'}
+                ? '一组雅思写作和口语常用表达，包含释义、例句、搭配和中文提示。'
+                : 'IELTS writing and speaking expressions with meanings, examples, collocations, and Chinese notes.'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -550,7 +550,7 @@ export default function VocabularyBankPage() {
               <BookOpen className="h-6 w-6" />
             </div>
             <h2 className="mt-4 text-xl font-semibold text-foreground">
-              {isZh ? '先添加第一个词' : 'Add your first word'}
+              {isZh ? '添加第一个词' : 'Add your first word'}
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {isZh
@@ -819,7 +819,7 @@ export default function VocabularyBankPage() {
                     <p className="text-xs text-muted-foreground">
                       {sense.collocations.length > 0
                         ? `${isZh ? '搭配' : 'Collocations'}: ${sense.collocations.slice(0, 2).join(' / ')}`
-                        : (isZh ? '暂无搭配，可先从释义和例句开始。' : 'No collocations yet; start from definition and examples.')}
+                        : (isZh ? '暂无搭配，可以从释义和例句开始。' : 'No collocations yet; start from definition and examples.')}
                     </p>
                     <div className="flex gap-2 mt-3">
                       <Badge variant="outline" className="text-xs">
@@ -892,7 +892,7 @@ export default function VocabularyBankPage() {
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        {isZh ? '导入词暂时没有例句，仍可先做词义回想训练。' : 'This imported word has no example yet. You can still start meaning recall.'}
+                        {isZh ? '导入词暂时没有例句，仍可做词义回想。' : 'This imported word has no example yet. You can still start meaning recall.'}
                       </p>
                     )}
                   </div>

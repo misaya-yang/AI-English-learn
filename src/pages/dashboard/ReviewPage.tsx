@@ -80,7 +80,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
             {word.level} · 第 {item.reviewCount + 1} 次复习
           </Badge>
-          <p className="mt-6 text-[11px] text-muted-foreground">先回忆</p>
+          <p className="mt-6 text-[11px] text-muted-foreground">回忆</p>
           <h2 className="mt-4 text-[2.9rem] font-semibold leading-none text-foreground sm:text-[4rem]">
             {word.word}
           </h2>
@@ -98,14 +98,14 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
             >
               <Volume2 className="h-5 w-5" />
             </Button>
-            <span className="text-sm text-muted-foreground">先回忆，再揭晓答案</span>
+            <span className="text-sm text-muted-foreground">回忆后看答案</span>
           </div>
         </div>
       ) : (
         <div className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] text-muted-foreground">答案已揭晓</p>
+              <p className="text-[11px] text-muted-foreground">答案</p>
               <h2 className="mt-2 text-3xl font-semibold text-foreground">{word.word}</h2>
               <p className="mt-1 font-mono text-sm text-muted-foreground">{word.partOfSpeech} · {word.phonetic}</p>
             </div>
@@ -137,7 +137,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
             </div>
 
             <section className="rounded-md border border-border bg-card p-4">
-              <p className="text-[11px] text-muted-foreground">提示</p>
+              <p className="text-[11px] text-muted-foreground">线索</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.synonyms.slice(0, 5).map((synonym) => (
                   <span key={synonym} className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
@@ -424,7 +424,7 @@ export default function ReviewPage() {
             }
           />
           <div className="space-y-6">
-            <LearningRailSection title={isZh ? '队列为什么为空' : 'Why the queue is empty'}>
+            <LearningRailSection title={isZh ? '复习队列' : 'Review queue'}>
               <LearningMetricStrip
                 items={[
                   { label: isZh ? '到期卡' : 'Due cards', value: 0, accent: 'memory' },
@@ -435,11 +435,11 @@ export default function ReviewPage() {
               />
               <div className="rounded-md border border-border bg-card p-4">
                 <p className="text-sm font-semibold text-foreground">
-                  {isZh ? '没有到期卡是正常状态。' : 'No due cards is normal.'}
+                  {isZh ? '现在没有到期词。' : 'No cards are due.'}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '复习卡会在到期时出现。现在更适合做一次短练习。'
+                    ? '有新到期词时会显示在这里。'
                     : 'Review cards appear when they are due. For now, a short practice session is enough.'}
                 </p>
               </div>
@@ -498,10 +498,10 @@ export default function ReviewPage() {
       progressLabel={language.startsWith('zh') ? '回合进度' : 'Round progress'}
       mission={{
         title: language.startsWith('zh')
-          ? '先回忆，再揭晓答案。'
+          ? '回忆后评分。'
           : 'Recall first, then reveal.',
         description: language.startsWith('zh')
-          ? '这里展示今天到期的复习卡。补充复习会放在右侧列表。'
+          ? '这里是今天到期的词卡。'
           : 'This round shows cards due today. Extra review items are listed on the right.',
       }}
       metrics={[
@@ -515,7 +515,7 @@ export default function ReviewPage() {
         <div className="space-y-6">
           <LearningWorkspaceSurface
             eyebrow={isZh ? '词汇卡片' : 'Vocabulary card'}
-            title={isRevealed ? '答案已揭晓，给这次回忆打分' : '先在脑中回忆，再决定是否揭晓'}
+            title={isRevealed ? '给这次回忆打分' : '回忆这个词，再看答案'}
             description={isRevealed ? '直接评分，然后继续。' : undefined}
           >
             <div className="space-y-5">
@@ -626,7 +626,7 @@ export default function ReviewPage() {
                 </div>
               ) : (
 	                <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm leading-6 text-muted-foreground">先回忆，再揭晓。</p>
+                  <p className="text-sm leading-6 text-muted-foreground">回忆后再看答案。</p>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={handleReveal}>
                     {isZh ? '揭示答案' : 'Reveal answer'}
                     <kbd className="ml-2 rounded border border-primary-foreground/20 bg-primary-foreground/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold">
@@ -658,7 +658,7 @@ export default function ReviewPage() {
               </div>
               <div className="rounded-md border border-border bg-card p-4">
                 <p className="text-[11px] text-muted-foreground">当前阶段</p>
-                <p className="mt-2 text-2xl font-semibold text-foreground">{isRevealed ? '打分' : '先回忆'}</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground">{isRevealed ? '打分' : '回忆'}</p>
               </div>
             </div>
           </LearningRailSection>
@@ -695,7 +695,7 @@ export default function ReviewPage() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     {currentRecoveryPlan
                       ? (isZh
-                        ? '先完成这个练习，再给卡片评分。'
+                        ? '完成练习后再评分。'
                         : 'Finish this drill before rating the card.')
                       : `这张卡已经遗忘 ${currentItem?.fsrs.lapses || 0} 次，系统会把它放进更短的强化复习回路。`}
                   </p>

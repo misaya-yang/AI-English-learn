@@ -116,7 +116,7 @@ export const buildPracticeHint = (
 ): string => {
   if (args.mode === 'listening') {
     return args.isZh
-      ? `再听一遍，注意它是 ${word.partOfSpeech}，开头音接近 ${word.word.slice(0, 1).toUpperCase()}。`
+      ? `再听一遍。词性：${word.partOfSpeech}，首字母：${word.word.slice(0, 1).toUpperCase()}。`
       : `Listen once more. It is a ${word.partOfSpeech}; the word starts with ${word.word.slice(0, 1).toUpperCase()}.`;
   }
 
@@ -128,6 +128,6 @@ export const buildPracticeHint = (
 
   const topic = word.topic ? ` · ${word.topic}` : '';
   return args.isZh
-    ? `先看词性和主题：${word.partOfSpeech}${topic}。`
+    ? `词性和主题：${word.partOfSpeech}${topic}。`
     : `Use the part of speech and topic: ${word.partOfSpeech}${topic}.`;
 };

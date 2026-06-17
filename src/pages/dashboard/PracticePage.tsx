@@ -70,32 +70,32 @@ const practiceModes = [
     id: 'quiz',
     name: 'Multiple Choice',
     nameZh: '选择题',
-    description: 'Test your knowledge with multiple choice questions',
-    descriptionZh: '用选择题快速检查词义和语境判断。',
+    description: 'Check meaning and context.',
+    descriptionZh: '查词义和语境判断。',
     icon: HelpCircle,
   },
   {
     id: 'fill_blank',
     name: 'Fill in the Blank',
     nameZh: '填空题',
-    description: 'Complete sentences with the correct word',
-    descriptionZh: '把单词放回句子里，练真实使用感。',
+    description: 'Put the word back into a sentence.',
+    descriptionZh: '把单词放回句子。',
     icon: PenTool,
   },
   {
     id: 'listening',
     name: 'Listening Quiz',
-    nameZh: '听力测验',
-    description: 'Listen and identify the correct word',
-    descriptionZh: '听辨发音并拼写单词，强化声音记忆。',
+    nameZh: '听写',
+    description: 'Listen and type the word.',
+    descriptionZh: '听发音，写单词。',
     icon: Headphones,
   },
   {
     id: 'writing',
     name: 'Writing Practice',
     nameZh: '写作练习',
-    description: 'Write sentences and get feedback',
-    descriptionZh: '写一段输出，获得结构化反馈。',
+    description: 'Write a short response and review feedback.',
+    descriptionZh: '写一段，拿到反馈。',
     icon: PenTool,
   },
 ] as const;
@@ -388,40 +388,40 @@ export default function PracticePage() {
   const modeBlueprints = useMemo(
     () => ({
       quiz: {
-        label: 'Recommended for today',
-        labelZh: '建议练习',
-        focus: '快速检查词义匹配与基础理解，最适合先把今天的薄弱点扫一遍。',
+        label: 'Suggested',
+        labelZh: '推荐',
+        focus: '检查词义和语境。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 5), 10),
         estimatedMinutes: 6,
-        reason: dueWords.length >= 5 ? `你当前有 ${dueWords.length} 个到期复习，先用短测找出容易错的点。` : '先做一次短测，看看今天该补哪一块。',
-        insight: '题量短，适合先开始。',
+        reason: dueWords.length >= 5 ? `${dueWords.length} 个词到期，用短测热身。` : '用短测看看今天哪里不稳。',
+        insight: '6 分钟左右。',
       },
       fill_blank: {
         label: 'Recall drill',
-        labelZh: '回想训练',
-        focus: '把认识单词推进到主动提取，适合巩固今天刚学过的词。',
+        labelZh: '填空',
+        focus: '把词放回句子里。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 5), 10),
         estimatedMinutes: 8,
-        reason: '如果你想从“认得”过渡到“会用”，填空是更有效的中间层。',
-        insight: '更偏记忆提取和句子语境。',
+        reason: '适合练主动回想。',
+        insight: '偏语境。',
       },
       listening: {
         label: 'Sound to word',
-        labelZh: '听辨训练',
-        focus: '强化发音到拼写的映射，适合补听感和拼写准确度。',
+        labelZh: '听写',
+        focus: '听发音，写单词。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 4), 10),
         estimatedMinutes: 7,
-        reason: dailyWords.length >= 4 ? '今天可练词量够了，适合插一轮听辨把音形对齐。' : '用短听辨把音形映射补起来。',
-        insight: '适合短时间提升听感和拼写反应。',
+        reason: dailyWords.length >= 4 ? '把发音和拼写对上。' : '补一轮音形对应。',
+        insight: '适合 5 到 7 分钟。',
       },
       writing: {
         label: 'Deep practice',
-        labelZh: '深度输出',
-        focus: '用结构化写作反馈修正逻辑、词汇和句法，是最重但最值的一轮。',
+        labelZh: '写作',
+        focus: '写一段，拿到反馈。',
         estimatedQuestions: 1,
         estimatedMinutes: 18,
-        reason: '如果你今天想拉高输出质量，写作反馈的价值最高。',
-        insight: '更适合做一次完整的主动输出。',
+        reason: '需要输出时选它。',
+        insight: '耗时更长。',
       },
     }),
     [dailyWords.length, dueWords.length],
@@ -429,7 +429,7 @@ export default function PracticePage() {
 
   const focusedBlueprint = modeBlueprints[focusedModeId as keyof typeof modeBlueprints];
   const sessionStage = !selectedMode
-    ? (isZh ? '先选模式' : 'Pick a mode')
+    ? (isZh ? '选模式' : 'Pick a mode')
     : !hasStarted
       ? (isZh ? '准备开始' : 'Ready')
       : isComplete
@@ -983,7 +983,7 @@ export default function PracticePage() {
         : `${focusedModeLabel} ${isZh ? '进行中' : 'in progress'}`;
 
   const pageDescription = !selectedMode
-    ? (isZh ? '先做一轮最有用的短练习，做错先给提示，再决定是否看答案。' : 'Start with the most useful short drill. Mistakes get a hint before the answer.')
+    ? (isZh ? '做错先给线索，第二次再看答案。' : 'A missed answer gets a hint before the reveal.')
     : !hasStarted
       ? focusedBlueprint.insight
       : isComplete
@@ -1060,7 +1060,7 @@ export default function PracticePage() {
     return renderPageShell(
       <LearningWorkspaceSurface
         eyebrow={isZh ? '推荐练习' : 'Suggested practice'}
-        title={isZh ? `先练：${focusedModeLabel}` : `Start with ${focusedModeLabel}`}
+        title={isZh ? focusedModeLabel : `Start with ${focusedModeLabel}`}
         description={focusedModeDescription}
         className="border-0 bg-transparent shadow-none"
       >
@@ -1080,7 +1080,7 @@ export default function PracticePage() {
           </div>
 
           {renderFactStrip([
-            { label: isZh ? '训练目标' : 'Objective', value: focusedModeDescription, hint: '' },
+            { label: isZh ? '目标' : 'Objective', value: focusedModeDescription, hint: '' },
             {
               label: isZh ? '依据' : 'Why',
               value: isStyleRecommended
@@ -1489,7 +1489,7 @@ export default function PracticePage() {
           icon={Target}
           eyebrow={isZh ? '听力' : 'Listening'}
           title={isZh ? '没有可用的听辨素材' : 'No listening material yet'}
-          description={isZh ? '先准备一组词。' : 'Learn a small word set first.'}
+          description={isZh ? '学一组单词后再来听写。' : 'Learn a small word set first.'}
           actions={
             <Button
               variant="outline"
@@ -1567,7 +1567,7 @@ export default function PracticePage() {
                       ? (isZh ? `答案是：${listeningResult?.expected || currentWord.word}` : `Expected: ${listeningResult?.expected || currentWord.word}`)
                       : listeningOutcome === 'tryAgain'
                         ? buildPracticeHint(currentWord, { mode: 'listening', isZh })
-                        : (isZh ? '这题会按正确记录。' : 'This answer is recorded as correct.')}
+                        : (isZh ? '已记录。' : 'Recorded.')}
                   </p>
                 </div>
               ) : null}
@@ -1629,7 +1629,7 @@ export default function PracticePage() {
           icon={Check}
           eyebrow={isZh ? '练习总结' : 'Session summary'}
           title={timedMode && timeLeft <= 0 ? (isZh ? '时间到！' : 'Time is up') : (isZh ? '这轮短练习已经完成' : 'This short practice is complete')}
-          description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x，继续保持。` : `Best streak: ${maxCombo}x. Keep going.`) : (isZh ? '这轮结果已经出来了。' : 'Your result is ready.')}
+          description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x。` : `Best streak: ${maxCombo}x.`) : (isZh ? '本轮结果如下。' : 'Your result is ready.')}
           metrics={[
             { label: isZh ? '首答正确' : 'First try', value: `${firstTryCorrect}/${safeTotal}`, accent: 'success' },
             { label: isZh ? '已修正' : 'Recovered', value: recoveredCount, accent: 'practice' },
@@ -1658,7 +1658,7 @@ export default function PracticePage() {
           <div className="mt-6 rounded-lg border border-destructive/20 bg-destructive/5 p-6">
             <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-destructive">
               <AlertTriangle className="h-4 w-4" />
-              {isZh ? `错题本 · ${errorNotebook.length} 个需要加强` : `Mistake notebook · ${errorNotebook.length} to review`}
+              {isZh ? `错题本（${errorNotebook.length}）` : `Mistake notebook (${errorNotebook.length})`}
             </h3>
             <div className="space-y-3">
               {errorNotebook.map((item, i) => (
@@ -1686,8 +1686,8 @@ export default function PracticePage() {
       <LearningEmptyState
         icon={Target}
         eyebrow={isZh ? '练习' : 'Practice'}
-        title="没有足够的练习素材"
-        description="先学一组单词。"
+        title={isZh ? '没有足够的练习素材' : 'Not enough practice material'}
+        description={isZh ? '学一组单词后再来练。' : 'Learn a small word set first.'}
         actions={
           <Button
             variant="outline"
@@ -1816,8 +1816,8 @@ export default function PracticePage() {
                   : choiceOutcome === 'tryAgain' && currentQuestion
                     ? buildPracticeHint(currentQuestion.word, { mode: selectedMode === 'fill_blank' ? 'fill_blank' : 'quiz', isZh })
                     : choiceOutcome === 'recovered'
-                      ? (isZh ? '这题会标记为已修正，稍后会再安排巩固。' : 'Marked as recovered; it will come back for reinforcement.')
-                      : (isZh ? '这题会按首答正确记录。' : 'Recorded as first-try correct.')}
+                      ? (isZh ? '已标记为修正。' : 'Marked as recovered.')
+                      : (isZh ? '已按首答正确记录。' : 'Recorded as first-try correct.')}
               </p>
             </div>
           ) : null}
@@ -1851,7 +1851,7 @@ export default function PracticePage() {
               ? (isZh ? `首答正确率 ${firstTryAccuracyPct}%` : `First-try accuracy ${firstTryAccuracyPct}%`)
               : isChoiceRetrying
                 ? (isZh ? '换一个选项，不会直接显示答案。' : 'Choose another option; the answer stays hidden.')
-                : (isZh ? '先选一个最合适的答案，再检查。' : 'Choose the best answer, then check.')}
+                : (isZh ? '选择答案后检查。' : 'Choose the best answer, then check.')}
           </div>
         </div>
       </div>
