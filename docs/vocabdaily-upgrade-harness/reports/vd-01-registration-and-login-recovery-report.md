@@ -63,6 +63,10 @@ Prove production UI registration and login works for real new accounts, not only
   - JWT probe confirmed the request used role `authenticated` and `sub` matched the `users.id` being written; the failure is a live Supabase RLS/trigger mismatch, not a missing browser session.
   - Added migration `supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql` to repair the live database policy/trigger. It has not been executed on production yet because schema/RLS changes require explicit user confirmation.
   - Code-only follow-up: `user_learning_profiles` now upserts with `onConflict: 'user_id'` to avoid duplicate-key 409 on repeated saves.
+- 2026-06-17 code-only deployment `dpl_BxFZXXKqCd3FiQRWHhbh7bwovizc`:
+  - Production smoke passed 8/8.
+  - A one-account production check confirmed the functional route still works and `user_learning_profiles` no longer appears in the bad-response list.
+  - Remaining errors are limited to `users?on_conflict=id` 403 and `profiles?on_conflict=user_id` 409, which are the prepared SQL migration's scope.
 
 ## Observations
 

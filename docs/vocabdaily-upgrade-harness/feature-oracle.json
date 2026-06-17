@@ -38,7 +38,7 @@
         "Verify invalid credentials produce a readable inline error and do not fall back to a fake success state."
       ],
       "status": "blocked",
-      "evidence": "Production UI checks after deployments 35a7758 and 588d341 show 3/3 fresh synthetic accounts can complete register -> onboarding -> dashboard -> fresh login -> dashboard/today -> dashboard/practice -> dashboard/review. Strict network capture still shows live Supabase public.users self-upsert returning 403 under an authenticated JWT whose sub matches the requested users.id, followed by public.profiles 409 because the users parent row is missing. Migration supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql is prepared but not executed.",
+      "evidence": "Production UI checks after deployments 35a7758 and 588d341 show 3/3 fresh synthetic accounts can complete register -> onboarding -> dashboard -> fresh login -> dashboard/today -> dashboard/practice -> dashboard/review. Code-only deployment dpl_BxFZXXKqCd3FiQRWHhbh7bwovizc keeps the functional path working and removes user_learning_profiles from bad responses. Strict network capture still shows live Supabase public.users self-upsert returning 403 under an authenticated JWT whose sub matches the requested users.id, followed by public.profiles 409 because the users parent row is missing. Migration supabase/migrations/20260617153000_auth_profile_bootstrap_rls.sql is prepared but not executed.",
       "notes": "Functional auth is passing, but database-policy cleanup is blocked on explicit approval to execute the prepared Supabase RLS/trigger SQL. Do not print test account emails, passwords, or tokens."
     },
     {
