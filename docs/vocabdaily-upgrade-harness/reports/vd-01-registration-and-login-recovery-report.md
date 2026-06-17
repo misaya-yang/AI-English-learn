@@ -45,6 +45,12 @@ Prove production UI registration and login works for real new accounts, not only
   - Console error count: 0 for each registration and login run.
   - Failed Supabase request count: 0 for each registration and login run.
 - Production smoke from VD-00 remains passing: `npm run smoke:prod` passed 8/8 after deployment `dpl_5LxAb5cj72MRod4coXbGpMatvxGq`.
+- 2026-06-17 production recheck:
+  - Production site: `https://www.uuedu.online`.
+  - A new synthetic account successfully submitted registration with 0 console errors, 0 failed requests, and 0 bad Supabase responses.
+  - The new account correctly reached first-run onboarding. A separate run exposed a race where AuthContext could mark the user authenticated before the register handler navigated to onboarding, briefly sending the new account to `/dashboard/today` loading state.
+  - Fixed the race by locking the registration flow to onboarding before calling `register()`, then resetting that lock only on registration failure.
+  - Added an auth-page regression test for the race.
 
 ## Observations
 
@@ -54,7 +60,10 @@ Prove production UI registration and login works for real new accounts, not only
 
 ## Files Changed
 
-- No production code changed in this phase.
+- Production code:
+  - `src/pages/auth/RegisterPage.tsx`
+- Regression coverage:
+  - `src/pages/auth/AuthPages.i18n.test.tsx`
 - Harness evidence updated:
   - `feature-oracle.json`
   - `loop-state.json`

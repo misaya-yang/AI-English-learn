@@ -141,17 +141,19 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
+    setJustRegistered(true);
 
     try {
       const { success, error } = await register(formData.email, formData.password, formData.displayName);
       if (success) {
-        setJustRegistered(true);
         toast.success(copy.success);
         navigate(`/onboarding${location.search}`);
       } else {
+        setJustRegistered(false);
         toast.error(error || copy.failed);
       }
     } catch {
+      setJustRegistered(false);
       toast.error(copy.retry);
     } finally {
       setIsLoading(false);

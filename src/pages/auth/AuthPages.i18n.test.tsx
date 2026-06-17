@@ -1,14 +1,21 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { useState } from 'react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const authState = vi.hoisted(() => ({
-  isAuthenticated: false,
+  authenticated: false,
+  get isAuthenticated() {
+    return this.authenticated;
+  },
+  setAuthenticated(value: boolean) {
+    this.authenticated = value;
+  },
   login: vi.fn(),
   register: vi.fn(),
   startDemoSession: vi.fn(),
   updateUserProfile: vi.fn(),
-  validatePassword: vi.fn(() => ({ isValid: false })),
+  validatePassword: vi.fn(() => ({ isValid: false, errors: [], strength: 'weak' as const })),
 }));
 
 const userDataState = vi.hoisted(() => ({
@@ -74,7 +81,7 @@ describe('auth pages i18n surfaces', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     i18nState.language = 'en';
-    authState.isAuthenticated = false;
+    authState.setAuthenticated(false);
     authState.startDemoSession.mockResolvedValue({ success: true });
     authState.updateUserProfile.mockResolvedValue(true);
   });
@@ -112,6 +119,44 @@ describe('auth pages i18n surfaces', () => {
     expect(screen.queryByText('至少 8 个字符')).not.toBeInTheDocument();
   });
 
+  it('keeps a new registration on onboarding when auth becomes ready before submit resolves', async () => {
+    authState.validatePassword.mockReturnValue({ isValid: true, errors: [], strength: 'weak' });
+
+    function RegisterRaceHarness() {
+      const [, setAuthTick] = useState(0);
+
+      authState.register.mockImplementation(async () => {
+        authState.setAuthenticated(true);
+        setAuthTick((value) => value + 1);
+        return { success: true };
+      });
+
+      return (
+        <MemoryRouter initialEntries={['/register']}>
+          <Routes>
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/onboarding" element={<div>onboarding reached</div>} />
+            <Route path="/dashboard/today" element={<div>dashboard reached</div>} />
+          </Routes>
+        </MemoryRouter>
+      );
+    }
+
+    render(<RegisterRaceHarness />);
+
+    fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'New learner' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'new@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'VocabDaily!2026' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'VocabDaily!2026' } });
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('onboarding reached')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('dashboard reached')).not.toBeInTheDocument();
+  });
+
   it('renders the magic-link page in English without Chinese success copy', () => {
     renderPage(<MagicLinkPage />);
 
@@ -122,7 +167,7 @@ describe('auth pages i18n surfaces', () => {
   });
 
   it('renders onboarding step one in English without bilingual helper text', () => {
-    authState.isAuthenticated = true;
+    authState.setAuthenticated(true);
 
     renderPage(<OnboardingPage />);
 
@@ -135,7 +180,7 @@ describe('auth pages i18n surfaces', () => {
   });
 
   it('renders onboarding follow-up steps in the active language only', () => {
-    authState.isAuthenticated = true;
+    authState.setAuthenticated(true);
     i18nState.language = 'zh-CN';
 
     renderPage(<OnboardingPage />);
@@ -148,7 +193,7 @@ describe('auth pages i18n surfaces', () => {
   });
 
   it('persists the active book and learning profile chosen by onboarding placement', async () => {
-    authState.isAuthenticated = true;
+    authState.setAuthenticated(true);
 
     renderPage(<OnboardingPage />);
     fireEvent.click(screen.getByRole('button', { name: /Advanced/i }));
