@@ -8,10 +8,10 @@
 
 ## Current State
 
-- Status: in progress
-- Active phase: VGUI-05
-- Active feature-oracle item: VGUI-F006
-- Clean-state note: VGUI-00 through VGUI-05 have passed. Production deployment is live at `https://www.uuedu.online`; Supabase provider reachability from this network remains a documented warning.
+- Status: released
+- Active phase: VGUI-07
+- Active feature-oracle item: VGUI-F007
+- Clean-state note: VGUI-00 through VGUI-07 have passed. Production deployment is live at `https://www.uuedu.online`; Supabase proxy and direct auth health checks passed from this environment on 2026-06-18.
 
 ## Session Log
 
@@ -27,10 +27,11 @@
 | 2026-06-18 | planner | VGUI-07 | Opened second-pass full product redesign after user review found the previous release still too AI-template-like. Generated three ImageGen directions and wrote the route/component/function review plan. | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-07-full-product-ui-redesign-plan.md` | Lock one ImageGen direction, then execute VGUI-07B global token/copy foundation and VGUI-07C homepage/auth redesign. |
 | 2026-06-18 | generator | VGUI-07B/C | Continued copy and visual cleanup: system UI typography, softer dark tokens, concrete homepage/auth copy, real learning-desk hero asset, and first desktop light/dark screenshots for Home/Login/Register/Today/Practice. | `public/vocabdaily-study-desk.jpg`; `product-audit-2026-06-18/full-ui-round3/summary.json`; `product-audit-2026-06-18/full-ui-round3/screenshots/` | Continue VGUI-07D/E: reduce dashboard panel weight across all routes, run full route regression in desktop/mobile/light/dark/system, then deploy when gates pass. |
 | 2026-06-18 | generator | VGUI-07D/E | Completed a visible copy de-AI pass across Home, Auth, Practice, Chat, Writing, Reading, Listening, Grammar, Pronunciation, Exam, recap cards, and upgrade copy; reduced shared learning hero weight and replaced card-heavy Chat empty state with a compact list. | `product-audit-2026-06-18/copy-deai-regression/summary.json`; `product-audit-2026-06-18/copy-deai-regression/screenshots/` | Review production readiness, then deploy and verify the public domain if release is approved. |
+| 2026-06-18 | releaser | VGUI-07F | Released the copy/UI cleanup to production and verified the public domain plus 3 synthetic new-account flows. | Vercel deployment `dpl_CjodFA8nVMeeXJ5k9YMzbkPeFjYh`; `product-audit-2026-06-18/prod-auth-flow-post-deploy-2/summary.json` | Continue only with remaining aesthetic review items found from fresh user feedback. |
 
 ## Known Blockers
 
-- Supabase production reachability remains unresolved from this network: DNS resolves the project host to `198.18.0.17` and curl fails TLS with `SSL_ERROR_SYSCALL`. Production bad-token smoke passed and did not trigger refresh-token requests.
+- No active release blocker. Supabase proxy health and direct auth health both returned 200 during the 2026-06-18 production smoke.
 
 ## Clean Exit Checklist
 

@@ -1,0 +1,249 @@
+{
+  "baseUrl": "https://www.uuedu.online",
+  "outDir": "product-audit-2026-06-18/prod-auth-flow-post-deploy-2",
+  "accountsTested": 3,
+  "functionalPassed": true,
+  "dbBootstrapPassed": true,
+  "results": [
+    {
+      "index": 1,
+      "emailMasked": "cod***@example.com",
+      "register": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": [],
+        "badResponses": [],
+        "dashboard": {
+          "url": "https://www.uuedu.online/dashboard/today",
+          "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 1 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 正在打开今日内容 读取词书和进度。 已为你选择《IELTS Academic Core》。"
+        }
+      },
+      "login": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": [
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/LearningCockpitShell-Bwcr-_4b.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          },
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/learningPathRouting-Dal3F5xz.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          },
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/lexicalEntry-BP6Y26eW.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          },
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/shield-check-DVTgaxtn.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          },
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/volume-2-BFrIpgNY.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          },
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/trending-up-DOGS028o.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          },
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/share-2-CIvrQbLL.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          },
+          {
+            "method": "GET",
+            "url": "https://www.uuedu.online/assets/motion-pTQCcVYf.js",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          }
+        ],
+        "badResponses": [],
+        "routeChecks": [
+          {
+            "route": "/dashboard/today",
+            "url": "https://www.uuedu.online/dashboard/today",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 1 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 当前 今日新词 "
+          },
+          {
+            "route": "/dashboard/practice",
+            "url": "https://www.uuedu.online/dashboard/practice",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 练习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 1 阶段 1 C 练习 短测、听写和写作。 EN 中 返回今日 切换外观 C 练习 今天练什么 "
+          },
+          {
+            "route": "/dashboard/review",
+            "url": "https://www.uuedu.online/dashboard/review",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 复习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 1 阶段 1 C 复习 今天到期的词卡。 EN 中 继续复习 切换外观 C 复习队列 当前没有"
+          }
+        ],
+        "dashboard": {
+          "url": "https://www.uuedu.online/dashboard/today",
+          "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 1 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 正在打开今日内容 读取词书和进度。 登录成功！"
+        }
+      },
+      "routeProblems": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "dbBootstrapBadResponses": [],
+      "dbBootstrapFailedRequests": [],
+      "functionalPassed": true,
+      "dbBootstrapPassed": true
+    },
+    {
+      "index": 2,
+      "emailMasked": "cod***@example.com",
+      "register": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": [],
+        "badResponses": [],
+        "dashboard": {
+          "url": "https://www.uuedu.online/dashboard/today",
+          "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 2 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 正在打开今日内容 读取词书和进度。 已为你选择《IELTS Academic Core》。 注册成功！请检查邮箱验证链接"
+        }
+      },
+      "login": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": [
+          {
+            "method": "POST",
+            "url": "https://www.uuedu.online/api/supabase/rest/v1/learning_missions",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          }
+        ],
+        "badResponses": [],
+        "routeChecks": [
+          {
+            "route": "/dashboard/today",
+            "url": "https://www.uuedu.online/dashboard/today",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 2 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 当前 今日新词 "
+          },
+          {
+            "route": "/dashboard/practice",
+            "url": "https://www.uuedu.online/dashboard/practice",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 练习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 2 阶段 1 C 练习 短测、听写和写作。 EN 中 返回今日 切换外观 C 练习 今天练什么 "
+          },
+          {
+            "route": "/dashboard/review",
+            "url": "https://www.uuedu.online/dashboard/review",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 复习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 2 阶段 1 C 复习 今天到期的词卡。 EN 中 继续复习 切换外观 C 复习队列 当前没有"
+          }
+        ],
+        "dashboard": {
+          "url": "https://www.uuedu.online/dashboard/today",
+          "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 2 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 正在打开今日内容 读取词书和进度。 登录成功！"
+        }
+      },
+      "routeProblems": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "dbBootstrapBadResponses": [],
+      "dbBootstrapFailedRequests": [],
+      "functionalPassed": true,
+      "dbBootstrapPassed": true
+    },
+    {
+      "index": 3,
+      "emailMasked": "cod***@example.com",
+      "register": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": [],
+        "badResponses": [],
+        "dashboard": {
+          "url": "https://www.uuedu.online/dashboard/today",
+          "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 3 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 正在打开今日内容 读取词书和进度。 已为你选择《IELTS Academic Core》。 注册成功！请检查邮箱验证链接"
+        }
+      },
+      "login": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": [
+          {
+            "method": "POST",
+            "url": "https://www.uuedu.online/api/supabase/rest/v1/learning_missions",
+            "failure": "net::ERR_ABORTED",
+            "dbBootstrap": false
+          }
+        ],
+        "badResponses": [],
+        "routeChecks": [
+          {
+            "route": "/dashboard/today",
+            "url": "https://www.uuedu.online/dashboard/today",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 3 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 当前 今日新词 "
+          },
+          {
+            "route": "/dashboard/practice",
+            "url": "https://www.uuedu.online/dashboard/practice",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 练习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 3 阶段 1 C 练习 短测、听写和写作。 EN 中 返回今日 切换外观 C 练习 今天练什么 "
+          },
+          {
+            "route": "/dashboard/review",
+            "url": "https://www.uuedu.online/dashboard/review",
+            "host": "www.uuedu.online",
+            "mainVisible": true,
+            "blockedLoading": false,
+            "text": "Skip to content VocabDaily 学习 复习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 3 阶段 1 C 复习 今天到期的词卡。 EN 中 继续复习 切换外观 C 复习队列 当前没有"
+          }
+        ],
+        "dashboard": {
+          "url": "https://www.uuedu.online/dashboard/today",
+          "text": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Codex Learner 3 阶段 1 C 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 C 正在打开今日内容 读取词书和进度。 登录成功！"
+        }
+      },
+      "routeProblems": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "dbBootstrapBadResponses": [],
+      "dbBootstrapFailedRequests": [],
+      "functionalPassed": true,
+      "dbBootstrapPassed": true
+    }
+  ]
+}

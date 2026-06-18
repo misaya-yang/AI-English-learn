@@ -126,7 +126,7 @@ async function completeOnboarding(page, index) {
   await page.getByRole('button', { name: /下一步|Next/ }).click();
   await page.getByRole('button', { name: /下一步|Next/ }).click();
   await page.getByRole('button', { name: /下一步|Next/ }).click();
-  await page.getByRole('button', { name: /开始学习|Get started/ }).click();
+  await page.getByRole('button', { name: /开始今天|开始学习|Start today|Get started/ }).click();
 
   return waitUsableDashboard(page, `onboarding complete ${index}`);
 }
