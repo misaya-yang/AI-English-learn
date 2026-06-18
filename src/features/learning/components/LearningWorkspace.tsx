@@ -77,18 +77,18 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-md border border-border/80 bg-[hsl(var(--surface-raised))] shadow-none transition-colors duration-150';
+  'relative rounded-md border border-border/75 bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--shadow-studio)/0.035)] transition-colors duration-150';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
   emerald: 'text-primary',
-  warm: 'text-amber-600 dark:text-amber-300',
+  warm: 'text-[hsl(var(--warning))]',
   memory: 'text-[hsl(var(--accent-memory))]',
   practice: 'text-[hsl(var(--accent-practice))]',
   coach: 'text-[hsl(var(--accent-coach))]',
-  exam: 'text-amber-600 dark:text-amber-300',
+  exam: 'text-[hsl(var(--accent-exam))]',
   success: 'text-[hsl(var(--success))]',
-  warning: 'text-amber-600 dark:text-amber-300',
+  warning: 'text-[hsl(var(--warning))]',
   danger: 'text-destructive',
 };
 
@@ -111,18 +111,18 @@ export function LearningHeroPanel({
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn('border-b border-border/80 pb-5', className)}
+      className={cn('rounded-md border border-border/75 bg-[hsl(var(--surface-raised))] px-4 py-4 sm:px-5 sm:py-5', className)}
     >
       <div className="relative z-10 space-y-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl space-y-3">
           {eyebrow ? (
-            <Badge className="rounded-md border border-border/80 bg-muted/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted">
+            <Badge className="rounded-md border border-border/70 bg-[hsl(var(--surface-elevated))] px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-[hsl(var(--surface-elevated))]">
               {eyebrow}
             </Badge>
           ) : null}
           <div className="space-y-2">
-            <h1 className="max-w-3xl text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
+            <h1 className="max-w-3xl text-2xl font-semibold leading-tight text-foreground sm:text-[2rem]">
               {title}
             </h1>
             {description ? <p className="line-clamp-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:line-clamp-none">{description}</p> : null}
@@ -132,9 +132,9 @@ export function LearningHeroPanel({
         </div>
 
         {(typeof progress === 'number' || metrics.length > 0) ? (
-          <div className="grid gap-0 overflow-hidden rounded-md border border-border/80 bg-[hsl(var(--surface-raised))] sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-0 overflow-hidden rounded-md border border-border/70 bg-[hsl(var(--surface-sunken))] sm:grid-cols-2 lg:grid-cols-5">
           {typeof progress === 'number' ? (
-            <div className="border-b border-border/80 px-3 py-2 sm:border-r lg:border-b-0">
+            <div className="border-b border-border/70 px-3 py-2 sm:border-r lg:border-b-0">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] text-muted-foreground">{progressLabel || '进度'}</p>
@@ -154,7 +154,7 @@ export function LearningHeroPanel({
           ) : null}
 
           {metrics.map((item) => (
-            <div key={`${item.label}-${String(item.value)}`} className="border-t border-border/80 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 lg:border-t-0">
+            <div key={`${item.label}-${String(item.value)}`} className="border-t border-border/70 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 lg:border-t-0">
               <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
               <div className={cn('mt-1 text-base font-semibold', metricToneClass[item.accent || 'default'])}>
                 {item.value}
@@ -170,7 +170,7 @@ export function LearningHeroPanel({
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn('space-y-3 rounded-md border border-border/80 bg-[hsl(var(--surface-raised))] p-4 shadow-none', className)}>
+    <section className={cn('space-y-3 rounded-md border border-border/70 bg-[hsl(var(--surface-elevated))] p-3.5 shadow-none', className)}>
       <div className="space-y-1.5">
         <p className="text-[11px] font-medium text-muted-foreground">{title}</p>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
@@ -190,7 +190,7 @@ export function LearningWorkspaceSurface({
 }: LearningWorkspaceSurfaceProps) {
   return (
     <section className={cn(learningFrameClassName, 'overflow-hidden', className)}>
-      <div className="border-b border-border/80 bg-transparent px-4 py-4 sm:px-5">
+      <div className="border-b border-border/70 bg-[hsl(var(--surface-elevated)/0.42)] px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
@@ -207,9 +207,9 @@ export function LearningWorkspaceSurface({
 
 export function LearningMetricStrip({ items, className }: LearningMetricStripProps) {
   return (
-    <div className={cn('grid gap-0 overflow-hidden rounded-md border border-border/80 sm:grid-cols-2 xl:grid-cols-3', className)}>
+    <div className={cn('grid gap-0 overflow-hidden rounded-md border border-border/70 bg-[hsl(var(--surface-sunken))] sm:grid-cols-2 xl:grid-cols-3', className)}>
       {items.map((item) => (
-        <div key={`${item.label}-${String(item.value)}`} className="space-y-1 border-t border-border/80 bg-[hsl(var(--surface-raised))] px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 sm:[&:nth-child(2)]:border-t-0 xl:border-t-0">
+        <div key={`${item.label}-${String(item.value)}`} className="space-y-1 border-t border-border/70 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 sm:[&:nth-child(2)]:border-t-0 xl:border-t-0">
           <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
           <div className={cn('text-lg font-semibold', metricToneClass[item.accent || 'default'])}>
             {item.value}

@@ -1013,12 +1013,12 @@ export default function TodayPage() {
 
         <div className="space-y-6">
           {dailyCoachPlan?.dictionaryFocus && lexicalFocus ? (
-            <LearningRailSection title={isZh ? '词典焦点' : 'Lexicon focus'}>
+            <LearningRailSection title={isZh ? '当前词' : 'Current word'}>
               <div className="premium-panel-soft rounded-md border border-[hsl(var(--accent-practice)/0.25)] bg-[hsl(var(--accent-practice)/0.08)] p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      {isZh ? '今日词汇知识点' : 'Today lexical signal'}
+                      {isZh ? '词义与用法' : 'Meaning and usage'}
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-foreground">
                       {dailyCoachPlan.dictionaryFocus.headword}
@@ -1041,14 +1041,14 @@ export default function TodayPage() {
                 </div>
                 <Button variant="outline" size="sm" className="mt-4 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
                   <Link to={`/dashboard/vocabulary?q=${encodeURIComponent(dailyCoachPlan.dictionaryFocus.headword)}`}>
-                    {isZh ? '打开词典条目' : 'Open lexicon entry'}
+                    {isZh ? '查看词条' : 'Open word entry'}
                   </Link>
                 </Button>
               </div>
             </LearningRailSection>
           ) : null}
 
-          <LearningRailSection title={isZh ? '学习背景' : 'Learning context'}>
+          <LearningRailSection title={isZh ? '今日数据' : 'Today data'}>
             <div className="space-y-3">
               <div className="premium-panel-soft rounded-md border border-border bg-card p-4 shadow-sm">
                 <p className="text-xs text-muted-foreground">当前词书</p>
@@ -1162,20 +1162,20 @@ export default function TodayPage() {
 
                     {learnerModel.stubbornWordCount > 0 && (
                       <div>
-                        <p className="text-[10px] text-muted-foreground mb-1.5">强化路径</p>
+                        <p className="text-[10px] text-muted-foreground mb-1.5">难记词</p>
                         <div className="flex items-center justify-between rounded-md bg-muted px-3 py-2">
                           <div>
                             <p className="text-sm font-semibold text-foreground">
-                              顽固词 {learnerModel.stubbornWordCount} 个
+                              {learnerModel.stubbornWordCount} 个词需要再复习
                             </p>
                             <p className="mt-1 text-xs text-muted-foreground">
                               {learnerModel.stubbornTopics.length > 0
                                 ? `集中在 ${learnerModel.stubbornTopics.join(' / ')}`
-                                : '这些词会被安排进更短的强化复习回路。'}
+                                : '这些词会增加复习次数。'}
                             </p>
                           </div>
                           <Badge variant="secondary" className="rounded-md">
-                            {isZh ? '强化' : 'Reinforce'}
+                            {isZh ? '复习' : 'Review'}
                           </Badge>
                         </div>
                       </div>
@@ -1199,7 +1199,7 @@ export default function TodayPage() {
             </div>
           </LearningRailSection>
 
-          <LearningRailSection title={isZh ? '问题记录' : 'Practice notes'}>
+          <LearningRailSection title={isZh ? '需要多练' : 'Needs practice'}>
             <div className="space-y-3">
               {weaknesses.length > 0 ? (
                 weaknesses.map((weakness) => (
@@ -1249,7 +1249,7 @@ export default function TodayPage() {
           </LearningRailSection>
 
           {activityPoints.length > 0 ? (
-            <LearningRailSection title={isZh ? '7日活跃度' : '7-day spark'}>
+            <LearningRailSection title={isZh ? '7 日记录' : '7-day record'}>
               <div className="flex items-end gap-2">
                 {activityPoints.map((point) => {
                   const barHeight = Math.max(22, Math.min(88, point.words * 6 + point.xp * 0.35));

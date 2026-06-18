@@ -67,7 +67,7 @@
     --gradient-end: 207 44% 36%;
     --grid-line-color: 222 32% 10% / 0.032;
 
-    --font-ui: "Aptos", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+    --font-ui: "Avenir Next", "Nunito Sans", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --font-code: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
     --text-12: 0.75rem;
     --text-14: 0.875rem;
@@ -83,56 +83,56 @@
   }
 
   .dark {
-    --background: 220 8% 34%;
-    --foreground: 220 22% 96%;
-    --card: 220 8% 39%;
-    --card-foreground: 220 22% 97%;
-    --popover: 220 8% 39%;
-    --popover-foreground: 220 22% 97%;
-    --primary: 211 50% 82%;
-    --primary-foreground: 220 18% 22%;
-    --secondary: 220 8% 43%;
-    --secondary-foreground: 220 22% 96%;
-    --muted: 220 8% 43%;
-    --muted-foreground: 220 16% 86%;
-    --accent: 211 50% 82%;
-    --accent-foreground: 220 18% 22%;
-    --destructive: 0 72% 66%;
-    --destructive-foreground: 210 25% 98%;
-    --border: 220 8% 55%;
-    --input: 220 8% 55%;
-    --ring: 211 58% 82%;
-    --accent-practice: 207 50% 80%;
-    --accent-coach: 218 40% 82%;
-    --accent-exam: 38 88% 70%;
-    --accent-memory: 176 38% 72%;
-    --sidebar-background: 220 8% 35%;
-    --sidebar-foreground: 220 22% 96%;
-    --sidebar-primary: 211 50% 82%;
-    --sidebar-primary-foreground: 220 18% 22%;
-    --sidebar-accent: 220 8% 40%;
-    --sidebar-accent-foreground: 220 22% 97%;
-    --sidebar-border: 220 8% 53%;
-    --sidebar-ring: 211 58% 82%;
+    --background: 222 10% 25%;
+    --foreground: 220 18% 91%;
+    --card: 220 9% 28%;
+    --card-foreground: 220 18% 92%;
+    --popover: 220 9% 27%;
+    --popover-foreground: 220 18% 92%;
+    --primary: 212 38% 66%;
+    --primary-foreground: 222 16% 13%;
+    --secondary: 220 8% 31%;
+    --secondary-foreground: 220 17% 90%;
+    --muted: 220 8% 31%;
+    --muted-foreground: 220 8% 74%;
+    --accent: 212 38% 66%;
+    --accent-foreground: 222 16% 13%;
+    --destructive: 0 62% 58%;
+    --destructive-foreground: 210 25% 96%;
+    --border: 220 8% 36%;
+    --input: 220 8% 36%;
+    --ring: 212 42% 67%;
+    --accent-practice: 207 34% 62%;
+    --accent-coach: 218 28% 66%;
+    --accent-exam: 38 72% 60%;
+    --accent-memory: 176 28% 56%;
+    --sidebar-background: 222 11% 21%;
+    --sidebar-foreground: 220 16% 88%;
+    --sidebar-primary: 212 38% 66%;
+    --sidebar-primary-foreground: 222 16% 13%;
+    --sidebar-accent: 220 9% 25%;
+    --sidebar-accent-foreground: 220 16% 90%;
+    --sidebar-border: 220 8% 32%;
+    --sidebar-ring: 212 42% 67%;
 
     /* Semantic status colors — dark */
-    --success: 158 36% 62%;
-    --success-foreground: 220 18% 22%;
-    --warning: 38 92% 55%;
+    --success: 158 30% 58%;
+    --success-foreground: 222 16% 13%;
+    --warning: 38 74% 59%;
     --warning-foreground: 38 40% 12%;
-    --danger: 0 68% 58%;
+    --danger: 0 62% 58%;
     --danger-foreground: 210 25% 94%;
-    --info: 209 68% 74%;
-    --info-foreground: 220 18% 22%;
+    --info: 209 42% 64%;
+    --info-foreground: 222 16% 13%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 220 8% 42%;
-    --surface-raised: 220 8% 39%;
-    --surface-sunken: 220 8% 32%;
-    --border-strong: 220 8% 60%;
-    --shadow-studio: 220 16% 14%;
-    --gradient-start: 211 50% 82%;
-    --gradient-end: 202 46% 78%;
+    --surface-elevated: 220 9% 31%;
+    --surface-raised: 220 9% 28%;
+    --surface-sunken: 222 10% 22%;
+    --border-strong: 220 8% 42%;
+    --shadow-studio: 222 14% 12%;
+    --gradient-start: 212 38% 66%;
+    --gradient-end: 207 34% 62%;
     --grid-line-color: 220 22% 92% / 0.012;
   }
 }
@@ -150,7 +150,7 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-ui);
-    line-height: 1.55;
+    line-height: 1.5;
     letter-spacing: 0;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -162,7 +162,7 @@
   h2,
   h3 {
     letter-spacing: 0;
-    font-weight: 650;
+    font-weight: 680;
   }
 
   ::selection {
@@ -196,7 +196,7 @@
 
   .dark .home-study-bg {
     background:
-      linear-gradient(180deg, hsl(220 9% 30%) 0%, hsl(var(--background)) 58%, hsl(220 10% 24%) 100%);
+      linear-gradient(180deg, hsl(222 10% 26%) 0%, hsl(var(--background)) 58%, hsl(222 11% 23%) 100%);
   }
 
   .premium-panel,
@@ -220,7 +220,7 @@
   }
 
   .premium-panel-soft {
-    background: hsl(var(--surface-raised));
+    background: hsl(var(--surface-elevated));
     box-shadow: 0 1px 2px hsl(var(--shadow-studio) / 0.04);
   }
 
@@ -236,7 +236,7 @@
 
   .premium-metric-card {
     border-color: hsl(var(--border));
-    background: hsl(var(--surface-raised));
+    background: hsl(var(--surface-elevated));
     box-shadow: none;
   }
 
@@ -272,8 +272,8 @@
   .premium-status-chip {
     border-color: hsl(var(--warning) / 0.28);
     background: hsl(var(--warning) / 0.1);
-    color: hsl(var(--warning-foreground));
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.42);
+    color: hsl(var(--warning));
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.24);
   }
 
   .premium-action-bar {
@@ -291,7 +291,7 @@
   .dark .premium-bottom-nav,
   .dark .premium-bottom-nav-learning,
   .dark .premium-action-bar {
-    box-shadow: 0 1px 1px hsl(var(--shadow-studio) / 0.16);
+    box-shadow: 0 1px 1px hsl(var(--shadow-studio) / 0.22);
   }
 
   .dark .premium-status-chip {

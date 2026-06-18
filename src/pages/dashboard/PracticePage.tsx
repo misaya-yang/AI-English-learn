@@ -388,40 +388,40 @@ export default function PracticePage() {
   const modeBlueprints = useMemo(
     () => ({
       quiz: {
-        label: 'Suggested',
+        label: 'Start here',
         labelZh: '推荐',
         focus: '检查词义和语境。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 5), 10),
         estimatedMinutes: 6,
-        reason: dueWords.length >= 5 ? `${dueWords.length} 个词到期，用短测热身。` : '用短测看看今天哪里不稳。',
-        insight: '6 分钟左右。',
+        reason: dueWords.length >= 5 ? `${dueWords.length} 个词到期，先做选择题。` : '看词义是否记住。',
+        insight: '约 6 分钟。',
       },
       fill_blank: {
-        label: 'Recall drill',
+        label: 'Sentence drill',
         labelZh: '填空',
         focus: '把词放回句子里。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 5), 10),
         estimatedMinutes: 8,
-        reason: '适合练主动回想。',
-        insight: '偏语境。',
+        reason: '练语境里的回想。',
+        insight: '约 8 分钟。',
       },
       listening: {
-        label: 'Sound to word',
+        label: 'Dictation',
         labelZh: '听写',
         focus: '听发音，写单词。',
         estimatedQuestions: Math.min(Math.max(dailyWords.length, 4), 10),
         estimatedMinutes: 7,
         reason: dailyWords.length >= 4 ? '把发音和拼写对上。' : '补一轮音形对应。',
-        insight: '适合 5 到 7 分钟。',
+        insight: '约 7 分钟。',
       },
       writing: {
-        label: 'Deep practice',
+        label: 'Writing',
         labelZh: '写作',
         focus: '写一段，拿到反馈。',
         estimatedQuestions: 1,
         estimatedMinutes: 18,
         reason: '需要输出时选它。',
-        insight: '耗时更长。',
+        insight: '约 18 分钟。',
       },
     }),
     [dailyWords.length, dueWords.length],
@@ -893,7 +893,7 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-lg border border-transparent px-4 py-3 text-left transition-all',
+                'group relative w-full rounded-md border border-transparent px-4 py-3 text-left transition-all',
                 active ? 'premium-panel-soft border-border shadow-sm' : 'hover:border-border hover:bg-muted/70',
               )}
             >
@@ -906,7 +906,7 @@ export default function PracticePage() {
               <div className="flex items-start gap-3">
                 <span
                   className={cn(
-                    'mt-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-muted-foreground',
+                    'mt-0.5 flex h-10 w-10 items-center justify-center rounded-md border text-muted-foreground',
                     active ? 'border-border bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]' : 'border-border bg-muted',
                   )}
                 >
@@ -983,7 +983,7 @@ export default function PracticePage() {
         : `${focusedModeLabel} ${isZh ? '进行中' : 'in progress'}`;
 
   const pageDescription = !selectedMode
-    ? (isZh ? '做错先给线索，第二次再看答案。' : 'A missed answer gets a hint before the reveal.')
+    ? (isZh ? '选一项开始。' : 'Pick one task to start.')
     : !hasStarted
       ? focusedBlueprint.insight
       : isComplete
@@ -1059,7 +1059,7 @@ export default function PracticePage() {
   if (!selectedMode) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow={isZh ? '推荐练习' : 'Suggested practice'}
+        eyebrow={isZh ? '建议' : 'Suggested'}
         title={isZh ? focusedModeLabel : `Start with ${focusedModeLabel}`}
         description={focusedModeDescription}
         className="border-0 bg-transparent shadow-none"
@@ -1080,21 +1080,21 @@ export default function PracticePage() {
           </div>
 
           {renderFactStrip([
-            { label: isZh ? '目标' : 'Objective', value: focusedModeDescription, hint: '' },
+            { label: isZh ? '内容' : 'Task', value: focusedModeDescription, hint: '' },
             {
-              label: isZh ? '依据' : 'Why',
+              label: isZh ? '建议' : 'Suggested',
               value: isStyleRecommended
                 ? (isZh ? stylePersonalization.label.zh : stylePersonalization.label.en)
                 : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label),
               hint: '',
             },
-            { label: isZh ? '预计时长' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'practice' },
-            { label: isZh ? '今日素材' : 'Today material', value: `${dailyWords.length}${isZh ? ' 个词' : ' words'}`, hint: '' },
+            { label: isZh ? '用时' : 'Time', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'practice' },
+            { label: isZh ? '词' : 'Words', value: `${dailyWords.length}${isZh ? ' 个' : ''}`, hint: '' },
           ])}
 
           <div className="border-t border-border pt-5">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => pickMode(focusedModeId)}>
-              {isZh ? '用这个开始' : 'Start with this'}
+              {isZh ? '开始' : 'Start'}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -1106,7 +1106,7 @@ export default function PracticePage() {
   if (!hasStarted) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow={isZh ? '准备本轮' : 'Prepare the session'}
+        eyebrow={isZh ? '准备' : 'Ready'}
         title={focusedModeLabel}
       >
         <div className="space-y-6">
@@ -1129,15 +1129,15 @@ export default function PracticePage() {
           </div>
 
           {renderFactStrip([
-            { label: isZh ? '这轮会做什么' : 'What this trains', value: focusedModeDescription, hint: '' },
+            { label: isZh ? '内容' : 'Task', value: focusedModeDescription, hint: '' },
             {
-              label: isZh ? '为什么现在做' : 'Why now',
+              label: isZh ? '建议' : 'Suggested',
               value: isZh ? focusedBlueprint.labelZh : focusedBlueprint.label,
               hint: '',
               accent: 'practice',
             },
             {
-              label: isZh ? '完成后得到什么' : 'Outcome',
+              label: isZh ? '结果' : 'Result',
               value: selectedMode === 'writing'
                 ? (isZh ? '结构化评分' : 'Structured scoring')
                 : (isZh ? '正确率和错题' : 'Accuracy and mistakes'),

@@ -117,7 +117,7 @@ const clickFirst = (name: RegExp) => {
 
 const startQuiz = () => {
   renderPractice();
-  clickFirst(/Start with this/i);
+  clickFirst(/^Start$/i);
   clickFirst(/Start practice/i);
 };
 
@@ -203,7 +203,7 @@ describe('PracticePage retry and reveal behavior', () => {
 
   it('uses a URL wordId as the first practice focus when launched from an IELTS Anki card', () => {
     renderPractice('/dashboard/practice?source=ielts-anki&wordId=ielts_anki_alleviate&q=alleviate');
-    clickFirst(/Start with this/i);
+    clickFirst(/^Start$/i);
 
     expect(buildPracticeQuestions).toHaveBeenCalledWith(
       expect.arrayContaining([

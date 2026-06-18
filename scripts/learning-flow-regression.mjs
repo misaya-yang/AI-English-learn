@@ -326,7 +326,7 @@ async function inspectFastRouteSwitch(page, viewport, theme) {
 async function openPracticeQuestion(page) {
   await page.goto(`${BASE_URL}/dashboard/practice`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await page.getByRole('button', { name: /用这个开始|Start with this|选择此模式|Choose this mode/i }).first().click();
+  await page.getByRole('button', { name: /开始$|^Start$|用这个开始|Start with this|选择此模式|Choose this mode/i }).first().click();
   await page.getByRole('button', { name: /开始练习|Start practice/i }).first().click();
   await page.waitForSelector('h3');
 

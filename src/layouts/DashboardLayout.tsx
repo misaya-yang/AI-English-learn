@@ -117,19 +117,19 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
   },
   '/dashboard/reading': {
     title: { en: 'Reading', zh: '阅读' },
-    description: { en: 'IELTS reading drills for speed and accuracy.', zh: 'IELTS 阅读理解精读训练，提升阅读速度与准确率。' },
+    description: { en: 'Reading drills.', zh: '阅读练习。' },
   },
   '/dashboard/listening': {
     title: { en: 'Listening', zh: '听力' },
-    description: { en: 'IELTS listening drills across accents and question types.', zh: 'IELTS 听力理解训练，练习不同口音和题型。' },
+    description: { en: 'Listening drills.', zh: '听力练习。' },
   },
   '/dashboard/grammar': {
     title: { en: 'Grammar', zh: '语法' },
-    description: { en: 'Grammar explanations and targeted fill-in drills.', zh: '语法规则讲解与填空练习，系统巩固语法基础。' },
+    description: { en: 'Grammar drills.', zh: '语法练习。' },
   },
   '/dashboard/learning-path': {
     title: { en: 'Learning Path', zh: '学习路径' },
-    description: { en: 'A structured path that moves your English forward by stage.', zh: '结构化学习路线，按阶段推进你的英语能力。' },
+    description: { en: 'A staged plan.', zh: '分阶段学习计划。' },
   },
   '/dashboard/leaderboard': {
     title: { en: 'Leaderboard', zh: '学习记录' },
@@ -167,7 +167,7 @@ const dashboardLayoutCopy = {
     due: 'Due',
     streak: 'Streak',
     learning: 'Learning',
-    learner: 'Learner',
+    learner: 'Account',
     continueTodayHeading: "Today's task",
     continuePanelDue: (count: number) => `${count} due reviews should go first. Then move on to new content.`,
     continuePanelFresh: 'Finish the next task, then add one short drill if needed.',
@@ -192,7 +192,7 @@ const dashboardLayoutCopy = {
     due: '到期',
     streak: '连续',
     learning: '学习',
-    learner: '学习者',
+    learner: '账号',
     continueTodayHeading: '今日任务',
     continuePanelDue: (count: number) => `${count} 个词到期，优先复习。`,
     continuePanelFresh: '完成下一步，有余力再短练。',
@@ -277,31 +277,31 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/reading',
         label: t('nav.reading'),
-        description: pickLocalized({ en: 'IELTS reading comprehension drills', zh: 'IELTS 阅读理解精读训练' }, isZh),
+        description: pickLocalized({ en: 'Reading drills', zh: '阅读练习' }, isZh),
         icon: BookOpen,
       },
       {
         path: '/dashboard/listening',
         label: t('nav.listening'),
-        description: pickLocalized({ en: 'IELTS listening comprehension drills', zh: 'IELTS 听力理解训练' }, isZh),
+        description: pickLocalized({ en: 'Listening drills', zh: '听力练习' }, isZh),
         icon: Headphones,
       },
       {
         path: '/dashboard/grammar',
         label: t('nav.grammar'),
-        description: pickLocalized({ en: 'Grammar rules and fill-in drills', zh: '语法规则与填空练习' }, isZh),
+        description: pickLocalized({ en: 'Grammar drills', zh: '语法练习' }, isZh),
         icon: GraduationCap,
       },
       {
         path: '/dashboard/pronunciation',
         label: t('nav.pronunciation'),
-        description: pickLocalized({ en: 'Pronunciation scoring and speaking drills', zh: '发音评估与口语练习' }, isZh),
+        description: pickLocalized({ en: 'Pronunciation drills', zh: '发音练习' }, isZh),
         icon: AudioLines,
       },
       {
         path: '/dashboard/writing',
         label: t('nav.writing'),
-        description: pickLocalized({ en: 'Writing practice and scoring', zh: '写作练习与评分' }, isZh),
+        description: pickLocalized({ en: 'Writing practice', zh: '写作练习' }, isZh),
         icon: PenTool,
       },
       {
@@ -313,7 +313,7 @@ export default function DashboardLayout() {
       {
         path: '/dashboard/exam',
         label: t('nav.examPrep'),
-        description: pickLocalized({ en: 'IELTS practice and writing feedback', zh: 'IELTS 练习与写作反馈' }, isZh),
+        description: pickLocalized({ en: 'IELTS practice', zh: 'IELTS 练习' }, isZh),
         icon: Target,
       },
     ],
@@ -450,7 +450,7 @@ export default function DashboardLayout() {
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-md border transition-colors',
               active
-                ? 'border-sidebar-primary/20 bg-sidebar-primary text-sidebar-primary-foreground'
+                ? 'border-sidebar-primary/30 bg-sidebar-accent text-sidebar-primary'
                 : 'border-sidebar-border/60 bg-sidebar-accent/30 text-sidebar-foreground/55 group-hover:text-sidebar-foreground',
             )}
           >
@@ -458,9 +458,9 @@ export default function DashboardLayout() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-semibold">{item.label}</p>
+              <p className="truncate text-sm font-medium">{item.label}</p>
               {item.badge ? (
-                <Badge className="rounded-md bg-sidebar-primary px-1.5 text-[10px] text-sidebar-primary-foreground hover:bg-sidebar-primary">
+                <Badge className="rounded-md border border-sidebar-border bg-sidebar-primary/[0.12] px-1.5 text-[10px] text-sidebar-primary hover:bg-sidebar-primary/[0.12]">
                   {item.badge}
                 </Badge>
               ) : null}
@@ -497,7 +497,7 @@ export default function DashboardLayout() {
               className={cn(
                 'flex h-8 w-8 items-center justify-center rounded-md border transition-colors',
                 active
-                  ? 'border-sidebar-primary/20 bg-sidebar-primary text-sidebar-primary-foreground'
+                  ? 'border-sidebar-primary/30 bg-sidebar-accent text-sidebar-primary'
                   : 'border-sidebar-border/60 bg-sidebar-accent/30 text-sidebar-foreground/55 group-hover:text-sidebar-foreground',
               )}
             >
@@ -505,7 +505,7 @@ export default function DashboardLayout() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="truncate text-sm font-semibold">{item.label}</p>
+                <p className="truncate text-sm font-medium">{item.label}</p>
                 {item.badge ? (
                   <span className="rounded-md border border-sidebar-border bg-sidebar-primary/[0.12] px-1.5 py-0.5 text-[10px] font-medium text-sidebar-primary">
                     {item.badge}
@@ -666,7 +666,7 @@ export default function DashboardLayout() {
               onClick={() => changeLanguage('en')}
               className={cn(
                 'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                currentLang === 'en' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
+                currentLang === 'en' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               EN
@@ -676,7 +676,7 @@ export default function DashboardLayout() {
               onClick={() => changeLanguage('zh')}
               className={cn(
                 'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                currentLang === 'zh' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
+                currentLang === 'zh' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               中
@@ -814,7 +814,7 @@ export default function DashboardLayout() {
                     onClick={() => changeLanguage('en')}
                     className={cn(
                       'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                      currentLang === 'en' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
+                      currentLang === 'en' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
                     )}
                   >
                     EN
@@ -824,7 +824,7 @@ export default function DashboardLayout() {
                     onClick={() => changeLanguage('zh')}
                     className={cn(
                       'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                      currentLang === 'zh' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground',
+                      currentLang === 'zh' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
                     )}
                   >
                     中

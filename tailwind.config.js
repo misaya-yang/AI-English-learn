@@ -94,7 +94,7 @@ module.exports = {
         "token-32": ["var(--text-32)", { lineHeight: "1.25" }],
       },
       fontFamily: {
-        sans: ['"Aptos"', '"SF Pro Text"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', '"PingFang SC"', '"Hiragino Sans GB"', '"Noto Sans SC"', '"Microsoft YaHei"', 'system-ui', 'sans-serif'],
+        sans: ['"Avenir Next"', '"Nunito Sans"', '"Segoe UI"', '"PingFang SC"', '"Hiragino Sans GB"', '"Noto Sans SC"', '"Microsoft YaHei"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"SFMono-Regular"', 'ui-monospace', 'monospace'],
       },
       keyframes: {
