@@ -44,7 +44,7 @@ describe('AuthShell', () => {
       children: <span>panel</span>,
     });
 
-    expect(screen.getByText('Continue where you left off')).toBeInTheDocument();
+    expect(screen.getByText('Today\'s words and practice')).toBeInTheDocument();
     expect(screen.getByText('Due reviews')).toBeInTheDocument();
     expect(screen.queryByText('Practice a little English each day.')).not.toBeInTheDocument();
     expect(screen.queryByText('每天复习一点，练一点。')).not.toBeInTheDocument();

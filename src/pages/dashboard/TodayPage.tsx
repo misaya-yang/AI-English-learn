@@ -52,11 +52,7 @@ import {
   type DayKey,
 } from '@/services/todayWorkbenchPersistence';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
-import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
-import {
-  buildDailyCoachPlan,
-  getDailyCoachEvidenceToneClass,
-} from '@/features/learning/dailyCoachPlan';
+import { buildDailyCoachPlan } from '@/features/learning/dailyCoachPlan';
 import { buildLexicalSummary, toLexicalEntry } from '@/features/lexicon/lexicalEntry';
 import { getActiveLearningPathNextLesson } from '@/features/learning/learningPathRouting';
 import { getExamUnitTitle } from '@/features/exam/examDisplayCopy';
@@ -82,7 +78,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section
       className={cn(
         learningFrameClassName,
-        'premium-word-card flex h-full min-h-[360px] cursor-pointer flex-col justify-between p-5 sm:min-h-[440px] sm:p-6',
+        'premium-word-card flex h-full min-h-[360px] cursor-pointer flex-col justify-between overflow-hidden p-5 sm:min-h-[440px] sm:p-6',
       )}
     >
       <div className="flex items-center justify-between gap-3">
@@ -164,11 +160,11 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section
       className={cn(
         learningFrameClassName,
-        'premium-word-card-back h-full min-h-[360px] p-5 sm:min-h-[440px] sm:p-6',
+        'premium-word-card-back h-full min-h-[360px] overflow-hidden p-5 sm:min-h-[440px] sm:p-6',
       )}
     >
-      <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between gap-3">
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="flex shrink-0 items-center justify-between gap-3">
           <div>
             <h3 className="text-3xl font-semibold text-foreground">{word.word}</h3>
           </div>
@@ -192,8 +188,8 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
           </div>
         </div>
 
-        <ScrollArea className="mt-6 flex-1 pr-2">
-          <div className="space-y-4">
+        <ScrollArea className="mt-6 min-h-0 flex-1 overflow-hidden pr-2">
+          <div className="space-y-4 pb-2">
             <section className="premium-panel-soft rounded-md border border-border bg-card p-4">
               <p className="mt-1 text-base leading-7 text-foreground">{word.definition}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
@@ -250,7 +246,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
         back={backContent}
         isFlipped={isFlipped}
         onFlip={onFlip}
-        className="z-10 relative"
+        className="relative z-10"
       />
     </div>
   );
@@ -407,18 +403,6 @@ const TOPIC_LABELS: Record<string, string> = {
   general: '综合',
   'IELTS general': 'IELTS 综合',
 };
-
-const sanitizeTaskCopy = (value: string): string =>
-  value
-    .replace(/考试冲分/g, '考试训练')
-    .replace(/冲分/g, '训练')
-    .replace(/复习债/g, '待复习')
-    .replace(/热身/g, '练习')
-    .replace(/固化/g, '用起来')
-    .replace(/最快/g, '优先')
-    .replace(/母语级/g, '更准确')
-    .replace(/真正记得住/g, '记得更稳')
-    .replace(/任务/g, '练习');
 
 const formatTopicLabel = (topic: string): string => TOPIC_LABELS[topic] || topic;
 
@@ -758,124 +742,103 @@ export default function TodayPage() {
   const todayXP = learnedWords.size * 5;
 
   const primaryMissionTask = dailyCoachPlan?.primaryTask ?? missionCard?.primaryAction ?? null;
-  const primaryMissionLabel = primaryMissionTask
-    ? sanitizeTaskCopy(language.startsWith('zh') ? primaryMissionTask.ctaZh : primaryMissionTask.cta)
-    : (language.startsWith('zh') ? '继续今天' : 'Continue today');
-  const secondaryMissionTasks = (dailyCoachPlan?.secondaryTasks ?? missionCard?.secondaryActions ?? [])
-    .filter((action) => action.id !== primaryMissionTask?.id && action.href !== primaryMissionTask?.href)
-    .slice(0, 2);
-  const primaryMissionAction = primaryMissionTask?.surface === 'today'
-    ? {
-        label: primaryMissionLabel,
-        onClick: scrollToVocabularyWorkspace,
-        testId: 'today-primary-mission-cta',
-      }
-    : {
-        label: primaryMissionLabel,
-        href: primaryMissionTask?.href || '/dashboard/today',
-        testId: 'today-primary-mission-cta',
-      };
-  const isPlanLoading = learningOverviewQuery.isLoading && !dailyCoachPlan;
   const remainingWords = Math.max(words.length - learnedWords.size, 0);
-  const heroTitle = isZh
-    ? (isPlanLoading
-      ? '正在读取今日内容'
-      : dueWords.length > 0
-        ? `复习 ${dueWords.length} 个到期词`
-        : remainingWords > 0
-          ? `学完 ${remainingWords} 个新词`
-          : '做一组短练习')
-    : (isPlanLoading
-      ? 'Loading today'
-      : dueWords.length > 0
-        ? `Review ${dueWords.length} due words first`
-        : remainingWords > 0
-          ? `Finish ${remainingWords} new words`
-          : 'Do one short drill');
-  const heroDescription = isZh
-    ? (isPlanLoading
-      ? '正在读取词书、到期复习和最近错题。'
-      : dueWords.length > 0
-        ? '复习完再看新词。'
-        : remainingWords > 0
-          ? '完成今日新词，再做短练。'
-          : '新词已完成，可以用刚学的词做一次输出。')
-    : (isPlanLoading
-      ? 'Reading your word book, due reviews, and recent mistakes.'
-      : dueWords.length > 0
-        ? 'Clear due reviews before adding new words.'
-        : remainingWords > 0
-          ? 'Finish today\'s words before review or skill practice.'
-          : 'Use today\'s words in one output task.');
   const heroEstimatedMinutes = primaryMissionTask?.estimatedMinutes || missionCard?.estimatedMinutes || learningProfile.dailyMinutes;
+  const todayPrimaryLabel = dueWords.length > 0
+    ? (isZh ? '开始复习' : 'Review')
+    : remainingWords > 0
+      ? (isZh ? '开始新词' : 'Start words')
+      : (isZh ? '开始练习' : 'Practice');
+  const todayPrimaryHref = dueWords.length > 0
+    ? '/dashboard/review'
+    : remainingWords > 0
+      ? null
+      : '/dashboard/practice';
+  const todayPlanRows = [
+    {
+      label: isZh ? '复习' : 'Review',
+      value: dueWords.length,
+      unit: isZh ? '个' : 'due',
+      note: dueWords.length > 0 ? (isZh ? '今天到期' : 'Due today') : (isZh ? '暂无到期' : 'None due'),
+      href: '/dashboard/review',
+    },
+    {
+      label: isZh ? '新词' : 'New words',
+      value: remainingWords,
+      unit: isZh ? '个' : 'left',
+      note: `${learnedWords.size} / ${words.length}`,
+      onClick: scrollToVocabularyWorkspace,
+    },
+    {
+      label: isZh ? '练习' : 'Practice',
+      value: 1,
+      unit: isZh ? '组' : 'set',
+      note: isZh ? '词义、听写或写作' : 'Meaning, dictation, or writing',
+      href: '/dashboard/practice',
+    },
+  ];
 
   return (
-    <LearningCockpitShell
-      language={language}
-      eyebrow={`${language.startsWith('zh') ? '今天' : 'Today'} ${new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}`}
-      progress={missionProgress}
-      progressLabel={language.startsWith('zh') ? '完成进度' : 'Progress'}
-      mission={{
-        title: heroTitle,
-        description: heroDescription,
-        estimatedMinutes: heroEstimatedMinutes,
-        primaryAction: primaryMissionAction,
-        secondaryActions: secondaryMissionTasks.map((action) => ({
-          label: sanitizeTaskCopy(language.startsWith('zh') ? action.ctaZh : action.cta),
-          href: action.href,
-          variant: 'outline' as const,
-          testId: `today-secondary-mission-${action.id}`,
-        })),
-        why: {
-          reason: primaryMissionTask?.reason,
-          learnerMode: learnerModel?.mode || null,
-          burnoutRisk: learnerModel?.burnoutRisk,
-        },
-      }}
-      metrics={[
-        {
-          label: language.startsWith('zh') ? '预计用时' : 'Estimated time',
-          value: language.startsWith('zh') ? `${heroEstimatedMinutes} 分钟` : `${heroEstimatedMinutes} min`,
-        },
-        {
-          label: language.startsWith('zh') ? '今日新词' : 'Today words',
-          value: `${Math.max(words.length - learnedWords.size, 0)} / ${words.length}`,
-          accent: 'practice',
-        },
-        {
-          label: language.startsWith('zh') ? '到期复习' : 'Due reviews',
-          value: dueWords.length,
-          accent: dueWords.length > 0 ? 'warm' : 'default',
-        },
-      ]}
-    >
+    <LearningShellFrame className="focus-study-page">
       <ConfettiCelebration active={showConfetti} />
 
-      {/* Streak & XP indicators */}
+      <section className="focus-sheet p-5 sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="focus-label">
+              {new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', {
+                month: 'long',
+                day: 'numeric',
+                weekday: 'short',
+              })}
+            </p>
+            <h1 className="focus-title mt-3 text-3xl leading-tight sm:text-4xl">
+              {isZh ? '今天' : 'Today'}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {isZh ? '先复习，再看新词，最后练一组。' : 'Review first, then new words, then one practice set.'}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="min-w-[150px] rounded-lg border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.7)] px-4 py-3">
+              <p className="focus-label">{isZh ? '进度' : 'Progress'}</p>
+              <p className="mt-1 text-xl font-semibold text-foreground">{missionProgress}%</p>
+            </div>
+            {todayPrimaryHref ? (
+              <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" asChild data-testid="today-primary-mission-cta">
+                <Link to={todayPrimaryHref}>{todayPrimaryLabel}</Link>
+              </Button>
+            ) : (
+              <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={scrollToVocabularyWorkspace} data-testid="today-primary-mission-cta">
+                {todayPrimaryLabel}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 divide-y divide-[hsl(var(--paper-line)/0.75)] rounded-lg border border-[hsl(var(--paper-line)/0.82)] bg-[hsl(var(--surface-raised)/0.64)]">
+          {todayPlanRows.map((row) => (
+            <div key={row.label} className="grid gap-3 px-4 py-3 sm:grid-cols-[120px_minmax(0,1fr)_auto] sm:items-center">
+              <p className="text-sm font-medium text-foreground">{row.label}</p>
+              <p className="text-sm text-muted-foreground">{row.note}</p>
+              <div className="flex items-baseline gap-1 text-right">
+                <span className="text-2xl font-semibold text-foreground">{row.value}</span>
+                <span className="text-xs text-muted-foreground">{row.unit}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          {isZh ? `预计 ${heroEstimatedMinutes} 分钟` : `About ${heroEstimatedMinutes} min`}
+        </p>
+      </section>
+
       <div className="flex items-center gap-3 flex-wrap">
         <StreakStatus days={currentStreak} />
         {todayXP > 0 && <XPCounter value={todayXP} />}
       </div>
-
-      {dailyCoachPlan ? (
-        <div
-          data-testid="today-primary-evidence"
-          className="flex flex-wrap gap-2"
-          aria-label={isZh ? '当前依据' : 'Current basis'}
-        >
-          {dailyCoachPlan.evidence.slice(0, 5).map((item) => (
-            <span
-              key={item.id}
-              className={cn(
-                'rounded-md border px-2.5 py-1 text-[11px] font-medium',
-                getDailyCoachEvidenceToneClass(item.tone),
-              )}
-            >
-              {isZh ? item.label.zh : item.label.en}: {isZh ? (item.valueZh ?? item.value) : item.value}
-            </span>
-          ))}
-        </div>
-      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
@@ -946,7 +909,7 @@ export default function TodayPage() {
                   ) : null}
                 </AnimatePresence>
 
-                <div className="premium-action-bar flex flex-col gap-4 rounded-md border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+                <div className="premium-action-bar relative z-20 flex flex-col gap-4 rounded-md border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                   <TodayWordNavigation
                     words={words}
                     currentWordIndex={currentWordIndex}
@@ -1004,7 +967,7 @@ export default function TodayPage() {
                     <Link to="/dashboard/review">{isZh ? '去复习' : 'Review'}</Link>
                   </Button>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
-                    <Link to="/dashboard/practice">{isZh ? '做一次短练习' : 'Do a short drill'}</Link>
+                    <Link to="/dashboard/practice">{isZh ? '做一组练习' : 'Do one practice set'}</Link>
                   </Button>
                 </>
               }
@@ -1274,6 +1237,6 @@ export default function TodayPage() {
         </div>
       </div>
 
-    </LearningCockpitShell>
+    </LearningShellFrame>
   );
 }

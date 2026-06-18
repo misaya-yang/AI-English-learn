@@ -1,5 +1,5 @@
 // LEARN-04 — ReviewPage shows ONLY FSRS-due cards (never random fallback),
-// and surfaces the "Reinforce in Practice" CTA when the FSRS due list is
+// and surfaces the Practice CTA when the FSRS due list is
 // empty so the learner has a clear next step.
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
@@ -65,7 +65,7 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the empty-state with a Reinforce in Practice CTA when no review cards are due', () => {
+  it('renders the empty-state with a Practice CTA when no review cards are due', () => {
     useUserDataMock.mockReturnValue({ ...baseUserData });
 
     render(
@@ -75,14 +75,14 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
     );
 
     expect(screen.getByText(/No review cards due right now/i)).toBeInTheDocument();
-    const cta = screen.getByRole('link', { name: /Reinforce in Practice/i });
+    const cta = screen.getByRole('link', { name: /Go to Practice/i });
     expect(cta).toHaveAttribute('href', '/dashboard/practice');
 
     // No filler card surfaced from dailyWords/wordCatalog — empty is empty.
     expect(screen.queryByText(/Recall first/i)).not.toBeInTheDocument();
   });
 
-  it('shows the Back to Today escape hatch alongside the Reinforce CTA', () => {
+  it('shows the Back to Today escape hatch alongside the Practice CTA', () => {
     useUserDataMock.mockReturnValue({ ...baseUserData });
 
     render(

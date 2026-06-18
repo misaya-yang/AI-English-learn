@@ -62,7 +62,7 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
     label: { en: 'Practice fill-in', zh: '巩固练习' },
     subtitle: {
       en: 'One mixed drill helps today\'s words stick.',
-      zh: '用一组混合短练习收尾。',
+      zh: '用一组混合练习收尾。',
     },
   },
 };

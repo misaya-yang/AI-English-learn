@@ -44,17 +44,17 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? '今天的练习' : 'Today\'s practice',
+      title: isZh ? '今天要做的事' : 'Today\'s list',
       subtitle: isZh
-        ? '复习 12 个词，学 5 个新词，做 1 组短练。'
-        : 'Review 12 words, learn 5 new words, and do 1 short drill.',
+        ? '复习到期词，看几个新词，做一组题。'
+        : 'Review due words, add a few new ones, then do one set.',
       primaryCta: isZh ? '开始' : 'Start',
       secondaryCta: isZh ? '试用' : 'Try sample',
     },
     today: {
       label: isZh ? '今日安排' : 'Today',
-      title: isZh ? '3 项，约 15 分钟' : '3 items, about 15 min',
-      subtitle: isZh ? '登录后显示你的今日内容' : 'Uses your words after sign-in',
+      title: isZh ? '约 15 分钟' : 'About 15 min',
+      subtitle: isZh ? '登录后换成你的内容' : 'Uses your words after sign-in',
       items: [
         {
           title: isZh ? '复习 12 个词' : 'Review 12 words',
@@ -67,7 +67,7 @@ export default function Home() {
           duration: isZh ? '5 分钟' : '5 min',
         },
         {
-          title: isZh ? '做 1 个短练' : 'Do 1 short drill',
+          title: isZh ? '做 1 组练习' : 'Do 1 practice set',
           subtitle: isZh ? '听力或写作' : 'Listening or writing',
           duration: isZh ? '4 分钟' : '4 min',
         },
@@ -76,26 +76,26 @@ export default function Home() {
     },
     examplesLabel: isZh ? '例词' : 'Sample words',
     workflow: {
-      title: isZh ? '打开就能开始' : 'Open and start',
-      subtitle: isZh ? '到期词、新词和短练放在同一条线上。' : 'Due reviews, new words, and short practice stay in one line.',
+      title: isZh ? '复习 · 新词 · 练习' : 'Review · Words · Practice',
+      subtitle: isZh ? '每天按这个顺序走。' : 'The daily order stays simple.',
       steps: [
         {
           title: isZh ? '复习到期词' : 'Review due words',
-          body: isZh ? '清掉今天该复习的词。' : 'Clear the words due today.',
+          body: isZh ? '先过一遍今天到期的词。' : 'Start with words due today.',
         },
         {
           title: isZh ? '学几个新词' : 'Add a few words',
-          body: isZh ? '新词会进入后续复习。' : 'New words enter later review sessions.',
+          body: isZh ? '新词会进入后续复习。' : 'New words enter later reviews.',
         },
         {
-          title: isZh ? '做一个短练' : 'Do one short drill',
-          body: isZh ? '用刚学过的词写一句、听一段或答一道题。' : 'Use recent words in a sentence, a clip, or one question.',
+          title: isZh ? '做一组练习' : 'Do one set',
+          body: isZh ? '答题、听写或写一句。' : 'Answer, dictate, or write one sentence.',
         },
       ],
     },
     footerCta: {
-      title: isZh ? '今天这组' : 'Today\'s set',
-      subtitle: isZh ? '约 15 分钟。' : 'About 15 minutes.',
+      title: isZh ? '开始今天' : 'Start today',
+      subtitle: isZh ? '进入今日页。' : 'Open the Today page.',
       button: isZh ? '开始' : 'Start',
     },
   };

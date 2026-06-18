@@ -77,7 +77,7 @@ const localDateKey = (date: Date): string => {
 const shellTitleMap: Record<string, { title: LocalizedText; description: LocalizedText }> = {
   '/dashboard/today': {
     title: { en: 'Today', zh: '今日' },
-    description: { en: 'Reviews, new words, and short practice.', zh: '复习、新词和短练习。' },
+    description: { en: 'Review, new words, and practice.', zh: '复习、新词和练习。' },
   },
   '/dashboard/review': {
     title: { en: 'Review', zh: '复习' },
@@ -85,11 +85,11 @@ const shellTitleMap: Record<string, { title: LocalizedText; description: Localiz
   },
   '/dashboard/practice': {
     title: { en: 'Practice', zh: '练习' },
-    description: { en: 'Short quizzes, listening, and writing.', zh: '短测、听写和写作。' },
+    description: { en: 'Quizzes, dictation, and writing.', zh: '测验、听写和写作。' },
   },
   '/dashboard/chat': {
     title: { en: 'Help', zh: '答疑' },
-    description: { en: 'Ask questions, revise sentences, and drill mistakes.', zh: '提问、改句和错题短练。' },
+    description: { en: 'Ask questions, revise sentences, and practice mistakes.', zh: '提问、改句和错题练习。' },
   },
   '/dashboard/exam': {
     title: { en: 'Exam Prep', zh: '考试训练' },
@@ -170,7 +170,7 @@ const dashboardLayoutCopy = {
     learner: 'Account',
     continueTodayHeading: 'Today',
     continuePanelDue: (count: number) => `${count} due reviews should go first. Then move on to new content.`,
-    continuePanelFresh: 'Finish the next task, then add one short drill if needed.',
+    continuePanelFresh: 'Finish the next task, then add one practice set if needed.',
     taskProgress: 'Progress',
     todayPlan: 'Today',
     continue: 'Continue',
@@ -195,7 +195,7 @@ const dashboardLayoutCopy = {
     learner: '账号',
     continueTodayHeading: '今日',
     continuePanelDue: (count: number) => `${count} 个词到期，优先复习。`,
-    continuePanelFresh: '完成下一步，有余力再短练。',
+    continuePanelFresh: '完成下一步，有余力再练一组。',
     taskProgress: '完成进度',
     todayPlan: '今日',
     continue: '继续',

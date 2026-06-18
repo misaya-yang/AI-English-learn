@@ -69,7 +69,7 @@ describe('AnalyticsPage empty evidence states', () => {
     });
     expect(screen.getByText('还没有主题记录')).toBeInTheDocument();
     expect(screen.getByText('还没有学习时长')).toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: /打开今日|开始今日词汇|做一次短练习/ }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: /打开今日|开始今日词汇|做一次练习/ }).length).toBeGreaterThan(0);
   });
 
   it('shows a retention next action instead of an empty FSRS curve', async () => {

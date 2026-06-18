@@ -161,7 +161,7 @@ const buildReviewRecap = (
         href: '/dashboard/today',
         reason: {
           en: 'No FSRS reviews are due. Continue with today\'s list.',
-          zh: '当前没有到期复习，继续今天的内容即可。',
+          zh: '当前没有到期复习，继续今天即可。',
         },
       },
     };
@@ -174,7 +174,7 @@ const buildReviewRecap = (
       needsReview,
       encouragement,
       nextAction: {
-        ctaEn: 'Reinforce in Practice',
+        ctaEn: 'Go to Practice',
         ctaZh: '去练习巩固',
         href: '/dashboard/practice',
         reason: {
@@ -214,7 +214,7 @@ const buildReviewRecap = (
         href: '/dashboard/practice',
         reason: {
           en: 'Lock in the gains with a short mixed practice run.',
-          zh: '用一组混合短练习收尾。',
+          zh: '用一组混合练习收尾。',
         },
       },
   };
@@ -257,8 +257,8 @@ const buildPracticeRecap = (
 
   const encouragement: SessionRecap['encouragement'] = total === 0
     ? {
-        en: 'No questions answered. Start a short drill to create a baseline.',
-        zh: '本次没有作答记录，先做个短练习建立基线。',
+        en: 'No questions answered. Start one practice set.',
+        zh: '本次没有作答记录，先做一组练习。',
       }
     : firstTryAccuracy >= 0.8
       ? {
@@ -341,7 +341,7 @@ const buildPracticeRecap = (
       href: '/dashboard/today',
       reason: {
         en: 'Session is clean. Continue with today\'s list.',
-        zh: '本轮稳定，继续今天的内容即可。',
+        zh: '本轮稳定，继续今天即可。',
       },
     },
   };

@@ -47,7 +47,6 @@ import { addMistake } from '@/services/mistakeCollector';
 import { buildPracticeMistakeRecord } from '@/services/practiceMistakes';
 import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
 import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
-import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { getLearningStylePersonalization } from '@/features/learning/learningStylePersonalization';
 import {
   getRecommendedPracticeMode,
@@ -105,10 +104,19 @@ const lightInputClass =
 
 const lightSelectContentClass = 'border-border bg-background text-foreground';
 
+const workbookButtonClass =
+  'rounded-md bg-primary text-primary-foreground shadow-none hover:bg-primary/90';
+const workbookOutlineButtonClass =
+  'rounded-md border-border bg-card text-foreground shadow-none hover:bg-muted/70 hover:text-foreground';
+const practiceBadgeClass =
+  'rounded-md border border-[hsl(var(--accent-practice)/0.22)] bg-[hsl(var(--accent-practice)/0.08)] px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]';
+const practiceProgressClass =
+  'h-1.5 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]';
+
 const practiceFeedbackToneClass: Record<PracticeAttemptOutcome, string> = {
   firstTryCorrect: 'border-[hsl(var(--success)/0.42)] bg-[hsl(var(--success)/0.13)] text-foreground',
   recovered: 'border-[hsl(var(--accent-practice)/0.42)] bg-[hsl(var(--accent-practice)/0.14)] text-foreground',
-  tryAgain: 'border-[hsl(var(--accent-practice)/0.34)] bg-[hsl(var(--accent-practice)/0.1)] text-foreground',
+  tryAgain: 'border-destructive/24 bg-destructive/5 text-foreground',
   needsReview: 'border-[hsl(var(--warning)/0.48)] bg-[hsl(var(--warning)/0.14)] text-foreground',
 };
 
@@ -428,14 +436,6 @@ export default function PracticePage() {
   );
 
   const focusedBlueprint = modeBlueprints[focusedModeId as keyof typeof modeBlueprints];
-  const sessionStage = !selectedMode
-    ? (isZh ? '选模式' : 'Pick a mode')
-    : !hasStarted
-      ? (isZh ? '准备开始' : 'Ready')
-      : isComplete
-        ? (isZh ? '本轮完成' : 'Complete')
-        : (isZh ? '进行中' : 'In progress');
-
   const pickMode = (modeId: string) => {
     resetPracticeRuntime();
     if (modeId === 'writing') {
@@ -881,7 +881,7 @@ export default function PracticePage() {
   };
 
   const renderModeSelector = () => (
-    <LearningRailSection title={isZh ? '练习模式' : 'Practice modes'}>
+    <LearningRailSection title={isZh ? '选择' : 'Choose'}>
       <nav className="space-y-2" aria-label={isZh ? '练习模式' : 'Practice modes'}>
         {practiceModes.map((mode) => {
           const active = focusedModeId === mode.id;
@@ -893,21 +893,21 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-md border border-transparent px-4 py-3 text-left transition-all',
-                active ? 'premium-panel-soft border-border shadow-sm' : 'hover:border-border hover:bg-muted/70',
+                'group relative w-full rounded-md border px-3 py-3 text-left transition-colors',
+                active ? 'border-border bg-[hsl(var(--surface-sunken))]' : 'border-transparent hover:border-border hover:bg-muted/60',
               )}
             >
               <span
                 className={cn(
                   'absolute inset-y-3 left-0 w-[3px] rounded-full transition-colors',
-                  active ? 'bg-primary' : 'bg-transparent group-hover:bg-border',
+                  active ? 'bg-[hsl(var(--accent-practice))]' : 'bg-transparent group-hover:bg-border',
                 )}
               />
               <div className="flex items-start gap-3">
                 <span
                   className={cn(
-                    'mt-0.5 flex h-10 w-10 items-center justify-center rounded-md border text-muted-foreground',
-                    active ? 'border-border bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]' : 'border-border bg-muted',
+                    'mt-0.5 flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground',
+                    active ? 'border-border bg-card text-[hsl(var(--accent-practice))]' : 'border-border bg-muted/70',
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -918,7 +918,7 @@ export default function PracticePage() {
                       {isZh ? mode.nameZh : mode.name}
                     </span>
                     {mode.id === recommendedModeId ? (
-                      <span className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-2 py-0.5 text-[10px] font-medium text-[hsl(var(--accent-practice))]">
+                      <span className={practiceBadgeClass}>
                         {isZh ? '开始' : 'Start'}
                       </span>
                     ) : null}
@@ -936,58 +936,70 @@ export default function PracticePage() {
   );
 
   const renderInsightRail = () => (
-    <div className="space-y-6">
-      <LearningRailSection title={isZh ? '本轮结果' : 'This round'}>
-        <LearningMetricStrip
-          items={[
-            { label: isZh ? '已完成' : 'Answered', value: `${answeredCount}/${totalQuestions || focusedBlueprint.estimatedQuestions}` },
-            { label: isZh ? '首答正确' : 'First try', value: firstTryCorrect, accent: 'success' },
-            { label: isZh ? '已修正' : 'Recovered', value: recoveredCount, accent: 'practice' },
-            { label: isZh ? '需复习' : 'Review', value: needsReviewCount, accent: needsReviewCount > 0 ? 'danger' : 'default' },
-          ]}
-          className="border-t-0 pt-0"
-        />
-        <div className="rounded-md border border-border bg-card p-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{isZh ? '首答正确率' : 'First-try accuracy'}</span>
-            <span>{firstTryAccuracyPct}%</span>
-          </div>
-          <Progress value={firstTryAccuracyPct} className="mt-3 h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--success))]" />
+    <div className="space-y-4">
+      <section className="rounded-md border border-border bg-card p-4">
+        <p className="text-sm font-medium text-foreground">{isZh ? '本次练习统计' : 'This session'}</p>
+        <div className="mt-4 divide-y divide-border/70">
+          {[
+            { icon: Check, label: isZh ? '首答正确' : 'First try', value: firstTryCorrect, tone: 'text-[hsl(var(--success))]' },
+            { icon: RotateCcw, label: isZh ? '已修正' : 'Recovered', value: recoveredCount, tone: 'text-[hsl(var(--accent-practice))]' },
+            { icon: AlertTriangle, label: isZh ? '需复习' : 'Review', value: needsReviewCount, tone: needsReviewCount > 0 ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground' },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.label} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                <div className="flex items-center gap-3">
+                  <span className={cn('flex h-8 w-8 items-center justify-center rounded-md border border-border bg-[hsl(var(--surface-sunken))]', item.tone)}>
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="text-sm text-foreground">{item.label}</span>
+                </div>
+                <span className="text-lg font-semibold text-foreground">{item.value}</span>
+              </div>
+            );
+          })}
         </div>
-        <div className="rounded-md border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">{isZh ? '当前' : 'Now'}</p>
-          <p className="mt-2 text-base font-semibold text-foreground">{focusedModeLabel}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{sessionStage}</p>
+      </section>
+
+      <section className="rounded-md border border-border bg-card p-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>{isZh ? '本轮进度' : 'Progress'}</span>
+          <span>{Math.round(sessionProgress || 0)}%</span>
         </div>
-        {selectedMode === 'writing' ? (
-          <div className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] p-4">
-            <div className="flex items-center gap-2 text-[hsl(var(--accent-practice))]">
-              <PenTool className="h-4 w-4" />
-              <p className="text-sm font-semibold">{isZh ? '反馈次数' : 'Feedback left'}</p>
-            </div>
-            <p className="mt-3 text-2xl font-semibold text-foreground">
-              {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
-            </p>
+        <Progress value={sessionProgress} className={cn('mt-3', practiceProgressClass)} />
+        <p className="mt-3 text-xs text-muted-foreground">
+          {isZh ? `已完成 ${answeredCount} / ${totalQuestions || focusedBlueprint.estimatedQuestions} 题` : `${answeredCount} / ${totalQuestions || focusedBlueprint.estimatedQuestions} answered`}
+        </p>
+      </section>
+
+      {selectedMode === 'writing' ? (
+        <section className="rounded-md border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <PenTool className="h-4 w-4" />
+            <p className="text-sm font-medium">{isZh ? '反馈次数' : 'Feedback left'}</p>
           </div>
-        ) : null}
-      </LearningRailSection>
+          <p className="mt-3 text-2xl font-semibold text-foreground">
+            {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
+          </p>
+        </section>
+      ) : null}
     </div>
   );
 
   const pageTitle = !selectedMode
-    ? (isZh ? '今天练什么' : 'Choose today\'s practice')
+    ? (isZh ? '练习' : 'Practice')
     : !hasStarted
-      ? `${isZh ? '准备进入' : 'Prepare'} ${focusedModeLabel}`
+      ? focusedModeLabel
       : isComplete
-        ? '这轮短练习已经完成。'
-        : `${focusedModeLabel} ${isZh ? '进行中' : 'in progress'}`;
+        ? (isZh ? '完成' : 'Done')
+        : focusedModeLabel;
 
   const pageDescription = !selectedMode
-    ? (isZh ? '选一项开始。' : 'Pick one task to start.')
+    ? (isZh ? '选一项开始。' : 'Pick one.')
     : !hasStarted
       ? focusedBlueprint.insight
       : isComplete
-        ? (isZh ? '看本轮结果。' : 'Review this round.')
+        ? (isZh ? '看结果。' : 'Review the result.')
         : undefined;
 
   const heroProgress =
@@ -1018,37 +1030,73 @@ export default function PracticePage() {
     }
 
     return (
-      <LearningCockpitShell
-        language={practiceLanguage}
-        eyebrow={isZh ? '练习' : 'Practice'}
-        progress={heroProgress}
-        progressLabel={isZh ? '本轮进度' : 'Session progress'}
-        mission={{
-          title: pageTitle,
-          description: pageDescription,
-          estimatedMinutes: !hasStarted ? focusedBlueprint.estimatedMinutes : undefined,
-          primaryAction: primaryAction ?? undefined,
-          secondaryActions,
-        }}
-        metrics={[
-          { label: isZh ? '内容' : 'Mode', value: focusedModeLabel, accent: 'practice' },
-          ...(hasStarted && timedMode ? [{ label: isZh ? '剩余时间' : 'Time left', value: `${timeLeft}s`, accent: timeLeft <= 10 ? 'warm' as const : undefined }] : []),
-          ...(hasStarted && combo > 0 ? [{ label: isZh ? '连击' : 'Streak', value: `${combo}x`, accent: 'success' as const }] : []),
-          ...(!hasStarted ? [
-            { label: isZh ? '预计' : 'Estimated', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}` },
-            { label: isZh ? '题量' : 'Prompts', value: focusedBlueprint.estimatedQuestions },
-          ] : [
-            { label: isZh ? '首答' : 'First try', value: `${firstTryCorrect}/${totalQuestions}`, accent: 'success' as const },
-            ...(recoveredCount > 0 ? [{ label: isZh ? '已修正' : 'Recovered', value: recoveredCount, accent: 'practice' as const }] : []),
-          ]),
-        ]}
-      >
-        <div className="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_300px] xl:items-start">
-          <div className="min-w-0">{renderModeSelector()}</div>
+      <section className="focus-study-page space-y-5">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{isZh ? '练习' : 'Practice'}</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+                <span>{selectedMode ? focusedModeLabel : isZh ? '选择' : 'Choose'}</span>
+              </div>
+              <h1 className="mt-5 text-3xl font-semibold tracking-normal text-foreground sm:text-4xl">
+                {selectedMode && hasStarted && !isComplete
+                  ? (isZh ? '练习' : 'Practice')
+                  : pageTitle}
+              </h1>
+              {pageDescription ? (
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{pageDescription}</p>
+              ) : null}
+            </div>
+
+            {primaryAction || secondaryActions.length > 0 ? (
+              <LearningActionCluster className="lg:justify-end">
+                {primaryAction ? (
+                  <Button className={workbookButtonClass} onClick={primaryAction.onClick}>
+                    {primaryAction.label}
+                  </Button>
+                ) : null}
+                {secondaryActions.map((action) => (
+                  <Button
+                    key={action.label}
+                    variant="outline"
+                    className={workbookOutlineButtonClass}
+                    onClick={action.onClick}
+                    asChild={Boolean(action.href)}
+                  >
+                    {action.href ? <a href={action.href}>{action.label}</a> : action.label}
+                  </Button>
+                ))}
+              </LearningActionCluster>
+            ) : null}
+          </div>
+
+          {typeof heroProgress === 'number' ? (
+            <div className="max-w-4xl">
+              <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+                <span>
+                  {selectedMode === 'writing'
+                    ? (isZh ? '写作进度' : 'Writing progress')
+                    : isZh
+                      ? `第 ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions} 题`
+                      : `Question ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions}`}
+                </span>
+                <span>{heroProgress}%</span>
+              </div>
+              <Progress value={heroProgress} className={practiceProgressClass} />
+            </div>
+          ) : null}
+        </div>
+
+        <div className={cn(
+          'grid gap-6 xl:items-start',
+          hasStarted ? 'xl:grid-cols-[minmax(0,1fr)_280px]' : 'xl:grid-cols-[240px_minmax(0,1fr)_280px]',
+        )}>
+          {!hasStarted ? <div className="min-w-0">{renderModeSelector()}</div> : null}
           <div className="min-w-0">{mainContent}</div>
           <div className="min-w-0">{renderInsightRail()}</div>
         </div>
-      </LearningCockpitShell>
+      </section>
     );
   };
 
@@ -1059,14 +1107,20 @@ export default function PracticePage() {
   if (!selectedMode) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow={isZh ? '开始' : 'Start'}
-        title={isZh ? focusedModeLabel : `Start with ${focusedModeLabel}`}
+        eyebrow={isZh ? '练习' : 'Practice'}
+        title={focusedModeLabel}
         description={focusedModeDescription}
+        actions={
+          <Button className={workbookButtonClass} onClick={() => pickMode(focusedModeId)}>
+            {isZh ? '开始' : 'Start'}
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        }
         className="border-0 bg-transparent shadow-none"
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
+            <Badge className={practiceBadgeClass}>
               {isStyleRecommended
                 ? (isZh ? stylePersonalization.practiceBadge.zh : stylePersonalization.practiceBadge.en)
                 : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label)}
@@ -1082,7 +1136,7 @@ export default function PracticePage() {
           {renderFactStrip([
             { label: isZh ? '内容' : 'Focus', value: focusedModeDescription, hint: '' },
             {
-              label: isZh ? '顺序' : 'Order',
+              label: isZh ? '建议' : 'Suggestion',
               value: isStyleRecommended
                 ? (isZh ? stylePersonalization.label.zh : stylePersonalization.label.en)
                 : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label),
@@ -1091,13 +1145,6 @@ export default function PracticePage() {
             { label: isZh ? '用时' : 'Time', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'practice' },
             { label: isZh ? '词' : 'Words', value: `${dailyWords.length}${isZh ? ' 个' : ''}`, hint: '' },
           ])}
-
-          <div className="border-t border-border pt-5">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => pickMode(focusedModeId)}>
-              {isZh ? '开始' : 'Start'}
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
         </div>
       </LearningWorkspaceSurface>,
     );
@@ -1106,12 +1153,12 @@ export default function PracticePage() {
   if (!hasStarted) {
     return renderPageShell(
       <LearningWorkspaceSurface
-        eyebrow={isZh ? '准备' : 'Ready'}
+        eyebrow={isZh ? '练习' : 'Practice'}
         title={focusedModeLabel}
       >
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
+            <Badge className={practiceBadgeClass}>
               {isZh ? focusedBlueprint.labelZh : focusedBlueprint.label}
             </Badge>
             <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
@@ -1131,7 +1178,7 @@ export default function PracticePage() {
           {renderFactStrip([
             { label: isZh ? '内容' : 'Focus', value: focusedModeDescription, hint: '' },
             {
-              label: isZh ? '顺序' : 'Order',
+              label: isZh ? '建议' : 'Suggestion',
               value: isZh ? focusedBlueprint.labelZh : focusedBlueprint.label,
               hint: '',
               accent: 'practice',
@@ -1147,7 +1194,7 @@ export default function PracticePage() {
 
           <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-end">
             <LearningActionCluster>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={startFocusedMode}>
+              <Button className={workbookButtonClass} onClick={startFocusedMode}>
                 {isZh ? '开始练习' : 'Start practice'}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -1173,7 +1220,7 @@ export default function PracticePage() {
         actions={
           <div className="flex items-center gap-2">
             {writingRound > 1 && (
-              <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))]">
+              <Badge className={practiceBadgeClass}>
                 {isZh ? `第 ${writingRound} 轮` : `Round ${writingRound}`}
               </Badge>
             )}
@@ -1259,7 +1306,7 @@ export default function PracticePage() {
             <div className="flex flex-col gap-4 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
               <Button
                 onClick={handleWritingSubmit}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-5"
+                className={cn(workbookButtonClass, 'px-5')}
                 disabled={
                   isWritingSubmitting ||
                   isQuotaLoading ||
@@ -1449,7 +1496,7 @@ export default function PracticePage() {
                 <Button
                   onClick={handleRevise}
                   disabled={feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-5 disabled:opacity-50"
+                  className={cn(workbookButtonClass, 'px-5 disabled:opacity-50')}
                 >
                   <PenTool className="mr-2 h-4 w-4" />
                   {isZh ? '修改后再评分' : 'Revise and score again'}
@@ -1509,19 +1556,11 @@ export default function PracticePage() {
         title={isZh ? '听后输入' : 'Listen, then type'}
       >
         <div className="space-y-6">
-          <div className="space-y-2 border-b border-border pb-5">
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{isZh ? `第 ${currentQuestionIndex + 1} / ${listeningWords.length} 题` : `Question ${currentQuestionIndex + 1} of ${listeningWords.length}`}</span>
-              <span>{Math.round(sessionProgress)}%</span>
-            </div>
-            <Progress value={sessionProgress} className="h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-primary" />
-          </div>
-
-          <div className="mx-auto max-w-2xl space-y-6 py-6 text-center">
+          <div className="mx-auto max-w-2xl space-y-6 py-4 text-center">
             <Headphones className="mx-auto h-16 w-16 text-[hsl(var(--accent-practice))]" />
 
             <div className="space-y-4">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={() => playAudio(currentWord.word)}>
+              <Button size="lg" className={workbookButtonClass} onClick={() => playAudio(currentWord.word)}>
                 <Headphones className="mr-2 h-5 w-5" />
                 {isZh ? '播放发音' : 'Play word'}
               </Button>
@@ -1576,7 +1615,7 @@ export default function PracticePage() {
                 {!isListeningTerminal ? (
                   <>
                     <Button
-                      className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+                      className={workbookButtonClass}
                       onClick={handleListeningCheck}
                       disabled={!listeningInput.trim()}
                     >
@@ -1593,7 +1632,7 @@ export default function PracticePage() {
                     ) : null}
                   </>
                 ) : (
-                  <Button onClick={handleListeningNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
+                  <Button onClick={handleListeningNext} className={workbookButtonClass}>
                     {currentQuestionIndex < listeningWords.length - 1 ? (isZh ? '下一题' : 'Next question') : (isZh ? '完成听力练习' : 'Finish listening quiz')}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -1628,7 +1667,7 @@ export default function PracticePage() {
         <LearningCompletionState
           icon={Check}
           eyebrow={isZh ? '练习总结' : 'Session summary'}
-          title={timedMode && timeLeft <= 0 ? (isZh ? '时间到！' : 'Time is up') : (isZh ? '这轮短练习已经完成' : 'This short practice is complete')}
+          title={timedMode && timeLeft <= 0 ? (isZh ? '时间到' : 'Time is up') : (isZh ? '这轮练习已完成' : 'This practice set is complete')}
           description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x。` : `Best streak: ${maxCombo}x.`) : (isZh ? '本轮结果如下。' : 'Your result is ready.')}
           metrics={[
             { label: isZh ? '首答正确' : 'First try', value: `${firstTryCorrect}/${safeTotal}`, accent: 'success' },
@@ -1648,7 +1687,7 @@ export default function PracticePage() {
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {isZh ? '再练一次' : 'Try again'}
               </Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={exitToPicker}>
+              <Button className={workbookButtonClass} onClick={exitToPicker}>
                 {isZh ? '换一项' : 'Other modes'}
               </Button>
             </>
@@ -1719,17 +1758,9 @@ export default function PracticePage() {
       }
     >
       <div className="space-y-6">
-        <div className="space-y-2 border-b border-border pb-5">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{isZh ? `第 ${currentQuestionIndex + 1} / ${quizQuestions.length} 题` : `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`}</span>
-            <span>{Math.round(sessionProgress)}%</span>
-          </div>
-          <Progress value={sessionProgress} className="h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-primary" />
-        </div>
-
         <div className="max-w-3xl space-y-5">
           <div className="space-y-3">
-            <Badge className="rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]">
+            <Badge className={practiceBadgeClass}>
               {currentQuestion?.word.word}
             </Badge>
             <h3 className="text-3xl font-semibold text-foreground">{currentQuestion?.question}</h3>
@@ -1767,7 +1798,7 @@ export default function PracticePage() {
                       : blocked
                         ? blockedOptionClass
                         : selected
-                          ? 'border-primary/50 bg-primary/10 text-foreground'
+                          ? 'border-[hsl(var(--accent-practice)/0.42)] bg-[hsl(var(--accent-practice)/0.08)] text-foreground'
                           : 'border-border bg-[hsl(var(--surface-raised))] hover:border-border hover:bg-muted',
                     (blocked || isChoiceTerminal) && 'cursor-default',
                   )}
@@ -1776,7 +1807,7 @@ export default function PracticePage() {
                     value={option}
                     id={`option-${index}`}
                     disabled={blocked || isChoiceTerminal}
-                    className="border-border text-primary"
+                    className="border-border text-[hsl(var(--accent-practice))]"
                   />
                   <Label
                     htmlFor={`option-${index}`}
@@ -1826,7 +1857,7 @@ export default function PracticePage() {
         <div className="flex flex-col gap-3 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
           {!isChoiceTerminal ? (
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button onClick={handleAnswer} disabled={!selectedAnswer} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
+              <Button onClick={handleAnswer} disabled={!selectedAnswer} className={cn(workbookButtonClass, 'lg:min-w-[180px]')}>
                 {isChoiceRetrying ? (isZh ? '再试一次' : 'Try again') : (isZh ? '检查答案' : 'Check answer')}
               </Button>
               {choiceAttemptState.attempts.length > 0 ? (
@@ -1840,7 +1871,7 @@ export default function PracticePage() {
               ) : null}
             </div>
           ) : (
-            <Button onClick={handleNext} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md lg:min-w-[180px]">
+            <Button onClick={handleNext} className={cn(workbookButtonClass, 'lg:min-w-[180px]')}>
               {isZh ? '下一题' : 'Next question'}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>

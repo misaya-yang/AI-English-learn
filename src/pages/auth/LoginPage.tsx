@@ -30,7 +30,7 @@ export default function LoginPage() {
   const copy = isZh
     ? {
         title: '欢迎回来',
-        subtitle: '登录后继续今天的练习。',
+        subtitle: '登录后进入今日页。',
         noAccount: '还没有账号？',
         register: '注册',
         email: '邮箱',
@@ -63,7 +63,7 @@ export default function LoginPage() {
       }
     : {
         title: 'Welcome back',
-        subtitle: "Sign in to continue today's practice.",
+        subtitle: 'Sign in to open Today.',
         noAccount: "Don't have an account?",
         register: 'Create account',
         email: 'Email',
@@ -185,8 +185,8 @@ export default function LoginPage() {
       <AuthShell
         title="Welcome back"
         titleZh="欢迎回来"
-        subtitle="Sign in to continue today's practice."
-        subtitleZh="登录后继续今天的练习。"
+        subtitle="Sign in to open Today."
+        subtitleZh="登录后进入今日页。"
         footer={
           <>
             <span className="opacity-80">{copy.noAccount}</span>{' '}

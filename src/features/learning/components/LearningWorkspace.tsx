@@ -77,7 +77,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-md border border-border/75 bg-[hsl(var(--surface-raised))] shadow-[0_1px_0_hsl(var(--shadow-studio)/0.035)] transition-colors duration-150';
+  'relative rounded-lg border border-[hsl(var(--paper-line)/0.9)] bg-[hsl(var(--paper))] shadow-[0_1px_0_hsl(var(--shadow-studio)/0.03)] transition-colors duration-150';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
@@ -111,7 +111,7 @@ export function LearningHeroPanel({
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn('rounded-md border border-border/75 bg-[hsl(var(--surface-raised))] px-4 py-4 sm:px-5 sm:py-5', className)}
+      className={cn('focus-sheet px-4 py-4 sm:px-5 sm:py-5', className)}
     >
       <div className="relative z-10 space-y-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -132,7 +132,7 @@ export function LearningHeroPanel({
         </div>
 
         {(typeof progress === 'number' || metrics.length > 0) ? (
-          <div className="grid gap-0 overflow-hidden rounded-md border border-border/70 bg-[hsl(var(--surface-sunken))] sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-0 overflow-hidden rounded-lg border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.68)] sm:grid-cols-2 lg:grid-cols-5">
           {typeof progress === 'number' ? (
             <div className="border-b border-border/70 px-3 py-2 sm:border-r lg:border-b-0">
               <div className="flex items-center justify-between gap-4">
@@ -167,7 +167,7 @@ export function LearningHeroPanel({
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn('space-y-3 rounded-md border border-border/70 bg-[hsl(var(--surface-elevated))] p-3.5 shadow-none', className)}>
+    <section className={cn('space-y-3 rounded-lg border border-[hsl(var(--paper-line)/0.82)] bg-[hsl(var(--paper)/0.72)] p-3.5 shadow-none', className)}>
       <div className="space-y-1.5">
         <p className="text-[11px] font-medium text-muted-foreground">{title}</p>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
@@ -187,7 +187,7 @@ export function LearningWorkspaceSurface({
 }: LearningWorkspaceSurfaceProps) {
   return (
     <section className={cn(learningFrameClassName, 'overflow-hidden', className)}>
-      <div className="border-b border-border/70 bg-[hsl(var(--surface-elevated)/0.42)] px-4 py-4 sm:px-5">
+      <div className="border-b border-[hsl(var(--paper-line)/0.72)] bg-transparent px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
@@ -204,7 +204,7 @@ export function LearningWorkspaceSurface({
 
 export function LearningMetricStrip({ items, className }: LearningMetricStripProps) {
   return (
-    <div className={cn('grid gap-0 overflow-hidden rounded-md border border-border/70 bg-[hsl(var(--surface-sunken))] sm:grid-cols-2 xl:grid-cols-3', className)}>
+    <div className={cn('grid gap-0 overflow-hidden rounded-lg border border-[hsl(var(--paper-line)/0.82)] bg-[hsl(var(--paper-muted)/0.64)] sm:grid-cols-2 xl:grid-cols-3', className)}>
       {items.map((item) => (
         <div key={`${item.label}-${String(item.value)}`} className="space-y-1 border-t border-border/70 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 sm:[&:nth-child(2)]:border-t-0 xl:border-t-0">
           <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>

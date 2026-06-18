@@ -95,7 +95,7 @@ const ROUTES: DashboardRouteMeta[] = [
     id: 'practice',
     path: '/dashboard/practice',
     label: { en: 'Practice', zh: '练习' },
-    description: { en: 'Quiz / listening / writing micro drills.', zh: '测验、听力、写作短练习。' },
+    description: { en: 'Quiz, dictation, and writing practice.', zh: '测验、听写和写作练习。' },
     icon: Target,
     group: 'practice',
     mobilePriority: 5,

@@ -1007,13 +1007,13 @@ export default function ChatPage() {
                   severity: 'medium',
                   message: language.startsWith('zh') ? '来自对话测验的错误回流。' : 'Captured from chat quiz attempt.',
                   suggestion: language.startsWith('zh')
-                    ? '做一次对应短练，再加入复习。'
+                    ? '做一次对应练习，再加入复习。'
                     : 'Do one short matching drill, then review this card again.',
                 },
               ],
               rewrites: [artifact.payload.explanation],
               nextActions: [
-                language.startsWith('zh') ? '完成 1 次对应短练' : 'Complete 1 matching short drill',
+                language.startsWith('zh') ? '完成 1 次对应练习' : 'Complete 1 matching practice set',
                 language.startsWith('zh') ? '24 小时后再次测验' : 'Retry in 24 hours',
               ],
               confidence: 0.7,

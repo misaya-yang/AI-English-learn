@@ -148,11 +148,11 @@ export function selectMissionCards(
     cards.push({
       id: 'mission.exam',
       title: 'Run an exam-style mini drill',
-      titleZh: '做一次考试短练习',
+      titleZh: '做一次考试练习',
       whyRecommended: 'Keep timing familiar.',
       whyRecommendedZh: '保持计时手感。',
       prompt: 'Run a 5-minute exam-style drill in my target test format and grade my answers.',
-      promptZh: '按我的目标考试形式，给我一组 5 分钟短练习，并给出评分反馈。',
+      promptZh: '按我的目标考试形式，给我一组 5 分钟练习，并给出评分反馈。',
       accent: 'exam',
     });
   }
@@ -191,7 +191,7 @@ export function selectMissionCards(
     cards.push({
       id: 'mission.practice',
       title: 'Five-minute practice sprint',
-      titleZh: '5 分钟短练习',
+      titleZh: '5 分钟练习',
       whyRecommended: 'Short and focused.',
       whyRecommendedZh: '短一点，集中一点。',
       prompt: 'Run a five-minute mixed practice sprint and grade my answers.',

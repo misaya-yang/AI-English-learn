@@ -40,11 +40,11 @@ export default function RegisterPage() {
   const copy = isZh
     ? {
         title: '创建账号',
-        subtitle: '创建后进入你的今日内容。',
+        subtitle: '创建后进入今日页。',
         hasAccount: '已有账号？',
         signIn: '立即登录',
         displayName: '昵称',
-        displayNamePlaceholder: '你希望我们怎么称呼你？',
+        displayNamePlaceholder: '你的昵称',
         email: '邮箱',
         password: '密码',
         confirmPassword: '确认密码',
@@ -67,11 +67,11 @@ export default function RegisterPage() {
       }
     : {
         title: 'Create account',
-        subtitle: 'Create an account and open today.',
+        subtitle: 'Create an account and open Today.',
         hasAccount: 'Already have an account?',
         signIn: 'Sign in',
         displayName: 'Display name',
-        displayNamePlaceholder: 'What should we call you?',
+        displayNamePlaceholder: 'Your name',
         email: 'Email',
         password: 'Password',
         confirmPassword: 'Confirm password',
@@ -164,8 +164,8 @@ export default function RegisterPage() {
     <AuthShell
       title="Create account"
       titleZh="创建账号"
-      subtitle="Create an account and open today."
-      subtitleZh="创建后进入你的今日内容。"
+      subtitle="Create an account and open Today."
+      subtitleZh="创建后进入今日页。"
       footer={
         <>
           <span className="opacity-80">{copy.hasAccount}</span>{' '}

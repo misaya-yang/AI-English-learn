@@ -56,17 +56,17 @@ export function AuthShell({
   const widthClass = size === 'wide' ? 'max-w-xl' : 'max-w-[420px]';
 
   const rail: SideRailCopy = {
-    headline: sideRail?.headline ?? t('auth.shell.headline', { defaultValue: 'Continue where you left off' }),
-    headlineZh: sideRail?.headlineZh ?? t('auth.shell.headlineZh', { defaultValue: '继续今天的内容' }),
+    headline: sideRail?.headline ?? t('auth.shell.headline', { defaultValue: 'Today\'s words and practice' }),
+    headlineZh: sideRail?.headlineZh ?? t('auth.shell.headlineZh', { defaultValue: '今天的词和练习' }),
     bullets: sideRail?.bullets ?? [
       { en: t('auth.shell.bullet1', { defaultValue: 'Due reviews' }), zh: t('auth.shell.bullet1Zh', { defaultValue: '到期复习' }) },
       { en: t('auth.shell.bullet2', { defaultValue: 'New words' }), zh: t('auth.shell.bullet2Zh', { defaultValue: '今日新词' }) },
-      { en: t('auth.shell.bullet3', { defaultValue: 'Short practice' }), zh: t('auth.shell.bullet3Zh', { defaultValue: '短练习' }) },
+      { en: t('auth.shell.bullet3', { defaultValue: 'Practice' }), zh: t('auth.shell.bullet3Zh', { defaultValue: '练习' }) },
     ],
   };
   const railBody = isZh
-    ? t('auth.shell.bodyZh', { defaultValue: '登录后显示你的词、进度和最近错题。' })
-    : t('auth.shell.body', { defaultValue: 'Sign in to load your words, progress, and recent mistakes.' });
+    ? t('auth.shell.bodyZh', { defaultValue: '登录后显示你的词和进度。' })
+    : t('auth.shell.body', { defaultValue: 'Sign in to load your words and progress.' });
 
   return (
     <div className="study-premium-bg min-h-screen bg-background text-foreground">

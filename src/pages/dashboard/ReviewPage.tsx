@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { CoachReviewRail } from '@/features/coach/CoachReviewRail';
 import {
   LearningCompletionState,
@@ -21,6 +22,7 @@ import {
   X,
   Clock3,
   Lightbulb,
+  ChevronRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -36,7 +38,6 @@ import {
   type StubbornRecoveryOutcome,
 } from '@/features/learning/stubbornRecovery';
 import { SessionRecapCard } from '@/features/learning/components/SessionRecapCard';
-import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { getDueCoachReviews } from '@/services/coachReviewQueue';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -181,7 +182,7 @@ const ratingMeta = {
     delayZh: '约 5 天后复习',
     delayEn: '5 days',
     key: '3',
-    accent: 'border-green-500/30 bg-green-50 text-green-700',
+    accent: 'border-[hsl(var(--success)/0.35)] bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))]',
   },
   easy:  {
     labelZh: '简单',
@@ -189,7 +190,7 @@ const ratingMeta = {
     delayZh: '约 10 天后复习',
     delayEn: '10 days',
     key: '4',
-    accent: 'border-sky-500/25 bg-sky-500/10 text-sky-700',
+    accent: 'border-[hsl(var(--accent-practice)/0.35)] bg-[hsl(var(--accent-practice)/0.1)] text-[hsl(var(--accent-practice))]',
   },
 } as const;
 
@@ -406,8 +407,8 @@ export default function ReviewPage() {
             title={isZh ? '当前没有到期复习' : 'No review cards due right now'}
             description={
               isZh
-                ? '今天没有必须复习的卡片。可以做一次短练习；如果有补充复习，会显示在右侧。'
-                : 'No cards are due right now. You can do a short Practice session; extra review items appear on the right.'
+                ? '今天没有必须复习的卡片。可以去练习。'
+                : 'No cards are due right now. You can go to Practice.'
             }
             metrics={[
               { label: isZh ? '到期卡片' : 'Due cards', value: 0, accent: 'memory' },
@@ -418,7 +419,7 @@ export default function ReviewPage() {
                   <Link to="/dashboard/today">{isZh ? '返回今日' : 'Back to Today'}</Link>
                 </Button>
                 <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
-                  <Link to="/dashboard/practice">{isZh ? '做巩固练习' : 'Reinforce in Practice'}</Link>
+                  <Link to="/dashboard/practice">{isZh ? '去练习' : 'Go to Practice'}</Link>
                 </Button>
               </>
             }
@@ -440,7 +441,7 @@ export default function ReviewPage() {
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {isZh
                     ? '有新到期词时会显示在这里。'
-                    : 'Review cards appear when they are due. For now, a short practice session is enough.'}
+                    : 'Review cards appear when they are due. For now, Practice is enough.'}
                 </p>
               </div>
             </LearningRailSection>
@@ -491,26 +492,39 @@ export default function ReviewPage() {
   }
 
   return (
-    <LearningCockpitShell
-      language={language}
-      eyebrow={language.startsWith('zh') ? '词汇复习' : 'Vocabulary review'}
-      progress={Math.round(reviewedProgress)}
-      progressLabel={language.startsWith('zh') ? '回合进度' : 'Round progress'}
-      mission={{
-        title: language.startsWith('zh')
-          ? '回忆后评分。'
-          : 'Recall first, then reveal.',
-        description: language.startsWith('zh')
-          ? '这里是今天到期的词卡。'
-          : 'This round shows cards due today. Extra review items are listed on the right.',
-      }}
-      metrics={[
-        { label: language.startsWith('zh') ? '剩余卡片' : 'Remaining', value: remainingCount, accent: 'memory' },
-        { label: language.startsWith('zh') ? '复习目标' : 'Review target', value: reviewTaskTarget },
-        { label: language.startsWith('zh') ? '当前卡片' : 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
-        ...(isCurrentCardStubborn ? [{ label: language.startsWith('zh') ? '强化路径' : 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
-      ]}
-    >
+    <LearningShellFrame className="focus-study-page">
+      <section className="focus-sheet p-5 sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{isZh ? '复习' : 'Review'}</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span>{isZh ? `第 ${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length} 张` : `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}`}</span>
+            </div>
+            <h1 className="focus-title mt-4 text-3xl leading-tight sm:text-4xl">
+              {isZh ? '先回忆，再评分' : 'Recall, then rate'}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {isZh ? '看答案前先想一遍。' : 'Try to recall before revealing the card.'}
+            </p>
+          </div>
+
+          <div className="grid min-w-[260px] gap-3 sm:grid-cols-3">
+            {[
+              { label: isZh ? '剩余' : 'Left', value: remainingCount },
+              { label: isZh ? '目标' : 'Target', value: reviewTaskTarget },
+              { label: isZh ? '进度' : 'Progress', value: `${Math.round(reviewedProgress)}%` },
+            ].map((item) => (
+              <div key={item.label} className="rounded-lg border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.68)] px-3 py-2">
+                <p className="focus-label">{item.label}</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Progress value={Math.round(reviewedProgress)} className="mt-5 h-1.5 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]" />
+      </section>
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <LearningWorkspaceSurface
@@ -626,7 +640,7 @@ export default function ReviewPage() {
                 </div>
               ) : (
 	                <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm leading-6 text-muted-foreground">回忆后再看答案。</p>
+                  <p className="text-sm leading-6 text-muted-foreground">先回忆，再看答案。</p>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={handleReveal}>
                     {isZh ? '揭示答案' : 'Reveal answer'}
                     <kbd className="ml-2 rounded border border-primary-foreground/20 bg-primary-foreground/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold">
@@ -781,6 +795,6 @@ export default function ReviewPage() {
           ) : null}
         </div>
       </div>
-    </LearningCockpitShell>
+    </LearningShellFrame>
   );
 }

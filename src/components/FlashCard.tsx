@@ -62,7 +62,7 @@ export function FlashCard({
         {/* Front face */}
         <div
           className={cn(
-            'absolute inset-0 backface-hidden',
+            'absolute inset-0 overflow-hidden backface-hidden',
             isFlipped && 'invisible',
           )}
           onClick={onFlip}
@@ -73,7 +73,7 @@ export function FlashCard({
         {/* Back face */}
         <div
           className={cn(
-            'absolute inset-0 backface-hidden',
+            'absolute inset-0 overflow-hidden backface-hidden',
             !isFlipped && 'invisible',
           )}
           style={{ transform: 'rotateY(180deg)' }}

@@ -187,7 +187,7 @@ const analyticsCopy = {
       duration: {
         title: 'No study duration yet',
         description: 'Complete one short task and the time spent will start appearing here.',
-        action: 'Do a short practice',
+        action: 'Do one practice set',
       },
       wordsTrend: {
         title: 'No vocabulary trend yet',
@@ -216,7 +216,7 @@ const analyticsCopy = {
       },
       coach: {
         title: 'No help records yet',
-        description: 'Start a chat or complete a short practice before follow-ups appear here.',
+        description: 'Start a chat or complete one practice set before follow-ups appear here.',
         action: 'Open help',
       },
       vocabulary: {
@@ -315,8 +315,8 @@ const analyticsCopy = {
       },
       duration: {
         title: '还没有学习时长',
-        description: '完成一次短练后，这里会显示用时。',
-        action: '做一次短练习',
+        description: '完成一次练习后，这里会显示用时。',
+        action: '做一次练习',
       },
       wordsTrend: {
         title: '还没有词汇趋势',
@@ -840,7 +840,7 @@ export default function AnalyticsPage() {
                 <Link to="/dashboard/today">{isZh ? '开始今日' : 'Start Today'}</Link>
               </Button>
               <Button asChild variant="outline" className="rounded-md">
-                <Link to="/dashboard/practice">{isZh ? '做一次短练习' : 'Short practice'}</Link>
+                <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Practice'}</Link>
               </Button>
             </div>
           </div>
