@@ -328,9 +328,9 @@ async function openPracticeQuestion(page) {
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await page.getByRole('button', { name: /开始$|^Start$|用这个开始|Start with this|选择此模式|Choose this mode/i }).first().click();
   await page.getByRole('button', { name: /开始练习|Start practice/i }).first().click();
-  await page.waitForSelector('h3');
+  await page.waitForSelector('.question-title, h2');
 
-  const questionText = await page.locator('h3').filter({ hasText: /What does|Complete/i }).first().textContent();
+  const questionText = await page.locator('.question-title, h2').filter({ hasText: /What does|Complete/i }).first().textContent();
   const match = questionText?.match(/"([^"]+)"/);
   const currentWord = match
     ? scenarioWords.find((word) => word.word === match[1])
@@ -364,8 +364,8 @@ async function inspectPracticeRetryFlow(browser) {
 
     const firstWrongBody = await page.locator('body').innerText();
     const firstWrongPassed =
-      /还没对|Not yet|再试一次|Try once more/i.test(firstWrongBody) &&
-      !/正确答案|Correct answer/i.test(firstWrongBody);
+      /还没对|Not yet|再试一次|Try once more|Try again/i.test(firstWrongBody) &&
+      !/正确答案|Correct answer|^Answer$|^答案$/im.test(firstWrongBody);
 
     await page.getByLabel(wrongDefinitions[1], { exact: true }).click();
     await page.getByRole('button', { name: /再试一次|Try again/i }).click();
@@ -375,7 +375,7 @@ async function inspectPracticeRetryFlow(browser) {
 
     const secondWrongBody = await page.locator('body').innerText();
     const secondWrongPassed =
-      /正确答案|Correct answer/i.test(secondWrongBody) &&
+      /正确答案|Correct answer|^Answer$|^答案$/im.test(secondWrongBody) &&
       secondWrongBody.includes(currentWord.definition);
 
     return [
@@ -435,8 +435,8 @@ async function inspectListeningRetryFlow(browser) {
 
     const firstWrongBody = await page.locator('body').innerText();
     const firstWrongPassed =
-      /再听一次|Listen once more/i.test(firstWrongBody) &&
-      !/答案是|Expected:|正确答案|Correct answer/i.test(firstWrongBody);
+      /再听一次|Listen once more|Listen again/i.test(firstWrongBody) &&
+      !/答案是|Expected:|Answer:|正确答案|Correct answer|^Answer$|^答案$/im.test(firstWrongBody);
 
     await page.getByPlaceholder(/输入你听到的单词|Type what you hear/i).fill('still wrong');
     await page.getByRole('button', { name: /再试一次|Try again/i }).click();
@@ -446,7 +446,7 @@ async function inspectListeningRetryFlow(browser) {
 
     const secondWrongBody = await page.locator('body').innerText();
     const revealedSeededWord = scenarioWords.some((word) =>
-      new RegExp(`(答案是|Expected)\\s*[:：]?\\s*${word.word}`, 'i').test(secondWrongBody),
+      new RegExp(`(答案是|Expected|Answer)\\s*[:：]?\\s*${word.word}`, 'i').test(secondWrongBody),
     );
 
     return [

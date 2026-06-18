@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -11,25 +10,23 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  LearningActionCluster,
-  LearningCompletionState,
-  LearningEmptyState,
-  LearningMetricStrip,
-  LearningRailSection,
-  LearningWorkspaceSurface,
-  type AccentTone,
-} from '@/features/learning/components/LearningWorkspace';
+  InlineStudyNote,
+  QuestionSheet,
+  StudyRail,
+  StudyRailSection,
+  StudySheet,
+  StudyShell,
+  StudyStatRows,
+} from '@/features/learning/components/StudyWorkbook';
 import {
   HelpCircle,
   Check,
   X,
   Lightbulb,
   RotateCcw,
-  Target,
   PenTool,
   Headphones,
   ChevronRight,
-  Clock3,
   AlertTriangle,
   ThumbsUp,
   Quote,
@@ -112,18 +109,6 @@ const practiceBadgeClass =
   'rounded-md border border-[hsl(var(--accent-practice)/0.22)] bg-[hsl(var(--accent-practice)/0.08)] px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]';
 const practiceProgressClass =
   'h-1.5 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]';
-
-const practiceFeedbackToneClass: Record<PracticeAttemptOutcome, string> = {
-  firstTryCorrect: 'border-[hsl(var(--success)/0.42)] bg-[hsl(var(--success)/0.13)] text-foreground',
-  recovered: 'border-[hsl(var(--accent-practice)/0.42)] bg-[hsl(var(--accent-practice)/0.14)] text-foreground',
-  tryAgain: 'border-destructive/24 bg-destructive/5 text-foreground',
-  needsReview: 'border-[hsl(var(--warning)/0.48)] bg-[hsl(var(--warning)/0.14)] text-foreground',
-};
-
-const correctOptionClass =
-  'border-[hsl(var(--success)/0.52)] bg-[hsl(var(--success)/0.13)] text-foreground';
-const blockedOptionClass =
-  'border-destructive/40 bg-destructive/10 text-foreground';
 
 export default function PracticePage() {
   const { user } = useAuth();
@@ -321,8 +306,8 @@ export default function PracticePage() {
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = selectedMode === 'listening' ? listeningWords.length : quizQuestions.length;
-  const sessionProgress = totalQuestions > 0 ? (currentQuestionIndex / totalQuestions) * 100 : 0;
   const answeredCount = firstTryCorrect + recoveredCount + needsReviewCount;
+  const sessionProgress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
   const completedCorrectCount = firstTryCorrect + recoveredCount;
   const firstTryAccuracyPct = totalQuestions > 0 ? Math.round((firstTryCorrect / totalQuestions) * 100) : 0;
 
@@ -339,7 +324,7 @@ export default function PracticePage() {
     return () => clearInterval(interval);
   }, [timedMode, hasStarted, isComplete, timeLeft, totalQuestions, completedCorrectCount, firstTryCorrect, recoveredCount, addStudySession, completeMissionTask]);
 
-  // LEARN-05 — emit session_ended + load coach review count once when the
+  // LEARN-05: emit session_ended + load coach review count once when the
   // practice session finishes. Must stay above any conditional return so the
   // hook order is stable across renders.
   useEffect(() => {
@@ -543,7 +528,7 @@ export default function PracticePage() {
       try {
         void addMistake(userId, mistakeRecord);
       } catch {
-        // localStorage failure is silent — never block the user's drill.
+        // localStorage failure is silent. Never block the user's drill.
       }
     }
   };
@@ -881,7 +866,7 @@ export default function PracticePage() {
   };
 
   const renderModeSelector = () => (
-    <LearningRailSection title={isZh ? '选择' : 'Choose'}>
+    <StudyRailSection title={isZh ? '练习' : 'Practice'}>
       <nav className="space-y-2" aria-label={isZh ? '练习模式' : 'Practice modes'}>
         {practiceModes.map((mode) => {
           const active = focusedModeId === mode.id;
@@ -893,8 +878,8 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-md border px-3 py-3 text-left transition-colors',
-                active ? 'border-border bg-[hsl(var(--surface-sunken))]' : 'border-transparent hover:border-border hover:bg-muted/60',
+                'group relative w-full rounded-xl border px-3 py-3 text-left transition-colors',
+                active ? 'border-[hsl(var(--paper-line))] bg-[hsl(var(--surface-sunken))]' : 'border-transparent hover:border-[hsl(var(--paper-line))] hover:bg-muted/60',
               )}
             >
               <span
@@ -914,7 +899,7 @@ export default function PracticePage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-foreground">
+                    <span className="truncate text-sm font-medium text-foreground">
                       {isZh ? mode.nameZh : mode.name}
                     </span>
                     {mode.id === recommendedModeId ? (
@@ -932,58 +917,41 @@ export default function PracticePage() {
           );
         })}
       </nav>
-    </LearningRailSection>
+    </StudyRailSection>
   );
 
   const renderInsightRail = () => (
-    <div className="space-y-4">
-      <section className="rounded-md border border-border bg-card p-4">
-        <p className="text-sm font-medium text-foreground">{isZh ? '本次练习统计' : 'This session'}</p>
-        <div className="mt-4 divide-y divide-border/70">
-          {[
-            { icon: Check, label: isZh ? '首答正确' : 'First try', value: firstTryCorrect, tone: 'text-[hsl(var(--success))]' },
-            { icon: RotateCcw, label: isZh ? '已修正' : 'Recovered', value: recoveredCount, tone: 'text-[hsl(var(--accent-practice))]' },
-            { icon: AlertTriangle, label: isZh ? '需复习' : 'Review', value: needsReviewCount, tone: needsReviewCount > 0 ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground' },
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.label} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-3">
-                  <span className={cn('flex h-8 w-8 items-center justify-center rounded-md border border-border bg-[hsl(var(--surface-sunken))]', item.tone)}>
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="text-sm text-foreground">{item.label}</span>
-                </div>
-                <span className="text-lg font-semibold text-foreground">{item.value}</span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+    <StudyRail>
+      <StudyRailSection title={isZh ? '统计' : 'Stats'}>
+        <StudyStatRows
+          items={[
+            { label: isZh ? '首答正确' : 'First try', value: firstTryCorrect, tone: 'success' },
+            { label: isZh ? '已修正' : 'Recovered', value: recoveredCount, tone: 'practice' },
+            { label: isZh ? '需复习' : 'Review', value: needsReviewCount, tone: needsReviewCount > 0 ? 'warning' : 'default' },
+          ]}
+        />
+      </StudyRailSection>
 
-      <section className="rounded-md border border-border bg-card p-4">
+      <StudyRailSection title={isZh ? '进度' : 'Progress'}>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{isZh ? '本轮进度' : 'Progress'}</span>
           <span>{Math.round(sessionProgress || 0)}%</span>
+          <span>{answeredCount} / {totalQuestions || focusedBlueprint.estimatedQuestions}</span>
         </div>
         <Progress value={sessionProgress} className={cn('mt-3', practiceProgressClass)} />
-        <p className="mt-3 text-xs text-muted-foreground">
-          {isZh ? `已完成 ${answeredCount} / ${totalQuestions || focusedBlueprint.estimatedQuestions} 题` : `${answeredCount} / ${totalQuestions || focusedBlueprint.estimatedQuestions} answered`}
-        </p>
-      </section>
+      </StudyRailSection>
 
       {selectedMode === 'writing' ? (
-        <section className="rounded-md border border-border bg-card p-4">
+        <StudyRailSection title={isZh ? '反馈' : 'Feedback'}>
           <div className="flex items-center gap-2 text-muted-foreground">
             <PenTool className="h-4 w-4" />
-            <p className="text-sm font-medium">{isZh ? '反馈次数' : 'Feedback left'}</p>
+            <p className="text-sm font-medium">{isZh ? '剩余次数' : 'Left'}</p>
           </div>
           <p className="mt-3 text-2xl font-semibold text-foreground">
             {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
           </p>
-        </section>
+        </StudyRailSection>
       ) : null}
-    </div>
+    </StudyRail>
   );
 
   const pageTitle = !selectedMode
@@ -996,11 +964,11 @@ export default function PracticePage() {
 
   const pageDescription = !selectedMode
     ? (isZh ? '选一项开始。' : 'Pick one.')
-    : !hasStarted
+  : !hasStarted
       ? focusedBlueprint.insight
-      : isComplete
-        ? (isZh ? '看结果。' : 'Review the result.')
-        : undefined;
+    : isComplete
+      ? (isZh ? '完成。' : 'Done.')
+      : undefined;
 
   const heroProgress =
     selectedMode && hasStarted && !isComplete && selectedMode !== 'writing'
@@ -1030,53 +998,38 @@ export default function PracticePage() {
     }
 
     return (
-      <section className="focus-study-page space-y-5">
-        <div className="space-y-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{isZh ? '练习' : 'Practice'}</span>
-                <ChevronRight className="h-3.5 w-3.5" />
-                <span>{selectedMode ? focusedModeLabel : isZh ? '选择' : 'Choose'}</span>
-              </div>
-              <h1 className="mt-5 text-3xl font-semibold tracking-normal text-foreground sm:text-4xl">
-                {selectedMode && hasStarted && !isComplete
-                  ? (isZh ? '练习' : 'Practice')
-                  : pageTitle}
-              </h1>
-              {pageDescription ? (
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{pageDescription}</p>
+      <StudyShell>
+        <StudySheet
+          eyebrow={selectedMode ? focusedModeLabel : isZh ? '练习' : 'Practice'}
+          title={selectedMode && hasStarted && !isComplete ? (isZh ? '练习' : 'Practice') : pageTitle}
+          description={pageDescription}
+          actions={(primaryAction || secondaryActions.length > 0) ? (
+            <>
+              {primaryAction ? (
+                <Button className={workbookButtonClass} onClick={primaryAction.onClick}>
+                  {primaryAction.label}
+                </Button>
               ) : null}
-            </div>
-
-            {primaryAction || secondaryActions.length > 0 ? (
-              <LearningActionCluster className="lg:justify-end">
-                {primaryAction ? (
-                  <Button className={workbookButtonClass} onClick={primaryAction.onClick}>
-                    {primaryAction.label}
-                  </Button>
-                ) : null}
-                {secondaryActions.map((action) => (
-                  <Button
-                    key={action.label}
-                    variant="outline"
-                    className={workbookOutlineButtonClass}
-                    onClick={action.onClick}
-                    asChild={Boolean(action.href)}
-                  >
-                    {action.href ? <a href={action.href}>{action.label}</a> : action.label}
-                  </Button>
-                ))}
-              </LearningActionCluster>
-            ) : null}
-          </div>
-
+              {secondaryActions.map((action) => (
+                <Button
+                  key={action.label}
+                  variant="outline"
+                  className={workbookOutlineButtonClass}
+                  onClick={action.onClick}
+                  asChild={Boolean(action.href)}
+                >
+                  {action.href ? <a href={action.href}>{action.label}</a> : action.label}
+                </Button>
+              ))}
+            </>
+          ) : null}
+        >
           {typeof heroProgress === 'number' ? (
-            <div className="max-w-4xl">
+            <div>
               <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
                 <span>
                   {selectedMode === 'writing'
-                    ? (isZh ? '写作进度' : 'Writing progress')
+                    ? (isZh ? '写作' : 'Writing')
                     : isZh
                       ? `第 ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions} 题`
                       : `Question ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions}`}
@@ -1086,28 +1039,23 @@ export default function PracticePage() {
               <Progress value={heroProgress} className={practiceProgressClass} />
             </div>
           ) : null}
-        </div>
+        </StudySheet>
 
         <div className={cn(
-          'grid gap-6 xl:items-start',
-          hasStarted ? 'xl:grid-cols-[minmax(0,1fr)_280px]' : 'xl:grid-cols-[240px_minmax(0,1fr)_280px]',
+          'grid gap-5 xl:items-start',
+          hasStarted ? 'xl:grid-cols-[minmax(0,1fr)_260px]' : 'xl:grid-cols-[220px_minmax(0,1fr)_260px]',
         )}>
-          {!hasStarted ? <div className="min-w-0">{renderModeSelector()}</div> : null}
-          <div className="min-w-0">{mainContent}</div>
-          <div className="min-w-0">{renderInsightRail()}</div>
+          {!hasStarted ? <div className="order-2 min-w-0 xl:order-none">{renderModeSelector()}</div> : null}
+          <div className={cn('min-w-0', !hasStarted && 'order-1 xl:order-none')}>{mainContent}</div>
+          <div className={cn('min-w-0', !hasStarted && 'order-3 xl:order-none')}>{renderInsightRail()}</div>
         </div>
-      </section>
+      </StudyShell>
     );
   };
 
-  const renderFactStrip = (items: { label: string; value: ReactNode; hint: string; accent?: AccentTone }[]) => (
-    <LearningMetricStrip items={items.map((item) => ({ label: item.label, value: item.value, hint: item.hint, accent: item.accent }))} />
-  );
-
   if (!selectedMode) {
     return renderPageShell(
-      <LearningWorkspaceSurface
-        eyebrow={isZh ? '练习' : 'Practice'}
+      <StudySheet
         title={focusedModeLabel}
         description={focusedModeDescription}
         actions={
@@ -1116,84 +1064,56 @@ export default function PracticePage() {
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         }
-        className="border-0 bg-transparent shadow-none"
       >
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className={practiceBadgeClass}>
-              {isStyleRecommended
-                ? (isZh ? stylePersonalization.practiceBadge.zh : stylePersonalization.practiceBadge.en)
-                : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label)}
-            </Badge>
-            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-              {focusedBlueprint.estimatedQuestions} 题
-            </Badge>
-            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-              {focusedBlueprint.estimatedMinutes} 分钟
-            </Badge>
-          </div>
-
-          {renderFactStrip([
-            { label: isZh ? '内容' : 'Focus', value: focusedModeDescription, hint: '' },
-            {
-              label: isZh ? '建议' : 'Suggestion',
-              value: isStyleRecommended
-                ? (isZh ? stylePersonalization.label.zh : stylePersonalization.label.en)
-                : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label),
-              hint: '',
-            },
-            { label: isZh ? '用时' : 'Time', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`, hint: '', accent: 'practice' },
-            { label: isZh ? '词' : 'Words', value: `${dailyWords.length}${isZh ? ' 个' : ''}`, hint: '' },
-          ])}
+          <StudyStatRows
+            items={[
+              {
+                label: isZh ? '题目' : 'Questions',
+                value: focusedBlueprint.estimatedQuestions,
+                tone: 'practice',
+              },
+              {
+                label: isZh ? '用时' : 'Time',
+                value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}`,
+              },
+              {
+                label: isStyleRecommended
+                  ? (isZh ? stylePersonalization.label.zh : stylePersonalization.label.en)
+                  : (isZh ? focusedBlueprint.labelZh : focusedBlueprint.label),
+                value: dailyWords.length,
+              },
+            ]}
+          />
         </div>
-      </LearningWorkspaceSurface>,
+      </StudySheet>,
     );
   }
 
   if (!hasStarted) {
     return renderPageShell(
-      <LearningWorkspaceSurface
-        eyebrow={isZh ? '练习' : 'Practice'}
-        title={focusedModeLabel}
-      >
+      <StudySheet title={isZh ? '这一组' : 'This set'}>
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className={practiceBadgeClass}>
-              {isZh ? focusedBlueprint.labelZh : focusedBlueprint.label}
-            </Badge>
-            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-              <Clock3 className="mr-1.5 h-3.5 w-3.5" />
-              {focusedBlueprint.estimatedMinutes}{isZh ? ' 分钟' : ' min'}
-            </Badge>
-            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-              {focusedBlueprint.estimatedQuestions} {isZh ? '题' : 'prompts'}
-            </Badge>
-            {selectedMode === 'writing' ? (
-              <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-                {isZh ? '反馈次数' : 'Feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
-              </Badge>
-            ) : null}
-          </div>
+          <StudyStatRows
+            items={[
+              { label: isZh ? '类型' : 'Type', value: isZh ? focusedBlueprint.labelZh : focusedBlueprint.label, tone: 'practice' },
+              { label: isZh ? '用时' : 'Time', value: `${focusedBlueprint.estimatedMinutes}${isZh ? ' 分钟' : ' min'}` },
+              { label: isZh ? '题目' : 'Prompts', value: focusedBlueprint.estimatedQuestions },
+              ...(selectedMode === 'writing'
+                ? [{
+                    label: isZh ? '反馈' : 'Feedback',
+                    value: isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining,
+                  }]
+                : []),
+            ]}
+          />
 
-          {renderFactStrip([
-            { label: isZh ? '内容' : 'Focus', value: focusedModeDescription, hint: '' },
-            {
-              label: isZh ? '建议' : 'Suggestion',
-              value: isZh ? focusedBlueprint.labelZh : focusedBlueprint.label,
-              hint: '',
-              accent: 'practice',
-            },
-            {
-              label: isZh ? '结果' : 'Result',
-              value: selectedMode === 'writing'
-                ? (isZh ? '评分与修改点' : 'Score and revision notes')
-                : (isZh ? '正确率和错题' : 'Accuracy and mistakes'),
-              hint: '',
-            },
-          ])}
+          <InlineStudyNote title={isZh ? '准备' : 'Ready'} tone="practice">
+            {focusedModeDescription}
+          </InlineStudyNote>
 
           <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-end">
-            <LearningActionCluster>
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button className={workbookButtonClass} onClick={startFocusedMode}>
                 {isZh ? '开始练习' : 'Start practice'}
                 <ChevronRight className="ml-2 h-4 w-4" />
@@ -1205,28 +1125,28 @@ export default function PracticePage() {
               >
                 {isZh ? '返回列表' : 'Back to mode picker'}
               </Button>
-            </LearningActionCluster>
+            </div>
           </div>
         </div>
-      </LearningWorkspaceSurface>,
+      </StudySheet>,
     );
   }
 
   if (selectedMode === 'writing') {
     return renderPageShell(
-        <LearningWorkspaceSurface
-        eyebrow={isZh ? '写作' : 'Writing'}
-        title={isZh ? 'IELTS 写作练习' : 'IELTS Writing Practice'}
+      <QuestionSheet
+        meta={isZh ? '写作' : 'Writing'}
+        title={isZh ? 'IELTS 写作' : 'IELTS Writing'}
         actions={
           <div className="flex items-center gap-2">
             {writingRound > 1 && (
-              <Badge className={practiceBadgeClass}>
+              <span className={practiceBadgeClass}>
                 {isZh ? `第 ${writingRound} 轮` : `Round ${writingRound}`}
-              </Badge>
+              </span>
             )}
-            <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
+            <span className="rounded-md border border-border bg-muted px-3 py-1 text-xs text-muted-foreground">
               {isZh ? '反馈次数' : 'Feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
-            </Badge>
+            </span>
           </div>
         }
       >
@@ -1518,7 +1438,7 @@ export default function PracticePage() {
             </motion.div>
           )}
         </div>
-      </LearningWorkspaceSurface>,
+      </QuestionSheet>,
     );
   }
 
@@ -1532,11 +1452,9 @@ export default function PracticePage() {
 
     if (!currentWord) {
       return renderPageShell(
-        <LearningEmptyState
-          icon={Target}
-          eyebrow={isZh ? '听力' : 'Listening'}
-          title={isZh ? '没有可用的听辨素材' : 'No listening material yet'}
-          description={isZh ? '学一组单词后再来听写。' : 'Learn a small word set first.'}
+        <StudySheet
+          title={isZh ? '没有听写词' : 'No listening words'}
+          description={isZh ? '先学一组单词。' : 'Learn a small word set first.'}
           actions={
             <Button
               variant="outline"
@@ -1546,13 +1464,15 @@ export default function PracticePage() {
               {isZh ? '返回模式列表' : 'Back to modes'}
             </Button>
           }
-        />,
+        >
+          <InlineStudyNote title={isZh ? '提示' : 'Note'}>{isZh ? '新词完成后再来听写。' : 'Dictation unlocks after new words.'}</InlineStudyNote>
+        </StudySheet>,
       );
     }
 
     return renderPageShell(
-      <LearningWorkspaceSurface
-        eyebrow={isZh ? '听力' : 'Listening'}
+      <QuestionSheet
+        meta={isZh ? `第 ${currentQuestionIndex + 1} / ${listeningWords.length} 题` : `Question ${currentQuestionIndex + 1} / ${listeningWords.length}`}
         title={isZh ? '听后输入' : 'Listen, then type'}
       >
         <div className="space-y-6">
@@ -1586,29 +1506,33 @@ export default function PracticePage() {
               </div>
 
               {listeningOutcome ? (
-                <div
-                  className={cn(
-                    'mx-auto max-w-md rounded-md border px-4 py-3 text-left text-sm leading-6',
-                    practiceFeedbackToneClass[listeningOutcome],
-                  )}
-                >
-                  <p className="font-semibold">
-                    {listeningOutcome === 'firstTryCorrect'
-                      ? (isZh ? '首答正确' : 'First try correct')
+                <InlineStudyNote
+                  title={
+                    listeningOutcome === 'firstTryCorrect'
+                      ? (isZh ? '首答正确' : 'First try')
                       : listeningOutcome === 'recovered'
-                        ? (isZh ? '重试后答对' : 'Recovered after retry')
+                        ? (isZh ? '已修正' : 'Recovered')
                         : listeningOutcome === 'needsReview'
-                          ? (isZh ? '正确答案' : 'Correct answer')
-                          : (isZh ? '再听一次' : 'Listen once more')}
-                  </p>
-                  <p className="mt-1">
-                    {listeningOutcome === 'needsReview'
-                      ? (isZh ? `答案是：${listeningResult?.expected || currentWord.word}` : `Expected: ${listeningResult?.expected || currentWord.word}`)
-                      : listeningOutcome === 'tryAgain'
-                        ? buildPracticeHint(currentWord, { mode: 'listening', isZh })
-                        : (isZh ? '已保存。' : 'Saved.')}
-                  </p>
-                </div>
+                          ? (isZh ? '答案' : 'Answer')
+                          : (isZh ? '再听一次' : 'Listen again')
+                  }
+                  tone={
+                    listeningOutcome === 'firstTryCorrect'
+                      ? 'success'
+                      : listeningOutcome === 'recovered'
+                        ? 'practice'
+                        : listeningOutcome === 'needsReview'
+                          ? 'warning'
+                          : 'danger'
+                  }
+                  className="mx-auto max-w-md text-left"
+                >
+                  {listeningOutcome === 'needsReview'
+                    ? (isZh ? `答案是 ${listeningResult?.expected || currentWord.word}` : `Answer: ${listeningResult?.expected || currentWord.word}`)
+                    : listeningOutcome === 'tryAgain'
+                      ? buildPracticeHint(currentWord, { mode: 'listening', isZh })
+                      : (isZh ? '已保存' : 'Saved')}
+                </InlineStudyNote>
               ) : null}
 
               <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -1641,7 +1565,7 @@ export default function PracticePage() {
             </div>
           </div>
         </div>
-      </LearningWorkspaceSurface>,
+      </QuestionSheet>,
     );
   }
 
@@ -1664,19 +1588,9 @@ export default function PracticePage() {
             coachReviews: { dueCount: dueCoachReviewCount },
           }}
         />
-        <LearningCompletionState
-          icon={Check}
-          eyebrow={isZh ? '练习总结' : 'Session summary'}
-          title={timedMode && timeLeft <= 0 ? (isZh ? '时间到' : 'Time is up') : (isZh ? '这轮练习已完成' : 'This practice set is complete')}
-          description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x。` : `Best streak: ${maxCombo}x.`) : (isZh ? '本轮结果如下。' : 'Your result is ready.')}
-          metrics={[
-            { label: isZh ? '首答正确' : 'First try', value: `${firstTryCorrect}/${safeTotal}`, accent: 'success' },
-            { label: isZh ? '已修正' : 'Recovered', value: recoveredCount, accent: 'practice' },
-            { label: isZh ? '需复习' : 'Needs review', value: needsReviewCount, accent: needsReviewCount > 0 ? 'danger' : undefined },
-            { label: isZh ? '首答正确率' : 'First-try accuracy', value: `${accuracy}%`, accent: 'success' },
-            { label: isZh ? '最高连击' : 'Best streak', value: `${maxCombo}x`, accent: maxCombo >= 5 ? 'success' : undefined },
-            { label: isZh ? '内容' : 'Mode', value: `${focusedModeLabel}${timedMode ? (isZh ? ' · 限时' : ' · timed') : ''}` },
-          ]}
+        <StudySheet
+          title={timedMode && timeLeft <= 0 ? (isZh ? '时间到' : 'Time is up') : (isZh ? '完成' : 'Done')}
+          description={maxCombo >= 3 ? (isZh ? `最高连击 ${maxCombo}x。` : `Best streak ${maxCombo}x.`) : (isZh ? focusedModeLabel : focusedModeLabel)}
           actions={
             <>
               <Button
@@ -1692,7 +1606,17 @@ export default function PracticePage() {
               </Button>
             </>
           }
-        />
+        >
+          <StudyStatRows
+            items={[
+              { label: isZh ? '首答正确' : 'First try', value: `${firstTryCorrect}/${safeTotal}`, tone: 'success' },
+              { label: isZh ? '已修正' : 'Recovered', value: recoveredCount, tone: 'practice' },
+              { label: isZh ? '需复习' : 'Review', value: needsReviewCount, tone: needsReviewCount > 0 ? 'danger' : 'default' },
+              { label: isZh ? '首答正确率' : 'First-try accuracy', value: `${accuracy}%`, tone: 'success' },
+              { label: isZh ? '最高连击' : 'Best streak', value: `${maxCombo}x`, tone: maxCombo >= 5 ? 'success' : 'default' },
+            ]}
+          />
+        </StudySheet>
         {errorNotebook.length > 0 && (
           <div className="mt-6 rounded-md border border-destructive/20 bg-destructive/5 p-6">
             <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-destructive">
@@ -1708,7 +1632,7 @@ export default function PracticePage() {
                   <div>
                     <p className="text-sm font-semibold text-foreground">{item.word}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {isZh ? '正确答案' : 'Correct answer'}: {item.correctAnswer}
+                      {isZh ? '答案' : 'Answer'}: {item.correctAnswer}
                     </p>
                   </div>
                 </div>
@@ -1722,11 +1646,9 @@ export default function PracticePage() {
 
   if (quizQuestions.length === 0) {
     return renderPageShell(
-      <LearningEmptyState
-        icon={Target}
-        eyebrow={isZh ? '练习' : 'Practice'}
-        title={isZh ? '没有足够的练习素材' : 'Not enough practice material'}
-        description={isZh ? '学一组单词后再来练。' : 'Learn a small word set first.'}
+      <StudySheet
+        title={isZh ? '还没有题目' : 'No questions yet'}
+        description={isZh ? '先学一组单词。' : 'Learn a small word set first.'}
         actions={
           <Button
             variant="outline"
@@ -1736,7 +1658,9 @@ export default function PracticePage() {
             {isZh ? '返回模式列表' : 'Back to modes'}
           </Button>
         }
-      />,
+      >
+        <InlineStudyNote title={isZh ? '提示' : 'Note'}>{isZh ? '新词完成后再来练习。' : 'Practice unlocks after new words.'}</InlineStudyNote>
+      </StudySheet>,
     );
   }
 
@@ -1748,25 +1672,14 @@ export default function PracticePage() {
   const shouldRevealChoiceAnswer = choiceOutcome === 'needsReview' && choiceAttemptState.revealed;
 
   return renderPageShell(
-    <LearningWorkspaceSurface
-      eyebrow={isZh ? '练习' : 'Practice'}
-      title={focusedModeLabel}
-      actions={
-        <Badge className="rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground hover:bg-muted">
-          {isZh ? `第 ${currentQuestionIndex + 1} / ${quizQuestions.length} 题` : `Question ${currentQuestionIndex + 1} / ${quizQuestions.length}`}
-        </Badge>
-      }
+    <QuestionSheet
+      meta={isZh ? `第 ${currentQuestionIndex + 1} / ${quizQuestions.length} 题` : `Question ${currentQuestionIndex + 1} / ${quizQuestions.length}`}
+      title={currentQuestion?.question}
+      prompt={currentQuestion?.questionZh}
+      actions={<span className="rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.5)] px-2.5 py-1 text-xs text-[hsl(var(--accent-practice))]">{currentQuestion?.word.word}</span>}
     >
       <div className="space-y-6">
         <div className="max-w-3xl space-y-5">
-          <div className="space-y-3">
-            <Badge className={practiceBadgeClass}>
-              {currentQuestion?.word.word}
-            </Badge>
-            <h3 className="text-3xl font-semibold text-foreground">{currentQuestion?.question}</h3>
-            <p className="text-base leading-7 text-muted-foreground">{currentQuestion?.questionZh}</p>
-          </div>
-
           <RadioGroup
             value={selectedAnswer || ''}
             onValueChange={(value) => {
@@ -1781,6 +1694,7 @@ export default function PracticePage() {
               const selected = selectedAnswer === option;
               const isCorrectOption = option === currentQuestion.correctAnswer;
               const showCorrect = (shouldRevealChoiceAnswer && isCorrectOption) || (isChoiceTerminal && selected && isCorrectOption);
+              const rowState = showCorrect ? 'correct' : blocked ? 'blocked' : selected ? 'selected' : undefined;
               return (
                 <motion.div
                   key={index}
@@ -1791,15 +1705,9 @@ export default function PracticePage() {
                         ? { x: [0, -3, 3, 0], transition: { duration: 0.22 } }
                         : {}
                   }
+                  data-state={rowState}
                   className={cn(
-                    'flex items-center space-x-3 rounded-md border px-4 py-4 transition-all',
-                    showCorrect
-                      ? correctOptionClass
-                      : blocked
-                        ? blockedOptionClass
-                        : selected
-                          ? 'border-[hsl(var(--accent-practice)/0.42)] bg-[hsl(var(--accent-practice)/0.08)] text-foreground'
-                          : 'border-border bg-[hsl(var(--surface-raised))] hover:border-border hover:bg-muted',
+                    'answer-row flex items-center space-x-3 px-4 py-4 transition-all hover:border-[hsl(var(--paper-line))] hover:bg-[hsl(var(--paper-muted)/0.68)]',
                     (blocked || isChoiceTerminal) && 'cursor-default',
                   )}
                 >
@@ -1812,7 +1720,7 @@ export default function PracticePage() {
                   <Label
                     htmlFor={`option-${index}`}
                     className={cn(
-                      'flex-1 text-sm leading-6 text-foreground',
+                      'flex-1 text-[0.95rem] leading-6 text-foreground',
                       blocked || isChoiceTerminal ? 'cursor-default' : 'cursor-pointer',
                     )}
                   >
@@ -1826,31 +1734,34 @@ export default function PracticePage() {
           </RadioGroup>
 
           {choiceOutcome ? (
-            <div
-              className={cn(
-                'rounded-md border px-4 py-3 text-sm leading-6',
-                practiceFeedbackToneClass[choiceOutcome],
-              )}
-            >
-              <p className="font-semibold">
-                {choiceOutcome === 'firstTryCorrect'
-                  ? (isZh ? '首答正确' : 'First try correct')
+            <InlineStudyNote
+              title={
+                choiceOutcome === 'firstTryCorrect'
+                  ? (isZh ? '首答正确' : 'First try')
                   : choiceOutcome === 'recovered'
-                    ? (isZh ? '重试后答对' : 'Recovered after retry')
+                    ? (isZh ? '已修正' : 'Recovered')
                     : choiceOutcome === 'needsReview'
-                      ? (isZh ? '正确答案' : 'Correct answer')
-                      : (isZh ? '还没对，再试一次' : 'Not yet. Try once more')}
-              </p>
-              <p className="mt-1">
-                {choiceOutcome === 'needsReview'
-                  ? currentQuestion?.correctAnswer
-                  : choiceOutcome === 'tryAgain' && currentQuestion
-                    ? buildPracticeHint(currentQuestion.word, { mode: selectedMode === 'fill_blank' ? 'fill_blank' : 'quiz', isZh })
-                    : choiceOutcome === 'recovered'
-                      ? (isZh ? '已标记为修正。' : 'Marked as recovered.')
-                      : (isZh ? '首答正确，已保存。' : 'Saved as first-try correct.')}
-              </p>
-            </div>
+                      ? (isZh ? '答案' : 'Answer')
+                      : (isZh ? '再试一次' : 'Try again')
+              }
+              tone={
+                choiceOutcome === 'firstTryCorrect'
+                  ? 'success'
+                  : choiceOutcome === 'recovered'
+                    ? 'practice'
+                    : choiceOutcome === 'needsReview'
+                      ? 'warning'
+                      : 'danger'
+              }
+            >
+              {choiceOutcome === 'needsReview'
+                ? currentQuestion?.correctAnswer
+                : choiceOutcome === 'tryAgain' && currentQuestion
+                  ? buildPracticeHint(currentQuestion.word, { mode: selectedMode === 'fill_blank' ? 'fill_blank' : 'quiz', isZh })
+                  : choiceOutcome === 'recovered'
+                    ? (isZh ? '已修正' : 'Marked recovered')
+                    : (isZh ? '已保存' : 'Saved')}
+            </InlineStudyNote>
           ) : null}
         </div>
 
@@ -1881,11 +1792,11 @@ export default function PracticePage() {
             {isChoiceTerminal
               ? (isZh ? `首答正确率 ${firstTryAccuracyPct}%` : `First-try accuracy ${firstTryAccuracyPct}%`)
               : isChoiceRetrying
-                ? (isZh ? '换一个选项，不会直接显示答案。' : 'Choose another option; the answer stays hidden.')
-                : (isZh ? '选择答案后检查。' : 'Choose the best answer, then check.')}
+                ? (isZh ? '换一个选项，答案仍隐藏。' : 'Pick another option. Answer stays hidden.')
+                : (isZh ? '选好后检查。' : 'Pick one, then check.')}
           </div>
         </div>
       </div>
-    </LearningWorkspaceSurface>,
+    </QuestionSheet>,
   );
 }

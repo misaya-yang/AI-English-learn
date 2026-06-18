@@ -1,4 +1,4 @@
-// LEARN-04 — ReviewPage shows ONLY FSRS-due cards (never random fallback),
+// LEARN-04: ReviewPage shows ONLY FSRS-due cards (never random fallback),
 // and surfaces the Practice CTA when the FSRS due list is
 // empty so the learner has a clear next step.
 
@@ -74,11 +74,11 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText(/No review cards due right now/i)).toBeInTheDocument();
-    const cta = screen.getByRole('link', { name: /Go to Practice/i });
+    expect(screen.getByText(/No cards due/i)).toBeInTheDocument();
+    const cta = screen.getByRole('link', { name: /^Practice$/i });
     expect(cta).toHaveAttribute('href', '/dashboard/practice');
 
-    // No filler card surfaced from dailyWords/wordCatalog — empty is empty.
+    // No filler card surfaced from dailyWords/wordCatalog. Empty is empty.
     expect(screen.queryByText(/Recall first/i)).not.toBeInTheDocument();
   });
 
@@ -150,10 +150,10 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /abandon/i }));
 
-    expect(screen.getByTestId('stubborn-recovery-panel')).toHaveTextContent(/Stubborn recovery/i);
-    expect(screen.getByText(/abandon the idea/i)).toBeInTheDocument();
+    expect(screen.getByTestId('stubborn-recovery-panel')).toHaveTextContent(/Recover "abandon"/i);
+    expect(screen.getAllByText(/abandon hope/i).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: /This helped/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Helpful/i }));
 
     await waitFor(() => {
       expect(createEvidenceEvent).toHaveBeenCalledWith(expect.objectContaining({

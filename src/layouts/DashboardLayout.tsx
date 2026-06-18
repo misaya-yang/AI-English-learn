@@ -695,20 +695,20 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[268px] flex-col border-r border-sidebar-border bg-sidebar px-3 py-3 text-sidebar-foreground lg:flex">
+        <aside className="hidden h-[100dvh] min-h-0 w-[218px] flex-col border-r border-sidebar-border bg-sidebar/88 px-2.5 py-3 text-sidebar-foreground lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
               <p className="text-sm font-semibold">VocabDaily</p>
-              <p className="text-[11px] text-sidebar-foreground/55">{copy.learning}</p>
+              <p className="text-[11px] text-sidebar-foreground/55">{isZh ? '每日练习' : 'Daily practice'}</p>
             </div>
           </Link>
 
-          <div className="mt-3 rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 p-3">
-            <h2 className="text-base font-semibold">{activeShell.title}</h2>
-            <div className="mt-3 grid grid-cols-3 gap-2 border-t border-sidebar-border pt-3">
+          <div className="mt-4 border-y border-sidebar-border/70 py-3">
+            <h2 className="text-sm font-semibold">{activeShell.title}</h2>
+            <div className="mt-3 grid grid-cols-3 gap-2">
               <div>
                 <p className="text-[11px] text-sidebar-foreground/55">{copy.mission}</p>
                 <p className="mt-1 text-sm font-semibold text-sidebar-primary">{missionProgress}%</p>
@@ -733,9 +733,9 @@ export default function DashboardLayout() {
               'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/45',
             )}
           >
-            <div className="space-y-6 pb-4">
+            <div className="space-y-5 pb-4">
               <div className="space-y-2">
-                <p className="px-1 text-[11px] text-sidebar-foreground/55">{copy.coreLearning}</p>
+                <p className="px-1 text-[11px] text-sidebar-foreground/55">{isZh ? '核心' : 'Core'}</p>
                 {learningNav.map((item) => renderLearningNavItem(item, true))}
               </div>
 
@@ -749,7 +749,7 @@ export default function DashboardLayout() {
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 p-3 space-y-3">
+              <div className="border-t border-sidebar-border/70 pt-3">
                 <div className="flex items-center justify-between">
                   <StreakCounter
                     current={streak?.current || 0}
@@ -764,7 +764,7 @@ export default function DashboardLayout() {
             </div>
           </ScrollArea>
 
-          <div className="mt-3 rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-2.5">
+          <div className="mt-3 border-t border-sidebar-border/70 px-1 py-2.5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -779,8 +779,8 @@ export default function DashboardLayout() {
         </aside>
 
         <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <header className="border-b border-border bg-[hsl(var(--surface-raised))]">
-            <div className="flex items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
+          <header className="border-b border-border bg-background/92">
+            <div className="flex items-center justify-between gap-3 px-4 py-2 lg:px-5">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
                   <SheetTrigger asChild>
@@ -799,11 +799,11 @@ export default function DashboardLayout() {
                   </SheetContent>
                 </Sheet>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <span>{activeShell.title}</span>
                     {dueWords.length > 0 ? <Badge variant="outline">{dueWords.length} {copy.due}</Badge> : null}
                   </div>
-                  <p className="truncate text-xs text-muted-foreground lg:text-sm">{activeShell.description}</p>
+                  <p className="truncate text-xs text-muted-foreground">{activeShell.description}</p>
                 </div>
               </div>
 
@@ -830,7 +830,7 @@ export default function DashboardLayout() {
                     中
                   </button>
                 </div>
-                <Button variant="outline" className="hidden rounded-md sm:inline-flex" asChild>
+                <Button variant="outline" className="hidden rounded-md border-border bg-transparent sm:inline-flex" asChild>
                   <Link to={learningPrimaryAction.href}>{learningPrimaryAction.label}</Link>
                 </Button>
                 <ThemeToggle />
@@ -839,7 +839,7 @@ export default function DashboardLayout() {
                   size="icon"
                   title="Search (⌘K)"
                   aria-label={currentLang === 'zh' ? '打开搜索' : 'Open search'}
-                  className="rounded-md border bg-card hover:bg-muted"
+                  className="rounded-md border border-border bg-transparent hover:bg-muted"
                   onClick={() => setSearchOpen(true)}
                 >
                   <Search className="h-4 w-4" />
@@ -850,7 +850,7 @@ export default function DashboardLayout() {
           </header>
 
           <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-            <div className={cn('mx-auto w-full max-w-[1380px] px-4 py-4 sm:px-5 lg:px-6 lg:py-5', isMobile && 'pb-20')}>
+            <div className={cn('mx-auto w-full max-w-[1180px] px-4 py-4 sm:px-5 lg:px-6 lg:py-5', isMobile && 'pb-20')}>
               <Outlet />
             </div>
           </div>

@@ -16,8 +16,8 @@ describe('DashboardSkeleton', () => {
   it('names the dashboard loading operation', () => {
     render(<DashboardSkeleton />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('正在打开今日内容');
-    expect(screen.getByText('读取词书和进度。')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('正在打开');
+    expect(screen.getByText('读取词书和进度')).toBeInTheDocument();
   });
 
   it('names the public-page loading operation', () => {
@@ -32,7 +32,8 @@ describe('DashboardSkeleton', () => {
 
     render(<DashboardSkeleton />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('Opening today');
-    expect(screen.queryByText('正在打开今日内容')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Opening');
+    expect(screen.getByText('Loading words and progress')).toBeInTheDocument();
+    expect(screen.queryByText('正在打开')).not.toBeInTheDocument();
   });
 });

@@ -77,7 +77,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-lg border border-[hsl(var(--paper-line)/0.9)] bg-[hsl(var(--paper))] shadow-[0_1px_0_hsl(var(--shadow-studio)/0.03)] transition-colors duration-150';
+  'relative rounded-xl border border-[hsl(var(--paper-line)/0.9)] bg-[hsl(var(--paper))] shadow-[0_1px_0_hsl(var(--shadow-studio)/0.03)] transition-colors duration-150';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
@@ -117,12 +117,12 @@ export function LearningHeroPanel({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl space-y-3">
           {eyebrow ? (
-            <Badge className="rounded-md border border-border/70 bg-[hsl(var(--surface-elevated))] px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-[hsl(var(--surface-elevated))]">
+            <Badge className="focus-kicker rounded-md border border-border/70 bg-[hsl(var(--surface-elevated))] px-2.5 py-1 text-muted-foreground hover:bg-[hsl(var(--surface-elevated))]">
               {eyebrow}
             </Badge>
           ) : null}
           <div className="space-y-2">
-            <h1 className="max-w-3xl text-[1.55rem] font-medium leading-tight text-foreground sm:text-[1.85rem]">
+            <h1 className="focus-page-title max-w-3xl text-[1.65rem] leading-tight sm:text-[2rem]">
               {title}
             </h1>
             {description ? <p className="line-clamp-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:line-clamp-none">{description}</p> : null}
@@ -167,9 +167,9 @@ export function LearningHeroPanel({
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn('space-y-3 rounded-lg border border-[hsl(var(--paper-line)/0.82)] bg-[hsl(var(--paper)/0.72)] p-3.5 shadow-none', className)}>
+    <section className={cn('space-y-3 rounded-xl border border-[hsl(var(--paper-line)/0.82)] bg-[hsl(var(--paper)/0.72)] p-3.5 shadow-none', className)}>
       <div className="space-y-1.5">
-        <p className="text-[11px] font-medium text-muted-foreground">{title}</p>
+        <p className="focus-kicker">{title}</p>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
       </div>
       <div className="space-y-3">{children}</div>
@@ -190,8 +190,8 @@ export function LearningWorkspaceSurface({
       <div className="border-b border-[hsl(var(--paper-line)/0.72)] bg-transparent px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-            <h2 className="text-lg font-medium text-foreground sm:text-xl">{title}</h2>
+            {eyebrow ? <p className="focus-kicker">{eyebrow}</p> : null}
+            <h2 className="focus-page-title text-lg sm:text-xl">{title}</h2>
             {description ? <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
           </div>
           {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
@@ -204,11 +204,14 @@ export function LearningWorkspaceSurface({
 
 export function LearningMetricStrip({ items, className }: LearningMetricStripProps) {
   return (
-    <div className={cn('grid gap-0 overflow-hidden rounded-lg border border-[hsl(var(--paper-line)/0.82)] bg-[hsl(var(--paper-muted)/0.64)] sm:grid-cols-2 xl:grid-cols-3', className)}>
+    <div className={cn('grid gap-3 sm:grid-cols-2 xl:grid-cols-3', className)}>
       {items.map((item) => (
-        <div key={`${item.label}-${String(item.value)}`} className="space-y-1 border-t border-border/70 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 sm:[&:nth-child(2)]:border-t-0 xl:border-t-0">
-          <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
-          <div className={cn('text-lg font-medium', metricToneClass[item.accent || 'default'])}>
+        <div
+          key={`${item.label}-${String(item.value)}`}
+          className="rounded-xl border border-[hsl(var(--paper-line)/0.78)] bg-[hsl(var(--paper-muted)/0.46)] px-3 py-2.5"
+        >
+          <p className="focus-kicker">{item.label}</p>
+          <div className={cn('study-number mt-1 text-lg', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
           {item.hint ? <p className="hidden text-xs leading-5 text-muted-foreground xl:block">{item.hint}</p> : null}
@@ -240,8 +243,8 @@ export function LearningEmptyState({
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
         <Icon className="h-6 w-6" />
       </div>
-      {eyebrow ? <p className="mt-5 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-      <h2 className="mt-3 text-2xl font-semibold text-foreground">{title}</h2>
+      {eyebrow ? <p className="focus-kicker mt-5">{eyebrow}</p> : null}
+      <h2 className="focus-page-title mt-3 text-2xl">{title}</h2>
       <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
       {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mx-auto mt-8 max-w-3xl text-left" /> : null}
       {actions ? <LearningActionCluster className="mt-8 justify-center">{actions}</LearningActionCluster> : null}
@@ -268,8 +271,8 @@ export function LearningCompletionState({
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
           <Icon className="h-6 w-6" />
         </div>
-        {eyebrow ? <p className="mt-6 text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-        <h2 className="mt-3 text-2xl font-semibold text-foreground">{title}</h2>
+        {eyebrow ? <p className="focus-kicker mt-6">{eyebrow}</p> : null}
+        <h2 className="focus-page-title mt-3 text-2xl">{title}</h2>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
       {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mt-8" /> : null}

@@ -12,27 +12,26 @@ export function DashboardSkeleton() {
       aria-live="polite"
       className="bg-background p-4 text-foreground animate-in fade-in duration-200 sm:p-6"
     >
-      <div className="mx-auto max-w-5xl space-y-4">
-        <div className="flex items-center gap-3 rounded-md border border-border bg-[hsl(var(--surface-raised))] px-4 py-3 shadow-sm">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+      <div className="mx-auto max-w-4xl space-y-4">
+        <div className="study-sheet flex items-center gap-3 px-4 py-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.6)] text-primary">
             <BookOpen className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">
-              {isZh ? '正在打开今日内容' : 'Opening today'}
+              {isZh ? '正在打开' : 'Opening'}
             </p>
             <p className="text-xs text-muted-foreground">
-              {isZh ? '读取词书和进度。' : 'Reading your word book and progress.'}
+              {isZh ? '读取词书和进度' : 'Loading words and progress'}
             </p>
           </div>
-          <div className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-muted sm:block">
+          <div className="hidden h-1 w-24 overflow-hidden rounded-full bg-muted sm:block">
             <div className="h-full w-1/2 rounded-full bg-primary/55 animate-shimmer" />
           </div>
         </div>
-        <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)_260px]">
-          <Skeleton className="h-24 rounded-md bg-muted/70" />
-          <Skeleton className="h-36 rounded-md bg-muted/70" />
-          <Skeleton className="h-24 rounded-md bg-muted/70" />
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_240px]">
+          <Skeleton className="h-56 rounded-xl bg-muted/60" />
+          <Skeleton className="h-40 rounded-xl bg-muted/60" />
         </div>
       </div>
     </div>

@@ -11,41 +11,41 @@
 @layer base {
   /* VocabDaily product tokens: quiet study surfaces, ink contrast, restrained accents. */
   :root {
-    --background: 42 32% 97%;
+    --background: 44 14% 91%;
     --foreground: 222 28% 11%;
-    --card: 0 0% 100%;
+    --card: 44 20% 95%;
     --card-foreground: 222 32% 10%;
-    --popover: 0 0% 100%;
+    --popover: 44 20% 95%;
     --popover-foreground: 222 32% 10%;
-    --primary: 218 24% 34%;
+    --primary: 218 28% 34%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 20% 91%;
+    --secondary: 43 12% 86%;
     --secondary-foreground: 222 24% 15%;
-    --muted: 42 20% 91%;
-    --muted-foreground: 222 11% 38%;
-    --accent: 218 24% 34%;
+    --muted: 43 11% 85%;
+    --muted-foreground: 222 10% 35%;
+    --accent: 218 28% 34%;
     --accent-foreground: 0 0% 100%;
     --destructive: 350 75% 54%;
     --destructive-foreground: 0 0% 98%;
-    --border: 38 16% 82%;
-    --input: 38 16% 82%;
-    --ring: 218 24% 34%;
+    --border: 42 12% 74%;
+    --input: 42 12% 74%;
+    --ring: 218 28% 34%;
     --radius: 0.375rem;
 
     /* Semantic learning accents */
-    --accent-practice: 218 28% 42%;
-    --accent-coach: 206 20% 38%;
+    --accent-practice: 218 28% 38%;
+    --accent-coach: 206 18% 34%;
     --accent-exam: 34 84% 46%;
     --accent-memory: 176 34% 32%;
     --accent-error: 350 75% 54%;
-    --sidebar-background: 0 0% 100%;
+    --sidebar-background: 44 17% 92%;
     --sidebar-foreground: 222 22% 18%;
     --sidebar-primary: 218 25% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 42 26% 95%;
+    --sidebar-accent: 43 13% 86%;
     --sidebar-accent-foreground: 222 22% 16%;
-    --sidebar-border: 38 16% 82%;
-    --sidebar-ring: 218 24% 34%;
+    --sidebar-border: 42 12% 74%;
+    --sidebar-ring: 218 28% 34%;
 
     /* Semantic status colors */
     --success: 158 38% 32%;
@@ -58,22 +58,24 @@
     --info-foreground: 0 0% 100%;
 
     /* Surface & gradient tokens */
-    --surface-elevated: 42 34% 98%;
-    --surface-raised: 0 0% 100%;
-    --surface-sunken: 42 24% 94%;
-    --border-strong: 38 15% 72%;
+    --surface-elevated: 44 17% 93%;
+    --surface-raised: 44 20% 95%;
+    --surface-sunken: 43 11% 86%;
+    --border-strong: 42 10% 63%;
     --shadow-studio: 222 32% 10%;
     --gradient-start: 214 38% 32%;
     --gradient-end: 207 44% 36%;
     --grid-line-color: 222 32% 10% / 0.024;
 
     /* Focus Sheet surfaces */
-    --paper: 42 38% 98%;
-    --paper-muted: 42 28% 95%;
-    --paper-line: 38 16% 82%;
+    --paper: 44 23% 95%;
+    --paper-muted: 43 13% 88%;
+    --paper-line: 42 12% 74%;
     --ink-soft: 222 12% 38%;
 
-    --font-ui: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --font-ui: "Avenir Next", "SF Pro Text", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --font-display: "Avenir Next", "SF Pro Display", "Segoe UI Variable Display", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --font-lexical: "New York", "Iowan Old Style", Georgia, "Times New Roman", serif;
     --font-code: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
     --text-12: 0.75rem;
     --text-14: 0.875rem;
@@ -90,35 +92,35 @@
 
   .dark {
     --background: 222 8% 24%;
-    --foreground: 220 14% 88%;
-    --card: 222 8% 28%;
+    --foreground: 220 13% 87%;
+    --card: 222 7% 28%;
     --card-foreground: 220 14% 89%;
-    --popover: 222 8% 27%;
+    --popover: 222 7% 28%;
     --popover-foreground: 220 14% 89%;
     --primary: 216 15% 60%;
     --primary-foreground: 222 16% 12%;
-    --secondary: 222 8% 29%;
+    --secondary: 222 7% 29%;
     --secondary-foreground: 220 13% 86%;
-    --muted: 222 8% 30%;
-    --muted-foreground: 220 9% 70%;
+    --muted: 222 7% 29%;
+    --muted-foreground: 220 8% 70%;
     --accent: 216 15% 60%;
     --accent-foreground: 222 16% 12%;
     --destructive: 0 54% 57%;
     --destructive-foreground: 210 25% 94%;
-    --border: 222 7% 36%;
-    --input: 222 7% 36%;
+    --border: 222 7% 34%;
+    --input: 222 7% 34%;
     --ring: 216 15% 58%;
-    --accent-practice: 216 17% 61%;
+    --accent-practice: 216 15% 58%;
     --accent-coach: 204 15% 58%;
     --accent-exam: 38 58% 55%;
     --accent-memory: 176 20% 48%;
-    --sidebar-background: 222 8% 21%;
+    --sidebar-background: 222 8% 22%;
     --sidebar-foreground: 220 13% 84%;
     --sidebar-primary: 216 15% 60%;
     --sidebar-primary-foreground: 222 16% 12%;
-    --sidebar-accent: 222 8% 24%;
+    --sidebar-accent: 222 7% 25%;
     --sidebar-accent-foreground: 220 13% 84%;
-    --sidebar-border: 222 7% 32%;
+    --sidebar-border: 222 7% 31%;
     --sidebar-ring: 216 15% 58%;
 
     /* Semantic status colors — dark */
@@ -132,17 +134,17 @@
     --info-foreground: 222 16% 12%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 222 8% 30%;
-    --surface-raised: 222 8% 28%;
-    --surface-sunken: 222 8% 23%;
-    --border-strong: 222 7% 43%;
+    --surface-elevated: 222 7% 30%;
+    --surface-raised: 222 7% 28%;
+    --surface-sunken: 222 7% 23%;
+    --border-strong: 222 7% 39%;
     --shadow-studio: 222 18% 8%;
     --gradient-start: 216 15% 54%;
     --gradient-end: 208 14% 50%;
     --grid-line-color: 220 18% 88% / 0.006;
-    --paper: 222 8% 28%;
-    --paper-muted: 222 8% 31%;
-    --paper-line: 222 7% 38%;
+    --paper: 222 7% 28%;
+    --paper-muted: 222 7% 31%;
+    --paper-line: 222 7% 35%;
     --ink-soft: 220 9% 70%;
   }
 }
@@ -172,8 +174,9 @@
   h1,
   h2,
   h3 {
+    font-family: var(--font-display);
     letter-spacing: 0;
-    font-weight: 600;
+    font-weight: 650;
   }
 
   ::selection {
@@ -186,7 +189,8 @@
   .study-premium-bg {
     position: relative;
     isolation: isolate;
-    background: hsl(var(--background));
+    background:
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken) / 0.5) 100%);
   }
 
   .study-premium-bg::before {
@@ -202,7 +206,8 @@
     position: relative;
     isolation: isolate;
     background:
-      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken) / 0.32) 100%);
+      radial-gradient(circle at 12% 6%, hsl(var(--surface-raised) / 0.68), transparent 34%),
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken) / 0.42) 100%);
   }
 
   .dark .home-study-bg {
@@ -285,19 +290,28 @@
   }
 
   .focus-sheet {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     border: 1px solid hsl(var(--paper-line) / 0.95);
-    border-radius: 10px;
+    border-radius: 12px;
     background:
-      linear-gradient(180deg, hsl(var(--paper)) 0%, hsl(var(--surface-raised)) 100%);
+      linear-gradient(180deg, hsl(var(--paper)) 0%, hsl(var(--surface-raised)) 100%),
+      repeating-linear-gradient(
+        180deg,
+        transparent 0,
+        transparent 31px,
+        hsl(var(--paper-line) / 0.12) 32px
+      );
     box-shadow:
-      0 1px 0 hsl(var(--shadow-studio) / 0.035),
-      0 18px 44px -38px hsl(var(--shadow-studio) / 0.28);
+      inset 2px 0 0 hsl(var(--accent-practice) / 0.14),
+      0 1px 0 hsl(var(--shadow-studio) / 0.03);
   }
 
   .focus-sheet-muted {
     border: 1px solid hsl(var(--paper-line) / 0.82);
-    border-radius: 8px;
-    background: hsl(var(--paper-muted) / 0.7);
+    border-radius: 10px;
+    background: hsl(var(--paper-muted) / 0.74);
   }
 
   .focus-row {
@@ -320,9 +334,39 @@
   }
 
   .focus-title {
+    font-family: var(--font-display);
     color: hsl(var(--foreground));
+    font-weight: 680;
+    letter-spacing: 0;
+  }
+
+  .focus-page-title {
+    font-family: var(--font-display);
+    font-weight: 680;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+
+  .focus-kicker {
+    font-family: var(--font-ui);
+    color: hsl(var(--muted-foreground));
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0;
+  }
+
+  .lexical-type {
+    font-family: var(--font-lexical);
+    font-weight: 650;
+    letter-spacing: -0.025em;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  .study-number {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    font-weight: 680;
+    letter-spacing: -0.02em;
   }
 
   .focus-quiet-card {
@@ -365,8 +409,15 @@
 
   .dark .focus-sheet {
     border-color: hsl(var(--paper-line) / 0.72);
-    background: hsl(var(--surface-raised));
-    box-shadow: none;
+    background:
+      linear-gradient(180deg, hsl(var(--paper)) 0%, hsl(var(--surface-raised)) 100%),
+      repeating-linear-gradient(
+        180deg,
+        transparent 0,
+        transparent 31px,
+        hsl(var(--paper-line) / 0.08) 32px
+      );
+    box-shadow: inset 3px 0 0 hsl(var(--accent-practice) / 0.16);
   }
 
   .dark .focus-sheet-muted,
@@ -380,6 +431,162 @@
 
   .dark .hover-lift:hover {
     box-shadow: none;
+  }
+
+  .workbook-page {
+    color: hsl(var(--foreground));
+  }
+
+  .study-sheet,
+  .question-sheet,
+  .study-rail-section {
+    position: relative;
+    border: 1px solid hsl(var(--paper-line) / 0.88);
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, hsl(var(--paper)) 0%, hsl(var(--surface-raised)) 100%),
+      repeating-linear-gradient(
+        180deg,
+        transparent 0,
+        transparent 31px,
+        hsl(var(--paper-line) / 0.1) 32px
+      );
+    box-shadow: 0 1px 0 hsl(var(--shadow-studio) / 0.03);
+  }
+
+  .study-sheet,
+  .question-sheet {
+    padding: 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .study-sheet,
+    .question-sheet {
+      padding: 1.5rem;
+    }
+  }
+
+  .study-rail-section {
+    padding: 1rem;
+    background: hsl(var(--paper) / 0.68);
+    box-shadow: none;
+  }
+
+  .study-label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .study-heading {
+    font-family: var(--font-display);
+    font-size: clamp(1.65rem, 1.2rem + 1.5vw, 2.35rem);
+    font-weight: 680;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+
+  .question-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 1.1rem + 1vw, 2rem);
+    font-weight: 650;
+    line-height: 1.18;
+    letter-spacing: -0.005em;
+    color: hsl(var(--foreground));
+  }
+
+  .study-copy {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.93rem;
+    line-height: 1.7;
+  }
+
+  .study-task-list {
+    overflow: hidden;
+    border: 1px solid hsl(var(--paper-line) / 0.82);
+    border-radius: 10px;
+    background: hsl(var(--paper-muted) / 0.48);
+  }
+
+  .study-task-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.85rem;
+    padding: 0.95rem 1rem;
+    border-bottom: 1px solid hsl(var(--paper-line) / 0.72);
+  }
+
+  .study-task-row:last-child {
+    border-bottom: 0;
+  }
+
+  @media (min-width: 640px) {
+    .study-task-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+  }
+
+  .inline-study-note {
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+
+  .word-entry {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .word-entry-headword {
+    font-family: var(--font-lexical);
+    font-size: clamp(3.1rem, 2rem + 5vw, 5.4rem);
+    font-weight: 650;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+  }
+
+  .answer-row {
+    border: 1px solid hsl(var(--paper-line) / 0.86);
+    border-radius: 10px;
+    background: hsl(var(--paper) / 0.7);
+  }
+
+  .answer-row[data-state="selected"] {
+    border-color: hsl(var(--accent-practice) / 0.46);
+    background: hsl(var(--accent-practice) / 0.08);
+  }
+
+  .answer-row[data-state="blocked"] {
+    border-color: hsl(var(--destructive) / 0.34);
+    background: hsl(var(--destructive) / 0.08);
+  }
+
+  .answer-row[data-state="correct"] {
+    border-color: hsl(var(--success) / 0.38);
+    background: hsl(var(--success) / 0.08);
+  }
+
+  .dark .study-sheet,
+  .dark .question-sheet,
+  .dark .study-rail-section {
+    border-color: hsl(var(--paper-line) / 0.72);
+    background:
+      linear-gradient(180deg, hsl(var(--paper)) 0%, hsl(var(--surface-raised)) 100%),
+      repeating-linear-gradient(
+        180deg,
+        transparent 0,
+        transparent 31px,
+        hsl(var(--paper-line) / 0.065) 32px
+      );
+    box-shadow: none;
+  }
+
+  .dark .study-rail-section {
+    background: hsl(var(--paper) / 0.68);
   }
 }
 

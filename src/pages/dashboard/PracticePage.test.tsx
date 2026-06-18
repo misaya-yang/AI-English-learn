@@ -138,8 +138,8 @@ describe('PracticePage retry and reveal behavior', () => {
     fireEvent.click(screen.getByLabelText('wrong answer one'));
     fireEvent.click(screen.getByRole('button', { name: /Check answer/i }));
 
-    expect(screen.getByText(/Not yet/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Correct answer/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Try again/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/^Answer$/i)).not.toBeInTheDocument();
     expect(recordEvidenceMock).not.toHaveBeenCalled();
     expect(addMistakeMock).not.toHaveBeenCalled();
   });
@@ -152,7 +152,8 @@ describe('PracticePage retry and reveal behavior', () => {
     fireEvent.click(screen.getByLabelText('the number of years somebody has lived'));
     fireEvent.click(screen.getByRole('button', { name: /Try again/i }));
 
-    expect(screen.getByText(/Recovered after retry/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/^Recovered$/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Marked recovered/i)).toBeInTheDocument();
     expect(reviewWordMock).toHaveBeenCalledWith('w-age', 'hard');
     expect(recordEventMock).toHaveBeenCalledWith(
       'practice-test-user',
@@ -169,7 +170,7 @@ describe('PracticePage retry and reveal behavior', () => {
     fireEvent.click(screen.getByLabelText('wrong answer two'));
     fireEvent.click(screen.getByRole('button', { name: /Try again/i }));
 
-    expect(screen.getByText(/Correct answer/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Answer$/i)).toBeInTheDocument();
     expect(screen.getAllByText('the number of years somebody has lived').length).toBeGreaterThan(0);
     expect(reviewWordMock).toHaveBeenCalledWith('w-age', 'again');
     expect(addMistakeMock).toHaveBeenCalledTimes(1);
@@ -181,8 +182,8 @@ describe('PracticePage retry and reveal behavior', () => {
     fireEvent.change(screen.getByPlaceholderText(/Type what you hear/i), { target: { value: 'wrong' } });
     fireEvent.click(screen.getByRole('button', { name: /Check answer/i }));
 
-    expect(screen.getAllByText(/Listen once more/i).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/Expected:/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Listen again/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Answer:/i)).not.toBeInTheDocument();
     expect(screen.queryByText('abandon')).not.toBeInTheDocument();
     expect(addMistakeMock).not.toHaveBeenCalled();
   });
@@ -195,8 +196,8 @@ describe('PracticePage retry and reveal behavior', () => {
     fireEvent.change(screen.getByPlaceholderText(/Type what you hear/i), { target: { value: 'still wrong' } });
     fireEvent.click(screen.getByRole('button', { name: /Try again/i }));
 
-    expect(screen.getByText(/Correct answer/i)).toBeInTheDocument();
-    expect(screen.getByText(/Expected: abandon/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Answer$/i)).toBeInTheDocument();
+    expect(screen.getByText(/Answer: abandon/i)).toBeInTheDocument();
     expect(reviewWordMock).toHaveBeenCalledWith('w-abandon', 'again');
     expect(addMistakeMock).toHaveBeenCalledTimes(1);
   });
