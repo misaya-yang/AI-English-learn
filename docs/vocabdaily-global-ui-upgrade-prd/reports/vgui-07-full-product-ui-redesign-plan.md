@@ -222,11 +222,11 @@ Pass 3, functional:
 
 2026-06-18 update:
 
-- Deployed production build `dpl_CjodFA8nVMeeXJ5k9YMzbkPeFjYh` to `https://www.uuedu.online`.
+- Deployed production build `dpl_DLPLHsH3mfNGZ7Pk9vicZMiM5m1c` to `https://www.uuedu.online`.
 - Verified `https://uuedu.online` redirects to the www production alias and the app shell returns 200.
 - Ran `BASE_URL=https://www.uuedu.online npm run smoke:prod` with explicit Supabase env: 8 passed, 0 warned, 0 failed.
-- Updated `scripts/prod-auth-flow.mjs` to accept the current onboarding final CTA, then ran `AUTH_FLOW_ACCOUNTS=3 BASE_URL=https://www.uuedu.online AUTH_FLOW_OUT_DIR=product-audit-2026-06-18/prod-auth-flow-post-deploy-2 npm run smoke:prod:auth-flow`.
-- Production auth evidence: 3 synthetic accounts registered, completed onboarding, logged in again, opened Today/Practice/Review, and reported 0 DB bootstrap 4xx/failed requests.
+- Updated `scripts/prod-auth-flow.mjs` to accept the current onboarding final CTA and to treat lingering Today loading copy as blocked, then ran `AUTH_FLOW_ACCOUNTS=3 BASE_URL=https://www.uuedu.online AUTH_FLOW_OUT_DIR=product-audit-2026-06-18/prod-auth-flow-post-deploy-final npm run smoke:prod:auth-flow`.
+- Production auth evidence: 3 synthetic accounts registered, completed onboarding, logged in again, opened Today/Practice/Review after loading settled, and reported 0 DB bootstrap 4xx/failed requests.
 
 ## Required Commands
 

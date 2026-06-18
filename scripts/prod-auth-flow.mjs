@@ -25,6 +25,8 @@ const OUT_DIR =
   );
 
 const DB_BOOTSTRAP_RE = /api\/supabase\/rest\/v1\/(users|profiles|user_learning_profiles)/;
+const BLOCKED_LOADING_RE =
+  /正在打开学习任务|正在确认登录状态|正在打开今日内容|正在读取今日内容|Opening today|Reading today|Confirming sign in/;
 const ROUTES = ['/dashboard/today', '/dashboard/practice', '/dashboard/review'];
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -79,7 +81,9 @@ async function waitUsableDashboard(page, label) {
         const text = document.body.innerText || '';
         return (
           /今天|今日|复习|练习|VocabDaily/.test(text) &&
-          !/正在打开学习任务|正在确认登录状态/.test(text) &&
+          !/正在打开学习任务|正在确认登录状态|正在打开今日内容|正在读取今日内容|Opening today|Reading today|Confirming sign in/.test(
+            text,
+          ) &&
           text.length > 160
         );
       },
@@ -179,7 +183,7 @@ async function loginAndCheck(browser, account, index) {
     const body = await page.locator('body').innerText({ timeout: 10_000 }).catch(() => '');
     const host = new URL(page.url()).host;
     const mainVisible = await page.locator('main, [role="main"], h1').first().isVisible({ timeout: 5_000 }).catch(() => false);
-    const blockedLoading = /正在打开学习任务|正在确认登录状态/.test(body) || body.trim().length < 120;
+    const blockedLoading = BLOCKED_LOADING_RE.test(body) || body.trim().length < 120;
     bucket.routeChecks.push({
       route,
       url: page.url(),
