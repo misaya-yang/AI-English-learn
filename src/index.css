@@ -91,61 +91,62 @@
   }
 
   .dark {
-    --background: 222 8% 24%;
-    --foreground: 220 13% 87%;
-    --card: 222 7% 28%;
-    --card-foreground: 220 14% 89%;
-    --popover: 222 7% 28%;
-    --popover-foreground: 220 14% 89%;
-    --primary: 216 15% 60%;
-    --primary-foreground: 222 16% 12%;
-    --secondary: 222 7% 29%;
-    --secondary-foreground: 220 13% 86%;
-    --muted: 222 7% 29%;
-    --muted-foreground: 220 8% 70%;
-    --accent: 216 15% 60%;
-    --accent-foreground: 222 16% 12%;
+    color-scheme: dark;
+    --background: 40 7% 32%;
+    --foreground: 40 13% 88%;
+    --card: 40 7% 36%;
+    --card-foreground: 40 14% 90%;
+    --popover: 40 7% 36%;
+    --popover-foreground: 40 14% 90%;
+    --primary: 214 18% 67%;
+    --primary-foreground: 222 18% 14%;
+    --secondary: 40 7% 37%;
+    --secondary-foreground: 40 13% 87%;
+    --muted: 40 6% 38%;
+    --muted-foreground: 40 8% 74%;
+    --accent: 214 18% 67%;
+    --accent-foreground: 222 18% 14%;
     --destructive: 0 54% 57%;
     --destructive-foreground: 210 25% 94%;
-    --border: 222 7% 34%;
-    --input: 222 7% 34%;
-    --ring: 216 15% 58%;
-    --accent-practice: 216 15% 58%;
-    --accent-coach: 204 15% 58%;
+    --border: 40 6% 45%;
+    --input: 40 6% 45%;
+    --ring: 214 18% 64%;
+    --accent-practice: 214 18% 64%;
+    --accent-coach: 206 16% 63%;
     --accent-exam: 38 58% 55%;
     --accent-memory: 176 20% 48%;
-    --sidebar-background: 222 8% 22%;
-    --sidebar-foreground: 220 13% 84%;
-    --sidebar-primary: 216 15% 60%;
-    --sidebar-primary-foreground: 222 16% 12%;
-    --sidebar-accent: 222 7% 25%;
-    --sidebar-accent-foreground: 220 13% 84%;
-    --sidebar-border: 222 7% 31%;
-    --sidebar-ring: 216 15% 58%;
+    --sidebar-background: 40 7% 30%;
+    --sidebar-foreground: 40 13% 86%;
+    --sidebar-primary: 214 18% 67%;
+    --sidebar-primary-foreground: 222 18% 14%;
+    --sidebar-accent: 40 6% 35%;
+    --sidebar-accent-foreground: 40 13% 86%;
+    --sidebar-border: 40 6% 42%;
+    --sidebar-ring: 214 18% 64%;
 
     /* Semantic status colors — dark */
     --success: 158 24% 52%;
-    --success-foreground: 222 16% 12%;
+    --success-foreground: 222 18% 14%;
     --warning: 38 62% 55%;
     --warning-foreground: 38 40% 12%;
     --danger: 0 54% 57%;
     --danger-foreground: 210 25% 94%;
     --info: 214 20% 58%;
-    --info-foreground: 222 16% 12%;
+    --info-foreground: 222 18% 14%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 222 7% 30%;
-    --surface-raised: 222 7% 28%;
-    --surface-sunken: 222 7% 23%;
-    --border-strong: 222 7% 39%;
-    --shadow-studio: 222 18% 8%;
-    --gradient-start: 216 15% 54%;
-    --gradient-end: 208 14% 50%;
-    --grid-line-color: 220 18% 88% / 0.006;
-    --paper: 222 7% 28%;
-    --paper-muted: 222 7% 31%;
-    --paper-line: 222 7% 35%;
-    --ink-soft: 220 9% 70%;
+    --surface-elevated: 40 7% 38%;
+    --surface-raised: 40 7% 36%;
+    --surface-sunken: 40 7% 31%;
+    --border-strong: 40 6% 50%;
+    --shadow-studio: 40 12% 12%;
+    --gradient-start: 214 18% 58%;
+    --gradient-end: 205 15% 56%;
+    --grid-line-color: 40 18% 88% / 0.005;
+    --paper: 40 7% 36%;
+    --paper-muted: 40 6% 39%;
+    --paper-line: 40 6% 46%;
+    --ink-soft: 40 8% 74%;
   }
 }
 
@@ -169,6 +170,8 @@
     font-kerning: normal;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 0;
     font-synthesis-weight: none;
+    scrollbar-color: hsl(var(--border-strong) / 0.72) hsl(var(--background));
+    scrollbar-width: thin;
   }
 
   h1,
@@ -212,7 +215,7 @@
 
   .dark .home-study-bg {
     background:
-      linear-gradient(180deg, hsl(222 10% 26%) 0%, hsl(var(--background)) 58%, hsl(222 11% 23%) 100%);
+      linear-gradient(180deg, hsl(40 8% 34%) 0%, hsl(var(--background)) 58%, hsl(40 8% 30%) 100%);
   }
 
   .premium-panel,
@@ -736,21 +739,22 @@ html {
 
 /* ─── Custom scrollbar ─── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: hsl(var(--background));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.2);
+  border: 2px solid hsl(var(--background));
+  background: hsl(var(--border-strong) / 0.68);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.4);
+  background: hsl(var(--primary) / 0.58);
 }
 
 /* ─── Animation utilities ─── */
