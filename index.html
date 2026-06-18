@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#f6f8fb" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#444851" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#e5e3dc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#57544c" media="(prefers-color-scheme: dark)" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -18,7 +18,7 @@
         try {
           const key = 'vocabdaily-theme';
           const versionKey = 'vocabdaily-theme-version';
-          const currentVersion = '2026-06-workbench-dark-v4';
+          const currentVersion = '2026-06-workbook-contrast-v5';
           const previousVersion = localStorage.getItem(versionKey);
           const storedValue = localStorage.getItem(key);
           if (previousVersion !== currentVersion && storedValue && storedValue !== 'light') {
@@ -40,7 +40,7 @@
     </script>
   </head>
   <body>
-    <a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" onfocus="this.style.cssText='position:fixed;top:1rem;left:1rem;z-index:100;padding:0.5rem 1rem;background:#36577a;color:#fff;border-radius:0.375rem;outline:none;box-shadow:0 2px 12px rgba(20,30,45,.18)'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden'">Skip to content</a>
+    <a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" onfocus="this.style.cssText='position:fixed;top:1rem;left:1rem;z-index:100;padding:0.5rem 1rem;background:#344f70;color:#f5f1e8;border-radius:0.375rem;outline:none;box-shadow:0 2px 12px rgb(24 30 38 / .18)'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden'">Skip to content</a>
     <div id="root"></div>
     <div id="aria-live-region" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
     <script type="module" src="/src/main.tsx"></script>

@@ -25,7 +25,7 @@ const initialState: ThemeProviderState = {
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
-const THEME_VERSION = '2026-06-workbench-dark-v4';
+const THEME_VERSION = '2026-06-workbook-contrast-v5';
 
 const normalizeTheme = (value: string | null, fallback: Theme): Theme =>
   value === 'dark' || value === 'light' || value === 'system' ? value : fallback;

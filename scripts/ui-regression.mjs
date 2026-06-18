@@ -422,8 +422,8 @@ const scenarioDefinitions = [
       await page.getByRole('button', { name: /开始推荐文章|开始这篇|Start recommended passage|Start this passage/ }).click();
       await answerVisibleQuestionCards(page, 'hippocampus');
       await page.getByRole('button', { name: /提交答案|Submit answers/i }).click();
-      await page.getByText('阅读复盘').waitFor({ timeout: 10000 });
-      return captureScenario(page, viewport, 'reading-completion', /阅读复盘|Reading recap/);
+      await page.getByText(/阅读结果|阅读复盘|Reading result|Reading recap/).waitFor({ timeout: 10000 });
+      return captureScenario(page, viewport, 'reading-completion', /阅读结果|阅读复盘|Reading result|Reading recap/);
     },
   },
   {
@@ -434,8 +434,8 @@ const scenarioDefinitions = [
       await page.getByRole('button', { name: /开始答题|Start Questions/ }).click();
       await answerVisibleQuestionCards(page, '15');
       await page.getByRole('button', { name: /提交答案|Submit Answers/i }).click();
-      await page.getByText('听力复盘').waitFor({ timeout: 10000 });
-      return captureScenario(page, viewport, 'listening-completion', /听力复盘|Listening recap/);
+      await page.getByText(/听力结果|听力复盘|Listening result|Listening recap/).waitFor({ timeout: 10000 });
+      return captureScenario(page, viewport, 'listening-completion', /听力结果|听力复盘|Listening result|Listening recap/);
     },
   },
   {
@@ -448,8 +448,8 @@ const scenarioDefinitions = [
         await page.locator('input').nth(index).fill(answers[index]);
       }
       await page.getByRole('button', { name: /检查答案|Check Answers/i }).click();
-      await page.getByText('语法复盘').waitFor({ timeout: 10000 });
-      return captureScenario(page, viewport, 'grammar-completion', /语法复盘|Grammar recap/);
+      await page.getByText(/语法结果|语法复盘|Grammar result|Grammar recap/).waitFor({ timeout: 10000 });
+      return captureScenario(page, viewport, 'grammar-completion', /语法结果|语法复盘|Grammar result|Grammar recap/);
     },
   },
   {
@@ -460,8 +460,8 @@ const scenarioDefinitions = [
         'Today I practiced English writing because I want to express ideas clearly and build a reliable daily learning habit.',
       );
       await page.getByRole('button', { name: /提交评分/ }).click();
-      await page.getByText('写作复盘').waitFor({ timeout: 15000 });
-      return captureScenario(page, viewport, 'writing-completion', /写作复盘|Writing recap/);
+      await page.getByText(/写作结果|写作复盘|Writing result|Writing recap/).waitFor({ timeout: 15000 });
+      return captureScenario(page, viewport, 'writing-completion', /写作结果|写作复盘|Writing result|Writing recap/);
     },
   },
   {
@@ -504,8 +504,8 @@ const scenarioDefinitions = [
 
       await gotoPage(page, `${BASE_URL}/dashboard/pronunciation`);
       await page.getByRole('button', { name: /开始录音|Start recording/ }).click();
-      await page.getByText('发音复盘').waitFor({ timeout: 15000 });
-      return captureScenario(page, viewport, 'pronunciation-completion', /发音复盘|Pronunciation recap/);
+      await page.getByText(/发音结果|发音复盘|Pronunciation result|Pronunciation recap/).waitFor({ timeout: 15000 });
+      return captureScenario(page, viewport, 'pronunciation-completion', /发音结果|发音复盘|Pronunciation result|Pronunciation recap/);
     },
   },
 ];

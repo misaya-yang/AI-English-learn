@@ -5,7 +5,7 @@ import { chromium } from '@playwright/test';
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
 const OUT_DIR = process.env.LEARNING_FLOW_OUT_DIR || 'product-audit-2026-06-14/learning-flow-regression';
 const USER_ID = '00000000-0000-4000-8000-222222222222';
-const THEME_VERSION = '2026-06-workbench-dark-v4';
+const THEME_VERSION = '2026-06-workbook-contrast-v5';
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 960 },

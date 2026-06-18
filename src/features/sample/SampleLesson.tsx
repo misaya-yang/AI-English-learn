@@ -149,7 +149,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
             <div className="flex items-start gap-3">
               <span className={cn(
                 'flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
-                isCorrect ? 'bg-[hsl(var(--accent-practice))] text-white' : 'bg-amber-500 text-white',
+                isCorrect ? 'bg-[hsl(var(--accent-practice))] text-primary-foreground' : 'bg-amber-500 text-warning-foreground',
               )}>
                 <Check className="h-4 w-4" />
               </span>

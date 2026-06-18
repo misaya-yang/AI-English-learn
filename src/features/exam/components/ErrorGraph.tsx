@@ -43,7 +43,7 @@ export function ErrorGraph({ analytics, activeTag, onSelectTag }: ErrorGraphProp
                 <Cell
                   key={entry.tag}
                   fill={COLORS[index % COLORS.length]}
-                  stroke={entry.tag === activeTag ? '#ffffff' : 'transparent'}
+                  stroke={entry.tag === activeTag ? 'hsl(var(--background))' : 'transparent'}
                   strokeWidth={entry.tag === activeTag ? 2 : 0}
                 />
               ))}

@@ -658,7 +658,7 @@ export default function ProfilePage() {
           {plan === 'free' && (
 	            <div className="mt-4 flex flex-col gap-3 rounded-md border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 	              <p className="text-sm leading-relaxed text-amber-600 dark:text-amber-400">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
-	              <Button asChild size="sm" className="h-8 flex-shrink-0 rounded-md bg-amber-500 px-3 text-xs font-semibold text-black hover:bg-amber-400">
+	              <Button asChild size="sm" className="h-8 flex-shrink-0 rounded-md bg-amber-500 px-3 text-xs font-semibold text-warning-foreground hover:bg-amber-400">
 	                <Link to="/pricing">
 	                  {isZh ? '查看方案入口' : 'View plan access'}
 	                </Link>

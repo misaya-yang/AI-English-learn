@@ -11,24 +11,24 @@
 @layer base {
   /* VocabDaily product tokens: quiet study surfaces, ink contrast, restrained accents. */
   :root {
-    --background: 44 14% 91%;
-    --foreground: 222 28% 11%;
-    --card: 44 20% 95%;
+    --background: 44 16% 88%;
+    --foreground: 222 30% 12%;
+    --card: 44 18% 92%;
     --card-foreground: 222 32% 10%;
-    --popover: 44 20% 95%;
+    --popover: 44 18% 92%;
     --popover-foreground: 222 32% 10%;
     --primary: 218 28% 34%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 43 12% 86%;
+    --primary-foreground: 44 20% 96%;
+    --secondary: 43 12% 82%;
     --secondary-foreground: 222 24% 15%;
-    --muted: 43 11% 85%;
-    --muted-foreground: 222 10% 35%;
+    --muted: 43 12% 80%;
+    --muted-foreground: 222 12% 31%;
     --accent: 218 28% 34%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 44 20% 96%;
     --destructive: 350 75% 54%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 42 12% 74%;
-    --input: 42 12% 74%;
+    --destructive-foreground: 44 20% 96%;
+    --border: 42 10% 60%;
+    --input: 42 10% 48%;
     --ring: 218 28% 34%;
     --radius: 0.375rem;
 
@@ -38,40 +38,40 @@
     --accent-exam: 34 84% 46%;
     --accent-memory: 176 34% 32%;
     --accent-error: 350 75% 54%;
-    --sidebar-background: 44 17% 92%;
+    --sidebar-background: 44 16% 88%;
     --sidebar-foreground: 222 22% 18%;
     --sidebar-primary: 218 25% 32%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 43 13% 86%;
+    --sidebar-primary-foreground: 44 20% 96%;
+    --sidebar-accent: 43 12% 82%;
     --sidebar-accent-foreground: 222 22% 16%;
-    --sidebar-border: 42 12% 74%;
+    --sidebar-border: 42 10% 60%;
     --sidebar-ring: 218 28% 34%;
 
     /* Semantic status colors */
     --success: 158 38% 32%;
-    --success-foreground: 0 0% 100%;
+    --success-foreground: 44 20% 96%;
     --warning: 38 92% 50%;
     --warning-foreground: 38 40% 12%;
     --danger: 0 84.2% 60.2%;
-    --danger-foreground: 0 0% 98%;
+    --danger-foreground: 44 20% 96%;
     --info: 214 42% 43%;
-    --info-foreground: 0 0% 100%;
+    --info-foreground: 44 20% 96%;
 
     /* Surface & gradient tokens */
-    --surface-elevated: 44 17% 93%;
-    --surface-raised: 44 20% 95%;
-    --surface-sunken: 43 11% 86%;
-    --border-strong: 42 10% 63%;
+    --surface-elevated: 44 15% 90%;
+    --surface-raised: 44 18% 92%;
+    --surface-sunken: 43 12% 83%;
+    --border-strong: 42 10% 52%;
     --shadow-studio: 222 32% 10%;
     --gradient-start: 214 38% 32%;
     --gradient-end: 207 44% 36%;
     --grid-line-color: 222 32% 10% / 0.024;
 
     /* Focus Sheet surfaces */
-    --paper: 44 23% 95%;
-    --paper-muted: 43 13% 88%;
-    --paper-line: 42 12% 74%;
-    --ink-soft: 222 12% 38%;
+    --paper: 44 20% 92%;
+    --paper-muted: 43 12% 84%;
+    --paper-line: 42 10% 58%;
+    --ink-soft: 222 12% 31%;
 
     --font-ui: "Avenir Next", "SF Pro Text", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     --font-display: "Avenir Next", "SF Pro Display", "Segoe UI Variable Display", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -93,60 +93,60 @@
   .dark {
     color-scheme: dark;
     --background: 40 7% 32%;
-    --foreground: 40 13% 88%;
-    --card: 40 7% 36%;
+    --foreground: 40 14% 91%;
+    --card: 40 7% 34%;
     --card-foreground: 40 14% 90%;
-    --popover: 40 7% 36%;
+    --popover: 40 7% 34%;
     --popover-foreground: 40 14% 90%;
-    --primary: 214 18% 67%;
-    --primary-foreground: 222 18% 14%;
-    --secondary: 40 7% 37%;
+    --primary: 214 22% 80%;
+    --primary-foreground: 222 20% 13%;
+    --secondary: 40 7% 36%;
     --secondary-foreground: 40 13% 87%;
-    --muted: 40 6% 38%;
-    --muted-foreground: 40 8% 74%;
-    --accent: 214 18% 67%;
-    --accent-foreground: 222 18% 14%;
+    --muted: 40 6% 36%;
+    --muted-foreground: 40 9% 84%;
+    --accent: 214 22% 80%;
+    --accent-foreground: 222 20% 13%;
     --destructive: 0 54% 57%;
     --destructive-foreground: 210 25% 94%;
-    --border: 40 6% 45%;
-    --input: 40 6% 45%;
-    --ring: 214 18% 64%;
-    --accent-practice: 214 18% 64%;
-    --accent-coach: 206 16% 63%;
+    --border: 40 7% 48%;
+    --input: 40 8% 64%;
+    --ring: 214 22% 78%;
+    --accent-practice: 214 22% 78%;
+    --accent-coach: 206 18% 74%;
     --accent-exam: 38 58% 55%;
     --accent-memory: 176 20% 48%;
     --sidebar-background: 40 7% 30%;
     --sidebar-foreground: 40 13% 86%;
     --sidebar-primary: 214 18% 67%;
     --sidebar-primary-foreground: 222 18% 14%;
-    --sidebar-accent: 40 6% 35%;
+    --sidebar-accent: 40 7% 34%;
     --sidebar-accent-foreground: 40 13% 86%;
-    --sidebar-border: 40 6% 42%;
-    --sidebar-ring: 214 18% 64%;
+    --sidebar-border: 40 7% 46%;
+    --sidebar-ring: 214 22% 78%;
 
     /* Semantic status colors — dark */
     --success: 158 24% 52%;
-    --success-foreground: 222 18% 14%;
+    --success-foreground: 222 20% 13%;
     --warning: 38 62% 55%;
     --warning-foreground: 38 40% 12%;
     --danger: 0 54% 57%;
     --danger-foreground: 210 25% 94%;
-    --info: 214 20% 58%;
-    --info-foreground: 222 18% 14%;
+    --info: 214 22% 76%;
+    --info-foreground: 222 20% 13%;
 
     /* Surface & gradient tokens — dark */
-    --surface-elevated: 40 7% 38%;
-    --surface-raised: 40 7% 36%;
+    --surface-elevated: 40 7% 36%;
+    --surface-raised: 40 7% 34%;
     --surface-sunken: 40 7% 31%;
-    --border-strong: 40 6% 50%;
+    --border-strong: 40 7% 58%;
     --shadow-studio: 40 12% 12%;
-    --gradient-start: 214 18% 58%;
-    --gradient-end: 205 15% 56%;
+    --gradient-start: 214 22% 72%;
+    --gradient-end: 205 18% 70%;
     --grid-line-color: 40 18% 88% / 0.005;
-    --paper: 40 7% 36%;
-    --paper-muted: 40 6% 39%;
-    --paper-line: 40 6% 46%;
-    --ink-soft: 40 8% 74%;
+    --paper: 40 7% 34%;
+    --paper-muted: 40 6% 36%;
+    --paper-line: 40 7% 54%;
+    --ink-soft: 40 9% 84%;
   }
 }
 
@@ -215,7 +215,7 @@
 
   .dark .home-study-bg {
     background:
-      linear-gradient(180deg, hsl(40 8% 34%) 0%, hsl(var(--background)) 58%, hsl(40 8% 30%) 100%);
+      linear-gradient(180deg, hsl(40 8% 33%) 0%, hsl(var(--background)) 58%, hsl(40 8% 30%) 100%);
   }
 
   .premium-panel,
@@ -383,7 +383,7 @@
     border-color: hsl(var(--warning) / 0.28);
     background: hsl(var(--warning) / 0.1);
     color: hsl(var(--warning));
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.24);
+    box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.08);
   }
 
   .premium-action-bar {
@@ -407,7 +407,7 @@
 
   .dark .premium-status-chip {
     color: hsl(var(--warning));
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.06);
+    box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.04);
   }
 
   .dark .focus-sheet {
@@ -428,7 +428,7 @@
   .dark .premium-word-card,
   .dark .premium-word-card-back {
     border-color: hsl(var(--paper-line) / 0.68);
-    background: hsl(var(--surface-elevated) / 0.72);
+    background: hsl(var(--surface-elevated));
     box-shadow: none;
   }
 
@@ -589,7 +589,7 @@
   }
 
   .dark .study-rail-section {
-    background: hsl(var(--paper) / 0.68);
+    background: hsl(var(--surface-raised));
   }
 }
 
@@ -606,20 +606,6 @@
   background-size: 256px 256px;
 }
 
-/* ─── Glow utility classes (deprecated — softened to subtle elevation) ─── */
-.glow-emerald,
-.glow-card,
-.glow-surface {
-  box-shadow:
-    0 1px 0 hsl(var(--border) / 0.72),
-    0 16px 36px -28px hsl(var(--shadow-studio) / 0.28);
-}
-.dark .glow-emerald,
-.dark .glow-card,
-.dark .glow-surface {
-  box-shadow: none;
-}
-
 /* ─── Premium Grid Background (deprecated — disabled) ─── */
 .bg-grid {
   background-image: none;
@@ -634,7 +620,7 @@
 
 /* ─── Glass surface (deprecated — flattened to solid card) ─── */
 .glass {
-  background: rgba(255, 255, 255, 0.95);
+  background: hsl(var(--surface-raised));
   border: 1px solid hsl(var(--border));
 }
 .dark .glass {
@@ -643,7 +629,7 @@
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.98);
+  background: hsl(var(--surface-elevated));
   border: 1px solid hsl(var(--border));
 }
 .dark .glass-strong {
@@ -777,11 +763,6 @@ html {
   50% { transform: translateY(-6px); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
 .animate-bounce {
   animation: bounce 1s infinite;
 }
@@ -793,10 +774,6 @@ html {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite alternate;
 }
 
 @keyframes spin-slow {

@@ -55,7 +55,7 @@ const Toaster = ({ position = "bottom-right", mobileOffset, ...props }: ToasterP
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--success-bg": "hsl(var(--primary) / 0.92)",
-          "--success-text": "hsl(0 0% 100%)",
+          "--success-text": "hsl(var(--primary-foreground))",
           "--success-border": "hsl(var(--primary))",
           "--info-bg": "hsl(var(--accent) / 0.18)",
           "--info-text": "hsl(var(--foreground))",
