@@ -127,7 +127,7 @@ export function buildWeeklyLearningRecap(args: {
     !hasEvidence
       ? {
           en: 'Complete one Today task so next week has records to summarize.',
-          zh: '先完成一个 Today 任务，这样下周才有记录可总结。',
+          zh: '今天先练一次，这样下周才有记录可总结。',
           href: '/dashboard/today',
         }
       : recentDebt + dueNow > 0
@@ -144,7 +144,7 @@ export function buildWeeklyLearningRecap(args: {
             }
           : {
               en: 'Keep going and add one slightly harder coach drill next week.',
-              zh: '继续保持，下周加一个略难的教练训练。',
+              zh: '继续保持，下周加一个略难的专项练习。',
               href: '/dashboard/chat',
             };
 

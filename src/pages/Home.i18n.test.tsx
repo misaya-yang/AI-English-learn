@@ -41,9 +41,10 @@ describe('Home i18n surface', () => {
   it('does not mix Chinese-only marketing labels into English mode', () => {
     renderHome();
 
-    expect(screen.getByText('Review')).toBeInTheDocument();
-    expect(screen.getByText('New words')).toBeInTheDocument();
-    expect(screen.getByText('Practice')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Today\'s practice' })).toBeInTheDocument();
+    expect(screen.getByText('Review 12 words')).toBeInTheDocument();
+    expect(screen.getByText('Learn 5 new words')).toBeInTheDocument();
+    expect(screen.getByText('Do 1 short drill')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Try sample' })).toHaveAttribute('href', '/demo');
     expect(screen.queryByText('到期复习')).not.toBeInTheDocument();
     expect(screen.queryByText('新词')).not.toBeInTheDocument();

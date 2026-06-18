@@ -240,7 +240,7 @@ export default function ExamPrepPage() {
     review: {
       eyebrow: '结果',
       title: '看分数，也看要改哪里',
-      body: '评分、问题、改写和建议放在一起，只围绕这一次反馈展开。',
+      body: '评分、问题、改写和下一步放在一起，只围绕这一次反馈展开。',
     },
     insight: {
       eyebrow: '数据',
@@ -275,7 +275,7 @@ export default function ExamPrepPage() {
       id: 'review',
       label: '评分反馈',
       description: feedback ? `当前 Band ${feedback.scores.overallBand}` : '提交后查看评分',
-      metric: feedback ? `${latestNextActions.length} 条建议` : '待评分',
+      metric: feedback ? `${latestNextActions.length} 个下一步` : '待评分',
     },
     {
       id: 'insight',

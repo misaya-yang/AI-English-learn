@@ -52,7 +52,7 @@ export function MissionWhyBadge({
   const isZh = language.startsWith('zh');
   const label = isZh ? data.label.zh : data.label.en;
   const subtitle = isZh ? data.subtitle.zh : data.subtitle.en;
-  const whyHeading = isZh ? '任务依据' : 'Task basis';
+  const whyHeading = isZh ? '当前' : 'Now';
 
   return (
     <motion.div

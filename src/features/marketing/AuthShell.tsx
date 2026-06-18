@@ -56,21 +56,21 @@ export function AuthShell({
   const widthClass = size === 'wide' ? 'max-w-xl' : 'max-w-[420px]';
 
   const rail: SideRailCopy = {
-    headline: sideRail?.headline ?? t('auth.shell.headline', { defaultValue: 'Practice a little English each day.' }),
-    headlineZh: sideRail?.headlineZh ?? t('auth.shell.headlineZh', { defaultValue: '每天复习一点，练一点。' }),
+    headline: sideRail?.headline ?? t('auth.shell.headline', { defaultValue: 'Continue where you left off' }),
+    headlineZh: sideRail?.headlineZh ?? t('auth.shell.headlineZh', { defaultValue: '继续今天的内容' }),
     bullets: sideRail?.bullets ?? [
-      { en: t('auth.shell.bullet1', { defaultValue: 'Review words due today' }), zh: t('auth.shell.bullet1Zh', { defaultValue: '复习今天到期的词' }) },
-      { en: t('auth.shell.bullet2', { defaultValue: 'Practice writing and speaking' }), zh: t('auth.shell.bullet2Zh', { defaultValue: '练写作和口语' }) },
-      { en: t('auth.shell.bullet3', { defaultValue: 'Come back to recent mistakes' }), zh: t('auth.shell.bullet3Zh', { defaultValue: '回看最近错过的点' }) },
+      { en: t('auth.shell.bullet1', { defaultValue: 'Due reviews' }), zh: t('auth.shell.bullet1Zh', { defaultValue: '到期复习' }) },
+      { en: t('auth.shell.bullet2', { defaultValue: 'New words' }), zh: t('auth.shell.bullet2Zh', { defaultValue: '今日新词' }) },
+      { en: t('auth.shell.bullet3', { defaultValue: 'Short practice' }), zh: t('auth.shell.bullet3Zh', { defaultValue: '短练习' }) },
     ],
   };
   const railBody = isZh
-    ? t('auth.shell.bodyZh', { defaultValue: '登录后会看到今天要复习、要学习和要练习的内容。' })
-    : t('auth.shell.body', { defaultValue: 'Sign in to see the words and practice tasks due today.' });
+    ? t('auth.shell.bodyZh', { defaultValue: '登录后显示你的词、进度和最近错题。' })
+    : t('auth.shell.body', { defaultValue: 'Sign in to load your words, progress, and recent mistakes.' });
 
   return (
     <div className="study-premium-bg min-h-screen bg-background text-foreground">
-      <main className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-16 lg:py-20">
+      <main className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-16 lg:py-16">
         {/* Form column — first on mobile per direction. */}
         <div className="order-1 flex justify-center lg:order-2 lg:justify-start">
           <div className={cn('w-full', widthClass)}>
@@ -122,16 +122,16 @@ export function AuthShell({
         {/* Brand / reassurance column — hidden on mobile, primary on lg. */}
         <aside className="order-2 hidden flex-col justify-center lg:order-1 lg:flex">
           <BrandMark />
-          <h2 className="mt-8 max-w-md text-3xl font-semibold leading-tight text-foreground">
+          <h2 className="mt-7 max-w-md text-2xl font-semibold leading-tight text-foreground">
             {isZh ? rail.headlineZh : rail.headline}
           </h2>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             {railBody}
           </p>
-          <ul className="mt-8 space-y-2 text-xs text-muted-foreground">
+          <ul className="mt-6 max-w-sm divide-y divide-border/70 border-y border-border/70 text-xs text-muted-foreground">
             {rail.bullets.map((b) => (
-              <li key={b.en} className="flex items-start gap-2">
-                <Check className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden="true" />
+              <li key={b.en} className="flex items-center gap-2 py-2.5">
+                <Check className="h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden="true" />
                 <span>{isZh ? b.zh : b.en}</span>
               </li>
             ))}

@@ -1,0 +1,194 @@
+[
+  {
+    "name": "home",
+    "route": "/",
+    "theme": "light",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/light-home.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/",
+    "title": "今天先练这三件",
+    "sample": "Skip to content VocabDaily 怎么练 每日单词 定价 切换外观 切换语言 登录 今天先练这三件 先复习到期词，再学几个新词，最后做一组短练。 开始练习 看样课 复习 12 个词 6 分钟 学 5 个新词 5 分钟 做 1 个短练 4 分钟 今日安排 3 项，约 15 分钟 登录后显示你的今日内容 例词 nevertheless adv. It was raining. Nevertheless, we went out. mitigate v. Good notes mitigate las",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 409,
+    "bg": "rgb(246, 247, 249)",
+    "imgs": [
+      {
+        "src": "http://127.0.0.1:5177/vocabdaily-study-desk.jpg",
+        "complete": true,
+        "w": 1800,
+        "h": 1200
+      }
+    ]
+  },
+  {
+    "name": "home",
+    "route": "/",
+    "theme": "dark",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/dark-home.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/",
+    "title": "今天先练这三件",
+    "sample": "Skip to content VocabDaily 怎么练 每日单词 定价 切换外观 切换语言 登录 今天先练这三件 先复习到期词，再学几个新词，最后做一组短练。 开始练习 看样课 复习 12 个词 6 分钟 学 5 个新词 5 分钟 做 1 个短练 4 分钟 今日安排 3 项，约 15 分钟 登录后显示你的今日内容 例词 nevertheless adv. It was raining. Nevertheless, we went out. mitigate v. Good notes mitigate las",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 409,
+    "bg": "rgb(72, 77, 86)",
+    "imgs": [
+      {
+        "src": "http://127.0.0.1:5177/vocabdaily-study-desk.jpg",
+        "complete": true,
+        "w": 1800,
+        "h": 1200
+      }
+    ]
+  },
+  {
+    "name": "login",
+    "route": "/login",
+    "theme": "light",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/light-login.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/login",
+    "title": "欢迎回来",
+    "sample": "Skip to content 切换外观 切换语言 欢迎回来 登录后继续今天的练习。 邮箱 密码 忘记密码？ 登录 或 体验本地演示 不会创建真实账号，演示数据仅保存在当前浏览器。 还没有账号？ 注册 返回首页 VocabDaily 每日练习 每天复习一点，练一点。 登录后查看今天的复习、新词和短练。 到期词复习 写作和口语练习 最近错题回看",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 149,
+    "bg": "rgb(246, 247, 249)",
+    "imgs": [
+      {
+        "src": "http://127.0.0.1:5177/vocabdaily-study-desk.jpg",
+        "complete": true,
+        "w": 1800,
+        "h": 1200
+      }
+    ]
+  },
+  {
+    "name": "login",
+    "route": "/login",
+    "theme": "dark",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/dark-login.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/login",
+    "title": "欢迎回来",
+    "sample": "Skip to content 切换外观 切换语言 欢迎回来 登录后继续今天的练习。 邮箱 密码 忘记密码？ 登录 或 体验本地演示 不会创建真实账号，演示数据仅保存在当前浏览器。 还没有账号？ 注册 返回首页 VocabDaily 每日练习 每天复习一点，练一点。 登录后查看今天的复习、新词和短练。 到期词复习 写作和口语练习 最近错题回看",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 149,
+    "bg": "rgb(72, 77, 86)",
+    "imgs": [
+      {
+        "src": "http://127.0.0.1:5177/vocabdaily-study-desk.jpg",
+        "complete": true,
+        "w": 1800,
+        "h": 1200
+      }
+    ]
+  },
+  {
+    "name": "register",
+    "route": "/register",
+    "theme": "light",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/light-register.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/register",
+    "title": "创建账号",
+    "sample": "Skip to content 切换外观 切换语言 创建账号 免费开始，先完成今天这一组。 昵称 邮箱 密码 至少 8 个字符 包含大写字母 包含小写字母 包含数字 包含特殊字符 确认密码 同意 服务条款 与 隐私政策 创建账号 已有账号？ 立即登录 返回首页 VocabDaily 每日练习 每天复习一点，练一点。 登录后查看今天的复习、新词和短练。 到期词复习 写作和口语练习 最近错题回看",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 165,
+    "bg": "rgb(246, 247, 249)",
+    "imgs": [
+      {
+        "src": "http://127.0.0.1:5177/vocabdaily-study-desk.jpg",
+        "complete": true,
+        "w": 1800,
+        "h": 1200
+      }
+    ]
+  },
+  {
+    "name": "register",
+    "route": "/register",
+    "theme": "dark",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/dark-register.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/register",
+    "title": "创建账号",
+    "sample": "Skip to content 切换外观 切换语言 创建账号 免费开始，先完成今天这一组。 昵称 邮箱 密码 至少 8 个字符 包含大写字母 包含小写字母 包含数字 包含特殊字符 确认密码 同意 服务条款 与 隐私政策 创建账号 已有账号？ 立即登录 返回首页 VocabDaily 每日练习 每天复习一点，练一点。 登录后查看今天的复习、新词和短练。 到期词复习 写作和口语练习 最近错题回看",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 165,
+    "bg": "rgb(72, 77, 86)",
+    "imgs": [
+      {
+        "src": "http://127.0.0.1:5177/vocabdaily-study-desk.jpg",
+        "complete": true,
+        "w": 1800,
+        "h": 1200
+      }
+    ]
+  },
+  {
+    "name": "today",
+    "route": "/dashboard/today",
+    "theme": "light",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/light-today.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/dashboard/today",
+    "title": "学完 10 个新词",
+    "sample": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Round Three 演示 阶段 1 R 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 R 为什么先做 今日新词 今日新词还没完成。 今天 6月18日周四 学完 10 个新词 完成今日新词，再做短练。 继续学习 打开练习 前往考试训练 完成进度 0%",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 582,
+    "bg": "rgb(246, 247, 249)",
+    "imgs": []
+  },
+  {
+    "name": "today",
+    "route": "/dashboard/today",
+    "theme": "dark",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/dark-today.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/dashboard/today",
+    "title": "学完 10 个新词",
+    "sample": "Skip to content VocabDaily 学习 今日 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Round Three 演示 阶段 1 R 今日 复习、新词和短练习。 EN 中 开始练习 切换外观 R 为什么先做 今日新词 今日新词还没完成。 今天 6月18日周四 学完 10 个新词 完成今日新词，再做短练。 继续学习 打开练习 前往考试训练 完成进度 0%",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 575,
+    "bg": "rgb(72, 77, 86)",
+    "imgs": []
+  },
+  {
+    "name": "practice",
+    "route": "/dashboard/practice",
+    "theme": "light",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/light-practice.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/dashboard/practice",
+    "title": "今天练什么",
+    "sample": "Skip to content VocabDaily 学习 练习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Round Three 演示 阶段 1 R 练习 短测、听写和写作。 EN 中 返回今日 切换外观 R 练习 今天练什么 选一项开始。 当前模式 选择题 预计 6 分钟 题量 10 练习模式 选择题 先做 查词义和语境判断。 填空题 把单词放回句子。 听写 听发音",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 306,
+    "bg": "rgb(246, 247, 249)",
+    "imgs": []
+  },
+  {
+    "name": "practice",
+    "route": "/dashboard/practice",
+    "theme": "dark",
+    "screenshotPath": "product-audit-2026-06-18/full-ui-round3/screenshots/dark-practice.png",
+    "errors": [],
+    "url": "http://127.0.0.1:5177/dashboard/practice",
+    "title": "今天练什么",
+    "sample": "Skip to content VocabDaily 学习 练习 进度 0% 到期 0 连续 0 核心学习 今日单词 复习 练习 技能 阅读 听力 语法 发音练习 写作练习 更多 答疑 考试训练 我的词库 0 阶段 1 0 / 200 学习记录 阶段 1 Round Three 演示 阶段 1 R 练习 短测、听写和写作。 EN 中 返回今日 切换外观 R 练习 今天练什么 选一项开始。 当前模式 选择题 预计 6 分钟 题量 10 练习模式 选择题 先做 查词义和语境判断。 填空题 把单词放回句子。 听写 听发音",
+    "hits": [],
+    "overflow": 0,
+    "textLength": 306,
+    "bg": "rgb(72, 77, 86)",
+    "imgs": []
+  }
+]

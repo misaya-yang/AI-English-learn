@@ -41,7 +41,7 @@ export default function WritingPage() {
   const targetWords = writingType === 'ielts' ? 250 : writingType === 'business' ? 120 : 80;
   const wordProgress = Math.min(100, Math.round((wordCount / targetWords) * 100));
   const rubricPreview = [
-    { label: isZh ? '任务回应' : 'Task response', value: writingType === 'ielts' ? 'Band' : 'Focus' },
+    { label: isZh ? '题目回应' : 'Task response', value: writingType === 'ielts' ? 'Band' : 'Focus' },
     { label: isZh ? '结构连贯' : 'Coherence', value: isZh ? '段落' : 'Flow' },
     { label: isZh ? '词汇资源' : 'Lexical range', value: isZh ? '表达' : 'Range' },
     { label: isZh ? '语法准确' : 'Grammar', value: isZh ? '准确' : 'Accuracy' },
@@ -69,13 +69,13 @@ export default function WritingPage() {
   const writingRecap = gradeResult && !isGrading ? (
     <LearningCompletionState
       icon={CheckCircle2}
-      eyebrow={isZh ? '写作复盘' : 'Writing recap'}
+      eyebrow={isZh ? '写作结果' : 'Writing result'}
       title={isZh ? `本轮写作 ${gradeResult.overallScore}/100` : `Writing score ${gradeResult.overallScore}/100`}
       description={
         gradeResult.overallScore >= 80
           ? (isZh ? '表达已经比较稳，下一轮重点是精修句式和更高级词汇。' : 'The draft is strong. Next, polish sentence variety and lexical range.')
           : gradeResult.overallScore >= 60
-            ? (isZh ? '结构和表达有基础，建议优先处理评分维度里最低的一项。' : 'The structure is workable. Start with the lowest scoring dimension.')
+            ? (isZh ? '结构和表达有基础，先处理评分维度里最低的一项。' : 'The structure is workable. Start with the lowest scoring dimension.')
             : (isZh ? '先把核心观点和段落结构稳住，再做语言层面的修饰。' : 'Stabilize the core idea and paragraph structure before polishing language.')
       }
       metrics={[
@@ -159,7 +159,7 @@ export default function WritingPage() {
               <p className="text-sm font-semibold text-foreground">
                 {gradeResult
                   ? (isZh ? `当前得分 ${gradeResult.overallScore}/100` : `Current score ${gradeResult.overallScore}/100`)
-                  : (isZh ? '提交后查看修改建议' : 'Submit to review edits')}
+                  : (isZh ? '提交后查看修改点' : 'Submit to review edits')}
               </p>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
                 {isZh
@@ -210,7 +210,7 @@ export default function WritingPage() {
               <span>{wordCount} {isZh ? '词' : 'words'}</span>
               {writingType === 'ielts' && (
                 <span className={wordCount >= 250 ? 'text-green-500' : 'text-orange-500'}>
-                  {isZh ? '建议至少 250 词' : 'Aim for 250+ words'}
+                  {isZh ? '目标 250+ 词' : 'Aim for 250+ words'}
                 </span>
               )}
             </div>
@@ -278,7 +278,7 @@ export default function WritingPage() {
                 {gradeResult.suggestions.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">{isZh ? '修改建议' : 'Suggestions'}</CardTitle>
+                      <CardTitle className="text-sm">{isZh ? '修改点' : 'Suggestions'}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {gradeResult.suggestions.map((s) => (

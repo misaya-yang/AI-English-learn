@@ -140,7 +140,7 @@ export default function SettingsPage() {
   const lifecycleStatus = !localSettings.notifications || !localSettings.lifecycleReminders
     ? '学习提醒已关闭'
     : todayCompleted
-      ? '今日任务已完成，不会继续提醒'
+      ? '今日内容已完成，不会继续提醒'
       : lifecycleQuietNow
         ? '现在处于安静时间，不会推送'
         : lifecyclePreview
@@ -439,12 +439,12 @@ export default function SettingsPage() {
                                 {lifecyclePreview.titleZh}：{lifecyclePreview.bodyZh}
                               </p>
                               <Button asChild variant="outline" size="sm" className="mt-3 h-8 rounded-md">
-                                <Link to={lifecyclePreview.href}>打开对应任务</Link>
+                                <Link to={lifecyclePreview.href}>打开对应练习</Link>
                               </Button>
                             </>
                           ) : (
                             <p className="mt-1 text-sm text-muted-foreground">
-                              提醒只会在开启通知、避开安静时间、且今日任务未完成时出现。
+                              提醒只会在开启通知、避开安静时间、且今日内容未完成时出现。
                             </p>
                           )}
                         </div>
@@ -497,7 +497,7 @@ export default function SettingsPage() {
                       setLocalSettings((s) => ({ ...s, maxReviewCount: Number(event.target.value) }));
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">Review 页面和 Today 复习任务不会超过这个上限。</p>
+                  <p className="text-xs text-muted-foreground">Review 页面和 Today 复习不会超过这个上限。</p>
                 </div>
               </div>
 

@@ -106,7 +106,7 @@ export function ExamBriefPanel({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-medium text-foreground">仿真计时进行中</p>
-                <p className="text-xs text-muted-foreground">{taskType === 'task1' ? '小作文建议 20 分钟' : '大作文建议 40 分钟'}</p>
+                <p className="text-xs text-muted-foreground">{taskType === 'task1' ? '小作文 20 分钟' : '大作文 40 分钟'}</p>
               </div>
               <Badge className="rounded-md bg-[hsl(var(--accent-exam)/0.16)] text-foreground hover:bg-[hsl(var(--accent-exam)/0.20)]">
                 <Timer className="mr-1 h-3.5 w-3.5" /> {formatSeconds(simulationRemainingSec)}

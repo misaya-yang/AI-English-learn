@@ -1,9 +1,9 @@
-// sessionRecap.ts — end-of-session recap derivation.
+// End-of-session recap derivation.
 //
 // After Review or Practice completes we want the learner to see:
 //   1. What improved this session (specific + countable).
 //   2. What still needs another touch (specific + countable).
-//   3. One precise piece of encouragement (no empty praise — has to
+//   3. One precise piece of encouragement (no empty praise, it has to
 //      reference the actual session).
 //   4. The single best next step, with a deep link.
 //
@@ -160,8 +160,8 @@ const buildReviewRecap = (
         ctaZh: '返回今日',
         href: '/dashboard/today',
         reason: {
-          en: 'No FSRS reviews are due. Keep the momentum on today\'s mission.',
-          zh: '当前没有到期复习，继续推进今日任务即可。',
+          en: 'No FSRS reviews are due. Continue with today\'s list.',
+          zh: '当前没有到期复习，继续今天的内容即可。',
         },
       },
     };
@@ -302,11 +302,11 @@ const buildPracticeRecap = (
       encouragement,
       nextAction: {
         ctaEn: 'Review the mistake',
-        ctaZh: '复盘错题',
+        ctaZh: '查看错题',
         href: '/dashboard/chat',
         reason: {
           en: `${needsReviewCount} item${needsReviewCount > 1 ? 's are' : ' is'} fresh. Review while the details are still clear.`,
-          zh: `${needsReviewCount} 题刚暴露，现在复盘最省力。`,
+          zh: `${needsReviewCount} 题刚暴露，现在处理最省力。`,
         },
       },
     };
@@ -340,8 +340,8 @@ const buildPracticeRecap = (
       ctaZh: '返回今日',
       href: '/dashboard/today',
       reason: {
-        en: 'Session is clean. Keep the momentum on today\'s mission.',
-        zh: '本轮稳定，继续推进今日任务即可。',
+        en: 'Session is clean. Continue with today\'s list.',
+        zh: '本轮稳定，继续今天的内容即可。',
       },
     },
   };

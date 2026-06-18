@@ -45,7 +45,7 @@ describe('buildSocraticRecoveryPrompt', () => {
       userAnswer: '错误选项',
       language: 'zh-CN',
     });
-    expect(payload!.visible).toContain('Socratic');
+    expect(payload!.visible).toBe('我刚刚答错了这道题，先给我一个提示，不要直接说答案。');
     expect(payload!.api).toMatch(/不要直接给出/);
     expect(payload!.api).toMatch(/Socratic 提问/);
     expect(payload!.api).toContain('retry_with_hint');

@@ -73,7 +73,7 @@ const ROUTES: DashboardRouteMeta[] = [
     id: 'today',
     path: '/dashboard/today',
     label: { en: 'Today', zh: '今日' },
-    description: { en: 'Today\'s task and follow-up practice.', zh: '今日任务与后续练习。' },
+    description: { en: 'Today\'s words and follow-up practice.', zh: '今日词汇与后续练习。' },
     icon: CalendarDays,
     group: 'learning',
     mobilePriority: 1,

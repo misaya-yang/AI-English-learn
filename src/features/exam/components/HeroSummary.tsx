@@ -119,7 +119,7 @@ export function HeroSummary({
                 <span className="font-medium text-foreground">{selectedUnitProgress}%</span>
               </div>
               <div className="flex items-center justify-between">
-                <span>本轮建议任务</span>
+                <span>本轮先做</span>
                 <span className="font-medium text-foreground">{taskType === 'task1' ? '小作文' : '大作文'}</span>
               </div>
             </div>

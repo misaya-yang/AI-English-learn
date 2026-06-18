@@ -70,7 +70,7 @@ const reasonCopy: Record<DailyCoachPlanReason, { title: { en: string; zh: string
     },
   },
   exam_boost: {
-    title: { en: 'Do one exam task', zh: '做一个考试任务' },
+    title: { en: 'Do one exam drill', zh: '做一个考试练习' },
     lead: {
       en: 'Use today for one focused exam exercise.',
       zh: '今天先完成一个考试练习。',

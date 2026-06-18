@@ -297,7 +297,7 @@ export default function LearningPathPage() {
               <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
               <div className="space-y-1">
                 <p className="text-sm font-medium">
-                  {isZh ? '下一步建议' : 'Suggested next step'}
+                  {isZh ? '下一步' : 'Next step'}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {nextLesson

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import {
-  AlertTriangle,
   Compass,
   RotateCcw,
   Target,
@@ -47,24 +46,6 @@ const VARIANT_BADGE: Record<MissionRecommendationVariant, string> = {
   default:  'bg-muted text-muted-foreground',
 };
 
-const VARIANT_HEADING: Record<MissionRecommendationVariant, { en: string; zh: string }> = {
-  recovery: { en: 'Recovery focus', zh: '回稳重点' },
-  review:   { en: 'Review pressure', zh: '复习紧迫' },
-  today:    { en: 'Today\'s mission', zh: '今日任务' },
-  sprint:   { en: 'Exam practice', zh: '考试训练' },
-  practice: { en: 'Targeted practice', zh: '针对练习' },
-  default:  { en: 'Suggested task', zh: '建议任务' },
-};
-
-const VARIANT_ALERT: Record<MissionRecommendationVariant, typeof Target> = {
-  recovery: AlertTriangle,
-  review:   RotateCcw,
-  today:    Target,
-  sprint:   Target,
-  practice: Compass,
-  default:  Target,
-};
-
 export function MissionRecommendationCards({
   cards,
   language,
@@ -73,17 +54,15 @@ export function MissionRecommendationCards({
 }: MissionRecommendationCardsProps) {
   if (!cards || cards.length === 0) return null;
   const isZh = language.startsWith('zh');
-  const ctaLabel = isZh ? '开始练习' : 'Start practice';
+  const ctaLabel = isZh ? '开始' : 'Start';
 
   return (
     <div
-      className={cn('grid w-full max-w-2xl gap-3 sm:grid-cols-2 lg:grid-cols-3', className)}
+      className={cn('w-full max-w-2xl divide-y divide-border rounded-md border border-border bg-background/70', className)}
       data-testid="mission-recommendation-cards"
     >
       {cards.map((card, index) => {
         const Icon = ICON[card.icon] || Target;
-        const HeadingIcon = VARIANT_ALERT[card.variant];
-        const headingLabel = isZh ? VARIANT_HEADING[card.variant].zh : VARIANT_HEADING[card.variant].en;
         const title = isZh ? card.title.zh : card.title.en;
         const reason = isZh ? card.reason.zh : card.reason.en;
         const estimatedMinutes = Math.max(1, Math.round(card.estimatedMinutes));
@@ -97,26 +76,12 @@ export function MissionRecommendationCards({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.18, delay: index * 0.04 }}
             className={cn(
-              'group relative flex w-full flex-col gap-3 rounded-md border p-4 text-left transition-colors duration-150',
+              'group grid w-full gap-3 p-3 text-left transition-colors duration-150 sm:grid-cols-[1fr_auto] sm:items-center',
               VARIANT_TONE[card.variant],
             )}
             data-testid="mission-recommendation-card"
             data-variant={card.variant}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className={cn('rounded-md p-1.5', VARIANT_BADGE[card.variant])}>
-                  <HeadingIcon className="h-3.5 w-3.5" />
-                </span>
-                <span className="text-[10px] font-medium opacity-90">
-                  {headingLabel}
-                </span>
-              </div>
-              <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-medium', VARIANT_BADGE[card.variant])}>
-                {isZh ? `约 ${estimatedMinutes} 分钟` : `~${estimatedMinutes} min`}
-              </span>
-            </div>
-
             <div className="flex items-start gap-3">
               <span className={cn('rounded-md p-2', VARIANT_BADGE[card.variant])}>
                 <Icon className="h-4 w-4" />
@@ -127,14 +92,19 @@ export function MissionRecommendationCards({
               </div>
             </div>
 
-            <span
-              className={cn(
-                'mt-1 inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium opacity-90 transition-opacity group-hover:opacity-100',
-                VARIANT_BADGE[card.variant],
-              )}
-            >
-              {ctaLabel}
-            </span>
+            <div className="flex items-center gap-2 sm:justify-end">
+              <span className="text-[11px] text-muted-foreground">
+                {isZh ? `${estimatedMinutes} 分钟` : `${estimatedMinutes} min`}
+              </span>
+              <span
+                className={cn(
+                  'inline-flex items-center justify-center rounded-md px-3 py-1.5 text-[11px] font-medium transition-opacity group-hover:opacity-100',
+                  VARIANT_BADGE[card.variant],
+                )}
+              >
+                {ctaLabel}
+              </span>
+            </div>
           </motion.button>
         );
       })}

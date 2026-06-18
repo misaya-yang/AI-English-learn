@@ -58,7 +58,7 @@ export function ExamReviewPanel({
         </div>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-5">
-          <ScoreCell title="任务" value={feedback.scores.taskResponse} />
+          <ScoreCell title="题目" value={feedback.scores.taskResponse} />
           <ScoreCell title="连贯" value={feedback.scores.coherenceCohesion} />
           <ScoreCell title="词汇" value={feedback.scores.lexicalResource} />
           <ScoreCell title="语法" value={feedback.scores.grammaticalRangeAccuracy} />
@@ -71,7 +71,7 @@ export function ExamReviewPanel({
           <p className="text-sm font-semibold">核心问题</p>
           <div className="mt-3 space-y-2">
             {feedback.issues.length === 0 ? (
-              <p className="text-sm text-muted-foreground">未发现明显问题，建议继续做下一次模拟巩固稳定性。</p>
+              <p className="text-sm text-muted-foreground">未发现明显问题，可以继续做下一次模拟巩固稳定性。</p>
             ) : (
               feedback.issues.map((issue, index) => (
                 <div key={`${issue.tag}-${index}`} className="rounded-md border border-border/60 bg-background/50 p-3">
@@ -85,7 +85,7 @@ export function ExamReviewPanel({
           {feedback.rewrites.length > 0 && (
             <>
               <Separator className="my-4" />
-              <p className="text-sm font-semibold">句级改写建议</p>
+              <p className="text-sm font-semibold">句级改写</p>
               <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
                 {feedback.rewrites.map((rewrite, index) => (
                   <li key={`${rewrite}-${index}`}>{rewrite}</li>
@@ -97,10 +97,10 @@ export function ExamReviewPanel({
 
         <div className="space-y-4">
           <div className="rounded-lg border border-border/70 bg-background/35 p-4">
-            <p className="text-sm font-semibold">建议练习</p>
+            <p className="text-sm font-semibold">下一组练习</p>
             <div className="mt-3 space-y-2">
               {latestNextActions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">完成更多评分后，这里会给出更具体的练习建议。</p>
+                <p className="text-sm text-muted-foreground">完成更多评分后，这里会显示更具体的练习。</p>
               ) : (
                 latestNextActions.map((action, index) => (
                   <div key={`${action}-${index}`} className="rounded-md border border-border/60 bg-background/50 px-3 py-2 text-sm text-muted-foreground">

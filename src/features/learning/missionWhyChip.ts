@@ -1,11 +1,11 @@
-// missionWhyChip.ts — pure mapping for the "Why this mission?" chip on Today.
+// missionWhyChip.ts — pure mapping for the "Why this now?" chip on Today.
 //
 // `buildMissionCard` (services/learningEngine) emits a stable `reason` enum
 // on the chosen primary action (recovery_mode, exam_boost, due_words,
 // today_words, weakness_drill, practice_gap, ...). This helper turns that
 // enum into a bilingual chip label + a visual variant + a short subtitle so
 // the Today hero can answer the learner's "why am I doing this?" in one
-// glance. Pure module — UI-agnostic.
+// glance. Pure module, UI-agnostic.
 
 export type MissionWhyVariant = 'recovery' | 'sprint' | 'review' | 'today' | 'weakness' | 'practice' | 'default';
 
@@ -19,26 +19,26 @@ export interface MissionWhyChipData {
 const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; zh: string }; subtitle: { en: string; zh: string } }> = {
   recovery_mode: {
     variant: 'recovery',
-    label: { en: 'Recovery mode', zh: '回稳模式' },
+    label: { en: 'Start with review', zh: '先复习' },
     subtitle: {
-      en: 'Backlog is high. Clear due reviews before adding new words.',
-      zh: '复习积压偏高，今天先把旧账压下去，再决定要不要加新词。',
+      en: 'Due words are piling up. Review first, then add new words if you still have time.',
+      zh: '到期词偏多，先复习；有余力再加新词。',
     },
   },
   exam_boost: {
     variant: 'sprint',
-    label: { en: 'Exam practice', zh: '考试训练' },
+    label: { en: 'Exam practice', zh: '考试练习' },
     subtitle: {
-      en: 'Best path to your next score gain is one structured exam-prep drill.',
-      zh: '今天安排一组结构化考试练习。',
+      en: 'Do one scored drill while the goal is fresh.',
+      zh: '今天做一组可评分练习。',
     },
   },
   due_words: {
     variant: 'review',
-    label: { en: 'Due backlog', zh: '到期积压' },
+    label: { en: 'Due reviews', zh: '到期复习' },
     subtitle: {
-      en: 'Reviews are stacking up. Clear them first to protect retention.',
-      zh: '到期复习正在堆积，先清掉再继续会更稳。',
+      en: 'Review these before they get harder to recall.',
+      zh: '先复习这些词，后面会更稳。',
     },
   },
   today_words: {
@@ -51,17 +51,17 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
   },
   weakness_drill: {
     variant: 'weakness',
-    label: { en: 'Weak-spot drill', zh: '薄弱点练习' },
+    label: { en: 'Weak spot', zh: '薄弱点' },
     subtitle: {
-      en: 'Recent errors are clustering. Drill them while the signal is fresh.',
-      zh: '最近错题集中在这一类，先做针对练习。',
+      en: 'Recent mistakes point here. Fix this while it is fresh.',
+      zh: '最近错题集中在这里，趁现在补一下。',
     },
   },
   practice_gap: {
     variant: 'practice',
     label: { en: 'Practice fill-in', zh: '巩固练习' },
     subtitle: {
-      en: 'Light mixed practice consolidates what you just learned.',
+      en: 'One mixed drill helps today\'s words stick.',
       zh: '用一组混合短练习收尾。',
     },
   },
@@ -70,10 +70,10 @@ const KNOWN: Record<string, { variant: MissionWhyVariant; label: { en: string; z
 const FALLBACK: MissionWhyChipData = {
   reasonId: 'default',
   variant: 'default',
-  label: { en: 'Suggested step', zh: '建议步骤' },
+  label: { en: 'Next step', zh: '下一步' },
   subtitle: {
-    en: 'This is the most useful next step for the current state.',
-    zh: '这是当前状态下最值得先做的一步。',
+    en: 'This fits what is due and what you just practiced.',
+    zh: '根据到期复习和刚练过的内容安排。',
   },
 };
 

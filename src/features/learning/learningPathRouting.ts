@@ -30,7 +30,7 @@ const routeBySurface: Record<LearningPathLessonTarget['surface'], string> = {
 };
 
 const labelBySurface: Record<LearningPathLessonTarget['surface'], { en: string; zh: string }> = {
-  today: { en: 'Today vocabulary set', zh: 'Today 词汇任务' },
+  today: { en: 'Today vocabulary set', zh: '今日词汇' },
   grammar: { en: 'Grammar drill', zh: '语法练习' },
   practice: { en: 'Practice drill', zh: '专项练习' },
   chat: { en: 'Guided roleplay', zh: '引导式角色练习' },

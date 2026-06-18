@@ -95,7 +95,7 @@ export function RoleplayMode({
           {/* Objectives */}
           <div className="space-y-1.5 mt-2">
             <p className="text-xs font-medium text-muted-foreground">
-              {isZh ? '任务目标' : 'Objectives'}
+              {isZh ? '练习目标' : 'Objectives'}
             </p>
             {activeScenario.objectives.map((obj) => {
               const done = completedObjectives.includes(obj.id);

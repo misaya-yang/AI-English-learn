@@ -156,7 +156,7 @@ export default function LeaderboardPage() {
   const movementCopy = snapshot.promoted
     ? '你本周记录在前段，继续完成今日学习即可。'
     : snapshot.demoted
-      ? '你本周记录偏少，建议先完成今日复习和短测。'
+      ? '你本周记录偏少，先完成今日复习和短测。'
       : snapshot.promotionCutoffRank
         ? `距离前 ${snapshot.promotionCutoffRank} 还差 ${Math.max(currentUserEntry ? currentUserEntry.rank - snapshot.promotionCutoffRank : 0, 0)} 名。`
         : '你本周记录已经在前列。';

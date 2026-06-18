@@ -429,7 +429,7 @@ export default function ReviewPage() {
                 items={[
                   { label: isZh ? '到期卡' : 'Due cards', value: 0, accent: 'memory' },
                   { label: isZh ? '今日新词' : 'Today words', value: dailyWords.length },
-                  { label: isZh ? '任务目标' : 'Mission target', value: reviewTaskTarget },
+                  { label: isZh ? '复习目标' : 'Review target', value: reviewTaskTarget },
                 ]}
                 className="border-t-0 pt-0"
               />
@@ -506,7 +506,7 @@ export default function ReviewPage() {
       }}
       metrics={[
         { label: language.startsWith('zh') ? '剩余卡片' : 'Remaining', value: remainingCount, accent: 'memory' },
-        { label: language.startsWith('zh') ? '任务目标' : 'Mission target', value: reviewTaskTarget },
+        { label: language.startsWith('zh') ? '复习目标' : 'Review target', value: reviewTaskTarget },
         { label: language.startsWith('zh') ? '当前卡片' : 'Current card', value: `${Math.min(currentIndex + 1, reviewItems.length)} / ${reviewItems.length}` },
         ...(isCurrentCardStubborn ? [{ label: language.startsWith('zh') ? '强化路径' : 'Reinforcement', value: `Lapse ${currentItem?.fsrs.lapses || 0}`, accent: 'warm' as const }] : []),
       ]}

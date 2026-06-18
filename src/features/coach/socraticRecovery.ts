@@ -69,7 +69,7 @@ export function buildSocraticRecoveryPrompt(
 
   if (isZh(lang)) {
     return {
-      visible: '我刚刚答错了这道题，请你按 COACHING_POLICY 用 Socratic 方式带我复盘。',
+      visible: '我刚刚答错了这道题，先给我一个提示，不要直接说答案。',
       api: `LEARNER_INCORRECT_ANSWER ${tagSuffix}\n` +
            `Question: ${question}\n` +
            `My answer: ${userAnswer || '(no answer captured)'}\n` +

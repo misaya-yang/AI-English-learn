@@ -192,7 +192,7 @@ export default function LoginPage() {
             <span className="opacity-80">{copy.noAccount}</span>{' '}
             <Link
               to={`/register${location.search}`}
-              className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+              className="font-medium text-primary transition-colors hover:text-primary/80"
             >
               {copy.register}
             </Link>
@@ -231,7 +231,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setResetEmail(email); setShowForgotPassword(true); }}
-                className="text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+                className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
               >
                 {copy.forgotPassword}
               </button>

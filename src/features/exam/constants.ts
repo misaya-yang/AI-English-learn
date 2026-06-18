@@ -1,7 +1,7 @@
 import type { FeedbackIssue, PlanTier } from '@/types/examContent';
 
 export const ISSUE_LABELS: Record<FeedbackIssue['tag'], string> = {
-  task_response: '任务回应',
+  task_response: '题目回应',
   coherence: '连贯衔接',
   lexical: '词汇资源',
   grammar: '语法准确',

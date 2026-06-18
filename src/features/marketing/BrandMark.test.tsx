@@ -26,7 +26,8 @@ describe('BrandMark', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('每日练习')).toBeInTheDocument();
+    expect(screen.getByText('英语学习')).toBeInTheDocument();
+    expect(screen.queryByText('每日练习')).not.toBeInTheDocument();
     expect(screen.getByLabelText('VocabDaily 返回首页')).toBeInTheDocument();
   });
 });

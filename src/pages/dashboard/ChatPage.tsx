@@ -46,8 +46,6 @@ import { ChatMemoryBanner } from '@/features/chat/components/ChatMemoryBanner';
 import { ChatMessageBubble } from '@/features/chat/components/ChatMessageBubble';
 import { ChatWelcome, buildRecommendations } from '@/features/chat/components/ChatWelcome';
 import { DatabaseStatusBanner } from '@/features/chat/components/DatabaseStatusBanner';
-import { MissionCards } from '@/features/coach/MissionCards';
-import { selectMissionCards } from '@/features/coach/missionCardSelector';
 import { QuizCanvasPanel } from '@/features/chat/components/QuizCanvasPanel';
 import { QuizRunFooter } from '@/features/chat/components/QuizRunFooter';
 import type { ChatModeOption } from '@/features/chat/types';
@@ -67,22 +65,13 @@ import { buildSocraticRecoveryPrompt } from '@/features/coach/socraticRecovery';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import {
   buildCoachEvidenceSnapshot,
-  getCoachStudioCopy,
-  type CoachStudioMode,
 } from '@/features/coach/coachStudio';
 
 const CHAT_MODE_OPTIONS: ChatModeOption[] = [
-  { id: 'study', label: 'Diagnose', labelZh: '诊断', icon: GraduationCap },
-  { id: 'quiz', label: 'Drill', labelZh: '训练', icon: FlaskConical },
-  { id: 'chat', label: 'Review', labelZh: '复盘', icon: NotebookPen },
+  { id: 'study', label: 'Ask', labelZh: '问答', icon: GraduationCap },
+  { id: 'quiz', label: 'Practice', labelZh: '练题', icon: FlaskConical },
+  { id: 'chat', label: 'Review', labelZh: '复习', icon: NotebookPen },
 ];
-
-const COACH_MODE_BY_CHAT_MODE: Record<ChatMode, CoachStudioMode> = {
-  study: 'diagnose',
-  quiz: 'drill',
-  chat: 'review',
-  canvas: 'diagnose',
-};
 
 const COACH_DISPLAY_LABELS: Record<string, { zh: string; en: string }> = {
   general_improvement: { zh: '综合提升', en: 'General improvement' },
@@ -93,7 +82,7 @@ const COACH_DISPLAY_LABELS: Record<string, { zh: string; en: string }> = {
   lexical_resource: { zh: '词汇资源', en: 'Lexical resource' },
   coherence: { zh: '连贯衔接', en: 'Coherence' },
   cohesion: { zh: '衔接手段', en: 'Cohesion' },
-  task_response: { zh: '任务回应', en: 'Task response' },
+  task_response: { zh: '题目回应', en: 'Task response' },
   pronunciation: { zh: '发音清晰度', en: 'Pronunciation' },
   vocabulary: { zh: '词汇巩固', en: 'Vocabulary' },
   retention: { zh: '记忆保持', en: 'Retention' },
@@ -295,8 +284,6 @@ export default function ChatPage() {
     );
   }, [activeBookSummary.dailyGoal, chatUserId, progress, streakCurrent]);
 
-  const currentCoachMode = COACH_MODE_BY_CHAT_MODE[chatMode];
-  const currentCoachCopy = getCoachStudioCopy(currentCoachMode);
   const coachEvidence = useMemo(
     () =>
       buildCoachEvidenceSnapshot({
@@ -340,26 +327,6 @@ export default function ChatPage() {
       learningProfile.target?.toLowerCase().includes('toefl') ||
       learningProfile.tracks?.includes('exam_boost'),
   }), [dueWords.length, dailyMission, learningProfile.level, learningProfile.target, learningProfile.tracks, language]);
-
-  const missionCards = useMemo(
-    () =>
-      selectMissionCards({
-        level: learningProfile.level,
-        dueCount: dueWords.length,
-        weaknessTags: chatWeakTags,
-        hasExamGoal:
-          (learningProfile.target?.toLowerCase().includes('ielts') ?? false) ||
-          (learningProfile.target?.toLowerCase().includes('toefl') ?? false) ||
-          (learningProfile.tracks?.includes('exam_boost') ?? false),
-      }),
-    [
-      learningProfile.level,
-      learningProfile.target,
-      learningProfile.tracks,
-      dueWords.length,
-      chatWeakTags,
-    ],
-  );
 
   const loadingStages = useMemo(
     () =>
@@ -1040,13 +1007,13 @@ export default function ChatPage() {
                   severity: 'medium',
                   message: language.startsWith('zh') ? '来自对话测验的错误回流。' : 'Captured from chat quiz attempt.',
                   suggestion: language.startsWith('zh')
-                    ? '建议完成对应专项讲解并加入复习。'
-                    : 'Take the remediation micro-lesson and review this card again.',
+                    ? '做一次对应短练，再加入复习。'
+                    : 'Do one short matching drill, then review this card again.',
                 },
               ],
               rewrites: [artifact.payload.explanation],
               nextActions: [
-                language.startsWith('zh') ? '完成 1 次补救练习' : 'Complete 1 remediation drill',
+                language.startsWith('zh') ? '完成 1 次对应短练' : 'Complete 1 matching short drill',
                 language.startsWith('zh') ? '24 小时后再次测验' : 'Retry in 24 hours',
               ],
               confidence: 0.7,
@@ -1335,7 +1302,7 @@ export default function ChatPage() {
                 {language.startsWith('zh') ? '英语答疑' : 'English help'}
               </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
-                {language.startsWith('zh') ? '诊断 / 训练 / 复盘' : 'Diagnose / Drill / Review'} · {messages.length > 0 ? `${messages.length} ${t('common.messages')}` : t('chat.ready')}
+                {language.startsWith('zh') ? '问词 / 改句 / 练题' : 'Ask / revise / practice'} · {messages.length > 0 ? `${messages.length} ${t('common.messages')}` : t('chat.ready')}
                 {quizSequence && (
                   <>
                     <span>·</span>
@@ -1396,17 +1363,15 @@ export default function ChatPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-muted-foreground">
-                  {isZh ? '当前模式' : 'Current mode'}
+                  {isZh ? '本次' : 'This chat'}
                 </p>
                 <h2 className="mt-0.5 text-sm font-semibold text-foreground">
-                  {isZh
-                    ? `${currentCoachCopy.label.zh}: ${coachFocusLabel}`
-                    : `${currentCoachCopy.label.en}: ${coachFocusLabel}`}
+                  {isZh ? '问词、改句、练错题' : 'Ask, revise, practice'}
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {isZh
-                    ? `${coachTargetLabel} · ${currentCoachCopy.description.zh}`
-                    : `${coachTargetLabel} · ${currentCoachCopy.description.en}`}
+                    ? `${coachFocusLabel} · ${coachTargetLabel}`
+                    : `${coachFocusLabel} · ${coachTargetLabel}`}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {coachModeSteps.map((step) => (
@@ -1451,7 +1416,7 @@ export default function ChatPage() {
                   {language.startsWith('zh') ? '已载入今日计划' : 'Daily plan loaded'}
                 </p>
                 <h3 className="mt-1 text-sm font-semibold text-foreground">
-                  {dailyPlanHandoff.focus || (language.startsWith('zh') ? '今日答疑任务' : 'Today help task')}
+                  {dailyPlanHandoff.focus || (language.startsWith('zh') ? '今日答疑' : 'Today help')}
                 </h3>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {language.startsWith('zh')
@@ -1479,13 +1444,6 @@ export default function ChatPage() {
           <div className={cn(contentWidthClass, 'mx-auto')}>
             {messages.length === 0 ? (
               <div className="space-y-4 py-4">
-                <div className="hidden md:block">
-                  <MissionCards
-                    selected={missionCards}
-                    onLaunch={(prompt) => setInput(prompt)}
-                    language={language}
-                  />
-                </div>
                 <ChatWelcome
                   title={t('chat.welcomeTitle')}
                   description={t('chat.welcomeDesc')}

@@ -96,7 +96,7 @@ export default function PronunciationPage() {
   const pronunciationRecap = session.result ? (
     <LearningCompletionState
       icon={CheckCircle2}
-      eyebrow={isZh ? '发音复盘' : 'Pronunciation recap'}
+      eyebrow={isZh ? '发音结果' : 'Pronunciation result'}
       title={isZh ? `本次发音 ${session.result.overallScore}/100` : `Pronunciation score ${session.result.overallScore}/100`}
       description={
         session.result.overallScore >= 80

@@ -51,10 +51,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
               {active && (
                 <motion.div
                   layoutId="bottomnav-indicator"
-                  className={cn(
-                    'absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full',
-                    'bg-primary',
-                  )}
+                  className="absolute -bottom-1.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-sm bg-primary"
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 />
               )}

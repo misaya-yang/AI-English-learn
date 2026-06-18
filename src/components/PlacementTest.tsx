@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -105,6 +106,8 @@ interface PlacementTestProps {
 }
 
 export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language?.startsWith('zh');
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -147,22 +150,24 @@ export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
     return (
       <div className="space-y-6 text-center">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-md border border-border bg-muted">
-          <span className="text-2xl font-bold text-emerald-600">{level}</span>
+          <span className="text-2xl font-bold text-primary">{level}</span>
         </div>
         <div>
-          <h2 className="text-xl font-semibold mb-2">测试完成！</h2>
+          <h2 className="mb-2 text-xl font-semibold">{isZh ? '测试完成' : 'Done'}</h2>
           <p className="text-muted-foreground">
-            答对 {correctCount}/{PLACEMENT_QUESTIONS.length} 题
+            {isZh
+              ? `答对 ${correctCount}/${PLACEMENT_QUESTIONS.length} 题`
+              : `${correctCount}/${PLACEMENT_QUESTIONS.length} correct`}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            建议水平：<strong>{level}</strong>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isZh ? '当前水平' : 'Level'}: <strong>{level}</strong>
           </p>
         </div>
         <Button
           onClick={() => onComplete(level)}
-          className="bg-emerald-600 hover:bg-emerald-700 w-full"
+          className="w-full"
         >
-          使用建议水平
+          {isZh ? '使用这个水平' : 'Use this level'}
         </Button>
       </div>
     );
@@ -171,7 +176,9 @@ export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-semibold mb-2">英语水平测试</h2>
+        <h2 className="mb-2 text-xl font-semibold">
+          {isZh ? '快速水平测试' : 'Quick level check'}
+        </h2>
         <p className="text-sm text-muted-foreground">
           {current + 1} / {PLACEMENT_QUESTIONS.length}
         </p>
@@ -203,15 +210,15 @@ export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
               onClick={() => handleSelect(i)}
               className={cn(
                 'flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left text-sm',
-                variant === 'idle' && 'border-border hover:border-emerald-200',
-                variant === 'default' && 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20',
-                variant === 'correct' && 'border-green-500 bg-green-50 dark:bg-green-900/20',
-                variant === 'wrong' && 'border-red-500 bg-red-50 dark:bg-red-900/20',
+                variant === 'idle' && 'border-border hover:border-primary/40',
+                variant === 'default' && 'border-primary bg-primary/10',
+                variant === 'correct' && 'border-[hsl(var(--success)/0.52)] bg-[hsl(var(--success)/0.12)]',
+                variant === 'wrong' && 'border-[hsl(var(--danger)/0.52)] bg-[hsl(var(--danger)/0.10)]',
               )}
             >
               <span className="flex-1">{option}</span>
-              {revealed && i === question.correct && <Check className="h-4 w-4 text-green-500" />}
-              {revealed && i === selected && i !== question.correct && <X className="h-4 w-4 text-red-500" />}
+              {revealed && i === question.correct && <Check className="h-4 w-4 text-[hsl(var(--success))]" />}
+              {revealed && i === selected && i !== question.correct && <X className="h-4 w-4 text-[hsl(var(--danger))]" />}
             </button>
           );
         })}
@@ -219,14 +226,14 @@ export function PlacementTest({ onComplete, onSkip }: PlacementTestProps) {
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={onSkip} className="flex-1">
-          跳过测试
+          {isZh ? '跳过' : 'Skip'}
         </Button>
         <Button
           onClick={handleConfirm}
           disabled={selected === null}
-          className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+          className="flex-1"
         >
-          {revealed ? '下一题' : '确认'}
+          {revealed ? (isZh ? '下一题' : 'Next') : (isZh ? '确认' : 'Check')}
         </Button>
       </div>
     </div>

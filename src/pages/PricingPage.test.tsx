@@ -242,7 +242,7 @@ describe('PricingPage — fail-closed pro checkout', () => {
 
     renderPricingPage();
 
-    expect(await screen.findByText('每日任务：新词 + 复习')).toBeInTheDocument();
-    expect(screen.queryByText('Daily mission with new words + review')).not.toBeInTheDocument();
+    expect(await screen.findByText('每日单词与复习')).toBeInTheDocument();
+    expect(screen.queryByText('Daily words and review')).not.toBeInTheDocument();
   });
 });

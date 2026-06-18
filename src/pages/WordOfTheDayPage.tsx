@@ -98,7 +98,7 @@ export default function WordOfTheDayPage() {
   const copy = isZh
     ? {
         startLearning: '开始学习',
-        dashboard: '进入今日任务',
+        dashboard: '进入今日',
         badge: '每日单词',
         subtitle: '每天一个词，先理解，再练一句。',
         definition: '定义',

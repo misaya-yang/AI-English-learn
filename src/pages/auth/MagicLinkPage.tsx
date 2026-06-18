@@ -81,7 +81,7 @@ export default function MagicLinkPage() {
                 setIsSent(false);
                 setEmail('');
               }}
-              className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+              className="font-medium text-primary transition-colors hover:text-primary/80"
             >
               {copy.resend}
             </button>
@@ -121,7 +121,7 @@ export default function MagicLinkPage() {
           <span className="opacity-80">{copy.preferPassword}</span>{' '}
           <Link
             to="/login"
-            className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            className="font-medium text-primary transition-colors hover:text-primary/80"
           >
             {copy.passwordLogin}
           </Link>

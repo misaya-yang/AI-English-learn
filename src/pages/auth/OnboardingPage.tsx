@@ -16,6 +16,16 @@ import {
   Target,
   Check,
   Loader2,
+  Briefcase,
+  Plane,
+  Utensils,
+  Cpu,
+  Home as HomeIcon,
+  Film,
+  FlaskConical,
+  HeartPulse,
+  Dumbbell,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buildAuthRedirect, resolveAuthRedirect } from '@/lib/authRedirect';
@@ -39,24 +49,24 @@ const cefrLevels: { level: CEFRLevel; label: string; labelZh: string; descriptio
   { level: 'C2', label: 'Proficiency', labelZh: '精通', description: 'Near-native fluency', descriptionZh: '接近母语流利度' },
 ];
 
-const topics: { id: Topic; label: string; labelZh: string; icon: string }[] = [
-  { id: 'Business', label: 'Business', labelZh: '商业', icon: '💼' },
-  { id: 'Academic', label: 'Academic', labelZh: '学术', icon: '🎓' },
-  { id: 'Travel', label: 'Travel', labelZh: '旅游', icon: '✈️' },
-  { id: 'Food', label: 'Food', labelZh: '美食', icon: '🍜' },
-  { id: 'Technology', label: 'Technology', labelZh: '科技', icon: '💻' },
-  { id: 'Daily Life', label: 'Daily Life', labelZh: '日常生活', icon: '🏠' },
-  { id: 'Entertainment', label: 'Entertainment', labelZh: '娱乐', icon: '🎬' },
-  { id: 'Science', label: 'Science', labelZh: '科学', icon: '🔬' },
-  { id: 'Health', label: 'Health', labelZh: '健康', icon: '💪' },
-  { id: 'Sports', label: 'Sports', labelZh: '运动', icon: '⚽' },
+const topics: { id: Topic; label: string; labelZh: string; icon: LucideIcon }[] = [
+  { id: 'Business', label: 'Business', labelZh: '商业', icon: Briefcase },
+  { id: 'Academic', label: 'Academic', labelZh: '学术', icon: GraduationCap },
+  { id: 'Travel', label: 'Travel', labelZh: '旅行', icon: Plane },
+  { id: 'Food', label: 'Food', labelZh: '饮食', icon: Utensils },
+  { id: 'Technology', label: 'Technology', labelZh: '科技', icon: Cpu },
+  { id: 'Daily Life', label: 'Daily Life', labelZh: '日常', icon: HomeIcon },
+  { id: 'Entertainment', label: 'Entertainment', labelZh: '影视', icon: Film },
+  { id: 'Science', label: 'Science', labelZh: '科学', icon: FlaskConical },
+  { id: 'Health', label: 'Health', labelZh: '健康', icon: HeartPulse },
+  { id: 'Sports', label: 'Sports', labelZh: '运动', icon: Dumbbell },
 ];
 
 const learningStyles: { id: LearningStyle; label: string; labelZh: string; description: string; descriptionZh: string }[] = [
-  { id: 'visual', label: 'Visual', labelZh: '视觉型', description: 'Learn best with images, charts, and visual aids', descriptionZh: '通过图片、图表和视觉线索学习更高效' },
-  { id: 'auditory', label: 'Auditory', labelZh: '听觉型', description: 'Learn best by listening and speaking', descriptionZh: '通过听力输入和开口表达学习更高效' },
-  { id: 'kinesthetic', label: 'Kinesthetic', labelZh: '动觉型', description: 'Learn best by doing and practicing', descriptionZh: '通过动手练习和反复实践学习更高效' },
-  { id: 'reading', label: 'Reading/Writing', labelZh: '读写型', description: 'Learn best by reading and taking notes', descriptionZh: '通过阅读和整理笔记学习更高效' },
+  { id: 'visual', label: 'Visual', labelZh: '图像', description: 'Images and structure', descriptionZh: '图片和结构' },
+  { id: 'auditory', label: 'Listening', labelZh: '听说', description: 'Listening and speaking', descriptionZh: '听和说' },
+  { id: 'kinesthetic', label: 'Practice', labelZh: '练习', description: 'Practice tasks', descriptionZh: '多做练习' },
+  { id: 'reading', label: 'Reading/Writing', labelZh: '读写', description: 'Reading and notes', descriptionZh: '阅读和笔记' },
 ];
 
 const examTargets: { id: OnboardingExamTarget; label: string; labelZh: string; description: string; descriptionZh: string }[] = [
@@ -78,11 +88,11 @@ const deadlines: { id: OnboardingDeadline; label: string; labelZh: string }[] = 
 ];
 
 const stepCopy: Record<number, { en: string; zh: string }> = {
-  1: { en: 'Tell us your level', zh: '告诉我们你的英语水平' },
-  2: { en: 'Choose your learning target', zh: '选择你的学习目标' },
-  3: { en: 'Set daily practice', zh: '设置每日练习' },
-  4: { en: 'Pick what you care about', zh: '选择你感兴趣的主题' },
-  5: { en: 'Confirm your starter plan', zh: '确认你的起始方案' },
+  1: { en: 'English level', zh: '英语水平' },
+  2: { en: 'Learning target', zh: '学习目标' },
+  3: { en: 'Daily practice', zh: '每日练习' },
+  4: { en: 'Topics', zh: '练习主题' },
+  5: { en: 'Practice format', zh: '练习方式' },
 };
 
 export default function OnboardingPage() {
@@ -220,23 +230,23 @@ export default function OnboardingPage() {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                {isZh ? '你的英语水平是？' : "What's your English level?"}
+                {isZh ? '选择英语水平' : 'Choose your level'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {isZh ? '选择你目前的英语水平' : 'Choose your current English level'}
+                {isZh ? '不确定的话，可以先做快速测试。' : 'Not sure? Take the quick test first.'}
               </p>
             </div>
 
             <Button
               type="button"
               variant="outline"
-              className="h-auto w-full border-2 border-dashed border-border bg-card py-4 text-foreground hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:border-emerald-500/30 dark:hover:bg-emerald-500/[0.05]"
+              className="h-auto w-full border-2 border-dashed border-border bg-card py-4 text-foreground hover:border-primary/40 hover:bg-primary/5"
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
                 <p className="font-medium">{isZh ? '做 10 道题判断英语水平' : 'Take a 10-question placement test'}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {isZh ? '几分钟内得到一个水平参考' : 'Get an automatic level estimate in a few minutes'}
+                  {isZh ? '几分钟得到一个参考' : 'Get a level estimate in a few minutes'}
                 </p>
               </div>
             </Button>
@@ -247,7 +257,7 @@ export default function OnboardingPage() {
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-card px-3 text-muted-foreground">
-                  {isZh ? '手动选择' : 'or pick manually'}
+                  {isZh ? '手动选择' : 'Manual choice'}
                 </span>
               </div>
             </div>
@@ -261,8 +271,8 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex items-center gap-4 rounded-md border-2 p-4 text-left transition-all',
                     preferences.cefrLevel === level.level
-                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
-                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/40',
                   )}
                   aria-pressed={preferences.cefrLevel === level.level}
                 >
@@ -270,7 +280,7 @@ export default function OnboardingPage() {
                     className={cn(
                       'flex h-12 w-12 items-center justify-center rounded-md text-base font-bold',
                       preferences.cefrLevel === level.level
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground',
                     )}
                   >
@@ -281,7 +291,7 @@ export default function OnboardingPage() {
                     <p className="text-sm text-muted-foreground">{isZh ? level.descriptionZh : level.description}</p>
                   </div>
                   {preferences.cefrLevel === level.level && (
-                    <Check className="h-5 w-5 text-emerald-500" aria-hidden="true" />
+                    <Check className="h-5 w-5 text-primary" aria-hidden="true" />
                   )}
                 </button>
               ))}
@@ -300,7 +310,7 @@ export default function OnboardingPage() {
                 {isZh ? '你这次学习的主要目标是？' : 'What are you learning for?'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {isZh ? '目标会影响起始词书、任务和练习路径' : 'Your target shapes the starter book, mission, and path'}
+                {isZh ? '用于选择词书和练习顺序' : 'Used for your book and practice order'}
               </p>
             </div>
 
@@ -313,8 +323,8 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex items-start gap-4 rounded-lg border-2 p-4 text-left transition-all',
                     preferences.examTarget === target.id
-                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
-                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/40',
                   )}
                   aria-pressed={preferences.examTarget === target.id}
                 >
@@ -322,7 +332,7 @@ export default function OnboardingPage() {
                     className={cn(
                       'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
                       preferences.examTarget === target.id
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground',
                     )}
                   >
@@ -391,8 +401,8 @@ export default function OnboardingPage() {
             ) : (
               <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
                 {isZh
-                  ? '如果之后切换到 IELTS/TOEFL，系统会自动改用学术词书和考试练习。'
-                  : 'If you switch to IELTS or TOEFL later, the app will move you to academic vocabulary and exam practice.'}
+                  ? '之后可以改成 IELTS/TOEFL。'
+                  : 'You can switch to IELTS or TOEFL later.'}
               </div>
             )}
           </div>
@@ -415,7 +425,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-6">
               <div className="text-center">
-                <span className="text-3xl font-semibold text-emerald-600 dark:text-emerald-400">
+                <span className="text-3xl font-semibold text-primary">
                   {preferences.dailyGoal}
                 </span>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -443,12 +453,12 @@ export default function OnboardingPage() {
                 <span>50</span>
               </div>
 
-              <div className="rounded-md border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/[0.06]">
+              <div className="rounded-md border border-primary/25 bg-primary/10 p-4">
                 <p className="text-sm text-foreground">
-                  <strong className="text-emerald-700 dark:text-emerald-300">
-                    {isZh ? '建议：' : 'Suggested:'}
+                  <strong className="text-primary">
+                    {isZh ? '参考：' : 'Reference:'}
                   </strong>{' '}
-                  {isZh ? '每天 10-15 个新词以获得最佳记忆效果。' : '10-15 words per day for optimal retention.'}
+                  {isZh ? '每天 10-15 个新词更容易完成。' : '10-15 new words per day is easier to finish.'}
                 </p>
               </div>
 
@@ -487,33 +497,36 @@ export default function OnboardingPage() {
                 <Target className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                {isZh ? '你对哪些主题感兴趣？' : 'What topics interest you?'}
+                {isZh ? '选择练习主题' : 'Choose practice topics'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {isZh ? '选择你感兴趣的主题' : 'Pick the content areas you want in daily practice'}
+                {isZh ? '至少选 2 个。' : 'Pick at least 2.'}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {topics.map((topic) => (
-                <button
-                  key={topic.id}
-                  type="button"
-                  onClick={() => toggleTopic(topic.id)}
-                  className={cn(
-                    'rounded-lg border-2 p-4 text-left transition-all',
-                    preferences.preferredTopics.includes(topic.id)
-                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
-                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
-                  )}
-                  aria-pressed={preferences.preferredTopics.includes(topic.id)}
-                >
-                  <div className="text-2xl" aria-hidden="true">{topic.icon}</div>
-                  <p className="mt-2 text-sm font-medium text-foreground">
-                    {isZh ? topic.labelZh : topic.label}
-                  </p>
-                </button>
-              ))}
+              {topics.map((topic) => {
+                const TopicIcon = topic.icon;
+                return (
+                  <button
+                    key={topic.id}
+                    type="button"
+                    onClick={() => toggleTopic(topic.id)}
+                    className={cn(
+                      'rounded-lg border-2 p-4 text-left transition-all',
+                      preferences.preferredTopics.includes(topic.id)
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/40',
+                    )}
+                    aria-pressed={preferences.preferredTopics.includes(topic.id)}
+                  >
+                    <TopicIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                    <p className="mt-3 text-sm font-medium text-foreground">
+                      {isZh ? topic.labelZh : topic.label}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
 
             <p className="text-center text-xs text-muted-foreground">
@@ -530,10 +543,10 @@ export default function OnboardingPage() {
                 <BookOpen className="h-7 w-7" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">
-                {isZh ? '你最喜欢怎样学习？' : 'How do you learn best?'}
+                {isZh ? '选择练习方式' : 'Choose a practice format'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {isZh ? '选择最适合你的练习方式' : 'Choose the practice format that fits you best'}
+                {isZh ? '之后也可以调整。' : 'You can change this later.'}
               </p>
             </div>
 
@@ -546,8 +559,8 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-all',
                     preferences.learningStyle === style.id
-                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-500/10'
-                      : 'border-border hover:border-emerald-300 dark:hover:border-emerald-500/30',
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/40',
                   )}
                   aria-pressed={preferences.learningStyle === style.id}
                 >
@@ -555,7 +568,7 @@ export default function OnboardingPage() {
                     className={cn(
                       'flex h-10 w-10 items-center justify-center rounded-md',
                       preferences.learningStyle === style.id
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground',
                     )}
                   >
@@ -578,7 +591,7 @@ export default function OnboardingPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">
-                    {isZh ? '你的起始方案' : 'Your starter plan'}
+                    {isZh ? '起始设置' : 'Starting setup'}
                   </p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     <div>
@@ -586,11 +599,11 @@ export default function OnboardingPage() {
                       <p className="mt-1 text-sm font-medium text-foreground">{placement.starterBookName}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{isZh ? '路径' : 'Path'}</p>
+                      <p className="text-xs text-muted-foreground">{isZh ? '重点' : 'Focus'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">{placement.learningPathName}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{isZh ? '首个任务' : 'First mission'}</p>
+                      <p className="text-xs text-muted-foreground">{isZh ? '先练这个' : 'Start here'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">
                         {isZh ? placement.firstMission.titleZh : placement.firstMission.title}
                       </p>
@@ -600,7 +613,7 @@ export default function OnboardingPage() {
                   <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                     {placement.reasons.map((reason) => (
                       <li key={reason.en} className="flex gap-2">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                         <span>{isZh ? reason.zh : reason.en}</span>
                       </li>
                     ))}
@@ -628,7 +641,7 @@ export default function OnboardingPage() {
             <span className="text-muted-foreground">
               {isZh ? `第 ${step} / ${totalSteps} 步` : `Step ${step} of ${totalSteps}`}
             </span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="font-medium text-primary">
               {Math.round(progress)}%
             </span>
           </div>
@@ -665,7 +678,7 @@ export default function OnboardingPage() {
               </>
             ) : step === totalSteps ? (
               <>
-                {isZh ? '开始学习' : 'Get started'}
+                {isZh ? '开始今天' : 'Start today'}
                 <Check className="ml-2 h-4 w-4" />
               </>
             ) : (

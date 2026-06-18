@@ -122,7 +122,7 @@ export function LearningHeroPanel({
             </Badge>
           ) : null}
           <div className="space-y-2">
-            <h1 className="max-w-3xl text-2xl font-semibold leading-tight text-foreground sm:text-[2rem]">
+            <h1 className="max-w-3xl text-[1.55rem] font-medium leading-tight text-foreground sm:text-[1.85rem]">
               {title}
             </h1>
             {description ? <p className="line-clamp-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:line-clamp-none">{description}</p> : null}
@@ -142,9 +142,6 @@ export function LearningHeroPanel({
                     {progressValueLabel || `${progress}%`}
                   </p>
                 </div>
-                <p className="hidden max-w-[7rem] text-right text-xs leading-5 text-muted-foreground lg:block">
-                  {progress >= 100 ? '任务完成' : '继续'}
-                </p>
               </div>
               <Progress
                 value={progress}
@@ -156,7 +153,7 @@ export function LearningHeroPanel({
           {metrics.map((item) => (
             <div key={`${item.label}-${String(item.value)}`} className="border-t border-border/70 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 lg:border-t-0">
               <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
-              <div className={cn('mt-1 text-base font-semibold', metricToneClass[item.accent || 'default'])}>
+              <div className={cn('mt-1 text-base font-medium', metricToneClass[item.accent || 'default'])}>
                 {item.value}
               </div>
             </div>
@@ -194,7 +191,7 @@ export function LearningWorkspaceSurface({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="text-[11px] font-medium text-muted-foreground">{eyebrow}</p> : null}
-            <h2 className="text-lg font-semibold text-foreground sm:text-xl">{title}</h2>
+            <h2 className="text-lg font-medium text-foreground sm:text-xl">{title}</h2>
             {description ? <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
           </div>
           {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
@@ -211,7 +208,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
       {items.map((item) => (
         <div key={`${item.label}-${String(item.value)}`} className="space-y-1 border-t border-border/70 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 sm:[&:nth-child(2)]:border-t-0 xl:border-t-0">
           <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
-          <div className={cn('text-lg font-semibold', metricToneClass[item.accent || 'default'])}>
+          <div className={cn('text-lg font-medium', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
           {item.hint ? <p className="hidden text-xs leading-5 text-muted-foreground xl:block">{item.hint}</p> : null}

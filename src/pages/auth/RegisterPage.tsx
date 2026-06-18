@@ -40,7 +40,7 @@ export default function RegisterPage() {
   const copy = isZh
     ? {
         title: '创建账号',
-        subtitle: '免费开始，几分钟就能养成每天学英语的习惯。',
+        subtitle: '创建后进入你的今日内容。',
         hasAccount: '已有账号？',
         signIn: '立即登录',
         displayName: '昵称',
@@ -67,7 +67,7 @@ export default function RegisterPage() {
       }
     : {
         title: 'Create account',
-        subtitle: 'Start for free and build a daily English habit in a few minutes.',
+        subtitle: 'Create an account and open today.',
         hasAccount: 'Already have an account?',
         signIn: 'Sign in',
         displayName: 'Display name',
@@ -164,14 +164,14 @@ export default function RegisterPage() {
     <AuthShell
       title="Create account"
       titleZh="创建账号"
-      subtitle="Start for free and build a daily English habit in a few minutes."
-      subtitleZh="免费开始，几分钟就能养成每天学英语的习惯。"
+      subtitle="Create an account and open today."
+      subtitleZh="创建后进入你的今日内容。"
       footer={
         <>
           <span className="opacity-80">{copy.hasAccount}</span>{' '}
           <Link
             to={`/login${location.search}`}
-            className="font-medium text-emerald-600 transition-colors hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            className="font-medium text-primary transition-colors hover:text-primary/80"
           >
             {copy.signIn}
           </Link>
@@ -260,14 +260,14 @@ export default function RegisterPage() {
                 className={cn(
                   'flex items-center gap-2 text-xs transition-colors',
                   check.passes
-                    ? 'text-emerald-600 dark:text-emerald-400'
+                    ? 'text-[hsl(var(--success))]'
                     : 'text-muted-foreground',
                 )}
               >
                 <Check
                   className={cn(
                     'h-3 w-3 flex-shrink-0 transition-colors',
-                    check.passes ? 'text-emerald-500 dark:text-emerald-400' : 'text-muted-foreground/40',
+                    check.passes ? 'text-[hsl(var(--success))]' : 'text-muted-foreground/40',
                   )}
                 />
                 <span>{isZh ? check.labelZh : check.label}</span>
@@ -316,14 +316,14 @@ export default function RegisterPage() {
             {copy.agreePrefix}{' '}
             <Link
               to="/terms"
-              className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+              className="font-medium text-primary hover:text-primary/80"
             >
               {copy.terms}
             </Link>{' '}
             {copy.and}{' '}
             <Link
               to="/privacy"
-              className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+              className="font-medium text-primary hover:text-primary/80"
             >
               {copy.privacy}
             </Link>

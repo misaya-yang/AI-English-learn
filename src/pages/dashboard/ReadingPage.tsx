@@ -347,7 +347,7 @@ export default function ReadingPage() {
 
     if (pct === 1)       toast.success(isZh ? '满分，阅读练习已记录' : 'Perfect score. Reading practice recorded.');
     else if (pct >= 0.8) toast.success(isZh ? `表现很好：${correct}/${total} 正确` : `Great work: ${correct}/${total} correct.`);
-    else                 toast.info(isZh ? `${correct}/${total} 正确，建议复盘解析` : `${correct}/${total} correct. Review the answers below.`);
+    else                 toast.info(isZh ? `${correct}/${total} 正确，下面看解析` : `${correct}/${total} correct. Review the answers below.`);
 
     if (user?.id) {
       void recordLearningEvent({
@@ -398,7 +398,7 @@ export default function ReadingPage() {
                 <h1 className="mt-2 text-2xl font-semibold text-foreground">{isZh ? 'IELTS 学术阅读' : 'IELTS Academic Reading'}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '读文章，做题，复盘证据句。'
+                    ? '读文章，做题，看证据句。'
                     : 'Read a passage, answer questions, then review the evidence lines.'}
                 </p>
               </div>
@@ -642,13 +642,13 @@ export default function ReadingPage() {
     <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
       <LearningCompletionState
         icon={CheckCircle2}
-        eyebrow={isZh ? '阅读复盘' : 'Reading recap'}
+        eyebrow={isZh ? '阅读结果' : 'Reading result'}
         title={isZh ? `本次阅读 ${score?.correct}/${score?.total}` : `Reading score ${score?.correct}/${score?.total}`}
         description={
           scorePct >= 0.8
             ? (isZh ? '定位证据和题型判断都比较稳，下一步可以挑战更高难度文章。' : 'Evidence location and question handling were strong. Try a harder passage next.')
             : scorePct >= 0.6
-              ? (isZh ? '整体不错，建议把错题解析和原文证据再对照一遍。' : 'Solid run. Review the explanations and match them back to the passage evidence.')
+              ? (isZh ? '整体不错，把错题解析和原文证据再对照一遍。' : 'Solid run. Review the explanations and match them back to the passage evidence.')
               : (isZh ? '先别急着换文章，把每道题的证据句看透再重练。' : 'Before switching passages, study each evidence line and retry the set.')
         }
         metrics={[

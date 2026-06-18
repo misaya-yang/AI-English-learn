@@ -87,8 +87,8 @@ export function buildLifecycleNotification(input: LifecycleNotificationInput): L
       kind: 'streak_risk',
       title: 'Protect your streak gently',
       titleZh: '轻量保住连续学习',
-      body: 'A five-minute Today task is enough to keep your streak alive.',
-      bodyZh: '做一个 5 分钟 Today 任务，就够保住连续学习。',
+      body: 'Five minutes today is enough to keep your streak alive.',
+      bodyZh: '今天练 5 分钟，就够保住连续学习。',
       href: '/dashboard/today',
       priority: 'medium',
     };

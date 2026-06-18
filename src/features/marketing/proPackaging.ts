@@ -4,8 +4,8 @@ export interface LocalizedLine {
 }
 
 export const FREE_JOB: LocalizedLine = {
-  en: 'Use Free for the daily basics: today task, review queue, practice, and progress.',
-  zh: '免费版包含日常基础：今日任务、复习队列、练习和进度。',
+  en: 'Use Free for the daily basics: today, review, practice, and progress.',
+  zh: '免费版包含日常基础：今日、复习、练习和进度。',
 };
 
 export const PRO_JOB: LocalizedLine = {
@@ -14,7 +14,7 @@ export const PRO_JOB: LocalizedLine = {
 };
 
 export const FREE_PLAN_FEATURES: LocalizedLine[] = [
-  { en: 'Daily mission with new words and review', zh: '每日任务：新词 + 复习' },
+  { en: 'Daily words and review', zh: '每日单词与复习' },
   { en: 'Due review queue and basic analytics', zh: '到期复习队列与基础分析' },
   { en: 'Limited writing and exam feedback quota', zh: '有限写作与考试反馈额度' },
   { en: 'Core lexicon, practice, and Word of the Day', zh: '核心词库、练习与每日单词' },
@@ -57,8 +57,8 @@ export const PRO_GATE_REASONS: Record<string, LocalizedLine> = {
     zh: '专业版提供更多英语答疑、错题跟进和周计划。',
   },
   aiExamFeedback: {
-    en: 'Pro focuses exam prep on scored IELTS feedback, diagnostics, and targeted remediation.',
-    zh: '专业版提供 IELTS 评分反馈、诊断和定向补强。',
+    en: 'Pro focuses exam prep on scored IELTS feedback and targeted practice.',
+    zh: '专业版提供 IELTS 评分反馈和定向练习。',
   },
   aiListeningGen: {
     en: 'Pro adds more listening material for targeted weak-skill practice.',

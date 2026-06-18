@@ -7,7 +7,7 @@ describe('getMissionWhyChip', () => {
     expect(getMissionWhyChip({ reason: 'recovery_mode' })).toMatchObject({
       reasonId: 'recovery_mode',
       variant: 'recovery',
-      label: { en: 'Recovery mode', zh: '回稳模式' },
+      label: { en: 'Start with review', zh: '先复习' },
     });
     expect(getMissionWhyChip({ reason: 'exam_boost' })).toMatchObject({
       reasonId: 'exam_boost',
@@ -44,7 +44,7 @@ describe('getMissionWhyChip', () => {
       learnerMode: 'recovery',
     });
     expect(result.variant).toBe('recovery');
-    expect(result.label.zh).toBe('回稳模式');
+    expect(result.label.zh).toBe('先复习');
   });
 
   it('forces recovery framing when burnoutRisk is critical, regardless of reason', () => {

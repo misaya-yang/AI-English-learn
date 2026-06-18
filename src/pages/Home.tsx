@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, BookOpen, Calendar, Menu, MessageSquare, Target, X } from 'lucide-react';
+import { ArrowRight, BookOpen, Calendar, CheckCircle2, Menu, MessageSquare, Target, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
@@ -37,29 +37,24 @@ export default function Home() {
   const primaryCtaPath = isAuthenticated ? continuePath : '/register';
   const copy = {
     nav: {
-      workflow: isZh ? '如何运作' : 'How it works',
+      workflow: isZh ? '怎么练' : 'Practice flow',
       wordOfTheDay: isZh ? '每日单词' : 'Word of the day',
       membership: isZh ? '定价' : 'Pricing',
-      auth: isAuthenticated ? (isZh ? '继续学习' : 'Continue') : (isZh ? '登录' : 'Sign in'),
+      auth: isAuthenticated ? (isZh ? '继续' : 'Continue') : (isZh ? '登录' : 'Sign in'),
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? '今天练什么' : 'What to practice today',
+      title: isZh ? '今天的练习' : 'Today\'s practice',
       subtitle: isZh
-        ? '复习 12 个到期词，学 5 个新词，做 1 个短练。'
-        : 'Review 12 due words, learn 5 new ones, then finish 1 short drill.',
-      primaryCta: isZh ? '开始练习' : 'Start practice',
-      secondaryCta: isZh ? '看样课' : 'Try sample',
-      evidence: [
-        isZh ? '复习' : 'Review',
-        isZh ? '新词' : 'New words',
-        isZh ? '练习' : 'Practice',
-      ],
+        ? '复习 12 个词，学 5 个新词，做 1 组短练。'
+        : 'Review 12 words, learn 5 new words, and do 1 short drill.',
+      primaryCta: isZh ? '开始' : 'Start',
+      secondaryCta: isZh ? '试用' : 'Try sample',
     },
     today: {
-      label: isZh ? '学习清单' : 'Practice list',
-      title: isZh ? '3 项，约 15 分钟' : '3 tasks, about 15 min',
-      subtitle: isZh ? '登录后换成你的词库和错题' : 'Uses your words and mistakes after sign-in',
+      label: isZh ? '今日安排' : 'Today',
+      title: isZh ? '3 项，约 15 分钟' : '3 items, about 15 min',
+      subtitle: isZh ? '登录后显示你的今日内容' : 'Uses your words after sign-in',
       items: [
         {
           title: isZh ? '复习 12 个词' : 'Review 12 words',
@@ -72,17 +67,17 @@ export default function Home() {
           duration: isZh ? '5 分钟' : '5 min',
         },
         {
-          title: isZh ? '做 1 个练习' : 'Do 1 practice task',
+          title: isZh ? '做 1 个短练' : 'Do 1 short drill',
           subtitle: isZh ? '听力或写作' : 'Listening or writing',
           duration: isZh ? '4 分钟' : '4 min',
         },
       ],
-      summary: isZh ? '完成清单后再加练' : 'Finish the list before extra practice',
+      summary: isZh ? '3 项，约 15 分钟' : '3 items, about 15 min',
     },
     examplesLabel: isZh ? '例词' : 'Sample words',
     workflow: {
-      title: isZh ? '每天的顺序' : 'Daily order',
-      subtitle: isZh ? '到期词、新词、短练，一次做完。' : 'Due words, new words, one short output task.',
+      title: isZh ? '打开就能开始' : 'Open and start',
+      subtitle: isZh ? '到期词、新词和短练放在同一条线上。' : 'Due reviews, new words, and short practice stay in one line.',
       steps: [
         {
           title: isZh ? '复习到期词' : 'Review due words',
@@ -99,9 +94,9 @@ export default function Home() {
       ],
     },
     footerCta: {
-      title: isZh ? '从今天这组开始' : 'Start today\'s practice',
-      subtitle: isZh ? '约 15 分钟，完成后再加练。' : 'About 15 minutes. Add more after the list is done.',
-      button: isZh ? '开始练习' : 'Start practice',
+      title: isZh ? '今天这组' : 'Today\'s set',
+      subtitle: isZh ? '约 15 分钟。' : 'About 15 minutes.',
+      button: isZh ? '开始' : 'Start',
     },
   };
 
@@ -193,10 +188,7 @@ export default function Home() {
         <section className="border-b border-border/60">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:py-12">
             <div>
-              <div className="mb-4 inline-flex items-center rounded-md border border-border/70 bg-[hsl(var(--surface-raised)/0.72)] px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                VocabDaily
-              </div>
-              <h1 className="max-w-xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl md:text-[2.7rem]">
+              <h1 className="max-w-xl text-3xl font-medium leading-tight text-foreground sm:text-[2.35rem]">
                 {copy.hero.title}
               </h1>
               <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
@@ -218,76 +210,40 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-2 text-sm text-muted-foreground">
-                {copy.hero.evidence.map((item) => (
-                  <span key={item} className="rounded-md border border-border/[0.65] bg-[hsl(var(--surface-raised)/0.58)] px-3 py-1">
-                    {item}
-                  </span>
+              <div className="mt-6 grid max-w-md gap-2 text-sm text-muted-foreground">
+                {copy.today.items.map((item) => (
+                  <div key={item.title} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-primary" aria-hidden="true" />
+                    <span className="text-foreground">{item.title}</span>
+                    <span className="text-muted-foreground">{item.duration}</span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-lg border border-border/75 bg-card/[0.88] p-4 shadow-[0_1px_2px_hsl(var(--shadow-studio)/0.045)] sm:p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {copy.today.label}
-                  </p>
-                  <p className="mt-1 text-lg font-semibold">
-                    {copy.today.title}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {copy.today.subtitle}
-                  </p>
+            <div className="relative overflow-hidden rounded-lg border border-border/75 bg-card shadow-[0_1px_2px_hsl(var(--shadow-studio)/0.045)]">
+              <img
+                src="/vocabdaily-study-desk.jpg"
+                alt={isZh ? '桌面上的笔记本和学习记录' : 'Notebook and study notes on a desk'}
+                className="aspect-[4/3] w-full object-cover"
+              />
+              <div className="border-t border-border/70 bg-[hsl(var(--surface-raised)/0.94)] p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {copy.today.label}
+                    </p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {copy.today.title}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {copy.today.subtitle}
+                    </p>
+                  </div>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-muted/[0.45] text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                  </span>
                 </div>
-                <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-muted/[0.45] text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                </span>
-              </div>
-
-              <ul className="mt-5 divide-y divide-border/[0.55]" aria-label="Example daily learning queue">
-                <li className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <Calendar className="h-3.5 w-3.5" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-medium">{copy.today.items[0].title}</p>
-                      <p className="text-xs text-muted-foreground">{copy.today.items[0].subtitle}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">{copy.today.items[0].duration}</span>
-                </li>
-                <li className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-practice)/0.1)] text-[hsl(var(--accent-practice))]">
-                      <BookOpen className="h-3.5 w-3.5" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-medium">{copy.today.items[1].title}</p>
-                      <p className="text-xs text-muted-foreground">{copy.today.items[1].subtitle}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">{copy.today.items[1].duration}</span>
-                </li>
-                <li className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[hsl(var(--accent-coach)/0.1)] text-[hsl(var(--accent-coach))]">
-                      <MessageSquare className="h-3.5 w-3.5" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-medium">{copy.today.items[2].title}</p>
-                      <p className="text-xs text-muted-foreground">{copy.today.items[2].subtitle}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">{copy.today.items[2].duration}</span>
-                </li>
-              </ul>
-
-              <div className="mt-4 border-t border-border/[0.55] pt-4">
-                <p className="text-xs text-muted-foreground">
-                  {copy.today.summary}
-                </p>
               </div>
             </div>
           </div>
@@ -319,7 +275,7 @@ export default function Home() {
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
               {copy.workflow.subtitle}
             </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="mt-6 divide-y divide-border/70 rounded-lg border border-border/75 bg-card/[0.72]">
               {[
                 {
                   icon: Calendar,
@@ -340,14 +296,16 @@ export default function Home() {
                   body: copy.workflow.steps[2].body,
                 },
               ].map((step, i) => (
-                <div key={i} className="rounded-lg border border-border/75 bg-card/[0.78] p-4">
+                <div key={i} className="grid gap-3 p-4 sm:grid-cols-[44px_minmax(0,1fr)] sm:p-5">
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-md bg-muted/70 text-muted-foreground"
                   >
                     <step.icon className="h-4 w-4" />
                   </span>
-                  <h3 className="mt-4 text-base font-semibold">{step.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+                  <div>
+                    <h3 className="text-base font-semibold">{step.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+                  </div>
                 </div>
               ))}
             </div>

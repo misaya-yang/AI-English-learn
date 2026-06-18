@@ -417,7 +417,8 @@ const sanitizeTaskCopy = (value: string): string =>
     .replace(/固化/g, '用起来')
     .replace(/最快/g, '优先')
     .replace(/母语级/g, '更准确')
-    .replace(/真正记得住/g, '记得更稳');
+    .replace(/真正记得住/g, '记得更稳')
+    .replace(/任务/g, '练习');
 
 const formatTopicLabel = (topic: string): string => TOPIC_LABELS[topic] || topic;
 
@@ -710,7 +711,7 @@ export default function TodayPage() {
       <LearningShellFrame>
         <LearningEmptyState
           icon={ClipboardList}
-          eyebrow={isZh ? '今日任务' : 'Today mission'}
+          eyebrow={isZh ? '今日' : 'Today'}
           title={isZh ? '准备今日单词' : 'Prepare today\'s words'}
           description={
             activeBook
@@ -724,7 +725,7 @@ export default function TodayPage() {
           metrics={[
             { label: isZh ? '到期复习' : 'Due reviews', value: dueWords.length, hint: isZh ? '今天到期的词。' : 'Words due today.' },
             { label: isZh ? '今日目标' : 'Daily target', value: activeBookSummary.dailyGoal, hint: isZh ? '控制在今天能完成的数量。' : 'Keep today small enough to finish.' },
-            { label: isZh ? '目标' : 'Target', value: learningProfile.target, hint: isZh ? '影响词书和练习排序。' : 'Tasks are ordered around this goal.' },
+            { label: isZh ? '目标' : 'Target', value: learningProfile.target, hint: isZh ? '用于选择词书和练习顺序。' : 'Used for your book and practice order.' },
           ]}
           actions={
             <>
@@ -737,7 +738,7 @@ export default function TodayPage() {
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
                   <Link to="/onboarding?redirect=%2Fdashboard%2Ftoday">
                     <Target className="mr-2 h-5 w-5" />
-                    {isZh ? '重新设置学习目标' : 'Set learning goal again'}
+                    {isZh ? '调整学习设置' : 'Change setup'}
                   </Link>
                 </Button>
               )}
@@ -759,7 +760,7 @@ export default function TodayPage() {
   const primaryMissionTask = dailyCoachPlan?.primaryTask ?? missionCard?.primaryAction ?? null;
   const primaryMissionLabel = primaryMissionTask
     ? sanitizeTaskCopy(language.startsWith('zh') ? primaryMissionTask.ctaZh : primaryMissionTask.cta)
-    : (language.startsWith('zh') ? '继续今日任务' : 'Continue today');
+    : (language.startsWith('zh') ? '继续今天' : 'Continue today');
   const secondaryMissionTasks = (dailyCoachPlan?.secondaryTasks ?? missionCard?.secondaryActions ?? [])
     .filter((action) => action.id !== primaryMissionTask?.id && action.href !== primaryMissionTask?.href)
     .slice(0, 2);
@@ -778,14 +779,14 @@ export default function TodayPage() {
   const remainingWords = Math.max(words.length - learnedWords.size, 0);
   const heroTitle = isZh
     ? (isPlanLoading
-      ? '正在读取今日任务'
+      ? '正在读取今日内容'
       : dueWords.length > 0
         ? `复习 ${dueWords.length} 个到期词`
         : remainingWords > 0
           ? `学完 ${remainingWords} 个新词`
           : '做一组短练习')
     : (isPlanLoading
-      ? 'Loading today\'s tasks'
+      ? 'Loading today'
       : dueWords.length > 0
         ? `Review ${dueWords.length} due words first`
         : remainingWords > 0
@@ -813,7 +814,7 @@ export default function TodayPage() {
       language={language}
       eyebrow={`${language.startsWith('zh') ? '今天' : 'Today'} ${new Date().toLocaleDateString(language.startsWith('zh') ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', weekday: 'short' })}`}
       progress={missionProgress}
-      progressLabel={language.startsWith('zh') ? '任务进度' : 'Mission progress'}
+      progressLabel={language.startsWith('zh') ? '完成进度' : 'Progress'}
       mission={{
         title: heroTitle,
         description: heroDescription,
@@ -860,7 +861,7 @@ export default function TodayPage() {
         <div
           data-testid="today-primary-evidence"
           className="flex flex-wrap gap-2"
-          aria-label={isZh ? '任务依据' : 'Task basis'}
+          aria-label={isZh ? '当前依据' : 'Current basis'}
         >
           {dailyCoachPlan.evidence.slice(0, 5).map((item) => (
             <span
@@ -990,20 +991,20 @@ export default function TodayPage() {
             <LearningCompletionState
               icon={Check}
               eyebrow={isZh ? '今日完成' : 'Today complete'}
-              title="今天的新词任务已完成"
-              description={`今天的 ${words.length} 个单词已经完成。`}
+              title={isZh ? '今天的新词已完成' : 'Today\'s words are done'}
+              description={isZh ? `今天的 ${words.length} 个单词已经完成。` : `${words.length} words completed today.`}
               metrics={[
                 { label: isZh ? '已学词数' : 'Words completed', value: words.length, accent: 'success' },
                 { label: isZh ? '较难词' : 'Hard words', value: hardWords.size, accent: 'warm' },
-                { label: isZh ? '任务完成度' : 'Mission progress', value: `${missionProgress}%` },
+                { label: isZh ? '完成进度' : 'Progress', value: `${missionProgress}%` },
               ]}
               actions={
                 <>
                   <Button variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground" asChild>
-                    <Link to="/dashboard/review">去做复习</Link>
+                    <Link to="/dashboard/review">{isZh ? '去复习' : 'Review'}</Link>
                   </Button>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
-                    <Link to="/dashboard/practice">做一次短练习</Link>
+                    <Link to="/dashboard/practice">{isZh ? '做一次短练习' : 'Do a short drill'}</Link>
                   </Button>
                 </>
               }
@@ -1067,7 +1068,7 @@ export default function TodayPage() {
                   </p>
                   <Button variant="outline" size="sm" className="mt-3 rounded-md" asChild>
                     <Link to={activePathNextLesson.target.href}>
-                      {isZh ? '打开具体任务' : 'Open exact task'}
+                      {isZh ? '打开练习' : 'Open practice'}
                     </Link>
                   </Button>
                 </div>

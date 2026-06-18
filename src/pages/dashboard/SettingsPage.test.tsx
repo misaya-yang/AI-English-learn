@@ -134,7 +134,7 @@ describe('SettingsPage notifications', () => {
 
     expect(screen.getByText('当前会发送这条提醒')).toBeInTheDocument();
     expect(screen.getByText(/待复习正在增加/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '打开对应任务' })).toHaveAttribute('href', '/dashboard/review');
+    expect(screen.getByRole('link', { name: '打开对应练习' })).toHaveAttribute('href', '/dashboard/review');
 
     fireEvent.change(screen.getByLabelText('安静时间开始'), { target: { value: '21:00' } });
     expect(userDataState.updateSettings).toHaveBeenCalledWith({ quietHoursStart: '21:00' });
@@ -146,7 +146,7 @@ describe('SettingsPage notifications', () => {
 
     renderPage();
 
-    expect(screen.getByText('今日任务已完成，不会继续提醒')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: '打开对应任务' })).not.toBeInTheDocument();
+    expect(screen.getByText('今日内容已完成，不会继续提醒')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '打开对应练习' })).not.toBeInTheDocument();
   });
 });

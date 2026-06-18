@@ -17,7 +17,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
   const recap = buildSessionRecap(input);
   const isZh = (input.language || '').startsWith('zh');
 
-  const heading = isZh ? '本轮复盘' : 'Session recap';
+  const heading = isZh ? '本轮结果' : 'Session result';
 
   return (
     <motion.section

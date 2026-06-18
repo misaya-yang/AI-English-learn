@@ -313,7 +313,7 @@ function InsightPanel({
           )}
 
           <div className="rounded-lg border border-border/70 bg-background/35 p-4">
-            <p className="text-sm font-semibold">建议先做</p>
+            <p className="text-sm font-semibold">下一步</p>
             {selectedErrorNode ? (
               <>
                 <div className="mt-3 rounded-md border border-[hsl(var(--accent-exam)/0.28)] bg-[hsl(var(--accent-exam)/0.08)] p-3">
@@ -332,7 +332,7 @@ function InsightPanel({
                 </div>
               </>
             ) : (
-              <p className="mt-3 text-sm text-muted-foreground">完成首次反馈后，这里会显示建议练习。</p>
+              <p className="mt-3 text-sm text-muted-foreground">完成首次反馈后，这里会显示下一组练习。</p>
             )}
 
             {microUnit && (
@@ -392,7 +392,7 @@ function InsightPanel({
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                        <span className="rounded-md bg-muted/40 px-2 py-1">任务 {item.scores.taskResponse.toFixed(1)}</span>
+                        <span className="rounded-md bg-muted/40 px-2 py-1">题目 {item.scores.taskResponse.toFixed(1)}</span>
                         <span className="rounded-md bg-muted/40 px-2 py-1">连贯 {item.scores.coherenceCohesion.toFixed(1)}</span>
                         <span className="rounded-md bg-muted/40 px-2 py-1">词汇 {item.scores.lexicalResource.toFixed(1)}</span>
                         <span className="rounded-md bg-muted/40 px-2 py-1">语法 {item.scores.grammaticalRangeAccuracy.toFixed(1)}</span>

@@ -23,7 +23,7 @@ export function RequireAuth() {
               {isZh ? '正在确认登录状态' : 'Confirming your sign-in status'}
             </p>
             <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-              {isZh ? '确认后继续打开学习任务。' : 'Your learning task will reopen after confirmation.'}
+              {isZh ? '确认后继续打开今日内容。' : 'Today will reopen after confirmation.'}
             </p>
           </div>
         </div>

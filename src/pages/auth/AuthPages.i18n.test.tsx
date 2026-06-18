@@ -171,9 +171,9 @@ describe('auth pages i18n surfaces', () => {
 
     renderPage(<OnboardingPage />);
 
-    expect(screen.getByRole('heading', { name: "What's your English level?" })).toBeInTheDocument();
-    expect(screen.getByText('Choose your current English level')).toBeInTheDocument();
-    expect(screen.getByText('or pick manually')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Choose your level' })).toBeInTheDocument();
+    expect(screen.getByText('Not sure? Take the quick test first.')).toBeInTheDocument();
+    expect(screen.getByText('Manual choice')).toBeInTheDocument();
     expect(screen.getByText('Beginner')).toBeInTheDocument();
     expect(screen.queryByText('手动选择')).not.toBeInTheDocument();
     expect(screen.queryByText('基础词汇和表达')).not.toBeInTheDocument();
@@ -206,7 +206,7 @@ describe('auth pages i18n surfaces', () => {
     expect(screen.getByText('IELTS Academic Core')).toBeInTheDocument();
     expect(screen.getByText('IELTS Preparation')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Get started/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start today/i }));
 
     await waitFor(() => {
       expect(authState.updateUserProfile).toHaveBeenCalledWith(

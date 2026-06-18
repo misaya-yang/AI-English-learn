@@ -15,7 +15,7 @@ import { wordsDatabase } from '@/data/words';
 import { BookOpen, CalendarDays, Brain, BarChart2, Target, Settings } from 'lucide-react';
 
 const QUICK_LINKS = [
-  { label: 'Today', labelZh: '今日任务', href: '/dashboard/today', icon: CalendarDays },
+  { label: 'Today', labelZh: '今日', href: '/dashboard/today', icon: CalendarDays },
   { label: 'Review', labelZh: '复习', href: '/dashboard/review', icon: Brain },
   { label: 'Analytics', labelZh: '统计', href: '/dashboard/analytics', icon: BarChart2 },
   { label: 'Vocabulary', labelZh: '词书', href: '/dashboard/vocabulary', icon: BookOpen },

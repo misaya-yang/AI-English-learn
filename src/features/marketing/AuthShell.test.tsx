@@ -44,8 +44,9 @@ describe('AuthShell', () => {
       children: <span>panel</span>,
     });
 
-    expect(screen.getByText('Practice a little English each day.')).toBeInTheDocument();
-    expect(screen.getByText('Review words due today')).toBeInTheDocument();
+    expect(screen.getByText('Continue where you left off')).toBeInTheDocument();
+    expect(screen.getByText('Due reviews')).toBeInTheDocument();
+    expect(screen.queryByText('Practice a little English each day.')).not.toBeInTheDocument();
     expect(screen.queryByText('每天复习一点，练一点。')).not.toBeInTheDocument();
     expect(screen.queryByText('· 复习今天到期的词')).not.toBeInTheDocument();
   });

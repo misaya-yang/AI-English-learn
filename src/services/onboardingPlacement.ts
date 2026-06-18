@@ -166,8 +166,8 @@ const getFirstMission = (
 ): OnboardingFirstMission => {
   if (examTarget === 'ielts') {
     return {
-      title: 'Finish one IELTS writing baseline task',
-      titleZh: '完成 1 次 IELTS 写作基线任务',
+      title: 'Finish one IELTS writing baseline',
+      titleZh: '完成 1 次 IELTS 基线写作',
       route: '/dashboard/exam',
     };
   }

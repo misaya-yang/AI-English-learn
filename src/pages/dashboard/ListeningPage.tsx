@@ -878,14 +878,14 @@ export default function ListeningPage() {
             {submitted && (
               <LearningCompletionState
                 icon={CheckCircle2}
-                eyebrow={isZh ? '听力复盘' : 'Listening recap'}
+                eyebrow={isZh ? '听力结果' : 'Listening result'}
                 title={isZh ? `本次听力 ${score}/${totalQ}` : `Listening score ${score}/${totalQ}`}
                 description={
                   accuracy >= 80
                     ? (isZh ? '关键信息抓取很稳，可以继续挑战更长的讲座或访谈。' : 'Key-detail capture was strong. Move on to a longer lecture or interview.')
                     : accuracy >= 60
-                      ? (isZh ? '理解主线没问题，建议用文字稿修正漏听的数字、术语和转折。' : 'The main thread held up. Use the transcript to repair missed numbers, terms, and contrast markers.')
-                      : (isZh ? '这段听力需要慢下来复盘，先对照文字稿找出误听点。' : 'Slow this one down: compare against the transcript and identify the missed cues.')
+                      ? (isZh ? '理解主线没问题，可以用文字稿修正漏听的数字、术语和转折。' : 'The main thread held up. Use the transcript to repair missed numbers, terms, and contrast markers.')
+                      : (isZh ? '这段听力需要慢下来，先对照文字稿找出误听点。' : 'Slow this one down: compare against the transcript and identify the missed cues.')
                 }
                 metrics={[
                   { label: isZh ? '答对' : 'Correct', value: `${score}/${totalQ}`, accent: accuracy >= 80 ? 'emerald' : undefined },
@@ -896,7 +896,7 @@ export default function ListeningPage() {
                   <>
                     <Button onClick={() => setShowTranscript(true)} variant="outline" className="rounded-md border-border bg-card">
                       <Volume2 className="mr-2 h-4 w-4" />
-                      {isZh ? '打开文字稿复盘' : 'Review transcript'}
+                      {isZh ? '打开文字稿' : 'Review transcript'}
                     </Button>
                     <Button onClick={handleReset} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
                       {isZh ? '换一段听力' : 'Try another clip'}
@@ -937,7 +937,7 @@ export default function ListeningPage() {
                   className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Volume2 className="h-3.5 w-3.5" />
-                  {showTranscript ? (isZh ? '隐藏文字稿' : 'Hide transcript') : (isZh ? '复盘文字稿' : 'Review transcript')}
+                  {showTranscript ? (isZh ? '隐藏文字稿' : 'Hide transcript') : (isZh ? '查看文字稿' : 'Review transcript')}
                 </button>
                 <AnimatePresence>
                   {showTranscript && (
@@ -994,7 +994,7 @@ export default function ListeningPage() {
 
             <div className="rounded-lg border border-border bg-background/70 p-4">
               <p className="text-sm font-semibold text-foreground">
-                {submitted ? (isZh ? '复盘重点' : 'Review focus') : (isZh ? '答题策略' : 'Answering strategy')}
+                {submitted ? (isZh ? '回顾重点' : 'Review focus') : (isZh ? '答题策略' : 'Answering strategy')}
               </p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {submitted

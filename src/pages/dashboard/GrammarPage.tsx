@@ -810,7 +810,7 @@ export default function GrammarPage() {
         {submitted && (
           <LearningCompletionState
             icon={CheckCircle2}
-            eyebrow={isZh ? '语法复盘' : 'Grammar recap'}
+            eyebrow={isZh ? '语法结果' : 'Grammar result'}
             title={isZh ? `本轮语法 ${score}/${totalQ}` : `Grammar score ${score}/${totalQ}`}
             description={
               score / totalQ >= 0.8

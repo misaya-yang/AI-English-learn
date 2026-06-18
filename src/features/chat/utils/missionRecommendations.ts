@@ -1,8 +1,5 @@
-// missionRecommendations.ts — coach-mission recommendations for the chat
-// welcome screen. Replaces the old single-line `AIRecommendation` row with
-// rich mission cards that explain *why* the coach is recommending this
-// step, how long it should take, and what specific prompt to fire when
-// the learner taps it. Pure module — UI-agnostic.
+// Chat welcome recommendations. These cards explain why a practice step is
+// useful, how long it should take, and what prompt to send when selected.
 
 export type MissionRecommendationIcon =
   | 'review-pressure'
@@ -40,10 +37,10 @@ interface BuildMissionContext {
 const TASK_LABELS: Record<string, { titleEn: string; titleZh: string; reasonEn: string; reasonZh: string; promptEn: string }> = {
   writing: {
     titleEn: 'Finish today\'s writing',
-    titleZh: '完成今天的写作任务',
-    reasonEn: 'Your daily mission lists a writing task that\'s still open.',
-    reasonZh: '今日任务里还有未完成的写作练习。',
-    promptEn: 'Help me with today\'s writing task — give me one IELTS-style prompt and walk me through structuring my answer step by step.',
+    titleZh: '完成今天的写作',
+    reasonEn: 'Today still includes a writing practice.',
+    reasonZh: '今天还有一段写作没练。',
+    promptEn: 'Help me with today\'s writing practice. Give me one IELTS-style prompt and walk me through structuring my answer step by step.',
   },
   quiz: {
     titleEn: 'Take a 5-question retrieval quiz',
@@ -55,15 +52,15 @@ const TASK_LABELS: Record<string, { titleEn: string; titleZh: string; reasonEn: 
   review: {
     titleEn: 'Run today\'s spaced review',
     titleZh: '完成今日间隔复习',
-    reasonEn: 'Your daily mission has an open review block.',
-    reasonZh: '今日任务里有一段间隔复习还没完成。',
+    reasonEn: 'Today still has due words to review.',
+    reasonZh: '今天还有到期词要复习。',
     promptEn: 'Walk me through a short spaced review session for the words I owe today. Use them in tiny sentences I can repeat back.',
   },
   vocabulary: {
     titleEn: 'Learn today\'s new words',
     titleZh: '学习今天的新词',
-    reasonEn: 'Today\'s new-word block is still open in your daily mission.',
-    reasonZh: '今日新词任务还没完成。',
+    reasonEn: 'Today\'s new-word set is still open.',
+    reasonZh: '今天的新词还没学完。',
     promptEn: 'Teach me 5 new English words I haven\'t studied today, with bilingual examples and a tiny quiz at the end.',
   },
 };
@@ -150,7 +147,7 @@ const BEGINNER_FALLBACKS: MissionRecommendation[] = [
     variant: 'today',
     title: { en: 'Quick 3-question check', zh: '做 3 题小测' },
     reason: {
-      en: 'A tiny quiz gives the coach a baseline before recommending more.',
+      en: 'A tiny quiz shows what to practice first.',
       zh: '先看当前水平，再决定下一步练什么。',
     },
     estimatedMinutes: 5,
@@ -167,7 +164,7 @@ const isExamFocused = (ctx: BuildMissionContext): boolean => {
 export function buildMissionRecommendations(ctx: BuildMissionContext = {}): MissionRecommendation[] {
   const out: MissionRecommendation[] = [];
 
-  // 1. Review backlog — highest priority when present.
+  // 1. Review backlog: highest priority when present.
   const dueCount = typeof ctx.dueCount === 'number' && Number.isFinite(ctx.dueCount) ? Math.max(0, Math.round(ctx.dueCount)) : 0;
   if (dueCount >= 3) {
     out.push({
@@ -191,7 +188,7 @@ export function buildMissionRecommendations(ctx: BuildMissionContext = {}): Miss
     });
   }
 
-  // 2. Daily-mission task — surface the first incomplete task.
+  // 2. Today list: surface the first incomplete practice step.
   const incomplete = Array.isArray(ctx.incompleteTasks) ? ctx.incompleteTasks : [];
   for (const taskName of incomplete) {
     if (typeof taskName !== 'string') continue;

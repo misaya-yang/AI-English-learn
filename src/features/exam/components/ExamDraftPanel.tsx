@@ -152,7 +152,7 @@ export function ExamDraftPanel({
               </div>
             ) : (
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">先写出草稿，再抽取低阶表达做改写建议。</p>
+                <p className="text-sm text-muted-foreground">先写出草稿，再抽取低阶表达做改写。</p>
                 <Button size="sm" onClick={onEnhanceVocabulary} disabled={isBusy}>
                   词汇改写
                 </Button>

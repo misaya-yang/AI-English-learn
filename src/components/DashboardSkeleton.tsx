@@ -19,10 +19,10 @@ export function DashboardSkeleton() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">
-              {isZh ? '正在打开学习任务' : 'Opening learning task'}
+              {isZh ? '正在打开今日内容' : 'Opening today'}
             </p>
             <p className="text-xs text-muted-foreground">
-              {isZh ? '读取词书和本轮进度。' : 'Reading your word book and round progress.'}
+              {isZh ? '读取词书和进度。' : 'Reading your word book and progress.'}
             </p>
           </div>
           <div className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-muted sm:block">

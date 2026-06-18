@@ -74,7 +74,7 @@ export function EmptyKickoffCard({ onQuickStart }: { onQuickStart: () => void })
   return (
     <div className="rounded-lg border border-dashed border-primary/30 bg-primary/[0.05] p-4 text-sm">
       <p className="font-semibold text-primary">还没有问题记录</p>
-      <p className="mt-1 text-muted-foreground">先做 1 次写作反馈，这里会显示主要问题和建议练习。</p>
+      <p className="mt-1 text-muted-foreground">先做 1 次写作反馈，这里会显示主要问题和下一组练习。</p>
       <Button className="mt-3" size="sm" onClick={onQuickStart}>
         <PlayCircle className="mr-1.5 h-4 w-4" />
         开始第一次练习
@@ -89,8 +89,8 @@ export function LoadingPipeline({ stage }: { stage: LoadingStage }) {
   const steps: Array<{ id: LoadingStage; label: string; detail: string }> = [
     { id: 'simulating', label: '准备题目中', detail: '正在准备 IELTS 风格题目...' },
     { id: 'outlining', label: '构建提纲中', detail: '正在整理段落结构...' },
-    { id: 'vocab', label: '词汇改写中', detail: '正在识别低阶表达并给出替换建议...' },
-    { id: 'tutoring', label: '整理建议中', detail: '正在根据你的草稿给出建议...' },
+    { id: 'vocab', label: '词汇改写中', detail: '正在识别低阶表达并整理替换词...' },
+    { id: 'tutoring', label: '整理修改点中', detail: '正在根据你的草稿整理修改点...' },
     { id: 'grading', label: '评分中', detail: '正在按 IELTS 标准评分...' },
     { id: 'micro', label: '准备练习中', detail: '正在根据问题准备 5 分钟练习...' },
   ];

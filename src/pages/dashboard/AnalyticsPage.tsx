@@ -170,8 +170,8 @@ const analyticsCopy = {
       heatmapLow: 'Less',
       heatmapHigh: 'More',
       retentionDistribution: 'Current memory-retention distribution',
-      retentionWindow: 'Recommended review window',
-      risk: 'Highest forgetting risk',
+      retentionWindow: 'Review time',
+      risk: 'Words to review soon',
     },
     empty: {
       activity: {
@@ -197,26 +197,26 @@ const analyticsCopy = {
       heatmap: {
         title: 'No streak heatmap yet',
         description: 'After a few study days, this heatmap will show when you practiced.',
-        action: 'Open today\'s mission',
+        action: 'Open Today',
       },
       retention: {
         title: 'No retention estimate yet',
-        description: 'Review a few cards first so FSRS has enough evidence to estimate retention and forgetting curves.',
+        description: 'Review a few cards first, then this chart can estimate what needs attention.',
         action: 'Go to Review',
       },
       window: {
         title: 'No reliable review window yet',
-        description: 'Log a few sessions at different times before the app recommends a trustworthy review window.',
+        description: 'Study at a few different times before this view can find a useful pattern.',
         action: 'Record a study session',
       },
       risk: {
         title: 'No forgetting-risk ranking yet',
-        description: 'Complete a few review rounds before the app ranks the words most likely to be forgotten.',
+        description: 'Complete a few review rounds first.',
         action: 'Open review queue',
       },
       coach: {
         title: 'No help records yet',
-        description: 'Start a chat or complete a practice task before follow-ups appear here.',
+        description: 'Start a chat or complete a short practice before follow-ups appear here.',
         action: 'Open help',
       },
       vocabulary: {
@@ -225,8 +225,8 @@ const analyticsCopy = {
         action: 'Start today\'s words',
       },
       radar: {
-        title: 'No skill radar yet',
-        description: 'The radar needs vocabulary, review, and consistency signals. Complete one trackable task first.',
+        title: 'No skill chart yet',
+        description: 'This needs vocabulary, review, and practice records.',
         action: 'Open Today',
       },
     },
@@ -237,7 +237,7 @@ const analyticsCopy = {
       repeatedErrors: 'Repeated error risk',
       retention: 'Predicted retention',
       focus: 'Practice focus',
-      focusDescription: 'Today and Help will use this weak spot first.',
+      focusDescription: 'Today and Help will start here.',
     },
     insights: {
       weeklyReport: 'Weekly summary',
@@ -250,7 +250,7 @@ const analyticsCopy = {
       strongestPrefix: 'Strongest signal',
       openNext: 'Open task',
       vocabDistribution: 'Vocabulary mastery distribution',
-      skillRadar: 'Skill radar',
+      skillRadar: 'Skill balance',
     },
   },
   zh: {
@@ -299,13 +299,13 @@ const analyticsCopy = {
       heatmapLow: '少',
       heatmapHigh: '多',
       retentionDistribution: '各单词当前记忆保留率分布',
-      retentionWindow: '建议复习时间窗口',
-      risk: '未来最容易忘记的词',
+      retentionWindow: '复习时段',
+      risk: '近期要复习的词',
     },
     empty: {
       activity: {
         title: '还没有活动曲线',
-        description: '完成一次今日任务、复习或练习后，这里会显示活动趋势。',
+        description: '完成一次今日、复习或练习后，这里会显示活动趋势。',
         action: '打开今日',
       },
       topics: {
@@ -315,7 +315,7 @@ const analyticsCopy = {
       },
       duration: {
         title: '还没有学习时长',
-        description: '完成一个短任务后，系统会把用时沉淀到这里。',
+        description: '完成一次短练后，这里会显示用时。',
         action: '做一次短练习',
       },
       wordsTrend: {
@@ -325,22 +325,22 @@ const analyticsCopy = {
       },
       heatmap: {
         title: '还没有连续学习热力',
-        description: '完成几天任务后，热力图会显示你常练习的时间。',
-        action: '打开今日任务',
+        description: '连续练几天后，这里会显示你常练习的时间。',
+        action: '打开今日',
       },
       retention: {
         title: '还没有可计算的记忆保留率',
-        description: '先完成几张复习卡，FSRS 才有足够记录估算当前保持率和遗忘曲线。',
+        description: '先完成几张复习卡，这里会开始估算哪些词需要注意。',
         action: '去做复习',
       },
       window: {
         title: '还没有可靠复习时段',
-        description: '再积累几次不同时段的学习记录，这里会显示更可信的复习时间窗口。',
+        description: '多积累几个时段的学习记录后，这里会显示更稳定的复习时段。',
         action: '记录一次学习',
       },
       risk: {
         title: '还没有遗忘风险排序',
-        description: '先完成几轮复习，系统才会开始给出更可信的遗忘风险排序。',
+        description: '先完成几轮复习。',
         action: '打开复习队列',
       },
       coach: {
@@ -354,8 +354,8 @@ const analyticsCopy = {
         action: '开始今日词汇',
       },
       radar: {
-        title: '还没有能力雷达',
-        description: '雷达图需要词汇、复习和连续性信号；先完成一个可记录任务。',
+        title: '还没有能力分布',
+        description: '这里需要词汇、复习和练习记录。',
         action: '打开今日',
       },
     },
@@ -366,20 +366,20 @@ const analyticsCopy = {
       repeatedErrors: '重复错误风险',
       retention: '预测保持率',
       focus: '练习重点',
-      focusDescription: '今日任务和答疑会优先处理这个薄弱点。',
+      focusDescription: '今日和答疑会先处理这个薄弱点。',
     },
     insights: {
       weeklyReport: '本周总结',
       wordsStrengthened: '强化词数',
       activeDays: '活跃天数',
       reviewDebt: '待复习提醒',
-      insufficient: '暂时没有足够记录。先完成一次今日任务、复习或练习。',
+      insufficient: '暂时没有足够记录。先完成一次今日、复习或练习。',
       strongestWaiting: '等待更多记录',
       weakestPrefix: '最需要处理',
       strongestPrefix: '最强信号',
-      openNext: '打开任务',
+      openNext: '打开练习',
       vocabDistribution: '词汇掌握分布',
-      skillRadar: '能力雷达图',
+      skillRadar: '能力分布',
     },
   },
 } as const;
@@ -830,14 +830,14 @@ export default function AnalyticsPage() {
                 </p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '完成一次今日任务、复习或练习后，图表会开始展示可追溯的学习记录、复习窗口和遗忘风险。'
-                    : 'Complete Today, Review, or Practice once and charts will start using traceable learning records.'}
+                    ? '完成一次今日、复习或练习后，图表会开始显示学习记录、复习时段和需要注意的词。'
+                    : 'Complete Today, Review, or Practice once and charts will start showing records, review timing, and words to watch.'}
                 </p>
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
               <Button asChild className="rounded-md">
-                <Link to="/dashboard/today">{isZh ? '开始今日任务' : 'Start Today'}</Link>
+                <Link to="/dashboard/today">{isZh ? '开始今日' : 'Start Today'}</Link>
               </Button>
               <Button asChild variant="outline" className="rounded-md">
                 <Link to="/dashboard/practice">{isZh ? '做一次短练习' : 'Short practice'}</Link>
@@ -1373,8 +1373,8 @@ export default function AnalyticsPage() {
 	                  <div className="rounded-lg border border-border bg-background p-4">
 	                    <p className="text-xs text-muted-foreground">{copy.coach.completed}</p>
 	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.completedReinforcements}</p>
-	                    <p className="mt-1 text-xs text-muted-foreground">
-                        {isZh ? '复习卡片 + 任务完成' : 'review cards + mission tasks'}
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {isZh ? '复习卡片 + 已完成练习' : 'review cards + completed practice'}
                       </p>
 	                  </div>
 	                  <div className="rounded-lg border border-border bg-background p-4">
