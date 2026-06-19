@@ -9,6 +9,11 @@ codex-skill-build/
 .playwright-mcp/
 .superpowers/
 .claude/
+
+# Local audit and smoke-test artifacts
+product-audit-*/
+product-ui-audit-*/
+
 product-audit-*/**/*.png
 product-audit-*/**/*.jpg
 product-audit-*/**/*.jpeg
