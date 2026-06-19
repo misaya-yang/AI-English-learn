@@ -10,7 +10,7 @@ import type { WordData } from '@/data/words';
 import type initSqlJs from 'sql.js';
 import { normalizeWordKey } from './bookImport';
 
-const APKG_MAX_BYTES = 50 * 1024 * 1024;
+const APKG_MAX_BYTES = 250 * 1024 * 1024;
 const FIELD_SEPARATOR = '\u001f';
 
 const WORD_FIELD_PRIORITY = [
@@ -367,7 +367,7 @@ const readCollectionBytes = async (file: File): Promise<Uint8Array> => {
   }
 
   if (file.size > APKG_MAX_BYTES) {
-    throw new Error('File is too large. Please use an .apkg file smaller than 50MB');
+    throw new Error('File is too large. Please use an .apkg file smaller than 250MB');
   }
 
   const [{ unzipSync }, arrayBuffer] = await Promise.all([
@@ -685,7 +685,7 @@ export const importApkg = async (
 };
 
 export const APKG_LIMIT_BYTES = APKG_MAX_BYTES;
-export const APKG_LIMIT_TEXT = '50MB';
+export const APKG_LIMIT_TEXT = '250MB';
 export const APKG_SUPPORTED_EXTENSION = '.apkg';
 export const APKG_PROGRESS_DEFAULT: AnkiProgressMode = 'coarse';
 export const APKG_IMPORT_DATE = getTodayIso;

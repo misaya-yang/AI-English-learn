@@ -482,6 +482,6 @@ describe('ankiApkgImport', () => {
     const file = new File(['not an apkg'], 'words.txt', { type: 'text/plain' });
 
     await expect(inspectApkg(file)).rejects.toThrow('.apkg');
-    expect(APKG_LIMIT_TEXT).toBe('50MB');
+    expect(APKG_LIMIT_TEXT).toBe('250MB');
   });
 });

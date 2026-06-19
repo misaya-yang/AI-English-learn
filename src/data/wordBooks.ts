@@ -154,13 +154,13 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
   {
     id: BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE,
     name: 'IELTS学术核心',
-    source: 'VocabDaily Open Word Set',
-    license: 'Project dataset (open-source repository)',
+    source: 'VocabDaily Open Word Set + original IELTS practice cards',
+    license: 'Project dataset and original educational content in this repository',
     levelRange: ['B1', 'B2', 'C1'],
-    topicTags: ['academic', 'ielts'],
+    topicTags: ['academic', 'ielts', 'writing', 'speaking'],
     filter: (word) => {
       const topic = word.topic.toLowerCase();
-      return ['B1', 'B2', 'C1'].includes(word.level) && (topic === 'academic' || topic === 'stem');
+      return ['B1', 'B2', 'C1'].includes(word.level) && (topic === 'academic' || topic === 'stem' || topic === 'ielts');
     },
   },
   {
@@ -175,7 +175,7 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
   },
 ];
 
-export const DEFAULT_ACTIVE_BOOK_ID = BUILT_IN_TEMPLATES[0].id;
+export const DEFAULT_ACTIVE_BOOK_ID = BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE;
 
 export const BUILT_IN_BOOK_IDS = new Set(BUILT_IN_TEMPLATES.map((template) => template.id));
 

@@ -78,12 +78,12 @@ module.exports = {
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
         card: "0 8px 30px rgb(2 6 23 / 0.04)",
-        "glass": "0 0 0 1px rgba(255,255,255,0.06), 0 20px 60px -20px rgba(0,0,0,0.8)",
-        "glass-hover": "0 0 0 1px rgba(255,255,255,0.1), 0 24px 64px -16px rgba(0,0,0,0.9)",
-        "glass-edge": "inset 0 1px 1px 0 rgba(255,255,255,0.15), inset 0 0 30px rgba(255,255,255,0.02)",
-        "glow-emerald": "0 0 0 1px hsl(var(--primary) / 0.08), 0 8px 40px -12px hsl(var(--primary) / 0.25)",
-        "glow-emerald-lg": "0 0 0 1px hsl(var(--primary) / 0.12), 0 16px 60px -8px hsl(var(--primary) / 0.35)",
-        "glow-emerald-inner": "inset 0 0 40px 0 hsl(var(--primary) / 0.08), inset 0 1px 1px 0 hsl(var(--primary) / 0.3)",
+        "glass": "0 1px 1px hsl(var(--shadow-studio) / 0.04), 0 12px 24px -24px hsl(var(--shadow-studio) / 0.22)",
+        "glass-hover": "0 1px 1px hsl(var(--shadow-studio) / 0.05), 0 14px 28px -24px hsl(var(--shadow-studio) / 0.26)",
+        "glass-edge": "inset 0 1px 0 hsl(var(--foreground) / 0.05)",
+        "glow-emerald": "0 1px 1px hsl(var(--shadow-studio) / 0.04), 0 10px 20px -22px hsl(var(--shadow-studio) / 0.22)",
+        "glow-emerald-lg": "0 1px 1px hsl(var(--shadow-studio) / 0.05), 0 14px 28px -24px hsl(var(--shadow-studio) / 0.26)",
+        "glow-emerald-inner": "inset 0 1px 0 hsl(var(--foreground) / 0.05)",
       },
       fontSize: {
         "token-12": ["var(--text-12)", { lineHeight: "1.5" }],
@@ -143,7 +143,7 @@ module.exports = {
         },
         "glow-pulse": {
           "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--primary) / 0)" },
-          "50%": { boxShadow: "0 0 0 6px hsl(var(--primary) / 0.15)" },
+          "50%": { boxShadow: "0 0 0 3px hsl(var(--foreground) / 0.06)" },
         },
       },
       animation: {

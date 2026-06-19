@@ -23,6 +23,7 @@ import type {
   AnkiProgressMode,
   ImportRowError,
 } from '@/data/wordBooks';
+import { APKG_LIMIT_TEXT } from '@/services/ankiApkgImport';
 
 const AUTO_FIELD = '__auto__';
 
@@ -178,7 +179,7 @@ export function ImportAnkiApkgDialog({
         <DialogHeader>
           <DialogTitle>Anki 卡组导入 (.apkg)</DialogTitle>
           <DialogDescription>
-            首版仅导入文本字段（不含媒体），支持先解析 deck 再选择单个 deck 导入。
+            导入你自己下载且有使用权的 .apkg。只读取文本字段，不导入音频和图片。
           </DialogDescription>
         </DialogHeader>
 
@@ -196,7 +197,9 @@ export function ImportAnkiApkgDialog({
                 setFieldMapping({});
               }}
             />
-            <p className="text-xs text-muted-foreground">文件大小上限 50MB（本地浏览器解析）</p>
+            <p className="text-xs leading-5 text-muted-foreground">
+              可导入 AnkiWeb 下载的个人牌组；请确认牌组允许你使用。文件上限 {APKG_LIMIT_TEXT}。
+            </p>
           </div>
 
           <div className="space-y-2">

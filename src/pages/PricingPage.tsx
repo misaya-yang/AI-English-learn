@@ -372,7 +372,7 @@ export default function PricingPage() {
                   className={cn(
                     'relative h-full overflow-hidden rounded-md border bg-[hsl(var(--surface-raised))] [padding-block:0]',
                     plan.highlighted
-                      ? 'border-primary/45 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_18px_36px_-32px_hsl(var(--primary)/0.48)]'
+                      ? 'border-primary/45 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_14px_28px_-28px_hsl(var(--shadow-studio)/0.28)]'
                       : 'border-border',
                   )}
                 >

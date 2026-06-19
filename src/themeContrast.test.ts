@@ -91,6 +91,8 @@ const token = (tokens: Map<string, Hsl>, name: string) => {
   return value;
 };
 
+const lightness = (tokens: Map<string, Hsl>, name: string) => token(tokens, name)[2];
+
 describe('theme contrast tokens', () => {
   it.each([
     ['light', parseTokens(':root')],
@@ -102,14 +104,52 @@ describe('theme contrast tokens', () => {
       ['muted text on background', 'muted-foreground', 'background', 4.5],
       ['muted text on card', 'muted-foreground', 'card', 4.5],
       ['card text on card', 'card-foreground', 'card', 4.5],
+      ['popover text on popover', 'popover-foreground', 'popover', 4.5],
       ['primary text on background', 'primary', 'background', 4.5],
       ['primary foreground on primary', 'primary-foreground', 'primary', 4.5],
+      ['secondary foreground on secondary', 'secondary-foreground', 'secondary', 4.5],
+      ['accent foreground on accent', 'accent-foreground', 'accent', 4.5],
+      ['destructive foreground on destructive', 'destructive-foreground', 'destructive', 4.5],
+      ['success foreground on success', 'success-foreground', 'success', 4.5],
+      ['warning foreground on warning', 'warning-foreground', 'warning', 4.5],
+      ['danger foreground on danger', 'danger-foreground', 'danger', 4.5],
+      ['info foreground on info', 'info-foreground', 'info', 4.5],
+      ['success text on paper', 'success', 'paper', 4.5],
+      ['warning text on paper', 'warning', 'paper', 4.5],
+      ['danger text on paper', 'danger', 'paper', 4.5],
+      ['info text on paper', 'info', 'paper', 4.5],
+      ['paper text on paper', 'foreground', 'paper', 4.5],
+      ['muted text on paper', 'muted-foreground', 'paper', 4.5],
+      ['sidebar text on sidebar', 'sidebar-foreground', 'sidebar-background', 4.5],
+      ['sidebar active text on active', 'sidebar-accent-foreground', 'sidebar-accent', 4.5],
       ['input boundary on background', 'input', 'background', 3],
+      ['paper line on paper', 'paper-line', 'paper', 3],
+      ['strong border on background', 'border-strong', 'background', 3],
     ];
 
     for (const [label, foreground, background, minimum] of pairs) {
       const ratio = contrastRatio(token(tokens, foreground), token(tokens, background));
       expect(ratio, label).toBeGreaterThanOrEqual(minimum);
+    }
+  });
+
+  it('keeps light surfaces paper-like instead of pure white', () => {
+    const tokens = parseTokens(':root');
+    const mainSurfaces = ['background', 'card', 'surface-raised', 'paper', 'popover'];
+
+    for (const name of mainSurfaces) {
+      expect(lightness(tokens, name), `--${name} should avoid bright white`).toBeLessThanOrEqual(94);
+      expect(lightness(tokens, name), `--${name} should still read as a light surface`).toBeGreaterThanOrEqual(88);
+    }
+  });
+
+  it('keeps dark surfaces charcoal instead of pure black', () => {
+    const tokens = parseTokens('.dark');
+    const mainSurfaces = ['background', 'card', 'surface-raised', 'paper', 'popover'];
+
+    for (const name of mainSurfaces) {
+      expect(lightness(tokens, name), `--${name} should avoid pure black`).toBeGreaterThanOrEqual(24);
+      expect(lightness(tokens, name), `--${name} should stay in the dark range`).toBeLessThanOrEqual(34);
     }
   });
 });
