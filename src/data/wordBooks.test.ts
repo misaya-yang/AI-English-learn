@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { getActiveBook, getDailyWords } from './localStorage';
+import { ieltsPhraseBankWords } from './ieltsPhraseBank';
 import {
   BUILT_IN_WORD_BOOK_IDS,
   DEFAULT_ACTIVE_BOOK_ID,
@@ -23,7 +24,7 @@ describe('built-in word book defaults', () => {
     expect(activeBook?.name).toContain('IELTS');
   });
 
-  it('ships a substantial IELTS academic core instead of the A1 placeholder list', () => {
+  it('ships a 1500+ IELTS lexical bank instead of the A1 placeholder list', () => {
     const ieltsBook = getBuiltInWordBooks(wordsDatabase).find(
       (book) => book.id === BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE,
     );
@@ -32,9 +33,20 @@ describe('built-in word book defaults', () => {
       .filter(Boolean);
 
     expect(ieltsBook).toBeDefined();
-    expect(ieltsBook?.wordIds.length).toBeGreaterThanOrEqual(80);
+    expect(ieltsBook?.wordIds.length).toBeGreaterThanOrEqual(1500);
+    expect(ieltsPhraseBankWords.length).toBeGreaterThanOrEqual(1500);
     expect(ieltsWords?.some((word) => word?.word === 'air')).toBe(false);
     expect(ieltsWords?.every((word) => word && ['B1', 'B2', 'C1'].includes(word.level))).toBe(true);
+  });
+
+  it('keeps the IELTS lexical bank unique and topic-rich', () => {
+    const ids = ieltsPhraseBankWords.map((word) => word.id);
+    const phrases = ieltsPhraseBankWords.map((word) => word.word);
+    const areas = new Set(ieltsPhraseBankWords.map((word) => word.memoryTip?.split(':')[0]));
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(phrases).size).toBe(phrases.length);
+    expect(areas.size).toBeGreaterThanOrEqual(7);
   });
 
   it('generates first-day words from the IELTS book for a fresh user', () => {
