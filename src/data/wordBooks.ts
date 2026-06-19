@@ -154,8 +154,8 @@ const BUILT_IN_TEMPLATES: BuiltInBookTemplate[] = [
   {
     id: BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE,
     name: 'IELTS学术核心',
-    source: 'VocabDaily original IELTS 1500+ lexical bank + open academic word set',
-    license: 'Original educational content and project dataset in this repository',
+    source: 'hefengxian/ielts-vocabulary MIT IELTS source + VocabDaily IELTS cards + open academic word set',
+    license: 'MIT source data, original educational content, and project dataset in this repository',
     levelRange: ['B1', 'B2', 'C1'],
     topicTags: ['academic', 'ielts', 'writing', 'speaking'],
     filter: (word) => {

@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { getActiveBook, getDailyWords } from './localStorage';
 import { ieltsPhraseBankWords } from './ieltsPhraseBank';
 import {
+  IELTS_SEARCHED_VOCABULARY_SOURCE,
+  ieltsSearchedVocabularyWords,
+} from './ieltsSearchedVocabulary';
+import {
   BUILT_IN_WORD_BOOK_IDS,
   DEFAULT_ACTIVE_BOOK_ID,
   getBuiltInWordBooks,
@@ -24,7 +28,7 @@ describe('built-in word book defaults', () => {
     expect(activeBook?.name).toContain('IELTS');
   });
 
-  it('ships a 1500+ IELTS lexical bank instead of the A1 placeholder list', () => {
+  it('ships a searched 1500+ IELTS vocabulary bank instead of the A1 placeholder list', () => {
     const ieltsBook = getBuiltInWordBooks(wordsDatabase).find(
       (book) => book.id === BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE,
     );
@@ -34,19 +38,38 @@ describe('built-in word book defaults', () => {
 
     expect(ieltsBook).toBeDefined();
     expect(ieltsBook?.wordIds.length).toBeGreaterThanOrEqual(1500);
-    expect(ieltsPhraseBankWords.length).toBeGreaterThanOrEqual(1500);
+    expect(ieltsBook?.source).toContain(IELTS_SEARCHED_VOCABULARY_SOURCE.name);
+    expect(ieltsSearchedVocabularyWords.length).toBeGreaterThanOrEqual(1500);
+    expect(ieltsSearchedVocabularyWords.every((word) => word.id.startsWith('ielts_vocab_'))).toBe(true);
     expect(ieltsWords?.some((word) => word?.word === 'air')).toBe(false);
     expect(ieltsWords?.every((word) => word && ['B1', 'B2', 'C1'].includes(word.level))).toBe(true);
   });
 
-  it('keeps the IELTS lexical bank unique and topic-rich', () => {
-    const ids = ieltsPhraseBankWords.map((word) => word.id);
-    const phrases = ieltsPhraseBankWords.map((word) => word.word);
-    const areas = new Set(ieltsPhraseBankWords.map((word) => word.memoryTip?.split(':')[0]));
+  it('keeps the searched IELTS vocabulary bank clean, unique, and topic-rich', () => {
+    const ids = ieltsSearchedVocabularyWords.map((word) => word.id);
+    const words = ieltsSearchedVocabularyWords.map((word) => word.word.toLowerCase());
+    const areas = new Set(ieltsSearchedVocabularyWords.map((word) => word.memoryTip?.split(' · ')[0]));
 
     expect(new Set(ids).size).toBe(ids.length);
-    expect(new Set(phrases).size).toBe(phrases.length);
+    expect(new Set(words).size).toBe(words.length);
     expect(areas.size).toBeGreaterThanOrEqual(7);
+    expect(words).toContain('atmosphere');
+    expect(words).toContain('phenomenon');
+    expect(words).toContain('jeopardise');
+    expect(words).toContain('carbon dioxide');
+    expect(words).not.toContain('air');
+    expect(words).not.toContain('carbon dioxied');
+    expect(words).not.toContain('vagetation');
+    expect(ieltsSearchedVocabularyWords.every((word) => word.definition.length > 0)).toBe(true);
+  });
+
+  it('keeps the IELTS phrase bank as supplemental practice, not the primary 1500-word proof', () => {
+    const ids = ieltsPhraseBankWords.map((word) => word.id);
+    const phrases = ieltsPhraseBankWords.map((word) => word.word);
+
+    expect(ieltsPhraseBankWords.length).toBeGreaterThanOrEqual(1500);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(phrases).size).toBe(phrases.length);
   });
 
   it('generates first-day words from the IELTS book for a fresh user', () => {
