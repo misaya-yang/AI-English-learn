@@ -509,9 +509,15 @@
 
   @media (pointer: coarse) {
     [data-slot="button"],
-    [data-slot="select-trigger"] {
+    [data-slot="select-trigger"],
+    [data-slot="tabs-trigger"] {
       min-height: 2.75rem;
       min-width: 2.75rem;
+    }
+
+    [data-slot="tabs-list"] {
+      height: auto;
+      min-height: calc(2.75rem + 0.5rem);
     }
 
     [data-slot="button"][data-size="icon"],
