@@ -321,6 +321,40 @@
     background: hsl(var(--surface-raised));
   }
 
+  .dense-solid-route [data-slot="card"],
+  .dense-solid-route .premium-panel-soft,
+  .dense-solid-route .analytics-solid-panel {
+    border-color: hsl(var(--border) / 0.82);
+    background: hsl(var(--card));
+    box-shadow: 0 1px 1px hsl(var(--shadow-studio) / 0.035);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .dense-solid-route [data-slot="card"]::before,
+  .dense-solid-route [data-slot="card"]::after,
+  .dense-solid-route .premium-panel-soft::before,
+  .dense-solid-route .premium-panel-soft::after,
+  .dense-solid-route .analytics-solid-panel::before,
+  .dense-solid-route .analytics-solid-panel::after {
+    display: none;
+  }
+
+  .dense-solid-route .analytics-muted-panel {
+    border-color: hsl(var(--border) / 0.72);
+    background: hsl(var(--surface-raised));
+  }
+
+  .vocab-lexicon-route .lexicon-unframed-section {
+    border-block: 1px solid hsl(var(--border) / 0.72);
+    background: transparent;
+  }
+
+  .vocab-lexicon-route .lexicon-row-panel {
+    border: 1px solid hsl(var(--border) / 0.72);
+    background: hsl(var(--surface-raised));
+  }
+
   .focus-study-page {
     background: transparent;
   }
@@ -459,7 +493,11 @@
   .dark .focus-sheet-muted,
   .dark .focus-quiet-card,
   .dark .premium-word-card,
-  .dark .premium-word-card-back {
+  .dark .premium-word-card-back,
+  .dark .dense-solid-route [data-slot="card"],
+  .dark .dense-solid-route .premium-panel-soft,
+  .dark .dense-solid-route .analytics-solid-panel,
+  .dark .vocab-lexicon-route .lexicon-row-panel {
     border-color: hsl(var(--paper-line) / 0.68);
     background: hsl(var(--surface-elevated));
     box-shadow: none;
@@ -467,6 +505,21 @@
 
   .dark .hover-lift:hover {
     box-shadow: none;
+  }
+
+  @media (pointer: coarse) {
+    [data-slot="button"],
+    [data-slot="select-trigger"] {
+      min-height: 2.75rem;
+      min-width: 2.75rem;
+    }
+
+    [data-slot="button"][data-size="icon"],
+    [data-slot="button"][data-size="icon-sm"],
+    [data-slot="button"][data-size="icon-lg"],
+    [data-slot="select-trigger"] {
+      min-width: 2.75rem;
+    }
   }
 
   .workbook-page {

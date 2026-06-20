@@ -2,6 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+const i18nState = vi.hoisted(() => ({
+  language: 'zh-CN',
+  changeLanguage: vi.fn(),
+}));
+
 const authState = vi.hoisted(() => ({
   logout: vi.fn(),
 }));
@@ -77,8 +82,10 @@ vi.mock('@/hooks/useStudyReminder', () => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     i18n: {
-      language: 'zh-CN',
-      changeLanguage: vi.fn(),
+      get language() {
+        return i18nState.language;
+      },
+      changeLanguage: i18nState.changeLanguage,
     },
   }),
 }));
@@ -116,6 +123,13 @@ describe('SettingsPage notifications', () => {
     userDataState.dueWords = Array.from({ length: 9 }, (_, index) => ({ wordId: `w${index}` }));
     userDataState.dailyMission.status = 'in_progress';
     userDataState.dailyMission.tasks = [{ id: 't1', type: 'review', title: 'Review', titleZh: '复习', done: false }];
+    i18nState.language = 'zh-CN';
+    i18nState.changeLanguage.mockClear();
+    localStorage.clear();
+    Element.prototype.hasPointerCapture ??= vi.fn(() => false);
+    Element.prototype.setPointerCapture ??= vi.fn();
+    Element.prototype.releasePointerCapture ??= vi.fn();
+    Element.prototype.scrollIntoView ??= vi.fn();
   });
 
   afterEach(() => {
@@ -148,5 +162,26 @@ describe('SettingsPage notifications', () => {
 
     expect(screen.getByText('今日内容已完成，不会继续提醒')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '打开对应练习' })).not.toBeInTheDocument();
+  });
+
+  it('persists language changes using the global language storage key', async () => {
+    vi.useRealTimers();
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/settings']}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.pointerDown(screen.getAllByRole('combobox')[2], {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    });
+    fireEvent.click(await screen.findByRole('option', { name: 'English' }));
+
+    expect(i18nState.changeLanguage).toHaveBeenCalledWith('en');
+    expect(localStorage.getItem('language')).toBe('en');
+    expect(localStorage.getItem('vocabdaily_language')).toBeNull();
   });
 });

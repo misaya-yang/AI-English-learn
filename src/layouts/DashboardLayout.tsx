@@ -849,8 +849,13 @@ export default function DashboardLayout() {
             </div>
           </header>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-            <div className={cn('mx-auto w-full max-w-[1180px] px-4 py-4 sm:px-5 lg:px-6 lg:py-5', isMobile && 'pb-20')}>
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-pb-[calc(7rem+env(safe-area-inset-bottom))]">
+            <div
+              className={cn(
+                'mx-auto w-full max-w-[1180px] px-4 py-4 sm:px-5 lg:px-6 lg:py-5',
+                isMobile && 'pb-[calc(7rem+env(safe-area-inset-bottom))]',
+              )}
+            >
               <Outlet />
             </div>
           </div>
@@ -1044,19 +1049,19 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        <div className={cn('flex-1 min-h-0', isChatRoute ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden')}>
+        <div className={cn('flex-1 min-h-0', isChatRoute ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden scroll-pb-[calc(7rem+env(safe-area-inset-bottom))]')}>
           <div
             className={cn(
               'mx-auto w-full',
               isChatRoute ? 'h-full max-w-none' : 'max-w-[1360px] px-5 py-6 lg:px-10 lg:py-8',
-              isMobile && !isChatRoute && 'pb-20',
+              isMobile && !isChatRoute && 'pb-[calc(7rem+env(safe-area-inset-bottom))]',
             )}
           >
             <Outlet />
           </div>
         </div>
       </main>
-      {isMobile && (
+      {isMobile && !isChatRoute && (
         <>
           <BottomNavBar isLearningMode={false} onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>

@@ -265,7 +265,7 @@ export default function VocabularyBankPage() {
   const firstIeltsCard = ieltsAnkiDeck.cards[0];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="vocab-lexicon-route max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{isZh ? '词典' : 'Lexicon'}</h1>
@@ -377,7 +377,7 @@ export default function VocabularyBankPage() {
         </section>
       )}
 
-      <section aria-labelledby="ielts-anki-heading" className="rounded-md border border-border bg-card p-4 sm:p-5">
+      <section aria-labelledby="ielts-anki-heading" className="lexicon-unframed-section py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -412,11 +412,11 @@ export default function VocabularyBankPage() {
                 {isIeltsAnkiActive ? (isZh ? '正在使用' : 'Active deck') : (isZh ? '设为当前词书' : 'Set as active')}
               </Button>
             ) : null}
-            <Button asChild variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted">
+            <Button asChild variant="outline" className="rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted">
               <Link to="/dashboard/today">{isZh ? '今天学这套' : 'Study today'}</Link>
             </Button>
             {firstIeltsCard ? (
-              <Button asChild variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted">
+              <Button asChild variant="outline" className="rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted">
                 <Link to={`/dashboard/practice?source=ielts-anki&wordId=${encodeURIComponent(firstIeltsCard.id)}&q=${encodeURIComponent(firstIeltsCard.word)}`}>
                   {isZh ? '练第一张' : 'Practice first card'}
                 </Link>
@@ -427,7 +427,7 @@ export default function VocabularyBankPage() {
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {ieltsAnkiDeck.cards.slice(0, 3).map((card) => (
-            <article key={card.id} className="rounded-md border border-border bg-background p-4">
+            <article key={card.id} className="lexicon-row-panel rounded-md p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-lg font-semibold text-foreground">{card.word}</p>
@@ -454,7 +454,7 @@ export default function VocabularyBankPage() {
         </div>
       </section>
 
-      <section className="rounded-md border border-border bg-card p-4 sm:p-5">
+      <section className="lexicon-unframed-section py-5">
         {featuredEntry && featuredSense ? (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_320px] lg:items-stretch">
             <div className="min-w-0">
@@ -482,7 +482,7 @@ export default function VocabularyBankPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-md border-border bg-card text-foreground hover:bg-muted"
+                  className="h-10 w-10 rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted"
                   onClick={() => playAudio(featuredEntry.headword)}
                   aria-label={isZh ? `播放 ${featuredEntry.headword} 发音` : `Play pronunciation for ${featuredEntry.headword}`}
                 >
@@ -491,7 +491,7 @@ export default function VocabularyBankPage() {
               </div>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="rounded-md border border-border bg-background p-4">
+                <div className="lexicon-row-panel rounded-md p-4">
                   <p className="text-xs text-muted-foreground">{isZh ? '核心释义' : 'Core meaning'}</p>
                   <p className="mt-2 text-sm leading-6 text-foreground">
                     {featuredSense.definition || (isZh ? '暂无英文释义' : 'No English definition yet')}
@@ -500,7 +500,7 @@ export default function VocabularyBankPage() {
                     {featuredSense.definitionZh || (isZh ? '暂无中文释义' : 'No Chinese definition yet')}
                   </p>
                 </div>
-                <div className="rounded-md border border-border bg-background p-4">
+                <div className="lexicon-row-panel rounded-md p-4">
                   <p className="text-xs text-muted-foreground">{isZh ? '可练例句' : 'Practice example'}</p>
                   {featuredExample ? (
                     <>
@@ -522,7 +522,7 @@ export default function VocabularyBankPage() {
                     {isZh ? '用这个词练一次' : 'Practice this word'}
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted">
+                <Button asChild variant="outline" className="rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted">
                   <Link to={`/dashboard/review?source=lexicon&wordId=${encodeURIComponent(featuredEntry.id)}`}>
                     <BookOpen className="mr-2 h-4 w-4" />
                     {isZh ? '加入复习回合' : 'Open in review'}
@@ -537,7 +537,7 @@ export default function VocabularyBankPage() {
                 { label: isZh ? '词条总数' : 'Total words', value: totalWords },
                 { label: isZh ? '需要复习' : 'Needs review', value: needsReviewCount },
               ].map((item) => (
-                <div key={item.label} className="rounded-md border border-border bg-background p-4">
+                <div key={item.label} className="lexicon-row-panel rounded-md p-4">
                   <p className="text-xs text-muted-foreground">{item.label}</p>
                   <p className="mt-2 truncate text-lg font-semibold text-foreground">{item.value}</p>
                 </div>

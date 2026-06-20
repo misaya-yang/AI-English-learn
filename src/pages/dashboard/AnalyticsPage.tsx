@@ -796,7 +796,7 @@ export default function AnalyticsPage() {
     copy.charts.activity.subtitleWeek;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="dense-solid-route max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -818,7 +818,7 @@ export default function AnalyticsPage() {
       </div>
 
       {!hasAnyLearningEvidence && (
-        <div className="premium-panel-soft mb-6 rounded-lg border border-border bg-card p-4">
+        <div className="analytics-solid-panel mb-6 rounded-lg border p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
@@ -1253,22 +1253,22 @@ export default function AnalyticsPage() {
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2">
-	                      <div className="rounded-lg border border-border/70 bg-card/60 p-4">
-	                        <p className="text-xs text-muted-foreground">{isZh ? '观察到的学习日' : 'Days observed'}</p>
+                      <div className="analytics-muted-panel rounded-lg border p-4">
+                        <p className="text-xs text-muted-foreground">{isZh ? '观察到的学习日' : 'Days observed'}</p>
                         <p className="mt-2 text-2xl font-semibold">{reviewWindowInsight.activeDays}</p>
                         <p className="text-sm text-muted-foreground">最近 30 天里有学习行为的天数</p>
                       </div>
-	                      <div className="rounded-lg border border-border/70 bg-card/60 p-4">
-	                        <p className="text-xs text-muted-foreground">{isZh ? '备用时段' : 'Backup window'}</p>
+                      <div className="analytics-muted-panel rounded-lg border p-4">
+                        <p className="text-xs text-muted-foreground">{isZh ? '备用时段' : 'Backup window'}</p>
                         <p className="mt-2 text-lg font-semibold">
-	                          {reviewWindowInsight.secondary
-                              ? (isZh ? reviewWindowInsight.secondary.labelZh : reviewWindowInsight.secondary.label)
+                          {reviewWindowInsight.secondary
+                            ? (isZh ? reviewWindowInsight.secondary.labelZh : reviewWindowInsight.secondary.label)
                             : (isZh ? '先固定一个时段' : 'Keep one study block')}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {reviewWindowInsight.secondary
-	                            ? reviewWindowInsight.secondary.hours
-	                            : (isZh ? '先把一个学习时段坚持下来，再增加第二个时段。' : 'Keep one study block before adding a second one.')}
+                            ? reviewWindowInsight.secondary.hours
+                            : (isZh ? '先把一个学习时段坚持下来，再增加第二个时段。' : 'Keep one study block before adding a second one.')}
                         </p>
                       </div>
                     </div>
@@ -1287,10 +1287,10 @@ export default function AnalyticsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
+	                <CardTitle className="text-lg flex items-center gap-2">
+	                  <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
 	                  {isZh ? '最高遗忘风险' : 'Highest forgetting risk'}
-                </CardTitle>
+	                </CardTitle>
                 <p className="text-sm text-muted-foreground">{copy.charts.risk}</p>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -1298,7 +1298,7 @@ export default function AnalyticsPage() {
                   riskWords.map((item, index) => (
                     <div
                       key={item.wordId}
-	                      className="flex flex-col gap-3 rounded-lg border border-border/70 bg-card/60 px-4 py-3 md:flex-row md:items-center md:justify-between"
+                      className="analytics-muted-panel flex flex-col gap-3 rounded-lg border px-4 py-3 md:flex-row md:items-center md:justify-between"
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">

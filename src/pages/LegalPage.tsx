@@ -16,7 +16,7 @@ interface LegalSection {
 }
 
 const EFFECTIVE_DATE = '2026-06-13';
-const CONTACT_PLACEHOLDER = '[support contact pending legal review]';
+const SUPPORT_EMAIL = 'support@uuedu.online';
 
 const TERMS_SECTIONS: LegalSection[] = [
   {
@@ -61,12 +61,12 @@ const TERMS_SECTIONS: LegalSection[] = [
     body: [
       'Free access remains available while paid plans are being prepared.',
       'When paid plans launch, subscription price, renewal period, cancellation method, refund handling, and plan limits must be shown before checkout.',
-      `Until final billing support text is approved, subscription questions should route to the contact placeholder: ${CONTACT_PLACEHOLDER}.`,
+      `Subscription and billing questions can be sent to ${SUPPORT_EMAIL}. If paid checkout is unavailable, VocabDaily will not create a subscription or charge a payment method.`,
     ],
     bodyZh: [
       '在付费方案准备期间，免费版仍可使用。',
       '付费方案上线后，订阅价格、续费周期、取消方式、退款处理和方案限制必须在结账前清楚展示。',
-      `在最终账单支持文案通过前，订阅问题应指向联系占位：${CONTACT_PLACEHOLDER}。`,
+      `订阅和账单问题可以发送至 ${SUPPORT_EMAIL}。如果付费结账不可用，VocabDaily 不会创建订阅，也不会扣款。`,
     ],
   },
 ];
@@ -101,23 +101,23 @@ const PRIVACY_SECTIONS: LegalSection[] = [
     titleZh: '存储与控制',
     body: [
       'The app supports local/offline learning data as well as cloud-backed account data where configured.',
-      'Learners should be able to clear local learning data from settings. Cloud deletion and export workflows require final operational ownership before production launch.',
+      `Learners can clear local learning data from settings. For account data access, export, or deletion requests, contact ${SUPPORT_EMAIL}.`,
     ],
     bodyZh: [
       '本应用支持本地/离线学习数据，也可能在配置后使用云端账号数据。',
-      '学习者应能在设置中清除本地学习数据。云端删除和导出流程需要在生产发布前明确最终运营负责人。',
+      `学习者可以在设置中清除本地学习数据。如需访问、导出或删除账号数据，请联系 ${SUPPORT_EMAIL}。`,
     ],
   },
   {
-    title: 'Contact and review status',
-    titleZh: '联系方式与复核状态',
+    title: 'Contact and requests',
+    titleZh: '联系方式与请求',
     body: [
-      `Privacy requests should route to the contact placeholder until a final support channel is approved: ${CONTACT_PLACEHOLDER}.`,
-      'This policy is a product-ready draft and remains a release blocker until legal, security, and operations owners approve it.',
+      `Privacy requests can be sent to ${SUPPORT_EMAIL}. Include the account email and the type of request so the team can route it correctly.`,
+      'VocabDaily keeps only the data needed to provide learning, safety, account, and reliability features, subject to the product configuration available to your account.',
     ],
     bodyZh: [
-      `隐私请求在最终支持渠道获批前，应指向联系占位：${CONTACT_PLACEHOLDER}。`,
-      '本政策是产品可用草稿，在法务、安全和运营负责人批准前仍属于发布阻断项。',
+      `隐私请求可以发送至 ${SUPPORT_EMAIL}。请包含账号邮箱和请求类型，方便团队正确处理。`,
+      'VocabDaily 仅在账号可用的产品配置范围内，保留提供学习、安全、账号和可靠性功能所需的数据。',
     ],
   },
 ];
@@ -132,8 +132,8 @@ export default function LegalPage() {
     ? isZh ? '服务条款' : 'Terms of Service'
     : isZh ? '隐私政策' : 'Privacy Policy';
   const subtitle = isZh
-    ? '这是一份上线前可读草稿，用来替换注册流程中的占位链接。正式发布前仍需法务复核。'
-    : 'This is a readable pre-launch draft replacing placeholder registration links. It still requires legal review before production release.';
+    ? '请在使用 VocabDaily 前阅读本页面。继续使用即表示你理解这些条款。'
+    : 'Please read this page before using VocabDaily. Continued use means you understand these terms.';
 
   return (
     <div className="study-premium-bg min-h-screen bg-background text-foreground">
@@ -157,7 +157,7 @@ export default function LegalPage() {
 
         <Badge variant="secondary" className="mb-4 rounded-md">
           <ShieldCheck className="h-3.5 w-3.5" />
-          {isZh ? '发布前需复核' : 'Pre-launch review required'}
+          {isZh ? '当前版本' : 'Current version'}
         </Badge>
 
         <h1 className="text-3xl font-semibold sm:text-4xl">{title}</h1>
@@ -173,8 +173,8 @@ export default function LegalPage() {
             <dd className="mt-1 text-muted-foreground">{EFFECTIVE_DATE}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="font-medium text-foreground">{isZh ? '联系占位' : 'Contact placeholder'}</dt>
-            <dd className="mt-1 break-words text-muted-foreground">{CONTACT_PLACEHOLDER}</dd>
+            <dt className="font-medium text-foreground">{isZh ? '联系邮箱' : 'Contact email'}</dt>
+            <dd className="mt-1 break-words text-muted-foreground">{SUPPORT_EMAIL}</dd>
           </div>
         </dl>
 
@@ -193,10 +193,10 @@ export default function LegalPage() {
           ))}
         </article>
 
-        <div className="mt-10 rounded-lg border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.1)] p-4 text-sm text-[hsl(var(--warning))]">
+        <div className="mt-10 rounded-lg border border-border bg-[hsl(var(--surface-raised))] p-4 text-sm text-muted-foreground">
           {isZh
-            ? '发布阻断：这份文本必须在生产发布前由法务、安全和运营负责人复核。'
-            : 'Release blocker: this copy must be reviewed by legal, security, and operations owners before production launch.'}
+            ? '如本页面与应用内功能说明不一致，请以本页面和结账前显示的具体说明为准。'
+            : 'If this page differs from in-app feature descriptions, this page and the specific pre-checkout disclosures control.'}
         </div>
       </main>
     </div>

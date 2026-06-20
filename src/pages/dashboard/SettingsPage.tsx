@@ -264,7 +264,7 @@ export default function SettingsPage() {
                   value={i18n.language?.startsWith('zh') ? 'zh' : 'en'}
                   onValueChange={(lang) => {
                     i18n.changeLanguage(lang);
-                    localStorage.setItem('vocabdaily_language', lang);
+                    localStorage.setItem('language', lang);
                     toast.success(lang === 'zh' ? '已切换为中文' : 'Switched to English');
                   }}
                 >
