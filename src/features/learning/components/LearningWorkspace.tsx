@@ -204,14 +204,14 @@ export function LearningWorkspaceSurface({
 
 export function LearningMetricStrip({ items, className }: LearningMetricStripProps) {
   return (
-    <div className={cn('grid gap-3 sm:grid-cols-2 xl:grid-cols-3', className)}>
+    <div className={cn('grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-3', className)}>
       {items.map((item) => (
         <div
           key={`${item.label}-${String(item.value)}`}
-          className="rounded-2xl border border-border/65 bg-[hsl(var(--surface-sunken)/0.42)] px-3 py-2.5"
+          className="min-w-0 rounded-2xl border border-border/65 bg-[hsl(var(--surface-sunken)/0.42)] px-3 py-2.5"
         >
           <p className="focus-kicker">{item.label}</p>
-          <div className={cn('study-number mt-1 text-lg', metricToneClass[item.accent || 'default'])}>
+          <div className={cn('study-number mt-1 break-words text-lg', metricToneClass[item.accent || 'default'])}>
             {item.value}
           </div>
           {item.hint ? <p className="hidden text-xs leading-5 text-muted-foreground xl:block">{item.hint}</p> : null}
@@ -265,18 +265,18 @@ export function LearningCompletionState({
     <motion.section
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn(learningFrameClassName, 'overflow-hidden px-5 py-8 sm:px-8', className)}
+      className={cn(learningFrameClassName, 'overflow-hidden px-4 py-5 sm:px-8 sm:py-8', className)}
     >
       <div className="relative text-center z-10">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
-          <Icon className="h-6 w-6" />
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary sm:h-12 sm:w-12">
+          <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
         </div>
-        {eyebrow ? <p className="focus-kicker mt-6">{eyebrow}</p> : null}
-        <h2 className="focus-page-title mt-3 text-2xl">{title}</h2>
-        <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+        {eyebrow ? <p className="focus-kicker mt-4 sm:mt-6">{eyebrow}</p> : null}
+        <h2 className="focus-page-title mt-2 text-xl sm:mt-3 sm:text-2xl">{title}</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:mt-3">{description}</p>
       </div>
-      {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mt-8" /> : null}
-      {actions ? <LearningActionCluster className="mt-8 justify-center">{actions}</LearningActionCluster> : null}
+      {actions ? <LearningActionCluster className="mt-5 justify-center sm:mt-8">{actions}</LearningActionCluster> : null}
+      {metrics && metrics.length > 0 ? <LearningMetricStrip items={metrics} className="mt-5 sm:mt-8" /> : null}
     </motion.section>
   );
 }
