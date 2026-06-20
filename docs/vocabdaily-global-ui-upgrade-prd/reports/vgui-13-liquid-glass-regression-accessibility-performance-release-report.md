@@ -44,6 +44,7 @@ Key local screenshots:
 | Production HTTP | `curl -I -L https://www.uuedu.online` | passed: HTTP 200 |
 | Production UI regression | `BASE_URL=https://www.uuedu.online UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix npm run test:ui-regression` | passed: 54 route checks and 10 scenarios, 0 failures |
 | Production dark/touch proof | custom mobile dark Settings/Reading check at `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix` | passed: dark body `rgb(31,32,35)`, Settings tabs 85x44 |
+| Production route effects | custom `/auth/callback` and `/dashboard` route-effect check at `product-audit-2026-06-21/liquid-glass/prod-route-effects-final` | passed: auth callback safely redirects to login without a session; protected dashboard root safely redirects with `redirect=/dashboard` |
 
 ## Browser Evidence
 
@@ -87,6 +88,10 @@ Production:
 - Production contact sheets: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/contact-sheet-desktop.html`, `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/contact-sheet-mobile.html`
 - Production dark/touch summary: `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json`
 - Production dark/touch screenshots: `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/screenshots/`
+- Production route-effect summary: `product-audit-2026-06-21/liquid-glass/prod-route-effects-final/summary.json`
+- Production route-effect screenshots: `product-audit-2026-06-21/liquid-glass/prod-route-effects-final/screenshots/`
+- `/auth/callback` is an ephemeral route; with no callback session it safely redirects to `/login` without horizontal overflow or an error boundary.
+- `/dashboard` is a protected redirect route; without a production Supabase session it safely redirects to `/login?redirect=%2Fdashboard` without horizontal overflow or an error boundary.
 
 Online subagent review:
 
@@ -134,6 +139,7 @@ VGUI-F013 can be marked passing because:
 - the branch was committed and pushed through `e93bf46`,
 - production deployment completed at `dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6`,
 - production HTTP and production UI regression passed,
+- production route-effect checks passed for `/auth/callback` and `/dashboard`,
 - dark/touch browser evidence passed on the final deployment,
 - online subagents reviewed every route family,
 - all online findings were fixed and re-reviewed as PASS.

@@ -460,6 +460,7 @@ Commands:
 - Performance/glass-stacking matrix passed: 8 checks, 0 failures at `product-audit-2026-06-21/liquid-glass/vgui-13-performance-neutral-graphite/summary.json`; `stackedBlurredCount` stayed 0.
 - `BASE_URL=https://www.uuedu.online UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix npm run test:ui-regression` passed: 54 route checks and 10 scenarios, 0 failures.
 - Production dark/touch proof passed at `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json`.
+- Production route-effect proof passed at `product-audit-2026-06-21/liquid-glass/prod-route-effects-final/summary.json`, covering ephemeral `/auth/callback` and protected `/dashboard` behavior.
 
 Browser evidence:
 
@@ -472,6 +473,7 @@ Browser evidence:
 - Final production UI summary: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/summary.json`
 - Final production UI screenshots: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/screenshots/`
 - Final production dark/touch summary: `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json`
+- Final production route-effect summary: `product-audit-2026-06-21/liquid-glass/prod-route-effects-final/summary.json`
 
 Production:
 
@@ -479,6 +481,8 @@ Production:
 - Final production URL: `https://ai-english-learn-6cyx8svq0-zedpl28174-3992s-projects.vercel.app`
 - Production alias: `https://www.uuedu.online`
 - Production HTTP check passed with HTTP 200.
+- `/auth/callback` safely redirects to `/login` without a session and no error boundary/overflow.
+- `/dashboard` safely redirects unauthenticated users to `/login?redirect=%2Fdashboard` and no error boundary/overflow.
 
 Code facts:
 
