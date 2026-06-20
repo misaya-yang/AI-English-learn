@@ -778,7 +778,13 @@ export default function DashboardLayout() {
           </div>
         </aside>
 
-        <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <main
+          id="main-content"
+          className={cn(
+            'flex min-h-0 flex-1 flex-col overflow-hidden',
+            isMobile && 'mb-[calc(5.75rem+env(safe-area-inset-bottom))]',
+          )}
+        >
           <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-background/80">
             <div className="flex items-center justify-between gap-3 px-4 py-2 lg:px-5">
               <div className="flex min-w-0 items-center gap-3">
@@ -1005,7 +1011,12 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <main
+        className={cn(
+          'flex min-h-0 flex-1 flex-col overflow-hidden',
+          isMobile && !isChatRoute && 'mb-[calc(5.75rem+env(safe-area-inset-bottom))]',
+        )}
+      >
         <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-[hsl(var(--surface-raised))]/80">
           <div className="flex items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
             <div className="flex min-w-0 items-center gap-3">
