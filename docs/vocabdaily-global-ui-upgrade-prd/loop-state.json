@@ -2,8 +2,8 @@
   "schema_version": "prd-phase-harness/loop-state/v1",
   "active_phase": "VGUI-13",
   "active_feature": "VGUI-F013",
-  "iteration": 6,
-  "status": "running",
-  "last_decision": "VGUI-13 local release gate passed after the user-requested dark-mode correction: lint, i18n, 110 files / 840 tests, build, 54 route checks plus 10 scenarios, 160 learning-flow checks, 10 reduced-preference checks, and 8 performance checks passed.",
-  "next_action": "Commit, push, deploy to production, run production smoke/UI evidence, dispatch online subagents across every route family, fix all findings, then mark VGUI-F013 passing only after final production evidence is recorded."
+  "iteration": 9,
+  "status": "verified",
+  "last_decision": "VGUI-13 completed after production deployment dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6: lint, i18n, 111 files / 843 tests, build, local UI regression, production UI regression, production dark/touch proof, and online subagent review all passed.",
+  "next_action": "Await user acceptance on the live site at https://www.uuedu.online. No further VGUI harness phase remains open."
 }

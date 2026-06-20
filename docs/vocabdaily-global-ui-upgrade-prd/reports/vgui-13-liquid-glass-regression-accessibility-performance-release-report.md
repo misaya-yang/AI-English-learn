@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-21
 
-**Status:** local release gate passed; production deployment and online subagent review pending in the same release flow.
+**Status:** completed; production deployment, online UI regression, and subagent review passed.
 
 ## Scope
 
@@ -34,12 +34,16 @@ Key local screenshots:
 | --- | --- | --- |
 | Lint | `npm run lint` | passed |
 | i18n | `npm run check:i18n` | passed |
-| Unit/component tests | `npm test` | passed: 110 files / 840 tests |
+| Unit/component tests | `npm test` | passed: 111 files / 843 tests |
 | Production build | `npm run build` | passed with existing Browserslist age warning |
 | UI regression | `BASE_URL=http://127.0.0.1:5176 UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/vgui-13-ui-regression-final npm run test:ui-regression` | passed: 54 route checks and 10 scenarios, 0 failures |
+| Final local UI regression after online findings | `BASE_URL=http://127.0.0.1:5176 UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/vgui-13-completion-cta-local-v2 npm run test:ui-regression` | passed: 54 route checks and 10 scenarios, 0 failures |
 | Learning-flow regression | `BASE_URL=http://127.0.0.1:5176 LEARNING_FLOW_OUT_DIR=product-audit-2026-06-21/liquid-glass/vgui-13-learning-flow-final npm run test:learning-flow-regression` | passed: 160 checks, 0 failures |
 | Reduced preferences | custom reduced-motion/reduced-transparency matrix at `product-audit-2026-06-21/liquid-glass/vgui-13-reduced-preferences-final` | passed: 10 checks, 0 failures |
 | Performance/glass stacking | custom Home/Today desktop/mobile light/dark matrix at `product-audit-2026-06-21/liquid-glass/vgui-13-performance-neutral-graphite` | passed: 8 checks, 0 failures, `stackedBlurredCount: 0` |
+| Production HTTP | `curl -I -L https://www.uuedu.online` | passed: HTTP 200 |
+| Production UI regression | `BASE_URL=https://www.uuedu.online UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix npm run test:ui-regression` | passed: 54 route checks and 10 scenarios, 0 failures |
+| Production dark/touch proof | custom mobile dark Settings/Reading check at `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix` | passed: dark body `rgb(31,32,35)`, Settings tabs 85x44 |
 
 ## Browser Evidence
 
@@ -73,6 +77,24 @@ Performance:
 - Coverage: Home and Today at desktop/mobile in light/dark.
 - Result: no stacked blurred ancestors, no horizontal overflow, and route load events completed in the local browser matrix.
 
+Production:
+
+- Final deployment: `dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6`
+- Final production URL: `https://ai-english-learn-6cyx8svq0-zedpl28174-3992s-projects.vercel.app`
+- Production alias: `https://www.uuedu.online`
+- Production UI summary: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/summary.json`
+- Production UI screenshots: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/screenshots/`
+- Production contact sheets: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/contact-sheet-desktop.html`, `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/contact-sheet-mobile.html`
+- Production dark/touch summary: `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json`
+- Production dark/touch screenshots: `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/screenshots/`
+
+Online subagent review:
+
+- Public/auth/legal lane: PASS after legal placeholder copy was removed and production legal pages showed `support@uuedu.online`.
+- Core dashboard lane: PASS on final deployment; mobile bottom-nav reserve is in place and dashboard routes have no P1/P2 usability issue.
+- Specialist/completion lane: PASS on final deployment; Listening, Grammar, and Pronunciation completion CTAs are fully visible above the bottom nav and grammar metrics wrap instead of truncating.
+- Account/cross-cutting lane: PASS on final deployment; Settings touch targets are 85x44, dark mode is graphite/charcoal, and no P1/P2 accessibility issue remains.
+
 ## Local Corrections Applied
 
 - Recalibrated dark tokens in `src/index.css` from washed blue-gray to neutral graphite/charcoal.
@@ -80,12 +102,17 @@ Performance:
 - Updated `scripts/learning-flow-regression.mjs` so the Vocabulary route waits for loaded IELTS content and the dark-background check uses the new neutral threshold.
 - Tightened reduced-transparency CSS selectors in dark mode.
 - Disabled nested control blur inside glass bars/panels so glass does not stack over itself.
+- Replaced legal placeholder/review copy with production-safe contact copy.
+- Fixed Settings language persistence to use the global language key.
+- Enforced mobile touch targets for tabs and switches.
+- Reserved mobile dashboard main content space above the fixed bottom nav.
+- Moved mobile completion CTAs above metric cards and made completion metrics compact without truncating text.
 - Kept all billing, auth, Supabase, learning data, and route contracts unchanged.
 
 ## Residual Risks
 
 - `npm run build` still prints the pre-existing Browserslist `caniuse-lite` age warning. The build succeeds.
-- Production smoke and online subagent review remain pending until the committed branch is pushed and deployed.
+- Full `npm run smoke:prod` was not run in the final pass because the shell did not expose Supabase production environment variables; production HTTP 200, production UI regression, and production browser evidence passed.
 - Provider dashboards, DNS, database migrations, billing provider behavior, production data, and secrets were not touched.
 
 ## Rollback Plan
@@ -102,10 +129,11 @@ Because this release does not include schema, billing, provider, or production-d
 
 ## Completion Boundary
 
-Do not mark VGUI-F013 passing until:
+VGUI-F013 can be marked passing because:
 
-- this branch is committed and pushed,
-- production deployment completes,
-- production smoke and production UI regression complete where credentials and network allow,
-- online subagents review every route family,
-- all online findings are fixed or explicitly waived.
+- the branch was committed and pushed through `e93bf46`,
+- production deployment completed at `dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6`,
+- production HTTP and production UI regression passed,
+- dark/touch browser evidence passed on the final deployment,
+- online subagents reviewed every route family,
+- all online findings were fixed and re-reviewed as PASS.

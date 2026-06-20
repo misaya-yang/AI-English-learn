@@ -271,9 +271,9 @@ Production smoke remains separate from this PRD and should not be run as a repla
 - Some tests and scripts may lag behind route naming or copy updates.
 - Supabase network/provider failures should not be disguised as frontend fixes.
 
-## Current Worktree Note
+## Historical VGUI-08 Worktree Note
 
-At the 2026-06-20 Liquid Glass reopen, the worktree already contains an uncommitted first pass on shared glass primitives and selected surfaces:
+At the 2026-06-20 Liquid Glass reopen, the worktree already contained an uncommitted first pass on shared glass primitives and selected surfaces:
 
 - `src/components/ui/glass-surface.tsx`
 - `src/components/ui/glass-surface.test.tsx`
@@ -443,20 +443,23 @@ Code facts:
 - Reduced transparency mode makes sampled glass layers compute `backdrop-filter: none`.
 - Shared shell controls have evidence; VGUI-10 still needs full public/auth route body evidence.
 
-## VGUI-13 Local Release Gate Evidence
+## VGUI-13 Release Gate Evidence
 
-VGUI-13 local release gate passed on 2026-06-21, but production deployment and online subagent review are still required before VGUI-F013 can pass.
+VGUI-13 release gate passed on 2026-06-21. Production deployment and online subagent review are complete.
 
 Commands:
 
 - `npm run lint` passed.
 - `npm run check:i18n` passed.
-- `npm test` passed: 110 files / 840 tests.
+- `npm test` passed: 111 files / 843 tests.
 - `npm run build` passed with the existing Browserslist age warning.
 - `BASE_URL=http://127.0.0.1:5176 UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/vgui-13-ui-regression-final npm run test:ui-regression` passed: 54 route checks and 10 scenarios, 0 failures.
+- `BASE_URL=http://127.0.0.1:5176 UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/vgui-13-completion-cta-local-v2 npm run test:ui-regression` passed after online completion CTA fixes: 54 route checks and 10 scenarios, 0 failures.
 - `BASE_URL=http://127.0.0.1:5176 LEARNING_FLOW_OUT_DIR=product-audit-2026-06-21/liquid-glass/vgui-13-learning-flow-final npm run test:learning-flow-regression` passed: 160 checks, 0 failures.
 - Reduced-preference matrix passed: 10 checks, 0 failures at `product-audit-2026-06-21/liquid-glass/vgui-13-reduced-preferences-final/summary.json`.
 - Performance/glass-stacking matrix passed: 8 checks, 0 failures at `product-audit-2026-06-21/liquid-glass/vgui-13-performance-neutral-graphite/summary.json`; `stackedBlurredCount` stayed 0.
+- `BASE_URL=https://www.uuedu.online UI_REGRESSION_OUT_DIR=product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix npm run test:ui-regression` passed: 54 route checks and 10 scenarios, 0 failures.
+- Production dark/touch proof passed at `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json`.
 
 Browser evidence:
 
@@ -466,6 +469,16 @@ Browser evidence:
 - Learning-flow summary: `product-audit-2026-06-21/liquid-glass/vgui-13-learning-flow-final/summary.json`
 - Reduced-preference summary: `product-audit-2026-06-21/liquid-glass/vgui-13-reduced-preferences-final/summary.json`
 - Performance summary: `product-audit-2026-06-21/liquid-glass/vgui-13-performance-neutral-graphite/summary.json`
+- Final production UI summary: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/summary.json`
+- Final production UI screenshots: `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/screenshots/`
+- Final production dark/touch summary: `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json`
+
+Production:
+
+- Final deployment: `dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6`
+- Final production URL: `https://ai-english-learn-6cyx8svq0-zedpl28174-3992s-projects.vercel.app`
+- Production alias: `https://www.uuedu.online`
+- Production HTTP check passed with HTTP 200.
 
 Code facts:
 
@@ -474,6 +487,18 @@ Code facts:
 - `src/themeContrast.test.ts` now protects the darker neutral range while still rejecting pure black.
 - `scripts/learning-flow-regression.mjs` now waits for loaded IELTS vocabulary content before asserting the Vocabulary route and checks dark background brightness against the new neutral threshold.
 - Dense learning content, forms, legal copy, chat messages, analytics panels, profile data, and long passages remain on solid readable surfaces.
+- `src/pages/LegalPage.tsx` now uses production-safe contact copy instead of placeholder/legal-review language.
+- `src/pages/dashboard/SettingsPage.tsx` writes the app-wide language key.
+- `src/components/ui/switch.tsx` and coarse pointer CSS keep mobile account/settings controls at 44px or larger.
+- `src/layouts/DashboardLayout.tsx` reserves mobile content space above the fixed bottom nav and hides bottom nav on chat mobile.
+- `src/features/learning/components/LearningWorkspace.tsx` now renders completion actions before metrics on mobile and wraps metric values without clipping.
+
+Online review:
+
+- Public/auth/legal subagent: PASS after legal placeholder fixes.
+- Core dashboard subagent: PASS on final deployment after mobile bottom-nav spacing.
+- Specialist/completion subagent: PASS on final deployment after completion CTA visibility fixes.
+- Account/cross-cutting subagent: PASS on final deployment with dark/touch evidence.
 
 ## VGUI-02 Public And Auth Evidence
 

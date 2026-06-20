@@ -8,10 +8,10 @@
 
 ## Current State
 
-- Status: reopened for Liquid Glass full-site implementation
+- Status: completed for Liquid Glass full-site implementation
 - Active phase: VGUI-13
 - Active feature-oracle item: VGUI-F013
-- Clean-state note: VGUI-00 through VGUI-07 are historical baseline and release evidence. VGUI-08, VGUI-09, VGUI-10, VGUI-11, and VGUI-12 have passed for the 2026-06-20 Apple-inspired Liquid Glass chain. The full objective remains incomplete until VGUI-F013 passes and the user-requested deploy plus online subagent review completes.
+- Clean-state note: VGUI-00 through VGUI-07 are historical baseline and release evidence. VGUI-08 through VGUI-13 have passed for the 2026-06-20 Apple-inspired Liquid Glass chain. The production site is deployed at `https://www.uuedu.online` and ready for user acceptance.
 
 ## Session Log
 
@@ -34,10 +34,11 @@
 | 2026-06-20 | generator | VGUI-11 | Dashboard core passed: Today, Review, Practice, Chat, Vocabulary, and Analytics use glass only for shell/control layers while workbook sheets, review cards, chat messages, vocabulary content, and analytics panels remain solid. | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-11-liquid-glass-dashboard-core-learning-report.md`; `product-audit-2026-06-20/liquid-glass/vgui-11-dashboard-core/summary.json`; `product-audit-2026-06-20/liquid-glass/vgui-11-learning-flow/summary.json` | Execute VGUI-12 specialist modules and account routes. |
 | 2026-06-21 | generator | VGUI-12 | Specialist/account routes passed: Reading, Listening, Grammar, Pronunciation, Writing, Exam, Learning Path, Memory, Leaderboard, Settings, and Profile now use glass only for controls while long content and account/form data stay solid. | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-12-liquid-glass-specialist-modules-and-account-report.md`; `product-audit-2026-06-21/liquid-glass/vgui-12-specialist-account/summary.json` | Execute VGUI-13 release gate, commit, push, deploy, and online subagent UI review. |
 | 2026-06-21 | generator | VGUI-13 | Local release gate passed after correcting the washed dark mode to neutral graphite/charcoal and removing nested glass blur. | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md`; `product-audit-2026-06-21/liquid-glass/vgui-13-ui-regression-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-learning-flow-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-reduced-preferences-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-performance-neutral-graphite/summary.json` | Commit, push, deploy, run production smoke/UI evidence, dispatch online subagents across every route family, and fix all findings before marking VGUI-F013 passing. |
+| 2026-06-21 | releaser | VGUI-13 | Production release completed after online fixes: legal placeholder copy, Settings language/touch targets, mobile bottom-nav reserve, and completion CTA visibility were fixed; final production UI regression and all subagent lanes passed. | Vercel `dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6`; `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/summary.json`; `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json` | Await user acceptance on `https://www.uuedu.online`. |
 
 ## Known Blockers
 
-- No active blocker for VGUI-13. User explicitly requested commit, push, deployment, and online UI review, so deployment is approved for this release flow. Provider dashboards, database migrations, billing changes, DNS changes, and production data mutation remain out of scope.
+- No active blocker. Provider dashboards, database migrations, billing changes, DNS changes, and production data mutation remained out of scope.
 
 ## Clean Exit Checklist
 

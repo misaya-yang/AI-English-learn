@@ -47,8 +47,8 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 
 - Active phase: VGUI-13
 - Active feature-oracle item: VGUI-F013
-- Current decision: VGUI-12 passed with specialist/account route evidence, focused tests, lint, i18n, build, and source/continuity writeback.
-- Next action: Execute VGUI-13 release gate, commit, push, deploy, and online subagent UI review.
+- Current decision: VGUI-13 passed with local/production evidence and online subagent review.
+- Next action: Await user acceptance on `https://www.uuedu.online`; no further VGUI harness phase remains open.
 
 ## Phase Evidence Ledger
 
@@ -65,7 +65,7 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 | VGUI-10 | passed | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-10-liquid-glass-public-auth-and-entry-surfaces-report.md`; `product-audit-2026-06-20/liquid-glass/vgui-10-public-auth/summary.json`; `product-audit-2026-06-20/liquid-glass/vgui-10-ui-regression/summary.json` | VGUI-11 may proceed. Public/auth/legal/sample/pricing/daily-word routes have shared glass navigation/control evidence while form/legal/pricing/word bodies remain solid. |
 | VGUI-11 | passed | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-11-liquid-glass-dashboard-core-learning-report.md`; `product-audit-2026-06-20/liquid-glass/vgui-11-dashboard-core/summary.json`; `product-audit-2026-06-20/liquid-glass/vgui-11-learning-flow/summary.json` | VGUI-12 may proceed. Core dashboard routes have shared glass control evidence while workbook, review, chat, vocabulary, and analytics content remains solid. |
 | VGUI-12 | passed | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-12-liquid-glass-specialist-modules-and-account-report.md`; `product-audit-2026-06-21/liquid-glass/vgui-12-specialist-account/summary.json` | VGUI-13 may proceed. Specialist/account routes have shared glass control evidence while long-form, feedback, form, and profile data remains solid. |
-| VGUI-13 | local release gate passed, production pending | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md`; `product-audit-2026-06-21/liquid-glass/vgui-13-ui-regression-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-learning-flow-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-reduced-preferences-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-performance-neutral-graphite/summary.json` | Commit, push, deploy, and online subagent review remain required before VGUI-F013 can pass. The accepted dark direction is neutral graphite/charcoal, not washed blue-gray. |
+| VGUI-13 | passed | `docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md`; `product-audit-2026-06-21/liquid-glass/vgui-13-ui-regression-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-learning-flow-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-reduced-preferences-final/summary.json`; `product-audit-2026-06-21/liquid-glass/vgui-13-performance-neutral-graphite/summary.json`; `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/summary.json`; `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json` | Final Vercel deployment `dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6` is aliased to `https://www.uuedu.online`. All online subagent route-family lanes returned PASS. |
 
 ## VGUI-01 Code Facts
 
@@ -158,12 +158,17 @@ This file preserves cross-phase continuity for long-running agents. Treat it as 
 - Reading passages, listening transcripts, grammar explanations, writing bodies/feedback, exam prompts/feedback, memory details, settings forms, and profile/account data remain solid/readable.
 - VGUI-13 inherits all VGUI-08 through VGUI-12 evidence and must now prove full-route regression, reduced preferences, performance, deployment, production smoke, and online subagent review.
 
-## VGUI-13 Local Release Gate Facts
+## VGUI-13 Release Gate Facts
 
 - The user rejected the first VGUI-13 dark visual result as too washed and too bright. The accepted local direction is direct neutral graphite/charcoal dark mode.
 - `src/index.css` dark tokens now use a darker neutral app background and solid card surfaces instead of a blue-gray foggy cast.
 - `src/themeContrast.test.ts` now guards the darker neutral range while still rejecting pure black.
 - `scripts/learning-flow-regression.mjs` waits for loaded IELTS vocabulary content and uses the updated dark-background threshold.
 - Reduced-transparency dark selectors were tightened and nested blur was removed for controls inside glass bars/panels.
-- Final local checks passed: lint, i18n, 110 files / 840 tests, build, UI regression 54 route checks plus 10 scenarios, learning-flow 160 checks, reduced-preference 10 checks, and performance 8 checks with `stackedBlurredCount: 0`.
-- VGUI-F013 remains incomplete until production deployment, production smoke/UI evidence, and online subagent review across every route family are complete.
+- Final local checks passed: lint, i18n, 111 files / 843 tests, build, UI regression 54 route checks plus 10 scenarios, learning-flow 160 checks, reduced-preference 10 checks, and performance 8 checks with `stackedBlurredCount: 0`.
+- Production deployment `dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6` is ready and aliased to `https://www.uuedu.online`.
+- Final production UI regression passed: 54 route checks plus 10 scenarios, 0 failures at `product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/summary.json`.
+- Final production dark/touch proof passed: body background `rgb(31,32,35)` and Settings tabs 85x44 at `product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json`.
+- Online subagents passed public/auth/legal, core dashboard, specialist/completion, and account/cross-cutting lanes after fixes.
+- `src/layouts/DashboardLayout.tsx` reserves mobile content space above the fixed bottom nav.
+- `src/features/learning/components/LearningWorkspace.tsx` now puts mobile completion actions before metric cards and wraps metric values instead of truncating them.

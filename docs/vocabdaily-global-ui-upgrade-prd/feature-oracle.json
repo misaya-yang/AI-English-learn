@@ -170,9 +170,9 @@
         "Capture or cite evidence for every route, both primary viewports, light/dark themes, reduced motion, reduced transparency, no overflow, no clipping, and performance constraints.",
         "Write the release report with rollback plan, residual risks, and deployment approval boundary."
       ],
-      "status": "failing",
-      "evidence": "Local gate evidence is recorded in docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md. Passed locally: lint, i18n, 110 files / 840 tests, build, UI regression 54 route checks plus 10 scenarios, learning-flow regression 160 checks, reduced-preference matrix 10 checks, performance matrix 8 checks with stackedBlurredCount 0.",
-      "notes": "Keep failing until the user-approved production deployment, production smoke/UI evidence, and online subagent review across every route family are complete. The user rejected the earlier washed dark mode; VGUI-13 now uses neutral graphite/charcoal dark tokens and no nested glass blur."
+      "status": "passing",
+      "evidence": "VGUI-13 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md. Passed: lint, i18n, 111 files / 843 tests, build, local UI regression 54 route checks plus 10 scenarios, learning-flow regression 160 checks, reduced-preference matrix 10 checks, performance matrix 8 checks with stackedBlurredCount 0, production UI regression 54 route checks plus 10 scenarios at product-audit-2026-06-21/liquid-glass/prod-ui-regression-final-after-cta-fix/summary.json, and production dark/touch proof at product-audit-2026-06-21/liquid-glass/prod-dark-touch-final-after-cta-fix/summary.json. Final Vercel deployment dpl_8aMLaKFPAA5a5JzQ4yaEFhcNXYJ6 is aliased to https://www.uuedu.online.",
+      "notes": "User-approved production deployment and online subagent review are complete. Public/auth/legal, core dashboard, specialist/completion, and account/cross-cutting lanes all returned PASS after fixes for legal placeholder copy, mobile touch targets, mobile bottom-nav spacing, and completion CTA visibility. Dark mode is neutral graphite/charcoal, not washed blue-gray, and no nested glass blur remains."
     }
   ]
 }
