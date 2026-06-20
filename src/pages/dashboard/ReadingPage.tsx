@@ -390,7 +390,7 @@ export default function ReadingPage() {
   if (phase === 'select') {
     return (
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="rounded-md border border-border bg-card p-4 sm:p-5">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:items-stretch">
             <div className="space-y-4">
               <div>
@@ -403,7 +403,7 @@ export default function ReadingPage() {
                 </p>
               </div>
 
-              <div className="rounded-md border border-border bg-background p-4">
+              <div className="rounded-2xl border border-border bg-background p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{featuredPassage.level}</Badge>
                   <span className="text-xs text-muted-foreground">{featuredPassage.topic}</span>
@@ -418,15 +418,15 @@ export default function ReadingPage() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button onClick={() => startPassage(featuredPassage)} className="rounded-md bg-primary text-primary-foreground">
+                <Button onClick={() => startPassage(featuredPassage)} variant="glassPrimary" className="rounded-full">
                   {isZh ? '开始这篇' : 'Start this passage'}
                   <ChevronRight className="ml-1.5 h-4 w-4" />
                 </Button>
                 <Button
                   onClick={handleGenerateNew}
                   disabled={isGenerating}
-                  className="rounded-md"
-                  variant="outline"
+                  className="rounded-full"
+                  variant="glass"
                 >
                   {isGenerating ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {isZh ? '准备中' : 'Preparing'}</>
@@ -437,13 +437,13 @@ export default function ReadingPage() {
               </div>
             </div>
 
-            <div className="rounded-md border border-border bg-background p-4">
+            <div className="rounded-2xl border border-border bg-background p-4">
               <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '题目结构' : 'Question mix'}
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {featuredQuestionMix.map((item) => (
-                  <div key={item.label} className="rounded-md border border-border bg-card p-3 text-center">
+                  <div key={item.label} className="rounded-xl border border-border bg-card p-3 text-center">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -452,7 +452,7 @@ export default function ReadingPage() {
               <div className="mt-4 space-y-3">
                 {readingStages.map((stage, index) => (
                   <div key={stage} className="flex items-start gap-3">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md border border-border bg-card text-xs font-semibold text-muted-foreground">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
                     <p className="text-sm leading-6 text-muted-foreground">{stage}</p>
@@ -472,7 +472,7 @@ export default function ReadingPage() {
             <button
               key={p.id}
               onClick={() => startPassage(p)}
-              className="w-full rounded-md border border-border bg-card p-4 text-left shadow-sm transition hover:border-primary/30 hover:bg-muted/70 active:scale-[0.99]"
+              className="w-full rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition hover:border-primary/30 hover:bg-muted/70 active:scale-[0.99]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -482,8 +482,8 @@ export default function ReadingPage() {
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge variant="outline" className={cn(
                     'rounded-md border-0 text-[10px] px-2',
-                    p.level === 'C1' ? 'bg-violet-500/10 text-violet-700'
-                    : p.level === 'B2' ? 'bg-blue-500/10 text-blue-700'
+                    p.level === 'C1' ? 'bg-primary/10 text-primary'
+                    : p.level === 'B2' ? 'bg-info/10 text-info'
                     : 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]',
                   )}>
                     {p.level}
@@ -532,7 +532,7 @@ export default function ReadingPage() {
               size="sm"
               onClick={() => setPhase('select')}
               variant="ghost"
-              className="rounded-md border border-border text-muted-foreground hover:text-foreground text-xs"
+              className="liquid-glass-control liquid-glass-interactive rounded-full border border-border text-muted-foreground hover:text-foreground text-xs"
             >
               {isZh ? '换文章' : 'Change passage'}
             </Button>
@@ -541,7 +541,7 @@ export default function ReadingPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left: passage */}
-          <div className="rounded-md border border-border bg-card p-5 max-h-[72vh] overflow-y-auto shadow-sm">
+          <div className="max-h-[72vh] overflow-y-auto rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4 text-primary" />
               <span className="text-xs font-medium text-muted-foreground">文章</span>
@@ -563,7 +563,7 @@ export default function ReadingPage() {
             </div>
 
             {current.questions.map((q) => (
-              <div key={q.id} className="rounded-md border border-border bg-card p-4 space-y-3 shadow-sm">
+              <div key={q.id} className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
                 <p className="text-sm font-medium text-foreground leading-6">
                   <span className="text-muted-foreground mr-2">Q{q.id}.</span>
                   {q.question}
@@ -577,9 +577,9 @@ export default function ReadingPage() {
                         key={opt}
                         onClick={() => setAnswer(q.id, opt)}
                         className={cn(
-                          'rounded-md border px-4 py-1.5 text-xs font-medium transition',
+                          'rounded-full border px-4 py-1.5 text-xs font-medium transition',
                           answers[q.id] === opt
-                            ? 'border-green-500/30 bg-green-50 text-green-700'
+                            ? 'border-primary/40 bg-primary/10 text-primary'
                             : 'border-border bg-muted text-muted-foreground hover:border-border hover:bg-muted/80',
                         )}
                       >
@@ -599,7 +599,7 @@ export default function ReadingPage() {
                         className={cn(
                           'w-full rounded-lg border px-4 py-2 text-left text-sm transition',
                           answers[q.id] === opt.charAt(0)
-                            ? 'border-green-500/30 bg-green-50 text-green-700'
+                            ? 'border-primary/40 bg-primary/10 text-primary'
                             : 'border-border bg-card text-muted-foreground hover:border-border hover:bg-muted',
                         )}
                       >
@@ -624,7 +624,7 @@ export default function ReadingPage() {
 
             <Button
               onClick={handleSubmit}
-              className="w-full rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 mt-2"
+              className="mt-2 w-full rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90"
             >
               {isZh ? '提交答案' : 'Submit answers'}
               <ChevronRight className="ml-1 h-4 w-4" />
@@ -660,14 +660,15 @@ export default function ReadingPage() {
           <>
             <Button
               onClick={() => setPhase('select')}
-              className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+              variant="glassPrimary"
+              className="rounded-full"
             >
               {isZh ? '换一篇文章' : 'Choose another passage'}
             </Button>
             <Button
               onClick={() => startPassage(current)}
-              variant="outline"
-              className="rounded-md border-border bg-card text-foreground hover:bg-muted"
+              variant="glass"
+              className="rounded-full"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               {isZh ? '重练本篇' : 'Retry this passage'}
@@ -694,13 +695,13 @@ export default function ReadingPage() {
             <div
               key={q.id}
               className={cn(
-                'rounded-md border p-4 space-y-2',
-                isCorrect ? 'border-green-500/30 bg-green-50' : 'border-destructive/20 bg-destructive/5',
+                'space-y-2 rounded-2xl border p-4',
+                isCorrect ? 'border-success/30 bg-success/10' : 'border-destructive/20 bg-destructive/5',
               )}
             >
               <div className="flex items-start gap-2">
                 {isCorrect
-                  ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+                  ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                   : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                 }
                 <p className="text-sm font-medium text-foreground leading-6">
@@ -710,17 +711,17 @@ export default function ReadingPage() {
 
               <div className="pl-6 space-y-1">
                 <p className="text-xs text-muted-foreground">
-                  {isZh ? '你的答案' : 'Your answer'}: <span className={cn('font-medium', isCorrect ? 'text-green-700' : 'text-destructive')}>{answers[q.id] || (isZh ? '未作答' : '(no answer)')}</span>
+                  {isZh ? '你的答案' : 'Your answer'}: <span className={cn('font-medium', isCorrect ? 'text-success' : 'text-destructive')}>{answers[q.id] || (isZh ? '未作答' : '(no answer)')}</span>
                 </p>
                 {!isCorrect && (
                   <p className="text-xs text-muted-foreground">
-                    {isZh ? '正确答案' : 'Correct'}: <span className="font-medium text-green-700">{q.answer}</span>
+                    {isZh ? '正确答案' : 'Correct'}: <span className="font-medium text-success">{q.answer}</span>
                   </p>
                 )}
               </div>
 
               <div className="pl-6 flex gap-2">
-                <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
                 <p className="text-xs leading-5 text-muted-foreground">{q.explanation}</p>
               </div>
 

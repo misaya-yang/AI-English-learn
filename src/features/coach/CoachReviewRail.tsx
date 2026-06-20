@@ -29,14 +29,14 @@ interface CoachReviewRailProps {
 
 const URGENCY_COLOR: Record<CoachReviewUrgency, string> = {
   overdue: 'border-destructive/35 bg-destructive/[0.08] text-foreground',
-  now: 'border-warning/35 bg-warning/[0.10] text-warning',
+  now: 'border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] text-[hsl(var(--warning))]',
   soon: 'border-primary/25 bg-primary/[0.08] text-primary',
-  later: 'border-border bg-muted/60 text-muted-foreground',
+  later: 'border-border/70 bg-[hsl(var(--surface-sunken)/0.42)] text-muted-foreground',
 };
 
 const URGENCY_BADGE: Record<CoachReviewUrgency, string> = {
   overdue: 'border border-destructive/40 bg-destructive/[0.12] text-destructive',
-  now: 'border border-warning/40 bg-warning/15 text-warning',
+  now: 'border border-[hsl(var(--warning)/0.40)] bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))]',
   soon: 'border border-primary/40 bg-primary/[0.15] text-primary',
   later: 'border border-border bg-muted text-muted-foreground',
 };
@@ -127,7 +127,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    'rounded-lg border px-3 py-2.5 text-sm shadow-sm',
+                    'rounded-2xl border px-3 py-2.5 text-sm shadow-sm',
                     URGENCY_COLOR[urgency],
                   )}
                 >
@@ -176,7 +176,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                 <div
                   key={entry.id}
                   className={cn(
-                    'rounded-lg border px-3 py-2 text-xs',
+                    'rounded-2xl border px-3 py-2 text-xs',
                     URGENCY_COLOR[urgency],
                   )}
                 >

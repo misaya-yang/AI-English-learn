@@ -56,7 +56,7 @@ export function InsightRail({
 }: InsightRailProps) {
   return (
     <motion.aside initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
-      <section className="overflow-hidden rounded-lg border border-border/70 bg-card/90">
+      <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
         <Tabs value={insightView} onValueChange={(value) => onInsightViewChange(value as InsightView)} className="gap-0">
           <div className="border-b border-border/70 px-4 py-4">
             <div className="flex flex-col gap-3">
@@ -64,10 +64,10 @@ export function InsightRail({
                 <p className="text-[11px] font-medium text-muted-foreground/80">数据</p>
                 <h2 className="mt-2 text-lg font-semibold">只看这次练习相关的记录</h2>
               </div>
-              <TabsList className="grid w-full grid-cols-3 rounded-md bg-muted/70 p-1">
-                <TabsTrigger value="weakness" className="rounded-md">弱项</TabsTrigger>
-                <TabsTrigger value="trend" className="rounded-md">走势</TabsTrigger>
-                <TabsTrigger value="history" className="rounded-md">历史</TabsTrigger>
+              <TabsList className="liquid-glass-control grid w-full grid-cols-3 rounded-full p-1">
+                <TabsTrigger value="weakness" className="rounded-full">弱项</TabsTrigger>
+                <TabsTrigger value="trend" className="rounded-full">走势</TabsTrigger>
+                <TabsTrigger value="history" className="rounded-full">历史</TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -100,7 +100,7 @@ export function InsightRail({
                       <Button onClick={() => void onGenerateMicroLesson()} disabled={isBusy || !feedback}>
                         <ListChecks className="mr-1.5 h-4 w-4" /> 错题练习
                       </Button>
-                      <Button variant="outline" onClick={onJumpToVocabulary}>
+                      <Button variant="glass" className="rounded-full" onClick={onJumpToVocabulary}>
                         <BookOpen className="mr-1.5 h-4 w-4" /> 跳转词库补强
                       </Button>
                     </div>
@@ -185,7 +185,7 @@ export function InsightRail({
                           </div>
 
                           <div className="mt-4 flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => onRetryFeedback(item)}>
+                            <Button size="sm" variant="glass" className="rounded-full" onClick={() => onRetryFeedback(item)}>
                               再练一次
                             </Button>
                             <Button

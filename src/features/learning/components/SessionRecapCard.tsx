@@ -25,7 +25,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
       className={cn(
-        'rounded-md border border-[hsl(var(--accent-memory)/0.2)] bg-[hsl(var(--accent-memory)/0.06)] p-4 sm:p-5',
+        'rounded-[18px] border border-border/75 bg-card p-4 shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.12),0_18px_38px_-34px_hsl(var(--shadow-studio)/0.22)] sm:p-5',
         className,
       )}
       data-testid="session-recap-card"
@@ -42,7 +42,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {recap.improved && (
-          <div className="rounded-lg border border-primary/20 bg-primary/10 p-3">
+          <div className="rounded-2xl border border-primary/20 bg-primary/10 p-3">
             <p className="text-[10px] font-medium text-primary">
               {isZh ? '已巩固' : 'Improved'}
             </p>
@@ -54,11 +54,11 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         )}
 
         {recap.needsReview && (
-          <div className="rounded-md border border-amber-500/25 bg-amber-50 p-3">
-            <p className="text-[10px] font-semibold text-amber-700">
+          <div className="rounded-2xl border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.10)] p-3">
+            <p className="text-[10px] font-semibold text-[hsl(var(--warning))]">
               {isZh ? '仍需再练' : 'Needs review'}
             </p>
-            <p className="mt-1.5 inline-flex items-center gap-2 text-sm text-amber-800">
+            <p className="mt-1.5 inline-flex items-center gap-2 text-sm text-foreground">
               <AlertTriangle className="h-3.5 w-3.5" />
               {isZh ? recap.needsReview.label.zh : recap.needsReview.label.en}
             </p>
@@ -66,7 +66,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         )}
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 rounded-md border border-border bg-muted p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-border/70 bg-[hsl(var(--surface-sunken)/0.42)] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <p className="text-[10px] font-semibold text-muted-foreground">
             {isZh ? '下一步' : 'Next step'}
@@ -77,7 +77,8 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         </div>
         <Button
           asChild
-          className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+          variant="glassPrimary"
+          className="sm:w-auto"
         >
           <Link to={recap.nextAction.href}>
             {isZh ? recap.nextAction.ctaZh : recap.nextAction.ctaEn}

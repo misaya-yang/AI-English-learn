@@ -194,7 +194,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue={initialTab} className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full">
+        <TabsList className="liquid-glass-control grid w-full grid-cols-4 rounded-full p-1">
           <TabsTrigger value="general">通用</TabsTrigger>
           <TabsTrigger value="notifications">通知</TabsTrigger>
           <TabsTrigger value="learning">学习</TabsTrigger>
@@ -218,7 +218,7 @@ export default function SettingsPage() {
                   <p className="text-sm text-muted-foreground">{isZh ? '选择界面明暗风格' : 'Choose the app appearance'}</p>
                 </div>
                 <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="liquid-glass-control w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -242,7 +242,7 @@ export default function SettingsPage() {
                     setLocalSettings((s) => ({ ...s, fontSize: v as FontSize }));
                   }}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="liquid-glass-control w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -268,7 +268,7 @@ export default function SettingsPage() {
                     toast.success(lang === 'zh' ? '已切换为中文' : 'Switched to English');
                   }}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="liquid-glass-control w-[180px]">
                     <Globe className="h-4 w-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -317,7 +317,7 @@ export default function SettingsPage() {
                     </div>
                     {notifPermission !== 'granted' && notifPermission !== 'denied' && (
                       <Button
-                        variant="outline"
+                        variant="glass"
                         size="sm"
                         onClick={async () => {
                           const result = await requestPermission();
@@ -373,7 +373,7 @@ export default function SettingsPage() {
                           toast.success(`提醒时间已更新为 ${v}:00`);
                         }}
                       >
-                        <SelectTrigger className="w-[150px]">
+                        <SelectTrigger className="liquid-glass-control w-[150px]">
                           <Clock className="h-4 w-4 mr-2" />
                           <SelectValue />
                         </SelectTrigger>
@@ -390,7 +390,7 @@ export default function SettingsPage() {
 
                   <Separator />
 
-                  <div className="space-y-4 rounded-md border border-border bg-muted/25 p-4">
+                  <div className="space-y-4 rounded-2xl border border-border bg-muted/25 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <Label>学习提醒</Label>
@@ -430,7 +430,7 @@ export default function SettingsPage() {
 
                     <div className="rounded-lg border border-dashed border-border bg-background/80 p-3">
                       <div className="flex items-start gap-3">
-                        <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+                        <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning" />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-foreground">{lifecycleStatus}</p>
                           {lifecyclePreview ? (
@@ -438,7 +438,7 @@ export default function SettingsPage() {
                               <p className="mt-1 text-sm text-muted-foreground">
                                 {lifecyclePreview.titleZh}：{lifecyclePreview.bodyZh}
                               </p>
-                              <Button asChild variant="outline" size="sm" className="mt-3 h-8 rounded-md">
+                              <Button asChild variant="glass" size="sm" className="mt-3 h-8 rounded-full">
                                 <Link to={lifecyclePreview.href}>打开对应练习</Link>
                               </Button>
                             </>
@@ -637,9 +637,9 @@ export default function SettingsPage() {
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-red-200">
+          <Card className="border-destructive/25">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
+              <CardTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
                 危险操作
               </CardTitle>
@@ -648,7 +648,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-red-600">清除所有数据</Label>
+                  <Label className="text-destructive">清除所有数据</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '删除所有学习进度和本地设置' : 'Delete all learning progress and settings'}</p>
                 </div>
                 <AlertDialog>
@@ -676,10 +676,10 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-red-600">退出登录</Label>
+                  <Label className="text-destructive">退出登录</Label>
                   <p className="text-sm text-muted-foreground">{copy.signOutHint}</p>
                 </div>
-                <Button variant="outline" onClick={handleLogout}>
+                <Button variant="glass" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   {copy.signOut}
                 </Button>

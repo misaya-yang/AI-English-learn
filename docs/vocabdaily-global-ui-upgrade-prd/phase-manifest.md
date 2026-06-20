@@ -38,6 +38,12 @@ rg -n "ACCEPTANCE_GATES:" docs/vocabdaily-global-ui-upgrade-prd
 | VGUI-03 | `phase-03-dashboard-core-learning-flow.md` | VGUI-02 | Upgrade Today, Review, Practice, Chat, Vocabulary, and Analytics with correct learning feedback states. | lint, focused dashboard tests, learning-flow checks, screenshots | `reports/vgui-03-dashboard-core-learning-flow-report.md` |
 | VGUI-04 | `phase-04-skill-modules-and-utility-screens.md` | VGUI-03 | Upgrade all skill modules plus memory, leaderboard, settings, and profile. | lint, focused route tests, desktop/mobile screenshots | `reports/vgui-04-skill-modules-and-utility-screens-report.md` |
 | VGUI-05 | `phase-05-regression-evidence-and-release-gate.md` | VGUI-04 | Prove global UI readiness with complete regression, contact sheets, and release evidence. | lint, i18n, build, full tests, UI regression, learning-flow regression | `reports/vgui-05-regression-evidence-and-release-gate-report.md` |
+| VGUI-08 | `phase-08-liquid-glass-research-baseline-and-route-plan.md` | VGUI-05 | Reopen the completed harness for the 2026-06-20 Apple-inspired Liquid Glass full-site objective and write the route/effect execution contract. | strict harness validator, diff check, route/effect inventory | `reports/vgui-08-liquid-glass-research-baseline-and-route-plan-report.md` |
+| VGUI-09 | `phase-09-liquid-glass-tokens-motion-and-shell.md` | VGUI-08 | Establish shared Liquid Glass tokens, glass primitives, motion rules, navigation/control shell, and reduced-preference fallbacks. | lint, i18n, focused shell tests, build, shell screenshots | `reports/vgui-09-liquid-glass-tokens-motion-and-shell-report.md` |
+| VGUI-10 | `phase-10-liquid-glass-public-auth-and-entry-surfaces.md` | VGUI-09 | Upgrade all public, auth, legal, sample, pricing, and word-of-day routes without auth, legal, i18n, or billing drift. | focused public/auth tests, lint, i18n, build, public/auth screenshots | `reports/vgui-10-liquid-glass-public-auth-and-entry-surfaces-report.md` |
+| VGUI-11 | `phase-11-liquid-glass-dashboard-core-learning.md` | VGUI-10 | Upgrade Today, Review, Practice, Chat, Vocabulary, and Analytics while preserving learning correctness. | focused dashboard tests, lint, i18n, build, learning-flow evidence | `reports/vgui-11-liquid-glass-dashboard-core-learning-report.md` |
+| VGUI-12 | `phase-12-liquid-glass-specialist-modules-and-account.md` | VGUI-11 | Upgrade Reading, Listening, Grammar, Pronunciation, Writing, Exam, Learning Path, Memory, Leaderboard, Settings, and Profile. | module/account tests, lint, i18n, build, module screenshots | `reports/vgui-12-liquid-glass-specialist-modules-and-account-report.md` |
+| VGUI-13 | `phase-13-liquid-glass-regression-accessibility-performance-release.md` | VGUI-12 | Prove full Liquid Glass readiness across all routes, effects, accessibility preferences, performance, and release gates. | lint, i18n, full tests, build, UI regression, learning-flow regression, strict harness validator | `reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md` |
 
 ## Phase Report Index
 
@@ -49,6 +55,12 @@ rg -n "ACCEPTANCE_GATES:" docs/vocabdaily-global-ui-upgrade-prd
 | VGUI-03 | `reports/vgui-03-dashboard-core-learning-flow-report.md` |
 | VGUI-04 | `reports/vgui-04-skill-modules-and-utility-screens-report.md` |
 | VGUI-05 | `reports/vgui-05-regression-evidence-and-release-gate-report.md` |
+| VGUI-08 | `reports/vgui-08-liquid-glass-research-baseline-and-route-plan-report.md` |
+| VGUI-09 | `reports/vgui-09-liquid-glass-tokens-motion-and-shell-report.md` |
+| VGUI-10 | `reports/vgui-10-liquid-glass-public-auth-and-entry-surfaces-report.md` |
+| VGUI-11 | `reports/vgui-11-liquid-glass-dashboard-core-learning-report.md` |
+| VGUI-12 | `reports/vgui-12-liquid-glass-specialist-modules-and-account-report.md` |
+| VGUI-13 | `reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md` |
 
 ## Dependency Flow
 
@@ -59,6 +71,12 @@ VGUI-00 Baseline UI Audit And Inventory
   -> VGUI-03 Dashboard Core Learning Flow
   -> VGUI-04 Skill Modules And Utility Screens
   -> VGUI-05 Regression Evidence And Release Gate
+  -> VGUI-08 Liquid Glass Research Baseline And Route Plan
+  -> VGUI-09 Liquid Glass Tokens Motion And Shell
+  -> VGUI-10 Liquid Glass Public Auth And Entry Surfaces
+  -> VGUI-11 Liquid Glass Dashboard Core Learning
+  -> VGUI-12 Liquid Glass Specialist Modules And Account
+  -> VGUI-13 Liquid Glass Regression Accessibility Performance Release
 ```
 
 ## Validation Matrix
@@ -71,6 +89,12 @@ VGUI-00 Baseline UI Audit And Inventory
 | VGUI-03 | local learning state only | yes | no | no | optional Supabase mock/fallback only | yes |
 | VGUI-04 | local learning state only | yes | no | no | optional Supabase mock/fallback only | yes |
 | VGUI-05 | no | yes | no | no | production smoke only if approved | yes |
+| VGUI-08 | no | yes | no | no | no | yes |
+| VGUI-09 | no | yes | no | no | no | yes |
+| VGUI-10 | no | yes | no | no | billing/auth provider changes require approval | yes |
+| VGUI-11 | local seeded learning state only | yes | no | no | no | yes |
+| VGUI-12 | local seeded learning/account state only | yes | no | no | no | yes |
+| VGUI-13 | no | yes | no | no | production smoke/deploy only if approved | yes |
 
 ## Risk Matrix
 
@@ -82,6 +106,12 @@ VGUI-00 Baseline UI Audit And Inventory
 | VGUI-03 | Practice feedback becomes visually nicer but less correct. | Stop if first-wrong retry, reveal, recovered, or FSRS evidence cannot be verified. |
 | VGUI-04 | Module pages drift into separate visual systems. | Stop if a module needs a new pattern not covered by shared component rules. |
 | VGUI-05 | Release proceeds with weak evidence. | Stop if contact sheets, learning-flow regression, or build/test results are missing. |
+| VGUI-08 | The new Liquid Glass objective is mistaken for already-completed VGUI evidence. | Stop if VGUI-08 through VGUI-13 are not represented in the oracle and loop state. |
+| VGUI-09 | Shared glass utilities break fixed/sticky shell positioning or reduce contrast. | Stop if shell controls clip, overflow, or fail reduced-preference fallbacks. |
+| VGUI-10 | Public/auth visual polish changes auth, legal, i18n, or billing meaning. | Stop if pricing fail-closed, auth, demo, legal, or form-label behavior changes. |
+| VGUI-11 | Core dashboard looks better but learning states become less correct. | Stop if first-wrong retry, second-wrong reveal, review due-only behavior, or dense analytics cannot be verified. |
+| VGUI-12 | Specialist modules become visually consistent but less readable. | Stop if passages, transcripts, writing feedback, exam prompts, settings forms, or profile data become hard to read. |
+| VGUI-13 | Final release gate uses sampled evidence for a full-route claim. | Stop if any route, viewport, reduced-preference, or learning-flow evidence is missing without a blocker. |
 
 ## Runtime Artifacts
 
@@ -121,7 +151,8 @@ Complete VGUI-00 Baseline UI Audit And Inventory for `/Users/yang/projects/app` 
 
 ## External Inputs Checklist
 
-- Browser screenshot output folder: `product-audit-2026-06-17/global-ui/`.
+- Historical browser screenshot output folder: `product-audit-2026-06-17/global-ui/`.
+- Liquid Glass browser screenshot output folder: `product-audit-2026-06-20/liquid-glass/`.
 - Vercel deployment: approval required.
 - Production Supabase or billing provider changes: approval required.
 - Figma output: optional, not required for this PRD.

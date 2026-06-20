@@ -526,11 +526,11 @@ export default function DashboardLayout() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-auto rounded-md border border-current/15 bg-transparent px-1.5 py-1.5 hover:bg-current/5"
+          className="liquid-glass-control liquid-glass-interactive h-auto border border-current/15 bg-transparent px-1.5 py-1.5 hover:bg-current/5"
           aria-label={currentLang === 'zh' ? '打开账号菜单' : 'Open account menu'}
         >
-          <Avatar className="h-9 w-9 rounded-md">
-            <AvatarFallback className="rounded-md bg-primary/10 text-primary">
+            <Avatar className="h-9 w-9 rounded-full">
+            <AvatarFallback className="rounded-full bg-primary/10 text-primary">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
@@ -660,7 +660,7 @@ export default function DashboardLayout() {
       <div className="mt-auto flex items-center justify-between border-t border-sidebar-border pt-4">
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <div className="inline-flex rounded-md border border-sidebar-border bg-sidebar-accent p-1">
+          <div className="liquid-glass-control inline-flex border border-sidebar-border/70 p-1">
             <button
               type="button"
               onClick={() => changeLanguage('en')}
@@ -695,7 +695,7 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="hidden h-[100dvh] min-h-0 w-[218px] flex-col border-r border-sidebar-border bg-sidebar/88 px-2.5 py-3 text-sidebar-foreground lg:flex">
+        <aside className="liquid-glass-panel hidden h-[100dvh] min-h-0 w-[218px] flex-col rounded-none border-y-0 border-l-0 border-r border-sidebar-border/60 bg-sidebar/80 px-2.5 py-3 text-sidebar-foreground lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
@@ -779,7 +779,7 @@ export default function DashboardLayout() {
         </aside>
 
         <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <header className="border-b border-border bg-background/92">
+          <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-background/80">
             <div className="flex items-center justify-between gap-3 px-4 py-2 lg:px-5">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
@@ -808,7 +808,7 @@ export default function DashboardLayout() {
               </div>
 
               <div className="flex items-center gap-2 lg:gap-3">
-                <div className="hidden items-center rounded-md border border-border/80 bg-[hsl(var(--surface-sunken))]/70 p-1 sm:inline-flex">
+                <div className="liquid-glass-control hidden items-center border border-border/60 p-1 sm:inline-flex">
                   <button
                     type="button"
                     onClick={() => changeLanguage('en')}
@@ -830,7 +830,7 @@ export default function DashboardLayout() {
                     中
                   </button>
                 </div>
-                <Button variant="outline" className="hidden rounded-md border-border bg-transparent sm:inline-flex" asChild>
+                <Button variant="glass" className="hidden sm:inline-flex" asChild>
                   <Link to={learningPrimaryAction.href}>{learningPrimaryAction.label}</Link>
                 </Button>
                 <ThemeToggle />
@@ -839,7 +839,7 @@ export default function DashboardLayout() {
                   size="icon"
                   title="Search (⌘K)"
                   aria-label={currentLang === 'zh' ? '打开搜索' : 'Open search'}
-                  className="rounded-md border border-border bg-transparent hover:bg-muted"
+                  className="liquid-glass-control liquid-glass-interactive border border-border/60 bg-transparent hover:bg-muted"
                   onClick={() => setSearchOpen(true)}
                 >
                   <Search className="h-4 w-4" />
@@ -879,7 +879,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background">
-      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[284px] flex-col border-r border-sidebar-border bg-sidebar px-3 py-3 text-sidebar-foreground lg:flex">
+      <aside className="premium-sidebar liquid-glass-panel hidden h-[100dvh] min-h-0 w-[284px] flex-col rounded-none border-y-0 border-l-0 border-r border-sidebar-border/60 bg-sidebar/80 px-3 py-3 text-sidebar-foreground lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-primary/20 bg-sidebar-primary text-sidebar-primary-foreground">
             <BookText className="h-5 w-5" />
@@ -1001,7 +1001,7 @@ export default function DashboardLayout() {
       </aside>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <header className="border-b border-border bg-[hsl(var(--surface-raised))]">
+        <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-[hsl(var(--surface-raised))]/80">
           <div className="flex items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>
@@ -1031,7 +1031,7 @@ export default function DashboardLayout() {
 
             <div className="flex items-center gap-2 lg:gap-3">
               {!isChatRoute ? (
-                <Button variant="ghost" className="hidden rounded-md border border-border/70 bg-card/70 lg:flex" asChild>
+                <Button variant="glass" className="hidden lg:flex" asChild>
                   <Link to="/dashboard/today">
                     <ClipboardList className="mr-2 h-4 w-4" />
                     {copy.continue}

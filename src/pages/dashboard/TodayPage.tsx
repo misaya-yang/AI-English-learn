@@ -453,7 +453,7 @@ export default function TodayPage() {
         }),
       );
       toast.info(`已标记 "${currentWord.word}" 为较难，将加入复习列表`, {
-        icon: <Brain className="h-4 w-4 text-amber-500" />,
+        icon: <Brain className="h-4 w-4 text-[hsl(var(--warning))]" />,
       });
     }
 

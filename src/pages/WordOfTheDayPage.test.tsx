@@ -77,6 +77,15 @@ describe('WordOfTheDayPage', () => {
     expect(screen.getByText('These are public sample words, not your personal learning history.')).toBeInTheDocument();
   });
 
+  it('uses the shared glass header while keeping the word card on a solid surface', () => {
+    const { container } = renderPage();
+
+    expect(
+      container.querySelector('header [data-slot="glass-surface"][data-variant="bar"]'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: "Today's word" }).closest('[data-slot="glass-surface"]')).toBeNull();
+  });
+
   it('lets authenticated users save the daily word without routing to registration', () => {
     authState.isAuthenticated = true;
 

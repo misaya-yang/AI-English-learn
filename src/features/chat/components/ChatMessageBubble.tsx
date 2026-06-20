@@ -78,7 +78,7 @@ export function ChatMessageBubble({
       >
         <AvatarFallback className="text-xs">
           {isUser ? (
-            <User className="h-4 w-4 text-blue-600" />
+            <User className="h-4 w-4 text-primary" />
           ) : (
             <Bot className="h-4 w-4 text-primary" />
           )}

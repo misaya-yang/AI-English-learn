@@ -86,10 +86,10 @@ export default function WritingPage() {
       ]}
       actions={
         <>
-          <Button variant="outline" onClick={() => setGradeResult(null)} className="rounded-md border-border bg-card">
+          <Button variant="glass" onClick={() => setGradeResult(null)} className="rounded-full">
             {isZh ? '回到草稿修改' : 'Revise this draft'}
           </Button>
-          <Button onClick={handleReset} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button variant="glassPrimary" onClick={handleReset} className="rounded-full">
             <RefreshCw className="mr-2 h-4 w-4" />
             {isZh ? '重新写一篇' : 'Start a new draft'}
           </Button>
@@ -104,7 +104,7 @@ export default function WritingPage() {
 
       <motion.section
         {...motionPresets.fadeIn}
-        className="rounded-md border border-border bg-card p-4 sm:p-5"
+        className="rounded-2xl border border-border bg-card p-4 sm:p-5"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
@@ -120,9 +120,9 @@ export default function WritingPage() {
               </p>
             </div>
 
-            <div className="rounded-md border border-border bg-background p-4">
+            <div className="rounded-2xl border border-border bg-background p-4">
               <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-md border border-primary/20 bg-primary/10 text-primary">
+                <div className="grid h-10 w-10 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
                   <CurrentTypeIcon className="h-5 w-5" />
                 </div>
                 <div>
@@ -143,19 +143,19 @@ export default function WritingPage() {
             </div>
           </div>
 
-          <div className="rounded-md border border-border bg-background p-4">
+          <div className="rounded-2xl border border-border bg-background p-4">
             <p className="text-xs font-medium text-muted-foreground">
               {isZh ? '修改维度' : 'Revision dimensions'}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {rubricPreview.map((item) => (
-                <div key={item.label} className="rounded-md border border-border bg-card p-3">
+                <div key={item.label} className="rounded-xl border border-border bg-card p-3">
                   <p className="text-sm font-semibold text-foreground">{item.label}</p>
                   <p className="mt-2 text-xs text-muted-foreground">{item.value}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-md border border-primary/20 bg-primary/10 p-4">
+            <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 p-4">
               <p className="text-sm font-semibold text-foreground">
                 {gradeResult
                   ? (isZh ? `当前得分 ${gradeResult.overallScore}/100` : `Current score ${gradeResult.overallScore}/100`)
@@ -173,7 +173,7 @@ export default function WritingPage() {
 
       {/* Writing type selector */}
       <Tabs value={writingType} onValueChange={(v) => { setWritingType(v as WritingType); setGradeResult(null); }}>
-        <TabsList className="w-full">
+        <TabsList className="liquid-glass-control w-full rounded-full p-1">
           {WRITING_TYPES.map((t) => (
             <TabsTrigger key={t.id} value={t.id} className="flex-1 text-xs sm:text-sm">
               {isZh ? t.labelZh : t.label}
@@ -209,7 +209,7 @@ export default function WritingPage() {
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>{wordCount} {isZh ? '词' : 'words'}</span>
               {writingType === 'ielts' && (
-                <span className={wordCount >= 250 ? 'text-green-500' : 'text-orange-500'}>
+                <span className={wordCount >= 250 ? 'text-success' : 'text-warning'}>
                   {isZh ? '目标 250+ 词' : 'Aim for 250+ words'}
                 </span>
               )}
@@ -287,7 +287,7 @@ export default function WritingPage() {
                             <Badge variant="outline" className="text-[10px]">{s.type}</Badge>
                           </div>
                           <p className="line-through text-muted-foreground">{s.original}</p>
-                          <p className="text-green-700 mt-1">{s.suggested}</p>
+                          <p className="mt-1 text-success">{s.suggested}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {isZh ? s.reasonZh : s.reason}
                           </p>

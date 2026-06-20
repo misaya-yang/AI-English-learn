@@ -172,15 +172,15 @@ export default function LeaderboardPage() {
           </p>
         </div>
 
-        <div className="rounded-md border border-border bg-card px-4 py-3 text-right">
+        <div className="liquid-glass-control rounded-2xl border border-border bg-card/80 px-4 py-3 text-right">
           <p className="text-xs text-muted-foreground">当前视图</p>
           <p className="mt-1 text-lg font-semibold text-foreground">本周记录</p>
         </div>
       </div>
 
       {currentUserEntry ? (
-        <div className="flex items-center gap-3 rounded-md border border-primary/25 bg-primary/[0.06] px-4 py-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-card text-xs font-semibold text-foreground">
+        <div className="flex items-center gap-3 rounded-2xl border border-primary/25 bg-primary/[0.06] px-4 py-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-xs font-semibold text-foreground">
             {currentUserEntry.avatarInitials}
           </div>
           <div className="flex-1">
@@ -196,7 +196,7 @@ export default function LeaderboardPage() {
       ) : null}
 
       <div className="grid items-start gap-4 md:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-md border border-border bg-card p-4">
+        <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs text-muted-foreground">本周状态</p>
@@ -212,12 +212,12 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        <div className="rounded-md border border-border bg-card p-4">
+        <div className="rounded-2xl border border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">好友动态</p>
           <div className="mt-3 space-y-2">
             {snapshot.friends.slice(0, 4).map((friend) => (
-              <div key={friend.userId} className="flex items-center gap-3 rounded-md bg-muted/40 px-3 py-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-[11px] font-semibold text-foreground">
+              <div key={friend.userId} className="flex items-center gap-3 rounded-xl bg-muted/40 px-3 py-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-[11px] font-semibold text-foreground">
                   {friend.avatarInitials}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -230,16 +230,16 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
+      <div className="liquid-glass-control flex gap-1 rounded-full border border-border p-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors',
+              'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors',
               activeTab === tab.id
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-primary/10 text-primary shadow-sm'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
@@ -261,14 +261,14 @@ export default function LeaderboardPage() {
             <div
               key={entry.userId}
               className={cn(
-                'flex flex-col items-center rounded-md border border-border bg-card p-3 transition-colors',
+                'flex flex-col items-center rounded-2xl border border-border bg-card p-3 transition-colors',
                 entry.isCurrentUser && 'border-primary/35 bg-primary/[0.05]',
               )}
             >
               <div className="mb-1">
                 <RankIcon rank={entry.rank} />
               </div>
-              <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-xs font-semibold text-foreground">
+              <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted text-xs font-semibold text-foreground">
                 {entry.avatarInitials}
               </div>
               <p className="w-full truncate text-center text-[11px] font-semibold text-foreground">
@@ -290,7 +290,7 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 rounded-md border border-border bg-card px-4 py-3">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-border bg-card px-4 py-3">
         <Users className="h-4 w-4 shrink-0 text-primary" />
         <p className="text-sm text-muted-foreground">
           本页按周重置。当前先展示本地快照，接入后端同步后会切换到实时记录。
@@ -302,7 +302,7 @@ export default function LeaderboardPage() {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-muted/50 px-3 py-2">
+    <div className="rounded-xl bg-muted/50 px-3 py-2">
       <p className="text-[10px] text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
     </div>
@@ -311,7 +311,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
 
 function BadgeLike({ text }: { text: string }) {
   return (
-    <span className="rounded-md border border-border bg-card px-3 py-1 text-[11px] font-medium text-foreground">
+    <span className="rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-foreground">
       {text}
     </span>
   );

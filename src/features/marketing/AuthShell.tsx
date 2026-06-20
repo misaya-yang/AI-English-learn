@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { BrandMark } from './BrandMark';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { GlassSurface } from '@/components/ui/glass-surface';
 
 interface SideRailCopy {
   headline: string;
@@ -34,8 +35,8 @@ interface AuthShellProps {
 /**
  * AuthShell — Modern Learning Workbench auth surface.
  *
- * Light, paper-warm two-column layout on lg+, single column on mobile.
- * No glass / glow / grid overlays — calm, learner-friendly.
+ * Light, frosted two-column layout on lg+, single column on mobile.
+ * Glass stays in navigation and reassurance surfaces. Forms stay solid.
  */
 export function AuthShell({
   title,
@@ -74,10 +75,10 @@ export function AuthShell({
         {/* Form column — first on mobile per direction. */}
         <div className="order-1 flex justify-center lg:order-2 lg:justify-start">
           <div className={cn('w-full', widthClass)}>
-            <div className="mb-4 flex justify-end gap-2">
+            <GlassSurface variant="control" className="mb-4 ml-auto flex w-fit justify-end gap-2 p-1">
               <ThemeToggle />
               <LanguageSwitcher />
-            </div>
+            </GlassSurface>
 
             <div className="mb-6 flex justify-center lg:hidden">
               <BrandMark />
@@ -94,7 +95,7 @@ export function AuthShell({
 
             <section
               className={cn(
-                'rounded-lg border border-border/85 bg-[hsl(var(--surface-raised))] p-6 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035),0_18px_40px_-32px_hsl(var(--shadow-studio)/0.26)] sm:p-7',
+                'rounded-[1.35rem] border border-border/85 bg-[hsl(var(--surface-raised))] p-6 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035),0_18px_40px_-32px_hsl(var(--shadow-studio)/0.26)] sm:p-7',
                 panelClassName,
               )}
             >
@@ -122,20 +123,22 @@ export function AuthShell({
         {/* Brand / reassurance column — hidden on mobile, primary on lg. */}
         <aside className="order-2 hidden flex-col justify-center lg:order-1 lg:flex">
           <BrandMark />
-          <h2 className="mt-7 max-w-md text-2xl font-semibold leading-tight text-foreground">
-            {isZh ? rail.headlineZh : rail.headline}
-          </h2>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            {railBody}
-          </p>
-          <ul className="mt-6 max-w-sm divide-y divide-border/70 border-y border-border/70 text-xs text-muted-foreground">
-            {rail.bullets.map((b) => (
-              <li key={b.en} className="flex items-center gap-2 py-2.5">
-                <Check className="h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden="true" />
-                <span>{isZh ? b.zh : b.en}</span>
-              </li>
-            ))}
-          </ul>
+          <GlassSurface variant="panel" className="mt-7 max-w-md p-6">
+            <h2 className="text-2xl font-semibold leading-tight text-foreground">
+              {isZh ? rail.headlineZh : rail.headline}
+            </h2>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              {railBody}
+            </p>
+            <ul className="mt-6 max-w-sm divide-y divide-border/55 border-y border-border/55 text-xs text-muted-foreground">
+              {rail.bullets.map((b) => (
+                <li key={b.en} className="flex items-center gap-2 py-2.5">
+                  <Check className="h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden="true" />
+                  <span>{isZh ? b.zh : b.en}</span>
+                </li>
+              ))}
+            </ul>
+          </GlassSurface>
         </aside>
       </main>
     </div>

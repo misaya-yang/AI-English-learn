@@ -10,6 +10,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "border border-primary/20 bg-primary text-primary-foreground shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.08),0_8px_18px_-18px_hsl(var(--shadow-studio)/0.32)] hover:bg-primary/94 hover:shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.08),0_10px_20px_-18px_hsl(var(--shadow-studio)/0.36)]",
+        glass:
+          "liquid-glass-control liquid-glass-interactive rounded-full border-transparent bg-transparent text-foreground hover:text-foreground",
+        glassPrimary:
+          "liquid-glass-control liquid-glass-interactive rounded-full border-primary/25 bg-primary/10 text-primary hover:text-primary",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/72",
         outline:

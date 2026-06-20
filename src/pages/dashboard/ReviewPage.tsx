@@ -170,7 +170,7 @@ const ratingMeta = {
     delayZh: '短间隔复现',
     delayEn: '2 days',
     key: '2',
-    accent: 'border-amber-500/25 bg-amber-500/10 text-amber-600',
+    accent: 'border-[hsl(var(--warning)/0.32)] bg-[hsl(var(--warning)/0.10)] text-[hsl(var(--warning))]',
   },
   good:  {
     labelZh: '记得',
@@ -626,9 +626,9 @@ export default function ReviewPage() {
                       className={cn(
                         'h-full rounded-full transition-colors',
                         currentItem.fsrs.retrievability >= 0.75 ? 'bg-[hsl(var(--success))]' :
-                        currentItem.fsrs.retrievability >= 0.5  ? 'bg-amber-500' :
-                        currentItem.fsrs.retrievability >= 0.25 ? 'bg-orange-500' :
-                                                                   'bg-red-500',
+                        currentItem.fsrs.retrievability >= 0.5  ? 'bg-[hsl(var(--warning))]' :
+                        currentItem.fsrs.retrievability >= 0.25 ? 'bg-[hsl(var(--accent-exam))]' :
+                                                                   'bg-destructive',
                       )}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.round(currentItem.fsrs.retrievability * 100)}%` }}

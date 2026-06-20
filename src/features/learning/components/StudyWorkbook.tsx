@@ -97,7 +97,11 @@ export function StudySheet({ children, className, title, eyebrow, description, a
             {title ? <h1 className="study-heading mt-2">{title}</h1> : null}
             {description ? <p className="study-copy mt-2 max-w-2xl">{description}</p> : null}
           </div>
-          {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
+          {actions ? (
+            <div className="liquid-glass-control flex shrink-0 flex-wrap gap-2 border border-border/60 bg-transparent p-1">
+              {actions}
+            </div>
+          ) : null}
         </div>
       ) : null}
       {children}
@@ -111,7 +115,11 @@ export function QuestionSheet({ children, className, title, meta, prompt, action
       <div className="border-b border-[hsl(var(--paper-line)/0.76)] pb-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {meta ? <div className="study-label">{meta}</div> : null}
-          {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+          {actions ? (
+            <div className="liquid-glass-control flex flex-wrap gap-2 border border-border/60 bg-transparent p-1">
+              {actions}
+            </div>
+          ) : null}
         </div>
         <h2 className="question-title mt-4">{title}</h2>
         {prompt ? <div className="study-copy mt-3 text-base leading-7">{prompt}</div> : null}

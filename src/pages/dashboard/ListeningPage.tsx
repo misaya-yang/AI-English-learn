@@ -386,8 +386,8 @@ function useTTSPlayer(transcript: string) {
 function LevelBadge({ level }: { level: CEFRLevel }) {
   const cls = {
     B1: 'bg-[hsl(var(--accent-practice)/0.1)] text-[hsl(var(--accent-practice))] border-[hsl(var(--accent-practice)/0.2)]',
-    B2: 'bg-blue-500/15 text-blue-600 border-blue-500/20',
-    C1: 'bg-violet-500/15 text-violet-600 border-violet-500/20',
+    B2: 'bg-info/10 text-info border-info/20',
+    C1: 'bg-primary/10 text-primary border-primary/20',
   }[level];
   return (
     <span className={cn('rounded-md border px-2.5 py-0.5 text-[11px] font-semibold', cls)}>
@@ -416,12 +416,12 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
 
   return (
     <div className={cn(
-      'rounded-md border p-4 transition-all duration-300',
+      'rounded-2xl border p-4 transition-all duration-300',
       !submitted
         ? 'border-border bg-card'
         : isCorrect
           ? 'border-primary bg-primary/10'
-          : 'border-red-500/25 bg-red-500/[0.05]',
+          : 'border-destructive/25 bg-destructive/5',
     )}>
       {/* Question header */}
       <div className="flex items-start gap-3 mb-3">
@@ -432,8 +432,8 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
         {submitted && (
           <div className="ml-auto flex-shrink-0">
             {isCorrect
-              ? <CheckCircle2 className="h-4 w-4 text-green-600" />
-              : <XCircle className="h-4 w-4 text-red-400" />}
+              ? <CheckCircle2 className="h-4 w-4 text-success" />
+              : <XCircle className="h-4 w-4 text-destructive" />}
           </div>
         )}
       </div>
@@ -453,9 +453,9 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
                 className={cn(
                   'w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200',
                   !submitted && !isSelected && 'border-border bg-transparent hover:bg-muted text-foreground',
-                  !submitted && isSelected && 'border-blue-500/40 bg-blue-500/[0.08] text-blue-600',
-                  submitted && isRight && 'border-green-500/30 bg-green-50 text-green-700',
-                  submitted && isSelected && !isRight && 'border-red-500/40 bg-red-500/[0.08] text-red-600',
+                  !submitted && isSelected && 'border-primary/40 bg-primary/10 text-primary',
+                  submitted && isRight && 'border-success/30 bg-success/10 text-success',
+                  submitted && isSelected && !isRight && 'border-destructive/40 bg-destructive/10 text-destructive',
                   submitted && !isSelected && !isRight && 'border-transparent text-muted-foreground',
                 )}
               >
@@ -477,14 +477,14 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
             className={cn(
               'w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none transition-all duration-200',
               !submitted
-                ? 'border-border text-foreground placeholder:text-muted-foreground focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20'
+                ? 'border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20'
                 : isCorrect
-                  ? 'border-green-500/30 text-green-700'
-                  : 'border-red-500/40 text-red-600',
+                  ? 'border-success/30 text-success'
+                  : 'border-destructive/40 text-destructive',
             )}
           />
           {submitted && !isCorrect && (
-            <p className="mt-1.5 text-xs text-green-600">
+            <p className="mt-1.5 text-xs text-success">
               {isZh ? '正确答案' : 'Correct'}: <span className="font-semibold">{correctAnswer}</span>
             </p>
           )}
@@ -596,7 +596,7 @@ export default function ListeningPage() {
   if (phase === 'select') {
     return (
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="rounded-md border border-border bg-card p-4 sm:p-5">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
             <div className="space-y-4">
               <div>
@@ -611,7 +611,7 @@ export default function ListeningPage() {
                 </p>
               </div>
 
-              <div className="rounded-md border border-border bg-background p-4">
+              <div className="rounded-2xl border border-border bg-background p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <LevelBadge level={featuredListening.level} />
                   <span className="text-xs text-muted-foreground">{featuredListening.topic}</span>
@@ -621,13 +621,13 @@ export default function ListeningPage() {
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">{featuredListening.subtitle}</p>
               </div>
 
-              <Button onClick={() => handleSelect(featuredListening)} className="rounded-md bg-primary text-primary-foreground">
+              <Button onClick={() => handleSelect(featuredListening)} variant="glassPrimary" className="rounded-full">
                 {isZh ? '开始这段' : 'Start this clip'}
                 <ChevronRight className="ml-1.5 h-4 w-4" />
               </Button>
             </div>
 
-            <div className="rounded-md border border-border bg-background p-4">
+            <div className="rounded-2xl border border-border bg-background p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
@@ -637,7 +637,7 @@ export default function ListeningPage() {
                     {featuredListening.questions.length} {isZh ? '题 · 约' : 'questions ·'} {featuredListening.durationLabel}
                   </p>
                 </div>
-                <div className="rounded-md border border-primary/20 bg-primary/10 p-3 text-primary">
+                <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary">
                   <Headphones className="h-5 w-5" />
                 </div>
               </div>
@@ -647,7 +647,7 @@ export default function ListeningPage() {
                   { label: isZh ? '题量' : 'Questions', value: featuredListening.questions.length },
                   { label: isZh ? '主题' : 'Topic', value: featuredListening.topic },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-md border border-border bg-card px-3 py-2">
+                  <div key={item.label} className="rounded-xl border border-border bg-card px-3 py-2">
                     <p className="text-[11px] text-muted-foreground">{item.label}</p>
                     <p className="mt-1 truncate text-sm font-semibold text-foreground">{item.value}</p>
                   </div>
@@ -656,7 +656,7 @@ export default function ListeningPage() {
               <div className="mt-4 space-y-2">
                 {listeningFlow.map((item, index) => (
                   <div key={item} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-border bg-card text-[11px] font-semibold text-muted-foreground">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-lg border border-border bg-card text-[11px] font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
                     <span>{item}</span>
@@ -679,7 +679,7 @@ export default function ListeningPage() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleSelect(passage)}
-              className="w-full rounded-md border border-border bg-card p-4 text-left transition-all hover:border-primary/30 hover:bg-muted/70 hover:shadow-sm"
+              className="w-full rounded-2xl border border-border bg-card p-4 text-left transition-all hover:border-primary/30 hover:bg-muted/70 hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -699,7 +699,7 @@ export default function ListeningPage() {
                     <BookOpen className="h-3 w-3" />
                     {passage.questions.length} {isZh ? '题' : 'questions'}
                   </div>
-                  <div className="rounded-md border border-border bg-muted p-1.5">
+                  <div className="rounded-lg border border-border bg-muted p-1.5">
                     <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
                 </div>
@@ -734,7 +734,7 @@ export default function ListeningPage() {
         </button>
 
         {/* Passage info */}
-        <div className="rounded-md border border-border bg-card p-5 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <LevelBadge level={selected.level} />
             <span className="text-xs text-muted-foreground">{selected.topic}</span>
@@ -744,7 +744,7 @@ export default function ListeningPage() {
         </div>
 
         {/* Audio player */}
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Headphones className="h-5 w-5 text-primary" />
@@ -771,17 +771,18 @@ export default function ListeningPage() {
           {tts.isSupported && (
             <div className="flex items-center justify-center gap-3">
               <Button
-                variant="outline"
+                variant="glass"
                 size="sm"
                 onClick={tts.stop}
-                className="rounded-md border-border bg-card hover:bg-muted"
+                className="rounded-full"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
               <Button
                 size="sm"
                 onClick={tts.isPlaying ? tts.pause : tts.play}
-                className="rounded-md bg-blue-500 text-primary-foreground hover:bg-blue-400 px-6"
+                variant="glassPrimary"
+                className="rounded-full px-6"
               >
                 {tts.isPlaying
                   ? <><Pause className="h-4 w-4 mr-1.5" />{isZh ? '暂停' : 'Pause'}</>
@@ -790,10 +791,10 @@ export default function ListeningPage() {
                     : <><Play className="h-4 w-4 mr-1.5" />{isZh ? '播放' : 'Play'}</>}
               </Button>
               <Button
-                variant="outline"
+                variant="glass"
                 size="sm"
                 onClick={handleStartQuestions}
-                className="rounded-md border-border bg-card hover:bg-muted"
+                className="rounded-full"
               >
                 <SkipForward className="h-3.5 w-3.5" />
               </Button>
@@ -818,7 +819,7 @@ export default function ListeningPage() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 rounded-md border border-border bg-muted p-4">
+                <div className="mt-3 rounded-2xl border border-border bg-muted p-4">
                   <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                     {selected.transcript}
                   </p>
@@ -831,7 +832,7 @@ export default function ListeningPage() {
         {/* CTA */}
         <Button
           onClick={handleStartQuestions}
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold"
+          className="w-full rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
         >
           {isZh ? '开始答题' : 'Start Questions'} <ChevronRight className="ml-1.5 h-4 w-4" />
         </Button>
@@ -866,7 +867,7 @@ export default function ListeningPage() {
                   score / totalQ >= 0.8
                     ? 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]'
                     : score / totalQ >= 0.6
-                      ? 'bg-amber-500/15 text-amber-500'
+                      ? 'bg-warning/15 text-warning'
                       : 'bg-destructive/10 text-destructive',
                 )}>
                   <CheckCircle2 className="h-4 w-4" />
@@ -894,11 +895,11 @@ export default function ListeningPage() {
                 ]}
                 actions={
                   <>
-                    <Button onClick={() => setShowTranscript(true)} variant="outline" className="rounded-md border-border bg-card">
+                    <Button onClick={() => setShowTranscript(true)} variant="glass" className="rounded-full">
                       <Volume2 className="mr-2 h-4 w-4" />
                       {isZh ? '打开文字稿' : 'Review transcript'}
                     </Button>
-                    <Button onClick={handleReset} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Button onClick={handleReset} variant="glassPrimary" className="rounded-full">
                       {isZh ? '换一段听力' : 'Try another clip'}
                     </Button>
                   </>
@@ -925,7 +926,7 @@ export default function ListeningPage() {
               <Button
                 onClick={handleSubmit}
                 disabled={!allAnswered}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold disabled:opacity-50"
+                className="w-full rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
               >
                 {isZh ? '提交答案' : 'Submit Answers'}
               </Button>

@@ -20,7 +20,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
   return (
     <nav
       className={cn(
-        'fixed inset-x-0 bottom-0 z-50 flex h-16 items-center justify-around border-t backdrop-blur-xl',
+        'liquid-glass-bar fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around border border-border/50',
         'pb-[env(safe-area-inset-bottom)]',
         isLearningMode
           ? 'premium-bottom-nav-learning'

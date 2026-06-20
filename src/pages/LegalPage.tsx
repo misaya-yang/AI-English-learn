@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { BrandMark } from '@/features/marketing/BrandMark';
+import { GlassSurface } from '@/components/ui/glass-surface';
 
 interface LegalSection {
   title: string;
@@ -135,15 +136,15 @@ export default function LegalPage() {
     : 'This is a readable pre-launch draft replacing placeholder registration links. It still requires legal review before production release.';
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border bg-[hsl(var(--surface-raised))]/95 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
+    <div className="study-premium-bg min-h-screen bg-background text-foreground">
+      <header className="sticky top-3 z-30 px-3 sm:px-4">
+        <GlassSurface variant="bar" className="mx-auto flex h-14 max-w-5xl items-center justify-between px-3 sm:h-16 sm:px-5">
           <BrandMark />
           <div className="flex items-center gap-1">
             <ThemeToggle />
             <LanguageSwitcher />
           </div>
-        </div>
+        </GlassSurface>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
@@ -192,7 +193,7 @@ export default function LegalPage() {
           ))}
         </article>
 
-        <div className="mt-10 rounded-lg border border-amber-300/70 bg-amber-50/70 p-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/[0.08] dark:text-amber-100">
+        <div className="mt-10 rounded-lg border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.1)] p-4 text-sm text-[hsl(var(--warning))]">
           {isZh
             ? '发布阻断：这份文本必须在生产发布前由法务、安全和运营负责人复核。'
             : 'Release blocker: this copy must be reviewed by legal, security, and operations owners before production launch.'}

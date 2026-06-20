@@ -1,11 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, BookOpen, Calendar, CheckCircle2, Menu, MessageSquare, Target, X } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  Menu,
+  MessageSquare,
+  Sparkles,
+  Target,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GlassSurface } from '@/components/ui/glass-surface';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
-import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -76,7 +86,7 @@ export default function Home() {
     },
     examplesLabel: isZh ? '例词' : 'Sample words',
     workflow: {
-      title: isZh ? '复习 · 新词 · 练习' : 'Review · Words · Practice',
+      title: isZh ? '复习，新词，练习' : 'Review, Words, Practice',
       subtitle: isZh ? '每天按这个顺序走。' : 'The daily order stays simple.',
       steps: [
         {
@@ -93,12 +103,28 @@ export default function Home() {
         },
       ],
     },
-    footerCta: {
-      title: isZh ? '开始今天' : 'Start today',
-      subtitle: isZh ? '进入今日页。' : 'Open the Today page.',
-      button: isZh ? '开始' : 'Start',
-    },
   };
+
+  const workflowCards = [
+    {
+      icon: Calendar,
+      title: copy.workflow.steps[0].title,
+      body: copy.workflow.steps[0].body,
+      className: 'bg-primary/[0.08] md:row-span-2',
+    },
+    {
+      icon: Target,
+      title: copy.workflow.steps[1].title,
+      body: copy.workflow.steps[1].body,
+      className: 'bg-[hsl(var(--surface-raised))]/82',
+    },
+    {
+      icon: MessageSquare,
+      title: copy.workflow.steps[2].title,
+      body: copy.workflow.steps[2].body,
+      className: 'bg-[hsl(var(--accent-memory)/0.08)]',
+    },
+  ];
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -111,23 +137,26 @@ export default function Home() {
 
   return (
     <div className="home-study-bg min-h-[100dvh] text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-[hsl(var(--surface-raised)/0.88)] backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-primary/20 bg-primary/[0.12] text-primary">
+      <header className="sticky top-3 z-40 px-3 sm:px-4">
+        <GlassSurface
+          variant="bar"
+          className="mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-5"
+        >
+          <Link to="/" className="flex items-center gap-2.5">
+            <span className="liquid-glass-control flex h-9 w-9 items-center justify-center text-primary">
               <BookOpen className="h-4 w-4" />
             </span>
             <span className="text-sm font-semibold">VocabDaily</span>
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
-            <a href="#workflow" className="text-sm text-muted-foreground hover:text-foreground">
+            <a href="#workflow" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               {copy.nav.workflow}
             </a>
-            <Link to="/word-of-the-day" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link to="/word-of-the-day" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               {copy.nav.wordOfTheDay}
             </Link>
-            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link to="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               {copy.nav.membership}
             </Link>
           </nav>
@@ -137,206 +166,159 @@ export default function Home() {
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
-            <Button
-              asChild
-              size="sm"
-              className="hidden h-9 rounded-md px-4 text-sm font-medium shadow-sm sm:inline-flex"
-            >
+            <Button asChild size="sm" variant="glassPrimary" className="hidden h-9 px-4 sm:inline-flex">
               <Link to={continuePath}>
                 {copy.nav.auth}
               </Link>
             </Button>
             <button
               type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground md:hidden"
+              className="liquid-glass-control liquid-glass-interactive flex h-9 w-9 items-center justify-center text-foreground md:hidden"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label={copy.nav.menu}
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
-        </div>
+        </GlassSurface>
+
         {mobileMenuOpen && (
-          <div className="border-t border-border bg-card md:hidden">
-            <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
-              <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+          <GlassSurface variant="panel" className="mx-auto mt-2 max-w-6xl p-2 md:hidden">
+            <div className="flex flex-col gap-1">
+              <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-3 py-2 text-sm hover:bg-muted">
                 {copy.nav.workflow}
               </a>
-              <Link to="/word-of-the-day" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+              <Link to="/word-of-the-day" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-3 py-2 text-sm hover:bg-muted">
                 {copy.nav.wordOfTheDay}
               </Link>
-              <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+              <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-3 py-2 text-sm hover:bg-muted">
                 {copy.nav.membership}
               </Link>
               <Link
                 to={continuePath}
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-1 rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground"
+                className="mt-1 rounded-xl bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground"
               >
                 {copy.nav.auth}
               </Link>
-              <div className="mt-2 flex items-center gap-1 border-t border-border pt-3">
+              <div className="mt-2 flex items-center gap-1 border-t border-border/45 pt-3">
                 <ThemeToggle />
                 <LanguageSwitcher />
               </div>
             </div>
-          </div>
+          </GlassSurface>
         )}
       </header>
 
       <main id="main-content">
-        <section className="border-b border-border/60">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:py-12">
-            <div>
-              <h1 className="max-w-xl text-3xl font-medium leading-tight text-foreground sm:text-[2.35rem]">
+        <section>
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 pb-10 pt-10 sm:px-6 sm:pb-14 sm:pt-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,0.9fr)] lg:items-center lg:py-14">
+            <div className="max-w-2xl">
+              <h1 className="max-w-xl text-4xl font-semibold leading-[1.04] text-foreground sm:text-5xl lg:text-6xl">
                 {copy.hero.title}
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
+              <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
                 {copy.hero.subtitle}
               </p>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild size="lg" className="h-10 rounded-md px-4 text-sm font-medium">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button asChild size="lg" className="h-11 px-5 text-sm font-medium">
                   <Link to={primaryCtaPath}>
                     {copy.hero.primaryCta}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Link
-                  to="/demo"
-                  className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  {copy.hero.secondaryCta}
-                </Link>
+                <Button asChild size="lg" variant="glass" className="h-11 px-5 text-sm font-medium">
+                  <Link to="/demo">
+                    {copy.hero.secondaryCta}
+                  </Link>
+                </Button>
               </div>
 
-              <div className="mt-6 grid max-w-md gap-2 text-sm text-muted-foreground">
+              <div className="mt-8 grid gap-2.5 sm:max-w-lg">
                 {copy.today.items.map((item) => (
-                  <div key={item.title} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-primary" aria-hidden="true" />
-                    <span className="text-foreground">{item.title}</span>
-                    <span className="text-muted-foreground">{item.duration}</span>
-                  </div>
+                  <GlassSurface key={item.title} variant="control" className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3.5 py-2.5">
+                    <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
+                    <span className="text-xs text-muted-foreground">{item.duration}</span>
+                  </GlassSurface>
                 ))}
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-lg border border-border/75 bg-card shadow-[0_1px_2px_hsl(var(--shadow-studio)/0.045)]">
+            <div className="relative overflow-hidden rounded-[2rem] border border-border/55 bg-card shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_28px_70px_-56px_hsl(var(--shadow-studio)/0.55)]">
               <img
                 src="/vocabdaily-study-desk.jpg"
                 alt={isZh ? '桌面上的笔记本和学习记录' : 'Notebook and study notes on a desk'}
                 className="aspect-[4/3] w-full object-cover"
               />
-              <div className="border-t border-border/70 bg-[hsl(var(--surface-raised)/0.94)] p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {copy.today.label}
-                    </p>
-                    <p className="mt-1 text-lg font-semibold">
-                      {copy.today.title}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {copy.today.subtitle}
-                    </p>
+              <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4">
+                <GlassSurface variant="bar" className="flex items-center justify-between gap-4 px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground">{copy.today.label}</p>
+                    <p className="mt-0.5 truncate text-base font-semibold">{copy.today.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{copy.today.subtitle}</p>
                   </div>
-                  <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-muted/[0.45] text-muted-foreground">
+                  <span className="liquid-glass-control flex h-10 w-10 shrink-0 items-center justify-center text-primary">
                     <Calendar className="h-4 w-4" />
                   </span>
-                </div>
+                </GlassSurface>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Sample word strip */}
-          <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 sm:pb-12">
-            <p className="text-xs font-medium text-muted-foreground">
-              {copy.examplesLabel}
-            </p>
-            <div className="mt-3 overflow-hidden rounded-lg border border-border/75 bg-card/[0.72]">
+        <section className="border-y border-border/40 bg-[hsl(var(--surface-raised)/0.24)]">
+          <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-sm font-semibold text-foreground">{copy.examplesLabel}</h2>
+              <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+            </div>
+            <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2">
               {sampleWords.map((w) => (
-                <div key={w.word} className="grid gap-2 border-b border-border/[0.55] px-4 py-3 last:border-b-0 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-baseline">
+                <article key={w.word} className="min-w-[240px] snap-start rounded-2xl border border-border/65 bg-card/75 p-4 sm:min-w-0 sm:flex-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-base font-semibold">{w.word}</span>
+                    <h3 className="text-lg font-semibold">{w.word}</h3>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{w.example}</p>
-                </div>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{w.example}</p>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="workflow" className="border-b border-border/60 bg-[hsl(var(--surface-raised)/0.28)]">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
-            <h2 className="text-xl font-semibold sm:text-2xl">
-              {copy.workflow.title}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-              {copy.workflow.subtitle}
-            </p>
-            <div className="mt-6 divide-y divide-border/70 rounded-lg border border-border/75 bg-card/[0.72]">
-              {[
-                {
-                  icon: Calendar,
-                  accent: 'var(--accent-memory)',
-                  title: copy.workflow.steps[0].title,
-                  body: copy.workflow.steps[0].body,
-                },
-                {
-                  icon: Target,
-                  accent: 'var(--accent-practice)',
-                  title: copy.workflow.steps[1].title,
-                  body: copy.workflow.steps[1].body,
-                },
-                {
-                  icon: MessageSquare,
-                  accent: 'var(--accent-coach)',
-                  title: copy.workflow.steps[2].title,
-                  body: copy.workflow.steps[2].body,
-                },
-              ].map((step, i) => (
-                <div key={i} className="grid gap-3 p-4 sm:grid-cols-[44px_minmax(0,1fr)] sm:p-5">
-                  <span
-                    className="flex h-9 w-9 items-center justify-center rounded-md bg-muted/70 text-muted-foreground"
-                  >
-                    <step.icon className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <h3 className="text-base font-semibold">{step.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-12">
-            <div>
-              <h2 className="text-xl font-semibold sm:text-2xl">
-                {copy.footerCta.title}
+        <section id="workflow">
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-semibold leading-tight sm:text-3xl">
+                {copy.workflow.title}
               </h2>
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                {copy.footerCta.subtitle}
+              <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+                {copy.workflow.subtitle}
               </p>
             </div>
-            <Button asChild size="lg" className="h-10 rounded-md px-4 text-sm font-medium shadow-sm">
-              <Link to={primaryCtaPath}>
-                {copy.footerCta.button}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+
+            <div className="mt-7 grid gap-4 md:grid-cols-[1.08fr_0.92fr] md:grid-rows-2">
+              {workflowCards.map((step) => (
+                <article key={step.title} className={`rounded-[1.6rem] border border-border/62 p-5 shadow-[var(--shadow-paper)] ${step.className}`}>
+                  <div className="liquid-glass-control flex h-11 w-11 items-center justify-center text-primary">
+                    <step.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
+                  <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{step.body}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-border/60 bg-[hsl(var(--surface-raised)/0.72)]">
+      <footer className="border-t border-border/45 bg-[hsl(var(--surface-raised)/0.52)]">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
           <div className="flex items-center gap-2">
-            <span className={cn('flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary')}>
-              <BookOpen className="h-3 w-3" />
+            <span className="liquid-glass-control flex h-7 w-7 items-center justify-center text-primary">
+              <BookOpen className="h-3.5 w-3.5" />
             </span>
             <span className="font-medium text-foreground">VocabDaily</span>
           </div>

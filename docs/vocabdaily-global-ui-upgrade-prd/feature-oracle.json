@@ -89,6 +89,90 @@
       "status": "passing",
       "evidence": "VGUI-05 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-05-regression-evidence-and-release-gate-report.md. Full validation passed: lint, i18n, build, 103 test files / 810 tests, final UI regression 64 checks / 0 failures, final learning-flow regression 142 checks / 0 failures. Vercel production deployment dpl_AmbxY5xomBkp4i3thgGBwKBFW6Vg is ready and aliased to https://www.uuedu.online.",
       "notes": "Production frontend smoke passed for public pages, and production bad-token smoke observed 0 refresh-token requests. Supabase provider checks from this network still fail with fetch failed / SSL_ERROR_SYSCALL because the host resolves to 198.18.0.17; this is documented as an external reachability warning, not a frontend refresh-storm regression."
+    },
+    {
+      "id": "VGUI-F008",
+      "phase_id": "VGUI-08",
+      "category": "liquid-glass-plan",
+      "description": "The 2026-06-20 Apple-inspired Liquid Glass request is converted into a current route, effect, accessibility, performance, and execution contract that covers the full app.",
+      "steps": [
+        "Research current Apple, MDN, Chrome, and web.dev guidance relevant to Liquid Glass, backdrop-filter, reduced transparency, and motion performance.",
+        "Inventory all public, auth, dashboard, specialist, account, and shared shell routes from src/App.tsx and routeRegistry.ts.",
+        "Write VGUI-08 through VGUI-13 phase contracts, runtime state, route/effect scope, and a report that proves the new objective is planned but not yet complete."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-08 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-08-liquid-glass-research-baseline-and-route-plan-report.md. Strict harness validation passed with quality score 100. The source packet, phase manifest, loop state, progress log, handoff, continuity ledger, next-window prompt, and oracle were updated for VGUI-08 through VGUI-13.",
+      "notes": "This item is the new baseline for the user request to optimize every page and effect. It is not a completion claim for VGUI-F009 through VGUI-F013."
+    },
+    {
+      "id": "VGUI-F009",
+      "phase_id": "VGUI-09",
+      "category": "liquid-glass-system",
+      "description": "Shared tokens, GlassSurface/Button variants, navigation/control shell, motion primitives, and reduced-preference fallbacks support the full-site Liquid Glass approximation.",
+      "steps": [
+        "Implement or repair semantic Liquid Glass tokens and utilities with @supports, dark mode, reduced-transparency, and reduced-motion coverage.",
+        "Apply glass only to navigation and control layers: public nav, dashboard sidebar/top bar, search trigger, segmented controls, account trigger, and mobile bottom nav.",
+        "Capture shell evidence for public, auth, and dashboard route families on desktop and mobile."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-09 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-09-liquid-glass-tokens-motion-and-shell-report.md. Focused tests passed: 7 files / 17 tests. lint, i18n, and build passed. Custom shell browser matrix passed 36 checks across `/`, `/pricing`, `/login`, `/dashboard/today`, `/dashboard/chat`, and `/dashboard/settings` at desktop/mobile in normal, reduced-motion, and reduced-transparency modes.",
+      "notes": "Shared shell implementation preserves fixed/sticky/absolute positioning and verifies reduced-transparency glass samples compute `backdrop-filter: none`. VGUI-10 must still cover all public/auth route bodies."
+    },
+    {
+      "id": "VGUI-F010",
+      "phase_id": "VGUI-10",
+      "category": "liquid-glass-public-auth",
+      "description": "Home, word-of-day, demo, pricing, legal, login, register, magic link, auth callback, and onboarding surfaces use the shared Liquid Glass language without auth, legal, i18n, or billing drift.",
+      "steps": [
+        "Upgrade every public and auth route within existing route labels, auth flow, and pricing fail-closed behavior.",
+        "Keep forms, legal text, and plan content on solid high-contrast surfaces while glass is limited to nav, side rails, and small controls.",
+        "Capture desktop/mobile and light/dark evidence for all public/auth routes."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-10 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-10-liquid-glass-public-auth-and-entry-surfaces-report.md. Focused public/auth tests passed: 7 files / 40 tests. lint, i18n, and build passed. Public/auth light/dark desktop/mobile matrix passed 44/44 checks at product-audit-2026-06-20/liquid-glass/vgui-10-public-auth/summary.json. Project UI regression also passed 54/54 route checks and 10/10 scenarios at product-audit-2026-06-20/liquid-glass/vgui-10-ui-regression/summary.json.",
+      "notes": "Word-of-day, legal, pricing, sample, home, and auth/onboarding entry surfaces now use shared glass nav/control layers while route bodies remain solid. Pricing fail-closed and auth semantics are preserved; onboarding now waits for auth loading before redirect decisions."
+    },
+    {
+      "id": "VGUI-F011",
+      "phase_id": "VGUI-11",
+      "category": "liquid-glass-dashboard-core",
+      "description": "Today, Review, Practice, Chat, Vocabulary, and Analytics meet the Liquid Glass quality bar while preserving learning correctness and dense-content readability.",
+      "steps": [
+        "Upgrade the core dashboard routes and shared learning components without changing learning data contracts.",
+        "Verify first-wrong, retry-correct, second-wrong/reveal, empty, loading, completion, and dense analytics states where supported.",
+        "Capture desktop/mobile evidence that task surfaces stay solid and nav/control layers are glass."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-11 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-11-liquid-glass-dashboard-core-learning-report.md. Required focused dashboard tests passed: 8 files / 51 tests. Full `npm test` passed: 110 files / 840 tests. lint, i18n, and build passed. Learning-flow regression passed 160 checks at product-audit-2026-06-20/liquid-glass/vgui-11-learning-flow/summary.json. Dashboard core light/dark desktop/mobile matrix passed 24/24 checks at product-audit-2026-06-20/liquid-glass/vgui-11-dashboard-core/summary.json.",
+      "notes": "Today, Review, Practice, Chat, Vocabulary, and Analytics now use Liquid Glass only for shell/control affordances. Workbook sheets, review cards, chat messages, vocabulary content, and analytics panels remain solid. Practice attempt state, review due-only behavior, chat semantics, vocabulary contracts, and analytics calculations were preserved."
+    },
+    {
+      "id": "VGUI-F012",
+      "phase_id": "VGUI-12",
+      "category": "liquid-glass-specialist-account",
+      "description": "Reading, Listening, Grammar, Pronunciation, Writing, Exam, Learning Path, Memory, Leaderboard, Settings, and Profile meet the same visual, accessibility, and interaction standard.",
+      "steps": [
+        "Upgrade every remaining authenticated route and module-specific component within existing feature behavior.",
+        "Verify long passage, transcript, feedback, scoring, account form, settings save, and profile edit readability.",
+        "Capture desktop/mobile evidence for all specialist and account routes."
+      ],
+      "status": "passing",
+      "evidence": "VGUI-12 report: docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-12-liquid-glass-specialist-modules-and-account-report.md. Required module/account tests passed: 6 files / 19 tests. lint, i18n, and build passed. Specialist/account light/dark desktop/mobile matrix passed 44/44 checks at product-audit-2026-06-21/liquid-glass/vgui-12-specialist-account/summary.json.",
+      "notes": "Reading, Listening, Grammar, Pronunciation, Writing, Exam, Learning Path, Memory, Leaderboard, Settings, and Profile now use glass only for route controls, tabs, filters, select triggers, action rows, and lightweight affordances. Long passages, transcripts, writing bodies, exam prompts and feedback, memory details, settings forms, and profile/account data remain solid/readable."
+    },
+    {
+      "id": "VGUI-F013",
+      "phase_id": "VGUI-13",
+      "category": "liquid-glass-release-gate",
+      "description": "The full Liquid Glass redesign is proven by static checks, unit tests, build, UI regression, learning-flow regression, reduced-preference evidence, performance evidence, and release report.",
+      "steps": [
+        "Run lint, i18n, full tests, build, full UI regression, full learning-flow regression, and strict harness validation.",
+        "Capture or cite evidence for every route, both primary viewports, light/dark themes, reduced motion, reduced transparency, no overflow, no clipping, and performance constraints.",
+        "Write the release report with rollback plan, residual risks, and deployment approval boundary."
+      ],
+      "status": "failing",
+      "evidence": "Local gate evidence is recorded in docs/vocabdaily-global-ui-upgrade-prd/reports/vgui-13-liquid-glass-regression-accessibility-performance-release-report.md. Passed locally: lint, i18n, 110 files / 840 tests, build, UI regression 54 route checks plus 10 scenarios, learning-flow regression 160 checks, reduced-preference matrix 10 checks, performance matrix 8 checks with stackedBlurredCount 0.",
+      "notes": "Keep failing until the user-approved production deployment, production smoke/UI evidence, and online subagent review across every route family are complete. The user rejected the earlier washed dark mode; VGUI-13 now uses neutral graphite/charcoal dark tokens and no nested glass blur."
     }
   ]
 }

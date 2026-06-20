@@ -7,6 +7,17 @@ Owner: Product / Design / Engineering
 
 This folder turns the global VocabDaily UI upgrade into an executable phase harness. It covers public pages, auth pages, dashboard, learning modules, account screens, theme states, accessibility, regression evidence, and release readiness.
 
+## 2026-06-20 Liquid Glass Reopen
+
+The VGUI-00 through VGUI-07 work is historical evidence for the earlier workbench-style redesign. The 2026-06-20 request reopens the harness for a broader Apple-inspired Liquid Glass full-site objective:
+
+- every public, auth, dashboard, specialist, account, legal, pricing, sample, and daily-word route remains in scope
+- every shared effect layer is in scope: glass surfaces, nav/sidebar/bottom-nav, search trigger, account trigger, segmented controls, theme/language controls, hover/press states, route reveals, skeletons, focus states, reduced motion, and reduced transparency
+- Web implementation must stay an honest approximation using CSS, `backdrop-filter`, semantic tokens, existing React/Tailwind/Radix/framer-motion, and accessibility fallbacks
+- do not claim official Apple Liquid Glass on the Web
+
+The new chain is `VGUI-08 -> VGUI-09 -> VGUI-10 -> VGUI-11 -> VGUI-12 -> VGUI-13`. Completion of the old VGUI-05 release gate is not evidence that this reopened objective is complete.
+
 The human product plan is in `PRD.md`. The machine-readable runtime is the phase harness in this folder.
 
 ## Coding Agent Loading Protocol
@@ -91,6 +102,12 @@ Primary UI entry points:
 | VGUI-03 Dashboard Core Learning Flow | Redesign Today, Review, Practice, Chat, Vocabulary, and Analytics. | VGUI-04 |
 | VGUI-04 Skill Modules And Utility Screens | Redesign reading, listening, grammar, pronunciation, writing, exam, memory, leaderboard, settings, and profile. | VGUI-05 |
 | VGUI-05 Regression Evidence And Release Gate | Prove global route coverage, theme stability, learning-flow behavior, and release readiness. | none |
+| VGUI-08 Liquid Glass Research Baseline And Route Plan | Reopen the harness for the 2026-06-20 full-site Liquid Glass objective and write the route/effect execution contract. | VGUI-09 |
+| VGUI-09 Liquid Glass Tokens Motion And Shell | Establish shared glass tokens, primitives, motion rules, navigation/control shell, and reduced-preference fallbacks. | VGUI-10 |
+| VGUI-10 Liquid Glass Public Auth And Entry Surfaces | Upgrade all public/auth/legal/sample/pricing/daily-word entry routes without semantic drift. | VGUI-11 |
+| VGUI-11 Liquid Glass Dashboard Core Learning | Upgrade Today, Review, Practice, Chat, Vocabulary, and Analytics while preserving learning correctness. | VGUI-12 |
+| VGUI-12 Liquid Glass Specialist Modules And Account | Upgrade all specialist, utility, settings, and profile routes. | VGUI-13 |
+| VGUI-13 Liquid Glass Regression Accessibility Performance Release | Prove full-route, full-effect, accessibility, performance, and release readiness. | none |
 
 ## Roadmap Cohesion
 
@@ -98,6 +115,7 @@ The phase chain is:
 
 ```text
 VGUI-00 -> VGUI-01 -> VGUI-02 -> VGUI-03 -> VGUI-04 -> VGUI-05
+VGUI-08 -> VGUI-09 -> VGUI-10 -> VGUI-11 -> VGUI-12 -> VGUI-13
 ```
 
 Each phase inherits decisions and evidence from the previous phase. If a phase changes shared tokens, route shells, learning state semantics, regression scripts, or release boundaries, it must update `source-packet.md` and `continuity-ledger.md`.
@@ -110,6 +128,9 @@ Each phase inherits decisions and evidence from the previous phase. If a phase c
 - Do not add a UI library without an explicit phase report and approval.
 - Do not remove route coverage to make tests easier.
 - Do not mark feature-oracle items passing without command, browser, screenshot, or report evidence.
+- Do not mark the Liquid Glass objective complete until VGUI-F008 through VGUI-F013 have evidence.
+- Do not put glass effects on dense reading passages, transcripts, form bodies, analytics panels, long chat content, or legal text.
+- Do not animate layout, width, height, top, left, blur radius, or text metrics as primary motion; prefer opacity and transform.
 
 ## Global Non-Goals
 
@@ -150,6 +171,9 @@ Every implementation phase that changes UI must capture or cite evidence for:
 - no blank or black full-screen fallback
 - no unreadable low-contrast text
 - no clipped CTA labels
+- reduced motion behavior for interactive motion
+- reduced transparency behavior for glass layers
+- no stacked blurred ancestors over dense content
 
 ## External Inputs and Approvals
 

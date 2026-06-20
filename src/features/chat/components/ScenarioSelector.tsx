@@ -44,9 +44,9 @@ export function ScenarioSelector({ onSelect }: ScenarioSelectorProps) {
   }, [search, categoryFilter, difficultyFilter]);
 
   const difficultyColor: Record<ScenarioDifficulty, string> = {
-    beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    intermediate: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-    advanced: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+    beginner: 'bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))]',
+    intermediate: 'bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]',
+    advanced: 'bg-destructive/10 text-destructive',
   };
 
   return (

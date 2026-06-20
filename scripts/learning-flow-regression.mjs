@@ -6,6 +6,7 @@ const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
 const OUT_DIR = process.env.LEARNING_FLOW_OUT_DIR || 'product-audit-2026-06-14/learning-flow-regression';
 const USER_ID = '00000000-0000-4000-8000-222222222222';
 const THEME_VERSION = '2026-06-workbook-contrast-v6';
+const NEAR_BLACK_BACKGROUND_BRIGHTNESS = 24;
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 960 },
@@ -214,12 +215,21 @@ async function seedContext(context, authState, theme) {
 async function inspectPage(page, route, viewport, theme) {
   const response = await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  if (route.name === 'vocabulary') {
+    await page.waitForFunction(() => {
+      const bodyText = document.body.innerText || '';
+      return (
+        /IELTS Anki 卡片|IELTS Anki cards/i.test(bodyText) ||
+        !/正在加载|保持当前页面|Loading|Please wait/i.test(bodyText)
+      );
+    }, null, { timeout: 12000 }).catch(() => {});
+  }
   await page.waitForTimeout(450);
 
   const screenshotPath = path.join(OUT_DIR, 'screenshots', `${viewport.name}-${theme}-${route.name}.png`);
   await page.screenshot({ path: screenshotPath, fullPage: false });
 
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate((nearBlackThreshold) => {
     const doc = document.documentElement;
     const bodyText = document.body.innerText || '';
     const rect = document.body.getBoundingClientRect();
@@ -229,7 +239,7 @@ async function inspectPage(page, route, viewport, theme) {
     const backgroundBrightness = Math.round(
       (backgroundChannels[0] * 299 + backgroundChannels[1] * 587 + backgroundChannels[2] * 114) / 1000,
     );
-    const nearBlackBackground = doc.classList.contains('dark') && backgroundBrightness < 58;
+    const nearBlackBackground = doc.classList.contains('dark') && backgroundBrightness < nearBlackThreshold;
     const visibleTextLength = bodyText.replace(/\s+/g, '').length;
     const horizontalOverflowPx = Math.max(0, doc.scrollWidth - doc.clientWidth);
     const hasErrorBoundary = /Something went wrong|Unexpected error|出现错误|错误边界/i.test(bodyText);
@@ -251,7 +261,7 @@ async function inspectPage(page, route, viewport, theme) {
       hasIeltsAnkiEntry,
       hasIeltsAnkiPracticeLink,
     };
-  });
+  }, NEAR_BLACK_BACKGROUND_BRIGHTNESS);
 
   const finalUrl = page.url();
   const redirectedToLogin = route.authState === 'user' && /\/login(?:\?|$)/.test(new URL(finalUrl).pathname + new URL(finalUrl).search);
@@ -288,7 +298,7 @@ async function inspectFastRouteSwitch(page, viewport, theme) {
   const screenshotPath = path.join(OUT_DIR, 'screenshots', `${viewport.name}-${theme}-fast-route-switch.png`);
   await page.screenshot({ path: screenshotPath, fullPage: false });
 
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate((nearBlackThreshold) => {
     const bodyText = document.body.innerText || '';
     const doc = document.documentElement;
     const background = getComputedStyle(document.body).backgroundColor;
@@ -303,9 +313,9 @@ async function inspectFastRouteSwitch(page, viewport, theme) {
       hasErrorBoundary: /Something went wrong|Unexpected error|出现错误|错误边界/i.test(bodyText),
       background,
       backgroundBrightness,
-      nearBlackBackground: doc.classList.contains('dark') && backgroundBrightness < 58,
+      nearBlackBackground: doc.classList.contains('dark') && backgroundBrightness < nearBlackThreshold,
     };
-  });
+  }, NEAR_BLACK_BACKGROUND_BRIGHTNESS);
 
   return {
     name: 'fast-route-switch',

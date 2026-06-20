@@ -203,11 +203,11 @@ export default function LearningPathPage() {
             return (
               <motion.div key={path.id} {...motionStagger(index)}>
                 <Card
-                  className="h-full cursor-pointer rounded-md transition-colors hover:border-primary/45"
+                  className="h-full cursor-pointer rounded-2xl transition-colors hover:border-primary/45"
                   onClick={() => handleSelectPath(path.id)}
                 >
                   <CardContent className="flex items-center gap-4 p-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-sm font-semibold text-muted-foreground">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-sm font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -345,7 +345,7 @@ export default function LearningPathPage() {
                             className="mt-1 shrink-0 disabled:cursor-default"
                           >
                             {done ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <CheckCircle2 className="h-4 w-4 text-success" />
                             ) : (
                               <Circle className="h-4 w-4 text-muted-foreground" />
                             )}
@@ -398,7 +398,7 @@ export default function LearningPathPage() {
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-md border bg-card px-4 py-3 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">
             <span>{isZh ? '点击课程名称打开具体任务；勾选后会记录课程完成。' : 'Click a lesson to open the exact task; checking it records completion.'}</span>
             <Badge variant="secondary">{progressPercent}%</Badge>
           </div>

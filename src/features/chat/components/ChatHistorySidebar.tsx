@@ -162,9 +162,8 @@ export function ChatHistorySidebar({
                     onDeleteSession(session.id);
                   }}
                   className={cn(
-                    'inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border bg-red-50/70 text-red-600 opacity-100 shadow-sm transition-colors',
-                    'border-red-300/60 hover:border-red-400 hover:bg-red-100/80 hover:text-red-700',
-                    'dark:border-red-800/80 dark:bg-red-950/40 dark:text-red-300 dark:hover:border-red-700 dark:hover:bg-red-950/55',
+                    'inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border bg-destructive/10 text-destructive opacity-100 shadow-sm transition-colors',
+                    'border-destructive/30 hover:border-destructive/45 hover:bg-destructive/15 hover:text-destructive',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   )}
                   aria-label={language.startsWith('zh') ? '删除对话' : 'Delete conversation'}

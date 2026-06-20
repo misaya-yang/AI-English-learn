@@ -60,9 +60,9 @@ export function ChatArtifactRenderer({
           return (
             <div
               key={`${messageId}-sources-${index}`}
-              className="mt-3 space-y-2 rounded-xl border border-blue-300/40 bg-blue-50/50 p-3 dark:bg-blue-900/20"
+              className="mt-3 space-y-2 rounded-2xl border border-[hsl(var(--info)/0.34)] bg-[hsl(var(--info)/0.08)] p-3"
             >
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+              <p className="text-xs font-semibold text-[hsl(var(--info))]">
                 {artifact.payload.title || (language.startsWith('zh') ? '资料来源' : 'Sources')}
               </p>
               <div className="space-y-2">
@@ -72,10 +72,10 @@ export function ChatArtifactRenderer({
                     href={source.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="block rounded-lg border border-blue-200/60 bg-background/70 px-3 py-2 transition-colors hover:border-blue-400/70 dark:border-blue-800/60"
+                    className="block rounded-xl border border-[hsl(var(--info)/0.24)] bg-background/70 px-3 py-2 transition-colors hover:border-[hsl(var(--info)/0.45)]"
                   >
                     <div className="flex items-start gap-2">
-                      <Link2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
+                      <Link2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[hsl(var(--info))]" />
                       <div className="min-w-0">
                         <p className="truncate text-xs font-medium">{source.title}</p>
                         <p className="truncate text-[11px] text-muted-foreground">{source.domain}</p>
@@ -97,9 +97,9 @@ export function ChatArtifactRenderer({
           return (
             <div
               key={`${messageId}-canvas-summary-${index}`}
-              className="mt-3 space-y-2 rounded-xl border border-violet-300/40 bg-violet-50/50 p-3 dark:bg-violet-900/20"
+              className="mt-3 space-y-2 rounded-2xl border border-primary/25 bg-primary/5 p-3"
             >
-              <p className="text-xs font-semibold text-violet-700 dark:text-violet-300">
+              <p className="text-xs font-semibold text-primary">
                 {artifact.payload.title}
               </p>
               <p className="text-sm text-muted-foreground">{artifact.payload.summary}</p>
@@ -137,15 +137,15 @@ export function ChatArtifactRenderer({
           return (
             <div
               key={`${messageId}-canvas-hint-${index}`}
-              className="mt-3 space-y-2 rounded-xl border border-amber-300/40 bg-amber-50/50 p-3 dark:bg-amber-900/20"
+              className="mt-3 space-y-2 rounded-2xl border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.10)] p-3"
             >
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+              <p className="text-xs font-semibold text-[hsl(var(--warning))]">
                 {artifact.payload.title}
               </p>
               <div className="space-y-1.5 text-sm text-muted-foreground">
                 {artifact.payload.hints.map((hint, hintIndex) => (
                   <div key={`${messageId}-hint-${hintIndex}`} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[hsl(var(--warning))]" />
                     <p>{hint}</p>
                   </div>
                 ))}

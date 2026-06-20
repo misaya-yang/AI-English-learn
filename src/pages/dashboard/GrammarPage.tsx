@@ -375,18 +375,18 @@ const GRAMMAR_RULES: GrammarRule[] = [
 // ─── Category metadata ────────────────────────────────────────────────────────
 
 const CATEGORY_META: Record<GrammarCategory, { label: string; labelZh: string; color: string }> = {
-  articles:     { label: 'Articles',     labelZh: '冠词',     color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+  articles:     { label: 'Articles',     labelZh: '冠词',     color: 'text-info bg-info/10 border-info/20' },
   tenses:       { label: 'Tenses',       labelZh: '时态',     color: 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))] border-[hsl(var(--accent-practice)/0.2)]' },
-  prepositions: { label: 'Prepositions', labelZh: '介词',     color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-  conditionals: { label: 'Conditionals', labelZh: '条件句',   color: 'text-violet-400 bg-violet-500/10 border-violet-500/20' },
-  passive:      { label: 'Passive Voice',labelZh: '被动语态', color: 'text-pink-400 bg-pink-500/10 border-pink-500/20' },
-  modals:       { label: 'Modal Verbs',  labelZh: '情态动词', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' },
+  prepositions: { label: 'Prepositions', labelZh: '介词',     color: 'text-warning bg-warning/10 border-warning/20' },
+  conditionals: { label: 'Conditionals', labelZh: '条件句',   color: 'text-primary bg-primary/10 border-primary/20' },
+  passive:      { label: 'Passive Voice',labelZh: '被动语态', color: 'text-destructive bg-destructive/10 border-destructive/20' },
+  modals:       { label: 'Modal Verbs',  labelZh: '情态动词', color: 'text-info bg-info/10 border-info/20' },
 };
 
 const LEVEL_COLORS: Record<string, string> = {
   B1: 'bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))] border-[hsl(var(--accent-practice)/0.2)]',
-  B2: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-  C1: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
+  B2: 'text-info bg-info/10 border-info/20',
+  C1: 'text-primary bg-primary/10 border-primary/20',
 };
 
 // ─── Rule Card ────────────────────────────────────────────────────────────────
@@ -403,7 +403,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
   const catMeta = CATEGORY_META[rule.category];
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full px-5 py-4 text-left flex items-center gap-3 hover:bg-muted transition-colors"
@@ -457,7 +457,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
                 <ul className="space-y-1.5">
                   {rule.commonErrors.map((err, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                      <XCircle className="mt-0.5 h-3 w-3 flex-shrink-0 text-amber-500" />
+                      <XCircle className="mt-0.5 h-3 w-3 flex-shrink-0 text-warning" />
                       {err}
                     </li>
                   ))}
@@ -467,7 +467,8 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
               {/* Practice CTA */}
               <Button
                 onClick={() => onPractice(rule)}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold"
+                variant="glassPrimary"
+                className="w-full rounded-full font-semibold"
               >
                 <Play className="mr-2 h-3.5 w-3.5" />
                 {isZh ? `练习（${rule.practice.length} 题）` : `Practice (${rule.practice.length} questions)`}
@@ -502,7 +503,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
 
   return (
     <div className={cn(
-      'rounded-md border p-4 space-y-3 transition-all duration-300',
+      'space-y-3 rounded-2xl border p-4 transition-all duration-300',
       !submitted
         ? 'border-border bg-card'
         : isCorrect
@@ -520,8 +521,8 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
             {parts[0]}
             <span className={cn(
               'inline-block min-w-[80px] rounded-lg border-b-2 px-2 mx-1 text-center',
-              !submitted ? 'border-blue-500/50 bg-blue-500/[0.06]' :
-              isCorrect ? 'border-green-500/30 bg-green-50 text-green-700' :
+              !submitted ? 'border-primary/50 bg-primary/10 text-primary' :
+              isCorrect ? 'border-success/30 bg-success/10 text-success' :
               'border-destructive/30 bg-destructive/5 text-destructive',
             )}>
               {userAnswer || (submitted ? '-' : '___')}
@@ -531,7 +532,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
         </div>
         {submitted && (
           isCorrect
-            ? <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+            ? <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" />
             : <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
         )}
       </div>
@@ -539,8 +540,8 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
       {/* Hint */}
       {item.hint && !submitted && (
         <div className="ml-8 flex items-center gap-1.5">
-          <Lightbulb className="h-3 w-3 text-amber-400" />
-          <p className="text-xs text-amber-500">{item.hint}</p>
+          <Lightbulb className="h-3 w-3 text-warning" />
+          <p className="text-xs text-warning">{item.hint}</p>
         </div>
       )}
 
@@ -552,7 +553,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
             value={userAnswer}
             onChange={(e) => onChange(e.target.value)}
             placeholder={isZh ? '填入答案...' : 'Fill in the blank…'}
-            className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
           />
         </div>
       )}
@@ -561,7 +562,7 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
       {submitted && (
         <div className="ml-8 space-y-1.5">
           {!isCorrect && (
-            <p className="text-xs font-semibold text-green-700">
+            <p className="text-xs font-semibold text-success">
               {isZh ? '正确答案' : 'Correct'}: <span className="font-bold">{item.answer}</span>
             </p>
           )}
@@ -656,7 +657,7 @@ export default function GrammarPage() {
   if (phase === 'browse') {
     return (
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="rounded-md border border-border bg-card p-4 sm:p-5">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)]">
             <div className="space-y-4">
               <div>
@@ -669,7 +670,7 @@ export default function GrammarPage() {
                 </p>
               </div>
 
-              <div className="rounded-md border border-border bg-background p-4">
+              <div className="rounded-2xl border border-border bg-background p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={cn('rounded-md border px-2.5 py-1 text-[11px] font-semibold', CATEGORY_META[featuredRule.category].color)}>
                     {isZh ? CATEGORY_META[featuredRule.category].labelZh : CATEGORY_META[featuredRule.category].label}
@@ -686,20 +687,20 @@ export default function GrammarPage() {
                 </p>
               </div>
 
-              <Button onClick={() => handlePractice(featuredRule)} className="rounded-md bg-primary text-primary-foreground">
+              <Button onClick={() => handlePractice(featuredRule)} variant="glassPrimary" className="rounded-full">
                 <Play className="mr-2 h-4 w-4" />
                 {isZh ? '开始这组' : 'Start this set'}
               </Button>
             </div>
 
-            <div className="rounded-md border border-border bg-background p-4">
+            <div className="rounded-2xl border border-border bg-background p-4">
               <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '当前题型' : 'Current exercise'}
               </p>
-              <div className="mt-4 rounded-md border border-border bg-card p-4">
+              <div className="mt-4 rounded-2xl border border-border bg-card p-4">
                 <p className="text-sm leading-7 text-foreground">
                   {featuredSentenceParts[0]}
-                  <span className="mx-1 inline-block min-w-[86px] rounded-md border-b-2 border-primary/50 bg-primary/10 px-2 text-center text-primary">
+                  <span className="mx-1 inline-block min-w-[86px] rounded-lg border-b-2 border-primary/50 bg-primary/10 px-2 text-center text-primary">
                     {isZh ? '填空' : 'blank'}
                   </span>
                   {featuredSentenceParts[1]}
@@ -714,7 +715,7 @@ export default function GrammarPage() {
                   { label: isZh ? '类别' : 'Categories', value: Object.keys(CATEGORY_META).length },
                   { label: isZh ? '本轮题' : 'Items', value: featuredRule.practice.length },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-md border border-border bg-card p-3 text-center">
+                  <div key={item.label} className="rounded-xl border border-border bg-card p-3 text-center">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -729,7 +730,7 @@ export default function GrammarPage() {
           <button
             onClick={() => setFilterCategory('all')}
             className={cn(
-              'rounded-md border px-3 py-1 text-xs font-medium transition-colors',
+              'liquid-glass-control liquid-glass-interactive rounded-full border px-3 py-1 text-xs font-medium transition-colors',
               filterCategory === 'all'
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border text-muted-foreground hover:bg-muted',
@@ -742,7 +743,7 @@ export default function GrammarPage() {
               key={cat}
               onClick={() => setFilterCategory(cat as GrammarCategory)}
               className={cn(
-                'rounded-md border px-3 py-1 text-xs font-medium transition-colors',
+              'liquid-glass-control liquid-glass-interactive rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                 filterCategory === cat
                   ? meta.color
                   : 'border-border text-muted-foreground hover:bg-muted',
@@ -797,8 +798,8 @@ export default function GrammarPage() {
           {submitted && (
             <div className={cn(
               'flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold flex-shrink-0',
-              score / totalQ >= 0.8 ? 'bg-green-100 text-green-700' :
-              score / totalQ >= 0.5 ? 'bg-amber-500/15 text-amber-500' :
+              score / totalQ >= 0.8 ? 'bg-success/10 text-success' :
+              score / totalQ >= 0.5 ? 'bg-warning/15 text-warning' :
               'bg-destructive/10 text-destructive',
             )}>
               <CheckCircle2 className="h-4 w-4" />
@@ -828,13 +829,13 @@ export default function GrammarPage() {
               <>
                 <Button
                   onClick={() => { setAnswers({}); setSubmitted(false); setPhase('practice'); }}
-                  variant="outline"
-                  className="rounded-md border-border bg-card"
+                  variant="glass"
+                  className="rounded-full"
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {isZh ? '重练这条规则' : 'Retry this rule'}
                 </Button>
-                <Button onClick={handleBack} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button onClick={handleBack} variant="glassPrimary" className="rounded-full">
                   {isZh ? '换一个规则' : 'Choose another rule'}
                 </Button>
               </>
@@ -872,7 +873,7 @@ export default function GrammarPage() {
           <Button
             onClick={handleSubmit}
             disabled={!allAnswered}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-semibold disabled:opacity-50"
+          className="w-full rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
           >
             {isZh ? '检查答案' : 'Check Answers'}
           </Button>

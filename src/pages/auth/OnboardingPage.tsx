@@ -96,7 +96,7 @@ const stepCopy: Record<number, { en: string; zh: string }> = {
 };
 
 export default function OnboardingPage() {
-  const { updateUserProfile, isAuthenticated } = useAuth();
+  const { updateUserProfile, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { setActiveBook, updateLearningProfile, refreshDailyMission } = useUserData();
   const navigate = useNavigate();
   const location = useLocation();
@@ -118,6 +118,30 @@ export default function OnboardingPage() {
     learningStyle: 'visual' as LearningStyle,
   });
   const placement = useMemo(() => buildOnboardingPlacement(preferences), [preferences]);
+
+  if (isAuthLoading) {
+    return (
+      <AuthShell
+        title="Preparing setup"
+        titleZh="正在准备设置"
+        size="wide"
+      >
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex flex-col items-center justify-center py-8 text-center"
+        >
+          <Loader2 className="mb-4 h-9 w-9 animate-spin text-primary" aria-hidden="true" />
+          <p className="text-sm font-medium text-foreground">
+            {isZh ? '正在确认登录状态' : 'Confirming your sign-in status'}
+          </p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            {isZh ? '确认后继续设置今日学习。' : 'Your setup will continue after confirmation.'}
+          </p>
+        </div>
+      </AuthShell>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={buildAuthRedirect('/onboarding')} replace />;

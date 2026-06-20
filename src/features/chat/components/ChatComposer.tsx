@@ -110,7 +110,7 @@ export function ChatComposer({
   const currentModeOption = chatModeOptions.find((option) => option.id === currentMode);
 
   return (
-    <div className="border-t border-border bg-background p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <div className="liquid-glass-bar rounded-none border-x-0 border-b-0 border-t border-border/55 bg-background/80 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className={cn(contentWidthClass, 'relative mx-auto')}>
         <AnimatePresence initial={false}>
           {toolsExpanded && (
@@ -119,7 +119,7 @@ export function ChatComposer({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
               transition={{ duration: 0.18 }}
-              className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-lg border border-border/90 bg-popover px-3 py-3 text-popover-foreground shadow-lg"
+              className="liquid-glass-panel absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border/70 bg-popover/80 px-3 py-3 text-popover-foreground shadow-lg"
             >
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">
@@ -141,8 +141,8 @@ export function ChatComposer({
                     <button
                       key={option.id}
                       onClick={() => onSelectMode(option.id)}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors',
+                      className={cn(
+                        'liquid-glass-control liquid-glass-interactive inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
                         currentMode === option.id
                           ? 'border-primary/50 bg-primary/10 text-primary'
                           : 'border-border hover:border-primary/40 hover:bg-primary/5',
@@ -231,12 +231,12 @@ export function ChatComposer({
         </AnimatePresence>
 
         {showQuickPrompts && (
-          <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-3">
+          <div className="grid grid-cols-1 gap-2 pb-3 sm:flex sm:overflow-x-auto">
             {quickPrompts.slice(0, 3).map((prompt) => (
               <button
                 key={prompt.text}
                 onClick={() => onQuickPrompt(prompt.text)}
-                className="flex-shrink-0 whitespace-nowrap rounded-md border border-border px-4 py-2 text-sm transition-all hover:border-primary/40 hover:bg-primary/5"
+                className="liquid-glass-control liquid-glass-interactive w-full min-w-0 rounded-full border border-border/65 px-4 py-2 text-left text-sm transition-all hover:border-primary/40 sm:w-auto sm:flex-shrink-0 sm:whitespace-nowrap sm:text-center"
               >
                 {prompt.textZh}
               </button>
@@ -244,7 +244,7 @@ export function ChatComposer({
           </div>
         )}
 
-        <div className="relative flex items-end gap-2 rounded-md border border-border/80 bg-card p-3 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15">
+        <div className="relative flex items-end gap-2 rounded-2xl border border-border/80 bg-card p-3 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15">
           <Button
             variant="ghost"
             size="icon"
@@ -284,7 +284,7 @@ export function ChatComposer({
                 className={cn(
                   'h-10 w-10 rounded-md transition-colors',
                   voiceListening
-                    ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
+                    ? 'bg-destructive/10 text-destructive hover:bg-destructive/15 animate-pulse'
                     : 'hover:bg-muted text-muted-foreground',
                 )}
                 title={voiceListening ? 'Stop listening' : 'Voice input'}
@@ -298,7 +298,7 @@ export function ChatComposer({
                 onClick={onStop}
                 variant="outline"
                 size="icon"
-                className="h-10 w-10 rounded-md hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+                className="h-10 w-10 rounded-md hover:border-destructive/35 hover:bg-destructive/10 hover:text-destructive"
                 aria-label={language.startsWith('zh') ? '停止回复' : 'Stop response'}
               >
                 <StopCircle className="h-5 w-5" />

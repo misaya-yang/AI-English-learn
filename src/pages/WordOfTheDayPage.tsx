@@ -39,6 +39,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { BrandMark } from '@/features/marketing/BrandMark';
+import { GlassSurface } from '@/components/ui/glass-surface';
 
 const normalizeWordKey = (value: string): string => value.trim().toLowerCase();
 
@@ -414,7 +415,7 @@ export default function WordOfTheDayPage() {
                     <h3 className="font-semibold mb-3">{copy.collocations}</h3>
                     <div className="flex flex-wrap gap-2">
                       {word.collocations.map((col) => (
-                        <Badge key={col} className="bg-emerald-100 text-emerald-800 text-sm">
+                        <Badge key={col} className="bg-primary/10 text-primary text-sm">
                           {col}
                         </Badge>
                       ))}
@@ -453,25 +454,22 @@ export default function WordOfTheDayPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <BrandMark />
-            <div className="flex items-center gap-1.5">
-              <div className="hidden items-center gap-1 sm:flex">
-                <ThemeToggle />
-                <LanguageSwitcher />
-              </div>
-              <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
-                <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
-                  {isAuthenticated ? copy.dashboard : copy.startLearning}
-                </Link>
-              </Button>
+    <div className="study-premium-bg min-h-screen bg-background text-foreground">
+      <header className="sticky top-3 z-30 px-3 sm:px-4">
+        <GlassSurface variant="bar" className="mx-auto flex h-14 max-w-5xl items-center justify-between px-3 sm:h-16 sm:px-5">
+          <BrandMark />
+          <div className="flex items-center gap-1.5">
+            <div className="hidden items-center gap-1 sm:flex">
+              <ThemeToggle />
+              <LanguageSwitcher />
             </div>
+            <Button asChild variant="glassPrimary" className="h-9 px-4 text-sm font-medium">
+              <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
+                {isAuthenticated ? copy.dashboard : copy.startLearning}
+              </Link>
+            </Button>
           </div>
-        </div>
+        </GlassSurface>
       </header>
 
       <main className="container mx-auto max-w-5xl px-4 py-8">
@@ -551,7 +549,7 @@ export default function WordOfTheDayPage() {
         <div className="mt-12">
           <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-center gap-2">
-              <History className="h-5 w-5 text-emerald-600" />
+              <History className="h-5 w-5 text-primary" />
               <h3 className="text-xl font-semibold">{copy.archiveTitle}</h3>
             </div>
             <p className="max-w-md text-sm text-muted-foreground">{copy.archiveBody}</p>

@@ -637,7 +637,7 @@ export default function ProfilePage() {
                     <p className="text-sm text-foreground">{featureLabels[status.feature]}</p>
                     <p className={cn(
                       'text-xs font-semibold',
-                      status.isExhausted ? 'text-red-500' : 'text-muted-foreground',
+                      status.isExhausted ? 'text-destructive' : 'text-muted-foreground',
                     )}>
                       {status.used}/{status.limit}
                     </p>
@@ -646,7 +646,7 @@ export default function ProfilePage() {
                     <div
                       className={cn(
                         'h-full rounded-full transition-all duration-500',
-                        status.isExhausted ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-primary',
+                        status.isExhausted ? 'bg-destructive' : pct >= 70 ? 'bg-warning' : 'bg-primary',
                       )}
                       style={{ width: `${pct}%` }}
                     />
@@ -656,9 +656,9 @@ export default function ProfilePage() {
             })}
           </div>
           {plan === 'free' && (
-	            <div className="mt-4 flex flex-col gap-3 rounded-md border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-	              <p className="text-sm leading-relaxed text-amber-600 dark:text-amber-400">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
-	              <Button asChild size="sm" className="h-8 flex-shrink-0 rounded-md bg-amber-500 px-3 text-xs font-semibold text-warning-foreground hover:bg-amber-400">
+	            <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+	              <p className="text-sm leading-relaxed text-warning">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
+	              <Button asChild size="sm" variant="glassPrimary" className="h-8 flex-shrink-0 rounded-full px-3 text-xs font-semibold">
 	                <Link to="/pricing">
 	                  {isZh ? '查看方案入口' : 'View plan access'}
 	                </Link>

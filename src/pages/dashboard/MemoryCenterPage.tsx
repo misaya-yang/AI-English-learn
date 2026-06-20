@@ -177,12 +177,12 @@ export default function MemoryCenterPage() {
         </div>
       </div>
 
-        <div className="rounded-md border border-border bg-card p-3">
+        <div className="liquid-glass-bar rounded-2xl border border-border bg-card/80 p-3">
         <div className="flex flex-wrap gap-2">
           <div className="relative min-w-[260px] flex-1">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="rounded-md pl-9"
+              className="rounded-xl bg-card pl-9"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={isZh ? '搜索记忆内容或标签...' : 'Search memory content or tags...'}
@@ -192,9 +192,9 @@ export default function MemoryCenterPage() {
             {KINDS.map((option) => (
               <Button
                 key={option.value}
-                variant={kind === option.value ? 'default' : 'outline'}
+                variant={kind === option.value ? 'glassPrimary' : 'glass'}
                 size="sm"
-                className="rounded-md"
+                className="rounded-full"
                 onClick={() => setKind(option.value)}
               >
                 {isZh ? option.labelZh : option.labelEn}
@@ -204,11 +204,11 @@ export default function MemoryCenterPage() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => void load()} disabled={loading}>
+          <Button size="sm" variant="glass" className="rounded-full" onClick={() => void load()} disabled={loading}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             {isZh ? '刷新' : 'Refresh'}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleClearExpired} disabled={loading}>
+          <Button size="sm" variant="glass" className="rounded-full" onClick={handleClearExpired} disabled={loading}>
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             {isZh ? '清理过期记忆' : 'Clear expired'}
           </Button>
@@ -220,17 +220,17 @@ export default function MemoryCenterPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-300/60 bg-red-50/70 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="min-h-[420px] rounded-md border border-border bg-card">
+      <div className="min-h-[420px] rounded-2xl border border-border bg-card">
         <ScrollArea className="h-[520px]">
           <div className="p-3 space-y-2">
             {items.length === 0 ? (
               <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-14 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
                   <BookOpen className="h-6 w-6" />
                 </div>
                 <h2 className="mt-4 text-lg font-semibold text-foreground">
@@ -259,10 +259,10 @@ export default function MemoryCenterPage() {
                       ))}
                     </div>
                     <div className="mt-6 flex flex-wrap justify-center gap-2">
-                      <Button asChild className="rounded-md">
+                      <Button asChild variant="glassPrimary" className="rounded-full">
                         <Link to="/dashboard/chat">{isZh ? '打开答疑' : 'Open help'}</Link>
                       </Button>
-                      <Button asChild variant="outline" className="rounded-md">
+                      <Button asChild variant="glass" className="rounded-full">
                         <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Start practice'}</Link>
                       </Button>
                     </div>
@@ -271,7 +271,7 @@ export default function MemoryCenterPage() {
               </div>
             ) : (
               items.map((item) => (
-                <div key={item.id} className="rounded-lg border bg-background p-3 space-y-2">
+                <div key={item.id} className="space-y-2 rounded-2xl border bg-background p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
 	                      <Badge variant="outline">{kindLabel(item.kind, language)}</Badge>
@@ -287,7 +287,7 @@ export default function MemoryCenterPage() {
 	                      <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={isZh ? '切换置顶' : 'Toggle pin'} onClick={() => void handlePinToggle(item)}>
 	                        {item.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
 	                      </Button>
-	                      <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600" aria-label={isZh ? '删除记忆' : 'Delete memory'} onClick={() => void handleDelete(item)}>
+	                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label={isZh ? '删除记忆' : 'Delete memory'} onClick={() => void handleDelete(item)}>
 	                        <Trash2 className="h-4 w-4" />
 	                      </Button>
                     </div>

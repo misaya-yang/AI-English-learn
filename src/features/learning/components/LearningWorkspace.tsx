@@ -77,7 +77,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-xl border border-[hsl(var(--paper-line)/0.9)] bg-[hsl(var(--paper))] shadow-[0_1px_0_hsl(var(--shadow-studio)/0.03)] transition-colors duration-150';
+  'relative rounded-[18px] border border-border/75 bg-card shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.14),0_18px_38px_-34px_hsl(var(--shadow-studio)/0.22)] transition-colors duration-150';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
@@ -132,7 +132,7 @@ export function LearningHeroPanel({
         </div>
 
         {(typeof progress === 'number' || metrics.length > 0) ? (
-          <div className="grid gap-0 overflow-hidden rounded-lg border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.68)] sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-0 overflow-hidden rounded-2xl border border-border/65 bg-[hsl(var(--surface-sunken)/0.42)] sm:grid-cols-2 lg:grid-cols-5">
           {typeof progress === 'number' ? (
             <div className="border-b border-border/70 px-3 py-2 sm:border-r lg:border-b-0">
               <div className="flex items-center justify-between gap-4">
@@ -167,7 +167,7 @@ export function LearningHeroPanel({
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn('space-y-3 rounded-xl border border-[hsl(var(--paper-line)/0.82)] bg-[hsl(var(--paper)/0.72)] p-3.5 shadow-none', className)}>
+    <section className={cn('space-y-3 rounded-[18px] border border-border/70 bg-[hsl(var(--surface-raised)/0.9)] p-3.5 shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.1)]', className)}>
       <div className="space-y-1.5">
         <p className="focus-kicker">{title}</p>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
@@ -208,7 +208,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
       {items.map((item) => (
         <div
           key={`${item.label}-${String(item.value)}`}
-          className="rounded-xl border border-[hsl(var(--paper-line)/0.78)] bg-[hsl(var(--paper-muted)/0.46)] px-3 py-2.5"
+          className="rounded-2xl border border-border/65 bg-[hsl(var(--surface-sunken)/0.42)] px-3 py-2.5"
         >
           <p className="focus-kicker">{item.label}</p>
           <div className={cn('study-number mt-1 text-lg', metricToneClass[item.accent || 'default'])}>

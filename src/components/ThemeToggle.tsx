@@ -25,9 +25,9 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant="glass"
           size="icon"
-          className="h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="h-9 w-9 text-muted-foreground hover:text-foreground"
           aria-label={copy.trigger}
           title={copy.trigger}
         >

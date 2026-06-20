@@ -1,9 +1,9 @@
 {
   "schema_version": "prd-phase-harness/loop-state/v1",
-  "active_phase": "VGUI-05",
-  "active_feature": "VGUI-F006",
-  "iteration": 5,
-  "status": "verified",
-  "last_decision": "VGUI-05 passed with full local validation, final UI regression, final learning-flow regression, Vercel deployment, production home smoke, and production bad-token smoke.",
-  "next_action": "No further PRD phases remain. Follow up only on external Supabase reachability from unrestricted network/provider dashboard."
+  "active_phase": "VGUI-13",
+  "active_feature": "VGUI-F013",
+  "iteration": 6,
+  "status": "running",
+  "last_decision": "VGUI-13 local release gate passed after the user-requested dark-mode correction: lint, i18n, 110 files / 840 tests, build, 54 route checks plus 10 scenarios, 160 learning-flow checks, 10 reduced-preference checks, and 8 performance checks passed.",
+  "next_action": "Commit, push, deploy to production, run production smoke/UI evidence, dispatch online subagents across every route family, fix all findings, then mark VGUI-F013 passing only after final production evidence is recorded."
 }

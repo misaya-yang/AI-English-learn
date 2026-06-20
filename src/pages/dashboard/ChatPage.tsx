@@ -1247,7 +1247,7 @@ export default function ChatPage() {
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="hidden flex-shrink-0 overflow-hidden border-r border-border bg-card md:block min-h-0"
+            className="liquid-glass-panel hidden min-h-0 flex-shrink-0 overflow-hidden rounded-none border-y-0 border-l-0 border-r border-border/55 bg-card/80 md:block"
           >
             {renderHistorySidebar()}
           </motion.div>
@@ -1269,9 +1269,9 @@ export default function ChatPage() {
       </Sheet>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-background">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-background">
+          {/* Header */}
+        <div className="liquid-glass-bar flex items-center justify-between rounded-none border-x-0 border-t-0 border-border/55 bg-background/80 px-4 py-3">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -1319,7 +1319,7 @@ export default function ChatPage() {
 
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="glass"
               size="sm"
               onClick={() => {
                 stopGeneration();
@@ -1340,7 +1340,7 @@ export default function ChatPage() {
             {messages.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="glass" size="icon">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -1355,10 +1355,10 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <section className="border-b border-border bg-[hsl(var(--surface-sunken))]/55 px-4 py-2.5 md:px-6 lg:px-8">
+        <section className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-[hsl(var(--surface-sunken))]/55 px-4 py-2.5 md:px-6 lg:px-8">
           <div className={cn(contentWidthClass, 'mx-auto grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center')}>
             <div className="flex min-w-0 items-start gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
+              <div className="liquid-glass-control flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/65 bg-transparent text-muted-foreground">
                 <MessageSquare className="h-4 w-4" />
               </div>
               <div className="min-w-0">
@@ -1378,7 +1378,7 @@ export default function ChatPage() {
                     <span
                       key={step.id}
                       className={cn(
-                        'rounded-md border px-2 py-1 text-[11px] font-medium',
+                        'liquid-glass-control rounded-full border px-2 py-1 text-[11px] font-medium',
                         step.active
                           ? 'border-primary/30 bg-primary/10 text-primary'
                           : 'border-border bg-background/70 text-muted-foreground',
@@ -1392,15 +1392,15 @@ export default function ChatPage() {
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="rounded-md border border-border bg-background px-3 py-2">
+              <div className="rounded-2xl border border-border bg-background px-3 py-2">
                 <p className="text-muted-foreground">{isZh ? '到期' : 'Due'}</p>
                 <p className="mt-1 font-semibold">{coachEvidence.dueReviewCount}</p>
               </div>
-              <div className="rounded-md border border-border bg-background px-3 py-2">
+              <div className="rounded-2xl border border-border bg-background px-3 py-2">
                 <p className="text-muted-foreground">{isZh ? '错误' : 'Mistakes'}</p>
                 <p className="mt-1 font-semibold">{coachEvidence.recentMistakeCount}</p>
               </div>
-              <div className="rounded-md border border-border bg-background px-3 py-2">
+              <div className="rounded-2xl border border-border bg-background px-3 py-2">
                 <p className="text-muted-foreground">{isZh ? '保持' : 'Retention'}</p>
                 <p className="mt-1 font-semibold">{coachRetentionLabel}</p>
               </div>
@@ -1410,7 +1410,7 @@ export default function ChatPage() {
 
         {dailyPlanHandoff ? (
           <section className="border-b border-border bg-[hsl(var(--accent-coach)/0.06)] px-4 py-3 md:px-6 lg:px-8">
-            <div className={cn(contentWidthClass, 'mx-auto flex flex-col gap-3 rounded-md border border-[hsl(var(--accent-coach)/0.22)] bg-background/80 p-3 sm:flex-row sm:items-center sm:justify-between')}>
+            <div className={cn(contentWidthClass, 'mx-auto flex flex-col gap-3 rounded-2xl border border-[hsl(var(--accent-coach)/0.22)] bg-background p-3 sm:flex-row sm:items-center sm:justify-between')}>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[hsl(var(--accent-coach))]">
                   {language.startsWith('zh') ? '已载入今日计划' : 'Daily plan loaded'}
@@ -1426,7 +1426,8 @@ export default function ChatPage() {
               </div>
               <Button
                 size="sm"
-                className="shrink-0 rounded-md"
+                variant="glassPrimary"
+                className="shrink-0"
                 onClick={() => {
                   setInput(dailyPlanHandoff.prompt);
                   requestAnimationFrame(() => inputRef.current?.focus());
@@ -1572,8 +1573,8 @@ export default function ChatPage() {
 
         {chatError && (
           <div className="px-4 pb-2">
-            <div className={cn(contentWidthClass, 'mx-auto rounded-md border border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] p-3 flex items-start gap-3')}>
-              <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
+            <div className={cn(contentWidthClass, 'mx-auto flex items-start gap-3 rounded-2xl border border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] p-3')}>
+              <AlertTriangle className="h-4 w-4 mt-0.5 text-[hsl(var(--warning))] flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">
                   {language.startsWith('zh') ? '在线答疑暂时不可用' : 'Online help is temporarily unavailable'}

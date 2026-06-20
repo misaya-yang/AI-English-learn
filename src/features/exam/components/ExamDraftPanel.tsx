@@ -55,7 +55,7 @@ export function ExamDraftPanel({
 }: ExamDraftPanelProps) {
   return (
     <div className="space-y-5">
-      <div className="rounded-lg border border-border/70 bg-background/40 p-4">
+      <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-medium text-muted-foreground/80">题目已就绪</p>
@@ -64,13 +64,13 @@ export function ExamDraftPanel({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={onBuildOutline} disabled={isBusy}>
+            <Button variant="glass" className="rounded-full" onClick={onBuildOutline} disabled={isBusy}>
               <ListChecks className="mr-1.5 h-4 w-4" /> 提纲
             </Button>
-            <Button variant="outline" onClick={onEnhanceVocabulary} disabled={isBusy}>
+            <Button variant="glass" className="rounded-full" onClick={onEnhanceVocabulary} disabled={isBusy}>
               <PenLine className="mr-1.5 h-4 w-4" /> 词汇改写
             </Button>
-            <Button variant="outline" onClick={() => onToolPanelChange('coach')}>
+            <Button variant="glass" className="rounded-full" onClick={() => onToolPanelChange('coach')}>
               <Bot className="mr-1.5 h-4 w-4" /> 答疑
             </Button>
           </div>
@@ -93,7 +93,7 @@ export function ExamDraftPanel({
               void onSubmitWriting();
             }
           }}
-          className="min-h-[320px] bg-background/70 leading-8"
+          className="min-h-[320px] rounded-2xl bg-background/70 leading-8"
           placeholder="在这里写 IELTS 作文正文..."
         />
       </div>
@@ -103,7 +103,7 @@ export function ExamDraftPanel({
         collapsible
         value={toolPanel}
         onValueChange={(value) => onToolPanelChange((value || undefined) as ToolPanel | undefined)}
-        className="rounded-lg border border-border/70 bg-background/35 px-4"
+        className="rounded-2xl border border-border/70 bg-background/35 px-4"
       >
         <AccordionItem value="outline" className="border-border/60">
           <AccordionTrigger className="py-4 text-base">提纲</AccordionTrigger>
@@ -125,7 +125,7 @@ export function ExamDraftPanel({
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">先根据当前题目整理一版可执行提纲。</p>
-                <Button size="sm" onClick={onBuildOutline} disabled={isBusy}>
+                  <Button size="sm" variant="glassPrimary" className="rounded-full" onClick={onBuildOutline} disabled={isBusy}>
                   整理提纲
                 </Button>
               </div>
@@ -153,7 +153,7 @@ export function ExamDraftPanel({
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">先写出草稿，再抽取低阶表达做改写。</p>
-                <Button size="sm" onClick={onEnhanceVocabulary} disabled={isBusy}>
+                <Button size="sm" variant="glassPrimary" className="rounded-full" onClick={onEnhanceVocabulary} disabled={isBusy}>
                   词汇改写
                 </Button>
               </div>
@@ -167,11 +167,11 @@ export function ExamDraftPanel({
             <Textarea
               value={tutorQuestion}
               onChange={(event) => onTutorQuestionChange(event.target.value)}
-              className="min-h-[96px] bg-background/70"
+              className="min-h-[96px] rounded-2xl bg-background/70"
               placeholder="例如：我的论证不够深入，如何改到 6.5+？"
             />
             <div className="flex justify-end">
-              <Button variant="outline" onClick={() => void onAskTutor()} disabled={isBusy}>
+              <Button variant="glass" className="rounded-full" onClick={() => void onAskTutor()} disabled={isBusy}>
                 {loadingStage === 'tutoring' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
                 提交问题
               </Button>
@@ -187,13 +187,15 @@ export function ExamDraftPanel({
 
       <div className="flex flex-wrap gap-2">
         <Button
+          variant="glassPrimary"
+          className="rounded-full"
           onClick={() => void onSubmitWriting()}
           disabled={isBusy}
         >
           {loadingStage === 'grading' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
           查看评分反馈
         </Button>
-        <Button variant="outline" onClick={onBackToBrief}>
+        <Button variant="glass" className="rounded-full" onClick={onBackToBrief}>
           回到策略
         </Button>
       </div>

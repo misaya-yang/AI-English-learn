@@ -319,7 +319,7 @@ export default function VocabularyBankPage() {
           />
           <Dialog open={exportOpen} onOpenChange={setExportOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="glass">
                 <Download className="h-4 w-4 mr-2" />
                 导出
               </Button>
@@ -363,13 +363,13 @@ export default function VocabularyBankPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm">
+              <Button asChild size="sm" variant="glassPrimary">
                 <Link to="/dashboard/today">今天学这本</Link>
               </Button>
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="glass" size="sm">
                 <Link to="/dashboard/review">复习到期词</Link>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setExportOpen(true)}>
+              <Button variant="glass" size="sm" onClick={() => setExportOpen(true)}>
                 导出备份
               </Button>
             </div>
@@ -680,7 +680,7 @@ export default function VocabularyBankPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-red-600 hover:text-red-700"
+                      className="text-destructive hover:text-destructive"
                       onClick={() => handleDeleteBook(book.id)}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
@@ -695,18 +695,18 @@ export default function VocabularyBankPage() {
       </Card>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="liquid-glass-bar flex flex-col gap-3 rounded-2xl border border-border/55 bg-background/70 p-3 md:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 	          <Input
 	            placeholder={isZh ? '搜索单词、释义或中文解释...' : 'Search words, meanings, or notes...'}
 	            value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="h-10 rounded-full border-border/70 bg-card pl-10"
           />
         </div>
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-full border-border/65 bg-transparent md:w-[160px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="状态" />
           </SelectTrigger>
@@ -719,7 +719,7 @@ export default function VocabularyBankPage() {
           </SelectContent>
         </Select>
         <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-full border-border/65 bg-transparent md:w-[160px]">
             <Tag className="h-4 w-4 mr-2" />
             <SelectValue placeholder="分类" />
           </SelectTrigger>
@@ -762,7 +762,7 @@ export default function VocabularyBankPage() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-blue-600">{learningCount}</p>
+            <p className="text-2xl font-bold text-[hsl(var(--accent-practice))]">{learningCount}</p>
             <p className="text-sm text-muted-foreground">学习中</p>
           </CardContent>
         </Card>
@@ -974,7 +974,7 @@ export default function VocabularyBankPage() {
                     {isCustomWord && (
                       <Button
                         variant="outline"
-                        className="text-red-600 hover:text-red-700"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => handleDeleteWord(item.word.id)}
                         aria-label={isZh ? `删除自定义词 ${entry.headword}` : `Delete custom word ${entry.headword}`}
                       >

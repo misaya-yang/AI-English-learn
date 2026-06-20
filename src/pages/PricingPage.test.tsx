@@ -94,10 +94,13 @@ describe('PricingPage — fail-closed pro checkout', () => {
   });
 
   it('renders the localized coming-soon banner without mixing Chinese into English mode', async () => {
-    renderPricingPage();
+    const { container } = renderPricingPage();
 
     expect(screen.getByText(/Pro checkout is not yet open/i)).toBeInTheDocument();
     expect(screen.queryByText('专业版订阅暂未开放')).not.toBeInTheDocument();
+    expect(
+      container.querySelector('header [data-slot="glass-surface"][data-variant="bar"]'),
+    ).toBeInTheDocument();
   });
 
   it('renders the localized coming-soon banner in Chinese mode', async () => {

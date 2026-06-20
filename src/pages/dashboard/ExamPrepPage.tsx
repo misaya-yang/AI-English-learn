@@ -311,7 +311,7 @@ export default function ExamPrepPage() {
         isBusy={runtime.loadingStage !== 'idle'}
       />
 
-      <section className="premium-panel-soft rounded-lg border border-border bg-card p-3">
+      <section className="liquid-glass-bar rounded-2xl border border-border bg-card/80 p-3">
         <div className="grid gap-2 md:grid-cols-4">
           {sprintSteps.map((step, index) => {
             const active = runtime.workspaceView === step.id;
@@ -320,7 +320,7 @@ export default function ExamPrepPage() {
                 key={step.id}
                 type="button"
                 onClick={() => runtime.setWorkspaceView(step.id)}
-                className={`flex min-h-[112px] flex-col items-start justify-between rounded-lg border p-3 text-left transition hover:border-primary/40 hover:bg-primary/5 ${
+                className={`flex min-h-[112px] flex-col items-start justify-between rounded-2xl border p-3 text-left transition hover:border-primary/40 hover:bg-primary/5 ${
                   active
                     ? 'border-primary/45 bg-primary/10 text-foreground shadow-sm'
                     : 'border-border bg-background/70 text-muted-foreground'
@@ -328,7 +328,7 @@ export default function ExamPrepPage() {
               >
                 <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <span
-                    className={`grid h-6 w-6 place-items-center rounded-md text-[11px] ${
+                    className={`grid h-6 w-6 place-items-center rounded-lg text-[11px] ${
                       active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}
                   >
@@ -428,7 +428,7 @@ export default function ExamPrepPage() {
 
       {runtime.showCelebrate && (
         <div className="pointer-events-none fixed inset-x-0 top-5 z-50 flex justify-center px-4">
-          <div className="rounded-md border border-[hsl(var(--accent-exam)/0.32)] bg-[hsl(var(--accent-exam)/0.12)] px-4 py-2 text-sm font-medium text-foreground backdrop-blur-sm">
+          <div className="liquid-glass-control rounded-full border border-[hsl(var(--accent-exam)/0.32)] bg-[hsl(var(--accent-exam)/0.12)] px-4 py-2 text-sm font-medium text-foreground">
             <CheckCircle2 className="mr-1 inline h-4 w-4" /> 评分已更新，这次结构更稳。
           </div>
         </div>

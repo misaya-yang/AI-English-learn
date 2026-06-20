@@ -143,13 +143,13 @@ describe('theme contrast tokens', () => {
     }
   });
 
-  it('keeps dark surfaces charcoal instead of pure black', () => {
+  it('keeps dark surfaces charcoal instead of pure black or washed gray', () => {
     const tokens = parseTokens('.dark');
     const mainSurfaces = ['background', 'card', 'surface-raised', 'paper', 'popover'];
 
     for (const name of mainSurfaces) {
-      expect(lightness(tokens, name), `--${name} should avoid pure black`).toBeGreaterThanOrEqual(24);
-      expect(lightness(tokens, name), `--${name} should stay in the dark range`).toBeLessThanOrEqual(34);
+      expect(lightness(tokens, name), `--${name} should avoid pure black`).toBeGreaterThanOrEqual(12);
+      expect(lightness(tokens, name), `--${name} should stay charcoal, not washed gray`).toBeLessThanOrEqual(22);
     }
   });
 });

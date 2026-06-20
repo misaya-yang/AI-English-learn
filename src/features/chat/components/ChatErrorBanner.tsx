@@ -22,8 +22,8 @@ export const ChatErrorBanner = ({
   const isZh = language.startsWith('zh');
   return (
     <div className="px-4 pb-2">
-      <div className={cn(contentWidthClass, 'mx-auto rounded-xl border border-amber-300/50 bg-amber-50/60 dark:bg-amber-900/20 p-3 flex items-start gap-3')}>
-        <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
+      <div className={cn(contentWidthClass, 'mx-auto flex items-start gap-3 rounded-2xl border border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] p-3')}>
+        <AlertTriangle className="h-4 w-4 mt-0.5 text-[hsl(var(--warning))] flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">
             {isZh ? '在线答疑暂时不可用' : 'Online help is temporarily unavailable'}
@@ -34,12 +34,12 @@ export const ChatErrorBanner = ({
           </p>
         </div>
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-          <Button size="sm" variant="outline" asChild>
+          <Button size="sm" variant="glass" asChild>
             <Link to="/dashboard/practice">
               {isZh ? '本地练习' : 'Practice locally'}
             </Link>
           </Button>
-          <Button size="sm" variant="outline" onClick={onRetry} disabled={isRetrying}>
+          <Button size="sm" variant="glass" onClick={onRetry} disabled={isRetrying}>
             <RefreshCw className="h-3.5 w-3.5 mr-1" />
             {isZh ? '重试' : 'Retry'}
           </Button>

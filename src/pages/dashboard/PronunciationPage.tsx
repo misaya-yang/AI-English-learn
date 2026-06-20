@@ -113,12 +113,12 @@ export default function PronunciationPage() {
       ]}
       actions={
         <>
-          <Button variant="outline" onClick={() => session.reset()} className="rounded-md border-border bg-card">
+          <Button variant="glass" onClick={() => session.reset()} className="rounded-full">
             <RefreshCw className="mr-2 h-4 w-4" />
             {t('pronunciation.tryAgain')}
           </Button>
           {currentIndex < items.length - 1 && (
-            <Button onClick={handleNext} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button variant="glassPrimary" onClick={handleNext} className="rounded-full">
               {t('common.next')}
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
@@ -150,7 +150,7 @@ export default function PronunciationPage() {
 
       <motion.section
         {...motionPresets.fadeIn}
-        className="rounded-md border border-border bg-card p-4 sm:p-5"
+        className="rounded-2xl border border-border bg-card p-4 sm:p-5"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
@@ -166,7 +166,7 @@ export default function PronunciationPage() {
               </p>
             </div>
 
-            <div className="rounded-md border border-border bg-background p-4">
+            <div className="rounded-2xl border border-border bg-background p-4">
               <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '当前内容' : 'Current item'}
               </p>
@@ -177,7 +177,7 @@ export default function PronunciationPage() {
                     <p className="mt-1 font-mono text-sm text-muted-foreground">{item.phonetic}</p>
                   ) : null}
                 </div>
-                <Button variant="outline" className="rounded-md" onClick={handlePlayAudio}>
+                <Button variant="glass" className="rounded-full" onClick={handlePlayAudio}>
                   <Volume2 className="mr-2 h-4 w-4" />
                   {isZh ? '听标准音' : 'Hear model'}
                 </Button>
@@ -188,7 +188,7 @@ export default function PronunciationPage() {
             </div>
           </div>
 
-          <div className="rounded-md border border-border bg-background p-4">
+          <div className="rounded-2xl border border-border bg-background p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">
@@ -198,7 +198,7 @@ export default function PronunciationPage() {
                   {isZh ? '录完后查看准确度、流利度和语调。' : 'Record once, then check accuracy, fluency, and intonation.'}
                 </p>
               </div>
-              <div className="rounded-md border border-border bg-card px-4 py-3 text-right">
+              <div className="rounded-xl border border-border bg-card px-4 py-3 text-right">
                 <span className="block text-lg font-semibold text-foreground">80+</span>
                 <span className="block text-[11px] text-muted-foreground">{isZh ? '目标分' : 'goal'}</span>
               </div>
@@ -209,7 +209,7 @@ export default function PronunciationPage() {
                 { label: isZh ? '进度' : 'Progress', value: `${completedCount}/${items.length}` },
                 { label: isZh ? '记录' : 'Records', value: session.records.length },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-md border border-border bg-card p-3 text-center">
+                <div key={stat.label} className="rounded-xl border border-border bg-card p-3 text-center">
                   <p className="text-base font-semibold text-foreground">{stat.value}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{stat.label}</p>
                 </div>
@@ -229,7 +229,7 @@ export default function PronunciationPage() {
 
       {/* Mode tabs */}
       <Tabs value={mode} onValueChange={(v) => { setMode(v as PracticeMode); session.reset(); }}>
-        <TabsList className="w-full">
+        <TabsList className="liquid-glass-control w-full rounded-full p-1">
           <TabsTrigger value="word" className="flex-1">
             {t('pronunciation.wordMode')}
           </TabsTrigger>

@@ -102,11 +102,11 @@ const lightInputClass =
 const lightSelectContentClass = 'border-border bg-background text-foreground';
 
 const workbookButtonClass =
-  'rounded-md bg-primary text-primary-foreground shadow-none hover:bg-primary/90';
+  'liquid-glass-control liquid-glass-interactive rounded-full border-primary/25 bg-primary/10 px-4 text-primary shadow-none hover:text-primary';
 const workbookOutlineButtonClass =
-  'rounded-md border-border bg-card text-foreground shadow-none hover:bg-muted/70 hover:text-foreground';
+  'liquid-glass-control liquid-glass-interactive rounded-full border-border/65 bg-transparent px-4 text-foreground shadow-none hover:text-foreground';
 const practiceBadgeClass =
-  'rounded-md border border-[hsl(var(--accent-practice)/0.22)] bg-[hsl(var(--accent-practice)/0.08)] px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))] hover:bg-[hsl(var(--accent-practice)/0.08)]';
+  'liquid-glass-control rounded-full border border-[hsl(var(--accent-practice)/0.28)] bg-transparent px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))]';
 const practiceProgressClass =
   'h-1.5 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]';
 
@@ -878,8 +878,10 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-xl border px-3 py-3 text-left transition-colors',
-                active ? 'border-[hsl(var(--paper-line))] bg-[hsl(var(--surface-sunken))]' : 'border-transparent hover:border-[hsl(var(--paper-line))] hover:bg-muted/60',
+                'group relative w-full rounded-2xl border px-3 py-3 text-left transition-colors',
+                active
+                  ? 'liquid-glass-control liquid-glass-interactive border-[hsl(var(--accent-practice)/0.34)] bg-transparent'
+                  : 'border-transparent hover:border-border/70 hover:bg-muted/60',
               )}
             >
               <span
@@ -1252,7 +1254,7 @@ export default function PracticePage() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                  <Lightbulb className="h-4 w-4 text-yellow-500" />
+                  <Lightbulb className="h-4 w-4 text-[hsl(var(--warning))]" />
                   {writingRound > 1
                     ? (isZh ? `第 ${writingRound} 轮反馈` : `Round ${writingRound} feedback`)
                     : (isZh ? '写作反馈' : 'Writing feedback')}
@@ -1291,7 +1293,7 @@ export default function PracticePage() {
                     <p className="text-xs text-muted-foreground">{label}</p>
                     <p className="mt-3 text-2xl font-semibold">{value.toFixed(1)}</p>
                     {prevValue !== undefined && delta !== 0 && (
-                      <p className={cn('text-[11px] mt-1', delta > 0 ? 'text-green-600' : 'text-destructive')}>
+                      <p className={cn('text-[11px] mt-1', delta > 0 ? 'text-[hsl(var(--success))]' : 'text-destructive')}>
                         {delta > 0 ? '+' : ''}{delta.toFixed(1)}
                       </p>
                     )}
@@ -1302,7 +1304,7 @@ export default function PracticePage() {
 
               {writingFeedback.summary && (
                 <div className="flex gap-3 rounded-md border border-border bg-card p-4">
-                  <Quote className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
+                  <Quote className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--info))]" />
                   <div>
                     <p className="text-sm leading-6 text-foreground">
                       {isZh && writingFeedback.summaryZh ? writingFeedback.summaryZh : writingFeedback.summary}
@@ -1346,13 +1348,13 @@ export default function PracticePage() {
                         : 'border-border bg-card';
                   const tagColors: Record<string, string> = {
                     grammar:       'bg-destructive/10 text-destructive',
-                    lexical:       'bg-violet-500/10 text-violet-600',
-                    coherence:     'bg-blue-500/10 text-blue-600',
-                    task_response: 'bg-amber-500/10 text-amber-600',
-                    collocation:   'bg-pink-500/10 text-pink-600',
-                    tense:         'bg-orange-500/10 text-orange-600',
-                    logic:         'bg-cyan-500/10 text-cyan-600',
-                    word_count:    'bg-yellow-500/10 text-yellow-600',
+                    lexical:       'bg-primary/10 text-primary',
+                    coherence:     'bg-[hsl(var(--accent-coach)/0.12)] text-[hsl(var(--accent-coach))]',
+                    task_response: 'bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]',
+                    collocation:   'bg-[hsl(var(--accent-memory)/0.12)] text-[hsl(var(--accent-memory))]',
+                    tense:         'bg-[hsl(var(--accent-exam)/0.12)] text-[hsl(var(--accent-exam))]',
+                    logic:         'bg-[hsl(var(--info)/0.12)] text-[hsl(var(--info))]',
+                    word_count:    'bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]',
                   };
                   return (
                     <div
@@ -1362,7 +1364,7 @@ export default function PracticePage() {
                       <div className="flex items-center gap-2">
                         <AlertTriangle className={cn(
                           'h-3.5 w-3.5 shrink-0',
-                          issue.severity === 'high' ? 'text-destructive' : issue.severity === 'medium' ? 'text-amber-500' : 'text-muted-foreground',
+                          issue.severity === 'high' ? 'text-destructive' : issue.severity === 'medium' ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground',
                         )} />
                         <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-medium', tagColors[issue.tag] ?? 'bg-muted text-muted-foreground')}>
                           {issueTagLabels[issue.tag] ?? issue.tag.replace('_', ' ')}

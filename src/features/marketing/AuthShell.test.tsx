@@ -91,6 +91,7 @@ describe('AuthShell', () => {
     });
     expect(screen.getByLabelText('auth-form')).toBeInTheDocument();
     expect(screen.getByLabelText('email')).toBeInTheDocument();
+    expect(screen.getByLabelText('auth-form').closest('[data-slot="glass-surface"]')).toBeNull();
   });
 
   it('renders an optional footer slot below the panel', () => {

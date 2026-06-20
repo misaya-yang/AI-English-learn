@@ -51,9 +51,9 @@ export const ThinkingStatusCard = ({ label, language, isStreaming, toolRuns }: T
                 run.status === 'success'
                   ? 'border-[hsl(var(--success)/0.35)] text-[hsl(var(--success))]'
                   : run.status === 'error'
-                    ? 'border-red-300/60 text-red-600 dark:text-red-300'
+                    ? 'border-destructive/35 text-destructive'
                     : run.status === 'rate_limited'
-                      ? 'border-amber-300/60 text-amber-700 dark:text-amber-300'
+                      ? 'border-[hsl(var(--warning)/0.35)] text-[hsl(var(--warning))]'
                       : 'border-border text-muted-foreground';
 
               return (

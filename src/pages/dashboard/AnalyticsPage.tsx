@@ -607,8 +607,8 @@ export default function AnalyticsPage() {
       value: stats.masteredWords.toString(),
       change: `${Math.round((stats.masteredWords / Math.max(1, stats.totalWords)) * 100)}%`,
       icon: Target,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      color: 'text-[hsl(var(--accent-practice))]',
+      bgColor: 'bg-primary/10',
     },
     {
       title: 'Current Streak',
@@ -616,7 +616,7 @@ export default function AnalyticsPage() {
       value: `${streakCurrent} ${copy.stats.streakUnit}`,
       change: streakCurrent > 0 ? copy.stats.streakActive : copy.stats.streakStart,
       icon: Calendar,
-      color: 'text-slate-600',
+      color: 'text-muted-foreground',
       bgColor: 'bg-muted',
     },
     {
@@ -625,7 +625,7 @@ export default function AnalyticsPage() {
       value: xp.total.toString(),
       change: `${copy.stats.levelPrefix} ${level}`,
       icon: CircleGauge,
-      color: 'text-slate-600',
+      color: 'text-muted-foreground',
       bgColor: 'bg-muted',
     },
   ];
@@ -759,11 +759,11 @@ export default function AnalyticsPage() {
 
   const hasPerfectWeek = weeklyData.length >= 7 && weeklyData.every((point) => point.words > 0);
   const badges = [
-    { name: '7-day streak', nameZh: '连续 7 天', detailZh: '按时完成每日学习', detailEn: 'Kept daily study going', icon: Calendar, color: 'text-slate-600', earned: streakCurrent >= 7 },
-    { name: '100 words', nameZh: '累计 100 词', detailZh: '词汇量达到 100', detailEn: 'Reached 100 learned words', icon: BookOpen, color: 'text-slate-600', earned: stats.totalWords >= 100 },
-    { name: 'Full week', nameZh: '完整一周', detailZh: '本周每天都有记录', detailEn: 'Recorded activity every day this week', icon: Calendar, color: 'text-slate-600', earned: hasPerfectWeek },
-    { name: 'Vocabulary milestone', nameZh: '词汇里程碑', detailZh: '已掌握词数达到 50', detailEn: 'Mastered 50 words', icon: Target, color: 'text-slate-600', earned: stats.masteredWords >= 50 },
-    { name: 'Steady learner', nameZh: '稳定学习者', detailZh: '学习记录达到 1000', detailEn: 'Reached 1000 study records', icon: CircleGauge, color: 'text-slate-600', earned: xp.total >= 1000 },
+    { name: '7-day streak', nameZh: '连续 7 天', detailZh: '按时完成每日学习', detailEn: 'Kept daily study going', icon: Calendar, color: 'text-muted-foreground', earned: streakCurrent >= 7 },
+    { name: '100 words', nameZh: '累计 100 词', detailZh: '词汇量达到 100', detailEn: 'Reached 100 learned words', icon: BookOpen, color: 'text-muted-foreground', earned: stats.totalWords >= 100 },
+    { name: 'Full week', nameZh: '完整一周', detailZh: '本周每天都有记录', detailEn: 'Recorded activity every day this week', icon: Calendar, color: 'text-muted-foreground', earned: hasPerfectWeek },
+    { name: 'Vocabulary milestone', nameZh: '词汇里程碑', detailZh: '已掌握词数达到 50', detailEn: 'Mastered 50 words', icon: Target, color: 'text-muted-foreground', earned: stats.masteredWords >= 50 },
+    { name: 'Steady learner', nameZh: '稳定学习者', detailZh: '学习记录达到 1000', detailEn: 'Reached 1000 study records', icon: CircleGauge, color: 'text-muted-foreground', earned: xp.total >= 1000 },
   ];
 
   const formatRiskDueLabel = (hoursUntilDue: number): string => {
@@ -804,7 +804,7 @@ export default function AnalyticsPage() {
           <p className="text-muted-foreground">{copy.headerSubtitle}</p>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-full border-border/65 bg-transparent md:w-[150px]">
             <Calendar className="h-4 w-4 mr-2" />
             <SelectValue placeholder={copy.timeRanges.week} />
           </SelectTrigger>
@@ -895,7 +895,7 @@ export default function AnalyticsPage() {
 
       {/* Charts */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
+        <TabsList className="liquid-glass-control h-auto w-full justify-start overflow-x-auto rounded-full border border-border/60 bg-transparent p-1 sm:w-fit">
           <TabsTrigger value="overview">{copy.tabs.overview}</TabsTrigger>
           <TabsTrigger value="words">{copy.tabs.words}</TabsTrigger>
           <TabsTrigger value="retention">{copy.tabs.retention}</TabsTrigger>
@@ -1288,7 +1288,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
 	                  {isZh ? '最高遗忘风险' : 'Highest forgetting risk'}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">{copy.charts.risk}</p>
@@ -1310,7 +1310,7 @@ export default function AnalyticsPage() {
                             {item.topic}
                           </Badge>
                           {item.isStubborn ? (
-                            <Badge variant="secondary" className="rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                            <Badge variant="secondary" className="rounded-md bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]">
 	                              {isZh ? '需要补强' : 'Reinforce'}
                             </Badge>
                           ) : null}
@@ -1324,9 +1324,9 @@ export default function AnalyticsPage() {
                           className={cn(
                             'rounded-md px-3 py-1',
                             item.riskScore >= 75
-                              ? 'bg-red-500/10 text-red-700 dark:text-red-300'
+                              ? 'bg-destructive/10 text-destructive'
                               : item.riskScore >= 55
-                                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                                ? 'bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]'
                                 : 'bg-[hsl(var(--success)/0.10)] text-[hsl(var(--success))]',
                           )}
                         >
@@ -1433,11 +1433,11 @@ export default function AnalyticsPage() {
                   <p className="text-xs text-muted-foreground">{copy.insights.wordsStrengthened}</p>
                 </div>
 	                <div className="rounded-lg bg-background/50 p-3">
-                  <p className="text-2xl font-bold text-blue-500">{weeklyReport.activeDays}/7</p>
+                  <p className="text-2xl font-bold text-[hsl(var(--accent-practice))]">{weeklyReport.activeDays}/7</p>
                   <p className="text-xs text-muted-foreground">{copy.insights.activeDays}</p>
                 </div>
 	                <div className="rounded-lg bg-background/50 p-3">
-                  <p className="text-2xl font-bold text-slate-600">{weeklyReport.reviewDebtTrend.count}</p>
+                  <p className="text-2xl font-bold text-muted-foreground">{weeklyReport.reviewDebtTrend.count}</p>
                   <p className="text-xs text-muted-foreground">{copy.insights.reviewDebt}</p>
                 </div>
               </div>
@@ -1564,7 +1564,7 @@ export default function AnalyticsPage() {
                     <badge.icon
                       className={cn(
                         'h-6 w-6',
-                        badge.earned ? badge.color : 'text-gray-400'
+                        badge.earned ? badge.color : 'text-muted-foreground'
                       )}
                     />
                   </div>

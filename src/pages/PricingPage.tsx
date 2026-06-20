@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { GlassSurface } from '@/components/ui/glass-surface';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
@@ -234,8 +235,8 @@ export default function PricingPage() {
   return (
     <div className="study-premium-bg min-h-screen bg-background text-foreground">
       {/* Header reuses the shared brand mark so Pricing matches Home / Auth. */}
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-[hsl(var(--surface-raised))]/92 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <header className="sticky top-3 z-30 px-3 sm:px-4">
+        <GlassSurface variant="bar" className="mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-5">
           <BrandMark />
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-1">
@@ -243,7 +244,7 @@ export default function PricingPage() {
               <LanguageSwitcher />
             </div>
             {isAuthenticated ? (
-              <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+              <Button asChild variant="glassPrimary" className="h-9 px-4 text-sm font-medium">
                 <Link to="/dashboard/today">
                   {isZh ? '进入今日' : 'Go to Today'}
                 </Link>
@@ -256,7 +257,7 @@ export default function PricingPage() {
                 >
                   {isZh ? '登录' : 'Sign in'}
                 </Link>
-                <Button asChild className="h-9 rounded-md px-4 text-sm font-medium shadow-sm">
+                <Button asChild variant="glassPrimary" className="h-9 px-4 text-sm font-medium">
                   <Link to="/register">
                     {isZh ? '免费开始' : 'Get started'}
                   </Link>
@@ -264,10 +265,10 @@ export default function PricingPage() {
               </>
             )}
           </div>
-        </div>
+        </GlassSurface>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="max-w-3xl">
           <Badge
             variant="secondary"
@@ -335,12 +336,13 @@ export default function PricingPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 flex items-center justify-start gap-4">
+        <GlassSurface variant="control" className="mt-6 inline-flex items-center justify-start gap-4 px-4 py-2.5">
           <span className={cn('text-sm', !isYearly && 'font-semibold')}>{isZh ? '按月' : 'Monthly'}</span>
           <Switch
             checked={isYearly}
             onCheckedChange={setIsYearly}
             aria-label="Toggle yearly pricing"
+            className="data-[state=unchecked]:bg-muted/70"
           />
           <span className={cn('text-sm', isYearly && 'font-semibold')}>
             {isZh ? '按年' : 'Yearly'}
@@ -351,7 +353,7 @@ export default function PricingPage() {
               {isZh ? '省 20%' : 'Save 20%'}
             </Badge>
           </span>
-        </div>
+        </GlassSurface>
 
         <div className="mt-6 grid max-w-4xl gap-6 sm:grid-cols-2">
           {plans.map((plan) => {
@@ -399,7 +401,7 @@ export default function PricingPage() {
                         <span className="text-sm text-muted-foreground">{isZh ? '/ 月' : '/ month'}</span>
                       </div>
                       {isYearly && plan.yearlyPrice > 0 && (
-                        <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+                        <p className="mt-1 text-xs text-primary">
                           {isZh
                             ? `按年结算（$${(plan.yearlyPrice * 12).toFixed(0)}/年）`
                             : `Billed annually ($${(plan.yearlyPrice * 12).toFixed(0)}/year)`}
@@ -413,7 +415,7 @@ export default function PricingPage() {
                       {plan.features.map((feature) => (
                         <li key={feature.en} className="flex items-start gap-2.5 text-sm">
                           <Check
-                            className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500"
+                            className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary"
                             aria-hidden="true"
                           />
                           <span className="text-foreground">{isZh ? feature.zh : feature.en}</span>
@@ -450,17 +452,17 @@ export default function PricingPage() {
                         // local product intent so we can measure Pro demand.
                         <div
                           data-testid="pricing-pro-coming-soon"
-                          className="rounded-md border border-dashed border-amber-300/70 bg-amber-50/60 p-4 text-center dark:border-amber-400/30 dark:bg-amber-500/[0.08]"
+                          className="rounded-md border border-dashed border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.1)] p-4 text-center"
                         >
-                          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                          <p className="text-sm font-semibold text-[hsl(var(--warning))]">
                             {isZh ? '暂未开放' : 'Coming soon'}
                           </p>
-                          <p className="mt-1 text-xs leading-relaxed text-amber-800/85 dark:text-amber-200/85">
+                          <p className="mt-1 text-xs leading-relaxed text-[hsl(var(--warning))]/85">
                             {isZh
                               ? '专业版将围绕 IELTS 评分、进阶分析、自定义词书和周计划开放；免费版可正常使用。'
                               : "Pro will focus on IELTS scoring, advanced analytics, custom wordbooks, and weekly planning. Free stays available."}
                           </p>
-                          <p className="mt-3 text-xs font-medium text-amber-900 dark:text-amber-200">
+                          <p className="mt-3 text-xs font-medium text-[hsl(var(--warning))]">
                             {isZh ? '结账入口会在真实支付服务接好后出现。' : 'Checkout appears here once a real provider is connected.'}
                           </p>
                           <Button
@@ -482,7 +484,7 @@ export default function PricingPage() {
                               </>
                             )}
                           </Button>
-                          <p className="mt-2 text-[11px] leading-relaxed text-amber-800/80 dark:text-amber-200/75">
+                          <p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--warning))]/80">
                             {isWaitlistedForCycle
                               ? (isZh
                                 ? `已保存${billingCycle === 'yearly' ? '按年' : '按月'}方案意向；不会创建支付会话。`
@@ -516,14 +518,14 @@ export default function PricingPage() {
         {!isCheckoutLive && (
           <div
             role="status"
-            className="mt-8 flex max-w-4xl flex-col gap-2 rounded-lg border border-amber-300/70 bg-amber-50/70 px-5 py-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:gap-3 dark:border-amber-400/30 dark:bg-amber-500/[0.08] dark:text-amber-200"
+            className="mt-8 flex max-w-4xl flex-col gap-2 rounded-lg border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.1)] px-5 py-4 text-sm text-[hsl(var(--warning))] sm:flex-row sm:items-center sm:gap-3"
           >
-            <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
+            <ShieldAlert className="h-5 w-5 flex-shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" />
             <div className="space-y-1">
               <p className="font-semibold">
                 {isZh ? '专业版订阅暂未开放' : 'Pro checkout is not yet open'}
               </p>
-              <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
+              <p className="text-xs text-[hsl(var(--warning))]/90">
                 {isZh ? (
                   <>
                     我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
@@ -550,7 +552,7 @@ export default function PricingPage() {
                 <CardContent className="p-4 sm:p-5">
                   <h3 className="flex items-start gap-2 text-sm font-semibold">
                     <HelpCircle
-                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500"
+                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary"
                       aria-hidden="true"
                     />
                     <span>

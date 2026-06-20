@@ -5,11 +5,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const authState = vi.hoisted(() => ({
   authenticated: false,
+  loading: false,
   get isAuthenticated() {
     return this.authenticated;
   },
+  get isLoading() {
+    return this.loading;
+  },
   setAuthenticated(value: boolean) {
     this.authenticated = value;
+  },
+  setLoading(value: boolean) {
+    this.loading = value;
   },
   login: vi.fn(),
   register: vi.fn(),
@@ -82,6 +89,7 @@ describe('auth pages i18n surfaces', () => {
     vi.clearAllMocks();
     i18nState.language = 'en';
     authState.setAuthenticated(false);
+    authState.setLoading(false);
     authState.startDemoSession.mockResolvedValue({ success: true });
     authState.updateUserProfile.mockResolvedValue(true);
   });
@@ -177,6 +185,16 @@ describe('auth pages i18n surfaces', () => {
     expect(screen.getByText('Beginner')).toBeInTheDocument();
     expect(screen.queryByText('手动选择')).not.toBeInTheDocument();
     expect(screen.queryByText('基础词汇和表达')).not.toBeInTheDocument();
+  });
+
+  it('keeps onboarding on a loading panel while auth is initializing', () => {
+    authState.setAuthenticated(false);
+    authState.setLoading(true);
+
+    renderPage(<OnboardingPage />);
+
+    expect(screen.getByRole('heading', { name: 'Preparing setup' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Confirming your sign-in status');
   });
 
   it('renders onboarding follow-up steps in the active language only', () => {
