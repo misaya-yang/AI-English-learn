@@ -619,6 +619,8 @@ export default function DashboardLayout() {
     </DropdownMenu>
   );
 
+  const mobileMainHeightClass = 'h-[calc(100dvh_-_5.75rem_-_env(safe-area-inset-bottom))] flex-none';
+
   const standardMobileSheetBody = (
     <div className="flex h-full flex-col gap-4 px-1 text-sidebar-foreground">
       <div className="border-y border-sidebar-border/60 py-3">
@@ -716,7 +718,7 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="hidden h-[100dvh] min-h-0 w-[218px] flex-col border-r border-sidebar-border/55 bg-sidebar px-2.5 py-3 text-sidebar-foreground lg:flex">
+        <aside className="hidden h-[100dvh] min-h-0 w-[218px] flex-col border-r border-border/30 bg-transparent px-2.5 py-3 text-sidebar-foreground lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
@@ -802,8 +804,8 @@ export default function DashboardLayout() {
         <main
           id="main-content"
           className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-hidden',
-            isMobile && 'mb-[calc(5.75rem+env(safe-area-inset-bottom))]',
+            'flex min-h-0 flex-col overflow-hidden',
+            isMobile ? mobileMainHeightClass : 'flex-1',
           )}
         >
           <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-background/80">
@@ -876,7 +878,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background">
-      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[284px] flex-col border-r border-sidebar-border/55 bg-sidebar px-3 py-3 text-sidebar-foreground lg:flex">
+      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[284px] flex-col border-r border-border/30 bg-transparent px-3 py-3 text-sidebar-foreground lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-primary">
             <BookText className="h-5 w-5" />
@@ -999,8 +1001,8 @@ export default function DashboardLayout() {
 
       <main
         className={cn(
-          'flex min-h-0 flex-1 flex-col overflow-hidden',
-          isMobile && !isChatRoute && 'mb-[calc(5.75rem+env(safe-area-inset-bottom))]',
+          'flex min-h-0 flex-col overflow-hidden',
+          isMobile && !isChatRoute ? mobileMainHeightClass : 'flex-1',
         )}
       >
         <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-[hsl(var(--surface-raised))]/80">

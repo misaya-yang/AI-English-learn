@@ -288,7 +288,7 @@
   }
 
   .premium-sidebar {
-    background: hsl(var(--sidebar-background));
+    background: transparent;
   }
 
   .premium-side-card {

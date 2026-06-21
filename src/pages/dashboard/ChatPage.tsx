@@ -179,7 +179,7 @@ export default function ChatPage() {
     setInput((prev) => prev ? `${prev} ${text}` : text);
   }, []);
   const { isListening: voiceListening, isSupported: voiceSupported, toggle: toggleVoice } = useSpeechRecognition(handleVoiceTranscript);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [toolsExpanded, setToolsExpanded] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>('study');

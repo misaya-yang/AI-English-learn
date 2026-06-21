@@ -674,7 +674,7 @@ export default function OnboardingPage() {
 
         {renderStep()}
 
-        <div className="sticky bottom-3 z-10 -mx-1 flex flex-col-reverse gap-3 rounded-full bg-background/84 p-1.5 backdrop-blur-xl sm:static sm:mx-0 sm:flex-row sm:justify-between sm:rounded-none sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+        <div className="-mx-1 flex flex-col-reverse gap-3 rounded-[1.75rem] bg-muted/35 p-1.5 sm:mx-0 sm:flex-row sm:justify-between sm:rounded-none sm:bg-transparent sm:p-0">
           <Button
             type="button"
 	            variant="glass"
