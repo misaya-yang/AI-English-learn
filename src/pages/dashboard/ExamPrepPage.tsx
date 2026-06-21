@@ -290,7 +290,7 @@ export default function ExamPrepPage() {
   }, [jumpToVocabularyByTag, topWeakTag]);
 
   return (
-    <div className="mx-auto w-full max-w-[1680px] space-y-6 px-2 pb-10 sm:px-4 lg:px-6">
+    <div className="learning-open-route mx-auto w-full max-w-[1680px] space-y-6 px-2 pb-10 sm:px-4 lg:px-6">
       <HeroSummary
         plan={plan}
         streakDays={streakDays}
@@ -311,7 +311,7 @@ export default function ExamPrepPage() {
         isBusy={runtime.loadingStage !== 'idle'}
       />
 
-      <section className="liquid-glass-bar rounded-2xl border border-border bg-card/80 p-3">
+      <section className="border-y border-border/24 py-3">
         <div className="grid gap-2 md:grid-cols-4">
           {sprintSteps.map((step, index) => {
             const active = runtime.workspaceView === step.id;
@@ -320,10 +320,10 @@ export default function ExamPrepPage() {
                 key={step.id}
                 type="button"
                 onClick={() => runtime.setWorkspaceView(step.id)}
-                className={`flex min-h-[112px] flex-col items-start justify-between rounded-2xl border p-3 text-left transition hover:border-primary/40 hover:bg-primary/5 ${
+                className={`flex min-h-[112px] flex-col items-start justify-between border-l p-3 text-left transition hover:bg-primary/5 ${
                   active
-                    ? 'border-primary/45 bg-primary/10 text-foreground shadow-sm'
-                    : 'border-border bg-background/70 text-muted-foreground'
+                    ? 'border-primary/45 bg-primary/10 text-foreground'
+                    : 'border-border/24 bg-transparent text-muted-foreground'
                 }`}
               >
                 <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">

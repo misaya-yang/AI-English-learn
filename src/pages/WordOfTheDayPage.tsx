@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
@@ -306,8 +305,7 @@ export default function WordOfTheDayPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="overflow-hidden rounded-md border-border bg-card">
-        <CardContent className="p-5 md:p-6">
+      <section className="border-y border-border/20 py-5 md:py-6">
           {/* Word Header */}
           <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
@@ -325,13 +323,13 @@ export default function WordOfTheDayPage() {
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" className="h-9 w-9 rounded-md" onClick={() => playAudio(word.word)}>
+              <Button variant="glass" size="icon" className="h-11 w-11 rounded-full" onClick={() => playAudio(word.word)}>
                 <Volume2 className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
-                size="icon"
-                className="h-9 w-9 rounded-md"
+	                variant="glass"
+	                size="icon"
+	                className="h-11 w-11 rounded-full"
                 aria-label={copy.shareButton}
                 title={copy.shareButton}
                 data-testid="word-share-card-button"
@@ -358,7 +356,7 @@ export default function WordOfTheDayPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold mb-3">{copy.definitionHeading}</h3>
-                    <div className="mb-4 rounded-md bg-muted p-4">
+	                    <div className="mb-4 border-l border-border/20 bg-muted/35 px-4 py-3">
                       <p className="text-base">{word.definition}</p>
                       <p className="text-muted-foreground mt-1">{word.definitionZh}</p>
                     </div>
@@ -370,7 +368,7 @@ export default function WordOfTheDayPage() {
                 <div className="space-y-4">
                   <h3 className="font-semibold mb-3">{copy.examplesHeading}</h3>
                   {word.examples.map((ex, index) => (
-                    <div key={index} className="mb-4 rounded-md bg-muted p-4">
+	                    <div key={index} className="mb-4 border-l border-border/20 bg-muted/35 px-4 py-3">
                       <p className="mb-2 text-base">"{ex.en}"</p>
                       <p className="text-muted-foreground">{ex.zh}</p>
                       <Button
@@ -448,8 +446,7 @@ export default function WordOfTheDayPage() {
               </TabsContent>
             </ScrollArea>
           </Tabs>
-        </CardContent>
-      </Card>
+	      </section>
     </motion.div>
   );
 
@@ -491,52 +488,44 @@ export default function WordOfTheDayPage() {
 
         {/* CTA */}
         <div className="mt-6 flex flex-col items-center gap-4">
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             {isAuthenticated ? (
               <>
-                <Button
-                  type="button"
-                  size="lg"
-                  variant="outline"
-                  className="h-11 rounded-md"
-                  onClick={handleSaveWord}
-                >
-                  <BookmarkPlus className="h-4 w-4 mr-2" />
-                  {savedWord ? copy.savedWord : copy.saveWord}
-                </Button>
-                <Button asChild size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
+                <Button asChild size="lg" className="h-11 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
                   <Link to={practiceHref} onClick={handlePracticeWord}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     {copy.practiceWord}
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="h-11 rounded-md">
-                  <Link to={authCoachHref}>
-                    <MessageCircleMore className="h-4 w-4 mr-2" />
+                <div className="flex flex-wrap justify-center gap-4 text-sm font-medium">
+                  <button type="button" className="inline-flex items-center text-muted-foreground hover:text-foreground" onClick={handleSaveWord}>
+                    <BookmarkPlus className="mr-1.5 h-4 w-4" />
+                    {savedWord ? copy.savedWord : copy.saveWord}
+                  </button>
+                  <Link className="inline-flex items-center text-muted-foreground hover:text-foreground" to={authCoachHref}>
+                    <MessageCircleMore className="mr-1.5 h-4 w-4" />
                     {copy.coachWord}
                   </Link>
-                </Button>
+                </div>
               </>
             ) : (
               <>
-                <Button asChild size="lg" variant="outline" className="h-11 rounded-md">
-                  <Link to={buildAuthRedirect('/word-of-the-day', '/register')}>
-                    <BookmarkPlus className="h-4 w-4 mr-2" />
-                    {copy.saveWord}
-                  </Link>
-                </Button>
-                <Button asChild size="lg" className="h-11 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
+                <Button asChild size="lg" className="h-11 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
                   <Link to={buildAuthRedirect(practiceHref, '/register')}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     {copy.startFree}
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="h-11 rounded-md">
-                  <Link to={authCoachHref}>
-                    <MessageCircleMore className="h-4 w-4 mr-2" />
+                <div className="flex flex-wrap justify-center gap-4 text-sm font-medium">
+                  <Link className="inline-flex items-center text-muted-foreground hover:text-foreground" to={buildAuthRedirect('/word-of-the-day', '/register')}>
+                    <BookmarkPlus className="mr-1.5 h-4 w-4" />
+                    {copy.saveWord}
+                  </Link>
+                  <Link className="inline-flex items-center text-muted-foreground hover:text-foreground" to={authCoachHref}>
+                    <MessageCircleMore className="mr-1.5 h-4 w-4" />
                     {copy.coachWord}
                   </Link>
-                </Button>
+                </div>
               </>
             )}
           </div>
@@ -557,19 +546,20 @@ export default function WordOfTheDayPage() {
           
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {paginatedWords.map((item) => (
-              <Card
-                key={item.date}
-                className="cursor-pointer rounded-lg border-border bg-card transition-shadow hover:shadow-sm"
-                onClick={() => handlePreviousWordClick(item.date, item.word)}
-              >
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground mb-1">{item.date}</p>
-                  <p className="font-semibold">{item.word.word}</p>
-                  <Badge variant="outline" className="mt-2 text-xs">
-                    {item.word.level}
-                  </Badge>
-                </CardContent>
-              </Card>
+	              <button
+	                type="button"
+	                key={item.date}
+	                className="border-t border-border/20 py-3 text-left transition-colors hover:bg-muted/30"
+	                onClick={() => handlePreviousWordClick(item.date, item.word)}
+	              >
+	                <div className="px-1">
+	                  <p className="text-xs text-muted-foreground mb-1">{item.date}</p>
+	                  <p className="font-semibold">{item.word.word}</p>
+	                  <Badge variant="outline" className="mt-2 text-xs">
+	                    {item.word.level}
+	                  </Badge>
+	                </div>
+	              </button>
             ))}
           </div>
 

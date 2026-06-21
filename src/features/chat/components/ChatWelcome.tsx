@@ -27,9 +27,9 @@ export function ChatWelcome({
   const isZh = lang.startsWith('zh');
 
   return (
-    <div className="premium-panel-soft rounded-md border border-border bg-card p-4">
+    <div className="py-2">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <MessageSquare className="h-4 w-4" />
         </div>
         <div className="min-w-0">
@@ -53,9 +53,9 @@ export function ChatWelcome({
           <button
             key={prompt.text}
             onClick={() => onPromptClick(prompt.text)}
-            className="flex items-start gap-3 rounded-md border border-border bg-background/70 p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
+            className="flex min-h-11 items-start gap-3 border-t border-border/20 py-3 text-left transition-colors hover:bg-primary/5"
           >
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
               <prompt.icon className="h-4 w-4" />
             </div>
             <div>

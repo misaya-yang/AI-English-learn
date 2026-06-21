@@ -18,8 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { StreakCounter } from '@/components/StreakCounter';
 import { XPProgressBar } from '@/components/XPProgressBar';
@@ -44,11 +42,15 @@ import {
   LogOut,
   Menu,
   MessageCircleMore,
+  MoreHorizontal,
+  Moon,
   Search,
   Settings,
   Shield,
+  Sun,
   Target,
   User,
+  Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
@@ -434,10 +436,10 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group relative flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 transition-colors duration-150',
+            'group relative flex items-center gap-2.5 rounded-md px-2.5 py-2 transition-colors duration-150',
             active
-              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-              : 'text-sidebar-foreground/72 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
+              ? 'bg-sidebar-accent/58 text-sidebar-foreground'
+              : 'text-sidebar-foreground/70 hover:text-sidebar-foreground',
           )}
         >
           <span
@@ -448,10 +450,10 @@ export default function DashboardLayout() {
           />
           <div
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-md border transition-colors',
+              'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
               active
-                ? 'border-sidebar-primary/30 bg-sidebar-accent text-sidebar-primary'
-                : 'border-sidebar-border/60 bg-sidebar-accent/30 text-sidebar-foreground/55 group-hover:text-sidebar-foreground',
+                ? 'text-sidebar-primary'
+                : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground',
             )}
           >
             <Icon className="h-4 w-4" />
@@ -480,10 +482,10 @@ export default function DashboardLayout() {
       <Link key={item.path} to={item.path}>
         <div
           className={cn(
-            'group relative overflow-hidden rounded-md border border-transparent px-2.5 py-2 transition-colors duration-150',
+            'group relative overflow-hidden rounded-md px-2.5 py-2 transition-colors duration-150',
             active
-              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-              : 'text-sidebar-foreground/72 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
+              ? 'bg-sidebar-accent/58 text-sidebar-foreground'
+              : 'text-sidebar-foreground/70 hover:text-sidebar-foreground',
           )}
         >
           <span
@@ -495,10 +497,10 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-md border transition-colors',
+                'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
                 active
-                  ? 'border-sidebar-primary/30 bg-sidebar-accent text-sidebar-primary'
-                  : 'border-sidebar-border/60 bg-sidebar-accent/30 text-sidebar-foreground/55 group-hover:text-sidebar-foreground',
+                  ? 'text-sidebar-primary'
+                  : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground',
               )}
             >
               <Icon className="h-4 w-4" />
@@ -526,11 +528,11 @@ export default function DashboardLayout() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="liquid-glass-control liquid-glass-interactive h-auto border border-current/15 bg-transparent px-1.5 py-1.5 hover:bg-current/5"
+          className="h-auto rounded-full border border-transparent bg-transparent px-1.5 py-1.5 text-foreground hover:bg-muted"
           aria-label={currentLang === 'zh' ? '打开账号菜单' : 'Open account menu'}
         >
             <Avatar className="h-9 w-9 rounded-full">
-            <AvatarFallback className="rounded-full bg-primary/10 text-primary">
+            <AvatarFallback className="rounded-full bg-muted text-foreground">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
@@ -563,9 +565,63 @@ export default function DashboardLayout() {
     </DropdownMenu>
   );
 
+  const topbarAction = isLearningRoute
+    ? learningPrimaryAction
+    : {
+        href: '/dashboard/today',
+        label: copy.continue,
+      };
+
+  const renderTopbarControlsMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="liquid-glass-control liquid-glass-interactive h-11 min-h-11 w-11 min-w-11 border border-border/55 bg-transparent hover:bg-muted sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
+          aria-label={currentLang === 'zh' ? '打开页面操作' : 'Open page actions'}
+        >
+          <MoreHorizontal className="h-5 w-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem asChild>
+          <Link to={topbarAction.href}>
+            <ClipboardList className="mr-2 h-4 w-4" />
+            {topbarAction.label}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setSearchOpen(true)}>
+          <Search className="mr-2 h-4 w-4" />
+          {currentLang === 'zh' ? '搜索' : 'Search'}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>{currentLang === 'zh' ? '外观' : 'Appearance'}</DropdownMenuLabel>
+        <DropdownMenuItem onSelect={() => setTheme('light')} className={resolvedTheme === 'light' ? 'bg-muted' : ''}>
+          <Sun className="mr-2 h-4 w-4" />
+          {currentLang === 'zh' ? '浅色' : 'Light'}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setTheme('dark')} className={resolvedTheme === 'dark' ? 'bg-muted' : ''}>
+          <Moon className="mr-2 h-4 w-4" />
+          {currentLang === 'zh' ? '深色' : 'Dark'}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>{currentLang === 'zh' ? '语言' : 'Language'}</DropdownMenuLabel>
+        <DropdownMenuItem onSelect={() => changeLanguage('zh')} className={currentLang === 'zh' ? 'bg-muted' : ''}>
+          <Globe className="mr-2 h-4 w-4" />
+          中文
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => changeLanguage('en')} className={currentLang === 'en' ? 'bg-muted' : ''}>
+          <Globe className="mr-2 h-4 w-4" />
+          English
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   const standardMobileSheetBody = (
     <div className="flex h-full flex-col gap-4 px-1 text-sidebar-foreground">
-      <div className="rounded-md border border-sidebar-border bg-sidebar-accent p-3">
+      <div className="border-y border-sidebar-border/60 py-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 rounded-md">
             <AvatarFallback className="rounded-md">{avatarInitial}</AvatarFallback>
@@ -583,7 +639,7 @@ export default function DashboardLayout() {
             <span>{copy.todayMissionProgress}</span>
             <span>{missionProgress}%</span>
           </div>
-          <Progress value={missionProgress} className="h-2" />
+          <Progress value={missionProgress} className="h-1 bg-sidebar-border/35 [&_[data-slot=progress-indicator]]:bg-sidebar-primary" />
         </div>
       </div>
 
@@ -597,24 +653,16 @@ export default function DashboardLayout() {
         {toolNav.map((item) => renderStandardNavItem(item))}
       </div>
 
-      <div className="mt-auto space-y-2 pb-4">
-        <Button className="w-full justify-start rounded-md" asChild>
-          <Link to="/dashboard/today">
-            <ClipboardList className="mr-2 h-4 w-4" />
-            {copy.continueTodayMission}
-          </Link>
-        </Button>
-        <Button variant="outline" className="w-full justify-start rounded-md" onClick={() => logout()}>
-          <LogOut className="mr-2 h-4 w-4" />
-          {copy.logout}
-        </Button>
+      <div className="mt-auto flex items-center justify-between border-t border-sidebar-border/70 pb-4 pt-3">
+        {renderTopbarControlsMenu()}
+        {learningAccountMenu}
       </div>
     </div>
   );
 
   const learningMobileSheetBody = (
     <div className="flex h-full flex-col gap-6 bg-sidebar text-sidebar-foreground">
-      <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 p-3">
+      <div className="border-y border-sidebar-border/60 py-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 rounded-md">
             <AvatarFallback className="rounded-md bg-sidebar-primary/14 text-sidebar-primary">
@@ -658,35 +706,8 @@ export default function DashboardLayout() {
       </div>
 
       <div className="mt-auto flex items-center justify-between border-t border-sidebar-border pt-4">
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <div className="liquid-glass-control inline-flex border border-sidebar-border/70 p-1">
-            <button
-              type="button"
-              onClick={() => changeLanguage('en')}
-              className={cn(
-                'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                currentLang === 'en' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => changeLanguage('zh')}
-              className={cn(
-                'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                currentLang === 'zh' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              中
-            </button>
-          </div>
-        </div>
-        <Button variant="outline" className="rounded-md" onClick={() => logout()}>
-          <LogOut className="mr-2 h-4 w-4" />
-          {copy.logout}
-        </Button>
+        {renderTopbarControlsMenu()}
+        {learningAccountMenu}
       </div>
     </div>
   );
@@ -695,9 +716,9 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="liquid-glass-panel hidden h-[100dvh] min-h-0 w-[218px] flex-col rounded-none border-y-0 border-l-0 border-r border-sidebar-border/60 bg-sidebar/80 px-2.5 py-3 text-sidebar-foreground lg:flex">
+        <aside className="hidden h-[100dvh] min-h-0 w-[218px] flex-col border-r border-sidebar-border/55 bg-sidebar px-2.5 py-3 text-sidebar-foreground lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-border bg-sidebar-accent text-sidebar-primary">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
@@ -725,12 +746,12 @@ export default function DashboardLayout() {
           </div>
 
           <ScrollArea
-            type="always"
+            type="hover"
             className={cn(
               'mt-4 min-h-0 flex-1 pr-2',
-              '[&_[data-slot=scroll-area-scrollbar]]:w-3',
-              '[&_[data-slot=scroll-area-thumb]]:bg-border/90',
-              'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/45',
+              '[&_[data-slot=scroll-area-scrollbar]]:w-1.5',
+              '[&_[data-slot=scroll-area-thumb]]:bg-border/45',
+              'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/35',
             )}
           >
             <div className="space-y-5 pb-4">
@@ -790,7 +811,7 @@ export default function DashboardLayout() {
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-md lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
+                    <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-md sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
@@ -814,42 +835,7 @@ export default function DashboardLayout() {
               </div>
 
               <div className="flex items-center gap-2 lg:gap-3">
-                <div className="liquid-glass-control hidden items-center border border-border/60 p-1 sm:inline-flex">
-                  <button
-                    type="button"
-                    onClick={() => changeLanguage('en')}
-                    className={cn(
-                      'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                      currentLang === 'en' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    EN
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => changeLanguage('zh')}
-                    className={cn(
-                      'rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                      currentLang === 'zh' ? 'bg-primary/[0.12] text-primary' : 'text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    中
-                  </button>
-                </div>
-                <Button variant="glass" className="hidden sm:inline-flex" asChild>
-                  <Link to={learningPrimaryAction.href}>{learningPrimaryAction.label}</Link>
-                </Button>
-                <ThemeToggle />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title="Search (⌘K)"
-                  aria-label={currentLang === 'zh' ? '打开搜索' : 'Open search'}
-                  className="liquid-glass-control liquid-glass-interactive border border-border/60 bg-transparent hover:bg-muted"
-                  onClick={() => setSearchOpen(true)}
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
+                {renderTopbarControlsMenu()}
                 {learningAccountMenu}
               </div>
             </div>
@@ -890,9 +876,9 @@ export default function DashboardLayout() {
 
   return (
     <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background">
-      <aside className="premium-sidebar liquid-glass-panel hidden h-[100dvh] min-h-0 w-[284px] flex-col rounded-none border-y-0 border-l-0 border-r border-sidebar-border/60 bg-sidebar/80 px-3 py-3 text-sidebar-foreground lg:flex">
+      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[284px] flex-col border-r border-sidebar-border/55 bg-sidebar px-3 py-3 text-sidebar-foreground lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-primary/20 bg-sidebar-primary text-sidebar-primary-foreground">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-primary">
             <BookText className="h-5 w-5" />
           </div>
           <div>
@@ -902,23 +888,22 @@ export default function DashboardLayout() {
         </Link>
 
         <ScrollArea
-          type="always"
+          type="hover"
           className={cn(
             'mt-4 min-h-0 flex-1 pr-2',
-            '[&_[data-slot=scroll-area-scrollbar]]:w-3',
+            '[&_[data-slot=scroll-area-scrollbar]]:w-1.5',
             '[&_[data-slot=scroll-area-scrollbar]]:rounded-full',
-            '[&_[data-slot=scroll-area-thumb]]:bg-border/90',
-            '[&_[data-slot=scroll-area-thumb]]:shadow-sm',
-            'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/45',
+            '[&_[data-slot=scroll-area-thumb]]:bg-border/45',
+            'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/35',
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-3">
+            <div className="border-y border-sidebar-border/60 py-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="mt-1 text-base font-semibold">{copy.continueTodayHeading}</p>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-primary/20 bg-sidebar-primary/[0.12] text-sidebar-primary">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-primary">
                   <ClipboardList className="h-4 w-4" />
                 </div>
               </div>
@@ -932,20 +917,21 @@ export default function DashboardLayout() {
                   <span>{copy.taskProgress}</span>
                   <span>{missionCompleted}/{missionTotal || 3}</span>
                 </div>
-                <Progress value={missionProgress} className="h-2" />
+                <Progress value={missionProgress} className="h-1 bg-sidebar-border/35 [&_[data-slot=progress-indicator]]:bg-sidebar-primary" />
               </div>
-              <Button className="mt-4 w-full rounded-md" asChild>
-                <Link to="/dashboard/today">
-                  {copy.todayPlan}
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <Link
+                to="/dashboard/today"
+                className="mt-4 flex min-h-10 items-center justify-between border-y border-sidebar-border/70 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:text-sidebar-primary"
+              >
+                <span>{copy.todayPlan}</span>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
             </div>
 
-            <div className="rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-3 space-y-3">
+            <div className="space-y-3 border-t border-sidebar-border/60 pt-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
-                <Badge variant="outline" className="rounded-md border-sidebar-border bg-sidebar-accent text-sidebar-foreground">
+                <Badge variant="outline" className="rounded-md border-sidebar-border/60 bg-transparent text-sidebar-foreground">
                   {isZh ? '阶段' : 'Level'} {xp?.level || 1}
                 </Badge>
               </div>
@@ -964,7 +950,7 @@ export default function DashboardLayout() {
           </div>
         </ScrollArea>
 
-        <div className="mt-3 rounded-md border border-sidebar-border/70 bg-sidebar-accent/70 px-3 py-2.5">
+        <div className="mt-3 border-t border-sidebar-border/60 px-1 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -975,9 +961,9 @@ export default function DashboardLayout() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-md px-2">
-                  <Avatar className="h-9 w-9 rounded-md">
-                    <AvatarFallback className="rounded-md">{avatarInitial}</AvatarFallback>
+                <Button variant="ghost" className="rounded-full px-1.5">
+                  <Avatar className="h-9 w-9 rounded-full">
+                    <AvatarFallback className="rounded-full bg-muted text-foreground">{avatarInitial}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -1022,7 +1008,7 @@ export default function DashboardLayout() {
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-md lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
+                  <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-md sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -1046,26 +1032,17 @@ export default function DashboardLayout() {
             </div>
 
             <div className="flex items-center gap-2 lg:gap-3">
-              {!isChatRoute ? (
-                <Button variant="glass" className="hidden lg:flex" asChild>
-                  <Link to="/dashboard/today">
-                    <ClipboardList className="mr-2 h-4 w-4" />
-                    {copy.continue}
-                  </Link>
-                </Button>
-              ) : null}
-              <ThemeToggle />
-              <LanguageSwitcher />
+              {renderTopbarControlsMenu()}
             </div>
           </div>
         </header>
 
-        <div className={cn('flex-1 min-h-0', isChatRoute ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden scroll-pb-[calc(7rem+env(safe-area-inset-bottom))]')}>
+        <div className={cn('flex-1 min-h-0', isChatRoute ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden scroll-pb-[calc(9rem+env(safe-area-inset-bottom))]')}>
           <div
             className={cn(
               'mx-auto w-full',
               isChatRoute ? 'h-full max-w-none' : 'max-w-[1360px] px-5 py-6 lg:px-10 lg:py-8',
-              isMobile && !isChatRoute && 'pb-[calc(7rem+env(safe-area-inset-bottom))]',
+              isMobile && !isChatRoute && 'pb-[calc(9rem+env(safe-area-inset-bottom))]',
             )}
           >
             <Outlet />

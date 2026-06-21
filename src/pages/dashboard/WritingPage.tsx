@@ -99,12 +99,12 @@ export default function WritingPage() {
   ) : null;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+    <div className="learning-open-route mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       {writingRecap}
 
       <motion.section
         {...motionPresets.fadeIn}
-        className="rounded-2xl border border-border bg-card p-4 sm:p-5"
+        className="learning-open-hero pb-5"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
@@ -120,7 +120,7 @@ export default function WritingPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="learning-open-panel py-1">
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
                   <CurrentTypeIcon className="h-5 w-5" />
@@ -143,19 +143,19 @@ export default function WritingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-background p-4">
+          <div className="learning-open-panel py-1">
             <p className="text-xs font-medium text-muted-foreground">
               {isZh ? '修改维度' : 'Revision dimensions'}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {rubricPreview.map((item) => (
-                <div key={item.label} className="rounded-xl border border-border bg-card p-3">
+                <div key={item.label} className="border-l border-border/24 px-3 py-2">
                   <p className="text-sm font-semibold text-foreground">{item.label}</p>
                   <p className="mt-2 text-xs text-muted-foreground">{item.value}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 p-4">
+            <div className="mt-4 border-l border-primary/34 bg-transparent px-4 py-2">
               <p className="text-sm font-semibold text-foreground">
                 {gradeResult
                   ? (isZh ? `当前得分 ${gradeResult.overallScore}/100` : `Current score ${gradeResult.overallScore}/100`)

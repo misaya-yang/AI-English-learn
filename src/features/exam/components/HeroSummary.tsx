@@ -60,7 +60,7 @@ export function HeroSummary({
     <motion.header
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-md border border-border bg-card text-card-foreground p-4 sm:p-5"
+      className="relative overflow-hidden border-b border-border/20 pb-5 text-card-foreground"
     >
       <div className="space-y-4">
         {/* Status badges row */}
@@ -88,7 +88,7 @@ export function HeroSummary({
         {/* Key metrics row */}
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Band progress */}
-          <div className="rounded-md border border-[hsl(var(--accent-exam)/0.24)] bg-[hsl(var(--accent-exam)/0.08)] p-4">
+          <div className="border-l border-[hsl(var(--accent-exam)/0.34)] px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">目标 Band</p>
@@ -98,7 +98,7 @@ export function HeroSummary({
                   {targetBand.toFixed(1)}
                 </p>
               </div>
-              <span className="rounded-md border border-[hsl(var(--accent-exam)/0.28)] bg-[hsl(var(--accent-exam)/0.12)] px-3 py-1 text-sm font-semibold text-foreground">
+              <span className="rounded-full bg-[hsl(var(--accent-exam)/0.12)] px-3 py-1 text-sm font-semibold text-foreground">
                 {targetProgress}%
               </span>
             </div>
@@ -107,7 +107,7 @@ export function HeroSummary({
           </div>
 
           {/* Current route */}
-          <div className="rounded-md border border-border/70 bg-muted/20 p-4">
+          <div className="border-l border-border/20 px-4 py-3">
             <p className="text-xs text-muted-foreground">当前路线</p>
             <p className="mt-2 text-base font-semibold">{selectedTrackTitle || '先选择一个目标轨道'}</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -145,7 +145,7 @@ export function HeroSummary({
             total={quotaTotal.microLessonsPerDay}
           />
           <Link to="/pricing">
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="sm" className="px-2 text-xs text-muted-foreground hover:text-foreground">
               查看方案 <ArrowUpRight className="ml-0.5 h-3 w-3" />
             </Button>
           </Link>
@@ -153,10 +153,10 @@ export function HeroSummary({
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onContinueWriting}>
+          <Button className="rounded-full" onClick={onContinueWriting}>
             继续今日写作
           </Button>
-          <Button variant="outline" onClick={onStartSimulation} disabled={isBusy}>
+          <Button variant="glass" onClick={onStartSimulation} disabled={isBusy}>
             <Target className="mr-1.5 h-4 w-4" /> 开始一次完整仿真
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={onShowWeakness}>

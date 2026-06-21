@@ -416,12 +416,12 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
 
   return (
     <div className={cn(
-      'rounded-2xl border p-4 transition-all duration-300',
+      'border-t px-1 py-4 transition-all duration-300',
       !submitted
-        ? 'border-border bg-card'
+        ? 'border-border/24 bg-transparent'
         : isCorrect
-          ? 'border-primary bg-primary/10'
-          : 'border-destructive/25 bg-destructive/5',
+          ? 'border-primary/40 bg-primary/10 px-4'
+          : 'border-destructive/25 bg-destructive/5 px-4',
     )}>
       {/* Question header */}
       <div className="flex items-start gap-3 mb-3">
@@ -595,8 +595,8 @@ export default function ListeningPage() {
 
   if (phase === 'select') {
     return (
-      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <div className="learning-open-route mx-auto max-w-5xl space-y-6 px-4 py-6">
+        <section className="learning-open-hero pb-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
             <div className="space-y-4">
               <div>
@@ -611,7 +611,7 @@ export default function ListeningPage() {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="learning-open-panel py-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <LevelBadge level={featuredListening.level} />
                   <span className="text-xs text-muted-foreground">{featuredListening.topic}</span>
@@ -627,7 +627,7 @@ export default function ListeningPage() {
               </Button>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="learning-open-panel py-1">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
@@ -647,7 +647,7 @@ export default function ListeningPage() {
                   { label: isZh ? '题量' : 'Questions', value: featuredListening.questions.length },
                   { label: isZh ? '主题' : 'Topic', value: featuredListening.topic },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border bg-card px-3 py-2">
+                    <div key={item.label} className="border-l border-border/24 px-3 py-2">
                     <p className="text-[11px] text-muted-foreground">{item.label}</p>
                     <p className="mt-1 truncate text-sm font-semibold text-foreground">{item.value}</p>
                   </div>
@@ -679,7 +679,7 @@ export default function ListeningPage() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleSelect(passage)}
-              className="w-full rounded-2xl border border-border bg-card p-4 text-left transition-all hover:border-primary/30 hover:bg-muted/70 hover:shadow-sm"
+              className="w-full border-t border-border/24 py-4 text-left transition-colors hover:bg-muted/20"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -724,7 +724,7 @@ export default function ListeningPage() {
 
   if (phase === 'listening' && selected) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
+      <div className="learning-open-route mx-auto max-w-2xl space-y-6 px-4 py-6">
         {/* Back button */}
         <button
           onClick={handleReset}
@@ -734,7 +734,7 @@ export default function ListeningPage() {
         </button>
 
         {/* Passage info */}
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="border-b border-border/24 pb-5">
           <div className="flex items-center gap-2 mb-3">
             <LevelBadge level={selected.level} />
             <span className="text-xs text-muted-foreground">{selected.topic}</span>
@@ -744,7 +744,7 @@ export default function ListeningPage() {
         </div>
 
         {/* Audio player */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="border-y border-border/24 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Headphones className="h-5 w-5 text-primary" />
@@ -819,7 +819,7 @@ export default function ListeningPage() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 rounded-2xl border border-border bg-muted p-4">
+                <div className="mt-3 border-l border-border/24 pl-4">
                   <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                     {selected.transcript}
                   </p>
@@ -850,7 +850,7 @@ export default function ListeningPage() {
     const answerProgress = totalQ > 0 ? Math.round((answeredCount / totalQ) * 100) : 0;
 
     return (
-      <div className="mx-auto max-w-5xl px-4 py-6">
+      <div className="learning-open-route mx-auto max-w-5xl px-4 py-6">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-5">
             {/* Header */}
@@ -968,18 +968,18 @@ export default function ListeningPage() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+            <div className="border-l border-border/24 pl-4">
               <p className="text-xs font-medium text-primary">
                 {isZh ? '听力任务栏' : 'Listening brief'}
               </p>
               <h3 className="mt-2 text-base font-semibold text-foreground">{selected.title}</h3>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">{selected.subtitle}</p>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-border bg-background/70 p-3">
+                <div className="border-l border-border/24 px-3 py-2">
                   <p className="text-xs text-muted-foreground">{isZh ? '题目' : 'Questions'}</p>
                   <p className="mt-1 text-lg font-semibold">{totalQ}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-background/70 p-3">
+                <div className="border-l border-border/24 px-3 py-2">
                   <p className="text-xs text-muted-foreground">{isZh ? '时长' : 'Length'}</p>
                   <p className="mt-1 text-lg font-semibold">{selected.durationLabel}</p>
                 </div>
@@ -993,7 +993,7 @@ export default function ListeningPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border bg-background/70 p-4">
+            <div className="border-l border-border/24 pl-4">
               <p className="text-sm font-semibold text-foreground">
                 {submitted ? (isZh ? '回顾重点' : 'Review focus') : (isZh ? '答题策略' : 'Answering strategy')}
               </p>

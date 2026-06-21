@@ -110,19 +110,19 @@ export default function Home() {
       icon: Calendar,
       title: copy.workflow.steps[0].title,
       body: copy.workflow.steps[0].body,
-      className: 'bg-primary/[0.08] md:row-span-2',
+      className: 'bg-primary/[0.07] md:row-span-2',
     },
     {
       icon: Target,
       title: copy.workflow.steps[1].title,
       body: copy.workflow.steps[1].body,
-      className: 'bg-[hsl(var(--surface-raised))]/82',
+      className: 'bg-[hsl(var(--surface-raised))]/42',
     },
     {
       icon: MessageSquare,
       title: copy.workflow.steps[2].title,
       body: copy.workflow.steps[2].body,
-      className: 'bg-[hsl(var(--accent-memory)/0.08)]',
+      className: 'bg-[hsl(var(--accent-memory)/0.07)]',
     },
   ];
 
@@ -235,18 +235,18 @@ export default function Home() {
                 </Button>
               </div>
 
-              <div className="mt-8 grid gap-2.5 sm:max-w-lg">
+              <div className="mt-8 divide-y divide-border/24 border-y border-border/24 sm:max-w-lg">
                 {copy.today.items.map((item) => (
-                  <GlassSurface key={item.title} variant="control" className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3.5 py-2.5">
+                  <div key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3">
                     <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />
                     <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
                     <span className="text-xs text-muted-foreground">{item.duration}</span>
-                  </GlassSurface>
+                  </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[2rem] border border-border/55 bg-card shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_28px_70px_-56px_hsl(var(--shadow-studio)/0.55)]">
+            <div className="relative overflow-hidden rounded-[2rem] shadow-[0_34px_80px_-64px_hsl(var(--shadow-studio)/0.58)]">
               <img
                 src="/vocabdaily-study-desk.jpg"
                 alt={isZh ? '桌面上的笔记本和学习记录' : 'Notebook and study notes on a desk'}
@@ -268,7 +268,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-y border-border/40 bg-[hsl(var(--surface-raised)/0.24)]">
+        <section className="border-y border-border/20 bg-[hsl(var(--surface-raised)/0.16)]">
           <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-foreground">{copy.examplesLabel}</h2>
@@ -276,7 +276,7 @@ export default function Home() {
             </div>
             <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2">
               {sampleWords.map((w) => (
-                <article key={w.word} className="min-w-[240px] snap-start rounded-2xl border border-border/65 bg-card/75 p-4 sm:min-w-0 sm:flex-1">
+                <article key={w.word} className="min-w-[240px] snap-start border-l border-border/22 py-2 pl-4 sm:min-w-0 sm:flex-1">
                   <div className="flex items-baseline gap-2">
                     <h3 className="text-lg font-semibold">{w.word}</h3>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
@@ -301,7 +301,7 @@ export default function Home() {
 
             <div className="mt-7 grid gap-4 md:grid-cols-[1.08fr_0.92fr] md:grid-rows-2">
               {workflowCards.map((step) => (
-                <article key={step.title} className={`rounded-[1.6rem] border border-border/62 p-5 shadow-[var(--shadow-paper)] ${step.className}`}>
+	                <article key={step.title} className={`rounded-[1.6rem] p-5 ${step.className}`}>
                   <div className="liquid-glass-control flex h-11 w-11 items-center justify-center text-primary">
                     <step.icon className="h-5 w-5" />
                   </div>

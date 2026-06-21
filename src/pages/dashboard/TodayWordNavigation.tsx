@@ -94,7 +94,7 @@ export function TodayWordNavigation({
       <div
         role="group"
         aria-label={isZh ? '选择今天的单词' : "Choose today's word"}
-        className="flex gap-2 px-1"
+        className="flex flex-wrap gap-1"
       >
         {words.map((word, index) => {
           const isCurrent = index === currentWordIndex;
@@ -117,17 +117,24 @@ export function TodayWordNavigation({
               })}
               aria-current={isCurrent ? 'step' : undefined}
               className={cn(
-                'h-2.5 rounded-full transition-all duration-300',
-                isCurrent
-                  ? 'w-9 bg-primary'
-                  : isLearned
-                    ? 'w-2.5 bg-green-600'
-                    : isHard
-                      ? 'w-2.5 bg-amber-500'
-                      : 'w-2.5 bg-muted-foreground/20 hover:bg-muted-foreground/40',
+                'grid h-11 w-11 place-items-center rounded-full transition-colors duration-200 hover:bg-muted/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35',
+                isCurrent && 'bg-primary/8',
               )}
               title={word.word}
-            />
+            >
+              <span
+                className={cn(
+                  'h-2.5 rounded-full transition-all duration-300',
+                  isCurrent
+                    ? 'w-9 bg-primary'
+                    : isLearned
+                      ? 'w-2.5 bg-green-600'
+                      : isHard
+                        ? 'w-2.5 bg-amber-500'
+                        : 'w-2.5 bg-muted-foreground/22',
+                )}
+              />
+            </button>
           );
         })}
       </div>

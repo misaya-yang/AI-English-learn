@@ -27,7 +27,7 @@ export function ThemeToggle() {
         <Button
           variant="glass"
           size="icon"
-          className="h-9 w-9 text-muted-foreground hover:text-foreground"
+          className="h-11 min-h-11 w-11 min-w-11 text-muted-foreground hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
           aria-label={copy.trigger}
           title={copy.trigger}
         >

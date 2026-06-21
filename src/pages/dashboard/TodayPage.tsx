@@ -59,6 +59,8 @@ interface WordWorkbenchProps {
 }
 
 function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard }: WordWorkbenchProps) {
+  const usesCompactHeadword = word.word.length > 18 || word.word.includes(' ');
+
   const playAudio = (text: string) => {
     void speakEnglishText(text);
   };
@@ -67,16 +69,16 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section className="study-sheet word-entry">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.5)] px-2.5 py-1 text-xs text-muted-foreground">
+          <span className="rounded-full bg-muted/45 px-2.5 py-1 text-xs text-muted-foreground">
             {word.level}
           </span>
-          {isLearned ? <span className="rounded-md border border-[hsl(var(--success)/0.28)] bg-[hsl(var(--success)/0.08)] px-2.5 py-1 text-xs text-[hsl(var(--success))]">已学会</span> : null}
-          {isHard ? <span className="rounded-md border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--warning))]">需复习</span> : null}
+          {isLearned ? <span className="rounded-full bg-[hsl(var(--success)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--success))]">已学会</span> : null}
+          {isHard ? <span className="rounded-full bg-[hsl(var(--warning)/0.12)] px-2.5 py-1 text-xs text-[hsl(var(--warning))]">需复习</span> : null}
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-md border border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground"
+          className="h-11 min-h-11 w-11 min-w-11 rounded-full border border-transparent bg-muted/35 text-foreground hover:bg-muted hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
           onClick={() => playAudio(word.word)}
           aria-label={`Play ${word.word}`}
         >
@@ -86,7 +88,9 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
       <div>
         <p className="study-label">单词</p>
-        <h2 className="word-entry-headword mt-3 text-foreground">{word.word}</h2>
+        <h2 className={cn('word-entry-headword mt-3 text-foreground', usesCompactHeadword && 'word-entry-headword-compact')}>
+          {word.word}
+        </h2>
         <p className="mt-3 font-mono text-sm text-muted-foreground">{word.partOfSpeech} / {word.phonetic}</p>
       </div>
 
@@ -123,7 +127,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
               <p className="study-label">搭配</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.collocations.slice(0, isFlipped ? 8 : 4).map((collocation) => (
-                  <span key={collocation} className="rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.5)] px-3 py-1 text-sm text-[hsl(var(--accent-practice))]">
+                  <span key={collocation} className="rounded-full bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-sm text-[hsl(var(--accent-practice))]">
                     {collocation}
                   </span>
                 ))}
@@ -629,11 +633,11 @@ export default function TodayPage() {
         title={isZh ? '今天' : 'Today'}
         description={isZh ? `预计 ${heroEstimatedMinutes} 分钟` : `About ${heroEstimatedMinutes} min`}
         actions={todayPrimaryHref ? (
-          <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" asChild data-testid="today-primary-mission-cta">
+          <Button className="min-h-11 rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90" asChild data-testid="today-primary-mission-cta">
             <Link to={todayPrimaryHref}>{todayPrimaryLabel}</Link>
           </Button>
         ) : (
-          <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={scrollToVocabularyWorkspace} data-testid="today-primary-mission-cta">
+          <Button className="min-h-11 rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90" onClick={scrollToVocabularyWorkspace} data-testid="today-primary-mission-cta">
             {todayPrimaryLabel}
           </Button>
         )}
@@ -645,11 +649,11 @@ export default function TodayPage() {
             unit: row.unit,
             note: row.note,
             action: row.href ? (
-              <Button variant="outline" size="sm" className="rounded-md border-border bg-transparent" asChild>
+              <Button variant="outline" size="sm" className="min-h-11 rounded-full border-border bg-transparent px-4" asChild>
                 <Link to={row.href}>{isZh ? '开始' : 'Open'}</Link>
               </Button>
             ) : row.onClick ? (
-              <Button variant="outline" size="sm" className="rounded-md border-border bg-transparent" onClick={row.onClick}>
+              <Button variant="outline" size="sm" className="min-h-11 rounded-full border-border bg-transparent px-4" onClick={row.onClick}>
                 {isZh ? '开始' : 'Open'}
               </Button>
             ) : null,
@@ -807,7 +811,7 @@ export default function TodayPage() {
             <StudyRailSection title={isZh ? '下一步' : 'Next'}>
               <div className="space-y-3">
                 {activePathNextLesson ? (
-                  <div className="rounded-md border border-[hsl(var(--paper-line)/0.78)] bg-transparent p-3">
+                  <div className="border-l border-[hsl(var(--paper-line)/0.58)] py-1 pl-3">
                     <p className="text-sm font-semibold text-foreground">
                       {isZh ? activePathNextLesson.lesson.titleZh : activePathNextLesson.lesson.title}
                     </p>
@@ -821,7 +825,7 @@ export default function TodayPage() {
                 ) : null}
 
                 {recommendedUnit ? (
-                  <div className="rounded-md border border-[hsl(var(--paper-line)/0.78)] bg-transparent p-3">
+                  <div className="border-l border-[hsl(var(--paper-line)/0.58)] py-1 pl-3">
                     <div className="flex items-start gap-2">
                       <Target className="mt-0.5 h-4 w-4 text-[hsl(var(--accent-practice))]" />
                       <div>

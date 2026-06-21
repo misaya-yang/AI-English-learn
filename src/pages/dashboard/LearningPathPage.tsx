@@ -162,7 +162,7 @@ export default function LearningPathPage() {
     const recommendedTitle = isZh ? recommendedPath?.titleZh : recommendedPath?.title;
 
     return (
-      <div className="mx-auto max-w-5xl p-4 sm:p-6">
+      <div className="learning-open-route mx-auto max-w-5xl p-4 sm:p-6">
         <LearningCockpitShell
           language={i18n.language}
           eyebrow={isZh ? '学习路径' : 'Learning Paths'}
@@ -248,7 +248,7 @@ export default function LearningPathPage() {
   const pathTitle = isZh ? selectedPath.titleZh : selectedPath.title;
 
   return (
-    <div className="mx-auto max-w-5xl p-4 sm:p-6">
+    <div className="learning-open-route mx-auto max-w-5xl p-4 sm:p-6">
       <LearningCockpitShell
         language={i18n.language}
         eyebrow={isZh ? '学习路径' : 'Learning Paths'}
@@ -292,7 +292,7 @@ export default function LearningPathPage() {
             </div>
           </motion.div>
 
-          <Card className="border-primary/15 bg-primary/5">
+          <Card className="border-primary/15 bg-transparent">
             <CardContent className="flex items-start gap-3 p-4">
               <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
               <div className="space-y-1">
@@ -398,7 +398,7 @@ export default function LearningPathPage() {
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between border-y border-border/24 py-3 text-sm text-muted-foreground">
             <span>{isZh ? '点击课程名称打开具体任务；勾选后会记录课程完成。' : 'Click a lesson to open the exact task; checking it records completion.'}</span>
             <Badge variant="secondary">{progressPercent}%</Badge>
           </div>

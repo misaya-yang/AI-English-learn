@@ -145,12 +145,12 @@ export default function PronunciationPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+    <div className="learning-open-route mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       {pronunciationRecap}
 
       <motion.section
         {...motionPresets.fadeIn}
-        className="rounded-2xl border border-border bg-card p-4 sm:p-5"
+        className="learning-open-hero pb-5"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:items-stretch">
           <div className="space-y-4">
@@ -166,7 +166,7 @@ export default function PronunciationPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="learning-open-panel py-1">
               <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '当前内容' : 'Current item'}
               </p>
@@ -188,7 +188,7 @@ export default function PronunciationPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-background p-4">
+          <div className="learning-open-panel py-1">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">
@@ -198,7 +198,7 @@ export default function PronunciationPage() {
                   {isZh ? '录完后查看准确度、流利度和语调。' : 'Record once, then check accuracy, fluency, and intonation.'}
                 </p>
               </div>
-              <div className="rounded-xl border border-border bg-card px-4 py-3 text-right">
+              <div className="border-l border-border/24 px-4 py-2 text-right">
                 <span className="block text-lg font-semibold text-foreground">80+</span>
                 <span className="block text-[11px] text-muted-foreground">{isZh ? '目标分' : 'goal'}</span>
               </div>
@@ -209,7 +209,7 @@ export default function PronunciationPage() {
                 { label: isZh ? '进度' : 'Progress', value: `${completedCount}/${items.length}` },
                 { label: isZh ? '记录' : 'Records', value: session.records.length },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-border bg-card p-3 text-center">
+                <div key={stat.label} className="border-l border-border/24 px-3 py-2 text-center">
                   <p className="text-base font-semibold text-foreground">{stat.value}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{stat.label}</p>
                 </div>

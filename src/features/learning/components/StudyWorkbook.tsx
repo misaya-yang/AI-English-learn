@@ -98,7 +98,7 @@ export function StudySheet({ children, className, title, eyebrow, description, a
             {description ? <p className="study-copy mt-2 max-w-2xl">{description}</p> : null}
           </div>
           {actions ? (
-            <div className="liquid-glass-control flex shrink-0 flex-wrap gap-2 border border-border/60 bg-transparent p-1">
+            <div className="study-action-cluster flex shrink-0 flex-wrap gap-2">
               {actions}
             </div>
           ) : null}
@@ -116,7 +116,7 @@ export function QuestionSheet({ children, className, title, meta, prompt, action
         <div className="flex flex-wrap items-center justify-between gap-3">
           {meta ? <div className="study-label">{meta}</div> : null}
           {actions ? (
-            <div className="liquid-glass-control flex flex-wrap gap-2 border border-border/60 bg-transparent p-1">
+            <div className="study-action-cluster flex flex-wrap gap-2">
               {actions}
             </div>
           ) : null}

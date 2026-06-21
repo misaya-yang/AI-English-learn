@@ -16,6 +16,8 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
   const location = useLocation();
   const { i18n } = useTranslation();
   const isZh = i18n.language.startsWith('zh');
+  const hasVisibleActiveItem = NAV_ITEMS.some((item) => location.pathname.startsWith(item.path));
+  const moreActive = !hasVisibleActiveItem;
 
   return (
     <nav
@@ -35,8 +37,9 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
           <Link
             key={item.path}
             to={item.path}
+            aria-current={active ? 'page' : undefined}
             className={cn(
-              'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 transition-colors',
+              'liquid-glass-interactive relative flex h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl px-2.5 py-1.5 transition-colors',
               active
                 ? isLearningMode
                   ? 'text-primary'
@@ -46,7 +49,14 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
                   : 'text-muted-foreground active:text-foreground',
             )}
           >
-            <div className="relative">
+            {active && (
+              <motion.div
+                layoutId="bottomnav-active-pill"
+                className="liquid-glass-active absolute inset-0 rounded-2xl"
+                transition={{ type: 'spring', stiffness: 380, damping: 32, mass: 0.75 }}
+              />
+            )}
+            <div className="relative z-10">
               <Icon className="h-5 w-5" strokeWidth={active ? 2.2 : 1.8} />
               {active && (
                 <motion.div
@@ -56,7 +66,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
                 />
               )}
             </div>
-            <span className="text-[10px] font-semibold">{label}</span>
+            <span className="relative z-10 text-[10px] font-semibold">{label}</span>
           </Link>
         );
       })}
@@ -64,15 +74,21 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
       <button
         type="button"
         onClick={onMoreClick}
+        aria-current={moreActive ? 'page' : undefined}
         className={cn(
-          'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 transition-colors',
-          isLearningMode
-            ? 'text-muted-foreground active:text-foreground'
-            : 'text-muted-foreground active:text-foreground',
+          'liquid-glass-interactive relative flex h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl px-2.5 py-1.5 transition-colors',
+          moreActive ? 'text-primary' : 'text-muted-foreground active:text-foreground',
         )}
       >
-        <MoreHorizontal className="h-5 w-5" strokeWidth={1.8} />
-        <span className="text-[10px] font-semibold">{isZh ? '更多' : 'More'}</span>
+        {moreActive && (
+          <motion.div
+            layoutId="bottomnav-active-pill"
+            className="liquid-glass-active absolute inset-0 rounded-2xl"
+            transition={{ type: 'spring', stiffness: 380, damping: 32, mass: 0.75 }}
+          />
+        )}
+        <MoreHorizontal className="relative z-10 h-5 w-5" strokeWidth={moreActive ? 2.2 : 1.8} />
+        <span className="relative z-10 text-[10px] font-semibold">{isZh ? '更多' : 'More'}</span>
       </button>
     </nav>
   );

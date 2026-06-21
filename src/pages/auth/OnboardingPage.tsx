@@ -264,7 +264,7 @@ export default function OnboardingPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-auto w-full border-2 border-dashed border-border bg-card py-4 text-foreground hover:border-primary/40 hover:bg-primary/5"
+	              className="h-auto w-full border-l border-primary/30 bg-primary/5 py-4 text-foreground hover:bg-primary/10"
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
@@ -293,10 +293,10 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => setPreferences((prev) => ({ ...prev, cefrLevel: level.level }))}
                   className={cn(
-                    'flex items-center gap-4 rounded-md border-2 p-4 text-left transition-all',
-                    preferences.cefrLevel === level.level
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/40',
+	                    'flex min-h-11 items-center gap-4 border-l px-4 py-3 text-left transition-colors',
+	                    preferences.cefrLevel === level.level
+	                      ? 'border-primary bg-primary/10'
+	                      : 'border-border/20 hover:bg-muted/40',
                   )}
                   aria-pressed={preferences.cefrLevel === level.level}
                 >
@@ -345,10 +345,10 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => updateExamTarget(target.id)}
                   className={cn(
-                    'flex items-start gap-4 rounded-lg border-2 p-4 text-left transition-all',
-                    preferences.examTarget === target.id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/40',
+	                    'flex min-h-11 items-start gap-4 border-l px-4 py-3 text-left transition-colors',
+	                    preferences.examTarget === target.id
+	                      ? 'border-primary bg-primary/10'
+	                      : 'border-border/20 hover:bg-muted/40',
                   )}
                   aria-pressed={preferences.examTarget === target.id}
                 >
@@ -377,7 +377,7 @@ export default function OnboardingPage() {
             </div>
 
             {preferences.examTarget !== 'general' ? (
-              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+	              <div className="space-y-4 border-l border-border/24 bg-muted/25 px-4 py-3">
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     {isZh ? '目标分数' : 'Target score'}
@@ -390,7 +390,7 @@ export default function OnboardingPage() {
                         variant={preferences.targetBand === band ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setPreferences((prev) => ({ ...prev, targetBand: band }))}
-                        className="rounded-md"
+	                        className="rounded-full"
                       >
                         {band}
                       </Button>
@@ -409,10 +409,10 @@ export default function OnboardingPage() {
                         type="button"
                         onClick={() => setPreferences((prev) => ({ ...prev, deadline: deadline.id }))}
                         className={cn(
-                          'rounded-md border px-3 py-2 text-sm transition-colors',
-                          preferences.deadline === deadline.id
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-card text-foreground hover:bg-muted',
+	                          'rounded-full border px-3 py-2 text-sm transition-colors',
+	                          preferences.deadline === deadline.id
+	                            ? 'border-primary bg-primary text-primary-foreground'
+	                            : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
                         )}
                         aria-pressed={preferences.deadline === deadline.id}
                       >
@@ -423,7 +423,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+	              <div className="border-l border-border/24 bg-muted/25 px-4 py-3 text-sm text-muted-foreground">
                 {isZh
                   ? '之后可以改成 IELTS/TOEFL。'
                   : 'You can switch to IELTS or TOEFL later.'}
@@ -477,7 +477,7 @@ export default function OnboardingPage() {
                 <span>50</span>
               </div>
 
-              <div className="rounded-md border border-primary/25 bg-primary/10 p-4">
+	              <div className="border-l border-primary/34 bg-primary/10 px-4 py-3">
                 <p className="text-sm text-foreground">
                   <strong className="text-primary">
                     {isZh ? '参考：' : 'Reference:'}
@@ -497,10 +497,10 @@ export default function OnboardingPage() {
                       type="button"
                       onClick={() => setPreferences((prev) => ({ ...prev, dailyMinutes: minutes }))}
                       className={cn(
-                        'rounded-md border px-3 py-3 text-sm font-medium transition-colors',
-                        preferences.dailyMinutes === minutes
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-card text-foreground hover:bg-muted',
+	                        'rounded-full border px-3 py-3 text-sm font-medium transition-colors',
+	                        preferences.dailyMinutes === minutes
+	                          ? 'border-primary bg-primary text-primary-foreground'
+	                          : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
                       )}
                       aria-pressed={preferences.dailyMinutes === minutes}
                     >
@@ -537,10 +537,10 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => toggleTopic(topic.id)}
                     className={cn(
-                      'rounded-lg border-2 p-4 text-left transition-all',
-                      preferences.preferredTopics.includes(topic.id)
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/40',
+	                      'min-h-11 border-l px-4 py-3 text-left transition-colors',
+	                      preferences.preferredTopics.includes(topic.id)
+	                        ? 'border-primary bg-primary/10'
+	                        : 'border-border/20 hover:bg-muted/40',
                     )}
                     aria-pressed={preferences.preferredTopics.includes(topic.id)}
                   >
@@ -581,10 +581,10 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={() => setPreferences((prev) => ({ ...prev, learningStyle: style.id }))}
                   className={cn(
-                    'flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-all',
-                    preferences.learningStyle === style.id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/40',
+	                    'flex min-h-11 w-full items-center gap-4 border-l px-4 py-3 text-left transition-colors',
+	                    preferences.learningStyle === style.id
+	                      ? 'border-primary bg-primary/10'
+	                      : 'border-border/20 hover:bg-muted/40',
                   )}
                   aria-pressed={preferences.learningStyle === style.id}
                 >
@@ -608,7 +608,7 @@ export default function OnboardingPage() {
               ))}
             </div>
 
-            <div className="rounded-lg border border-border bg-muted/30 p-4" aria-live="polite">
+	            <div className="border-l border-border/24 bg-muted/25 px-4 py-3" aria-live="polite">
               <div className="flex items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Calendar className="h-4 w-4" />
@@ -674,13 +674,13 @@ export default function OnboardingPage() {
 
         {renderStep()}
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+        <div className="sticky bottom-3 z-10 -mx-1 flex flex-col-reverse gap-3 rounded-full bg-background/84 p-1.5 backdrop-blur-xl sm:static sm:mx-0 sm:flex-row sm:justify-between sm:rounded-none sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
           <Button
             type="button"
-            variant="outline"
+	            variant="glass"
             onClick={handleBack}
             disabled={step === 1 || isLoading}
-            className="rounded-lg border-border bg-card text-foreground hover:bg-muted"
+	            className="rounded-full"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             {isZh ? '上一步' : 'Back'}
@@ -693,7 +693,7 @@ export default function OnboardingPage() {
               isLoading ||
               (step === 4 && preferences.preferredTopics.length < 2)
             }
-            className="rounded-md bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+	            className="rounded-full bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
             {isLoading ? (
               <>

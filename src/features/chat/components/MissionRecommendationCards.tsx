@@ -29,12 +29,12 @@ const ICON: Record<MissionRecommendationIcon, typeof Target> = {
 };
 
 const VARIANT_TONE: Record<MissionRecommendationVariant, string> = {
-  recovery: 'border-border bg-card text-foreground hover:bg-muted/40',
-  review:   'border-border bg-card text-foreground hover:bg-muted/40',
-  today:    'border-border bg-card text-foreground hover:bg-muted/40',
-  sprint:   'border-border bg-card text-foreground hover:bg-muted/40',
-  practice: 'border-border bg-card text-foreground hover:bg-muted/40',
-  default:  'border-border bg-card text-foreground hover:bg-muted/40',
+  recovery: 'text-foreground hover:bg-muted/40',
+  review:   'text-foreground hover:bg-muted/40',
+  today:    'text-foreground hover:bg-muted/40',
+  sprint:   'text-foreground hover:bg-muted/40',
+  practice: 'text-foreground hover:bg-muted/40',
+  default:  'text-foreground hover:bg-muted/40',
 };
 
 const VARIANT_BADGE: Record<MissionRecommendationVariant, string> = {
@@ -58,7 +58,7 @@ export function MissionRecommendationCards({
 
   return (
     <div
-      className={cn('w-full max-w-2xl divide-y divide-border rounded-md border border-border bg-background/70', className)}
+      className={cn('w-full max-w-2xl divide-y divide-border/20', className)}
       data-testid="mission-recommendation-cards"
     >
       {cards.map((card, index) => {
@@ -76,7 +76,7 @@ export function MissionRecommendationCards({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.18, delay: index * 0.04 }}
             className={cn(
-              'group grid w-full gap-3 p-3 text-left transition-colors duration-150 sm:grid-cols-[1fr_auto] sm:items-center',
+              'group grid min-h-11 w-full gap-3 py-3 text-left transition-colors duration-150 sm:grid-cols-[1fr_auto] sm:items-center',
               VARIANT_TONE[card.variant],
             )}
             data-testid="mission-recommendation-card"

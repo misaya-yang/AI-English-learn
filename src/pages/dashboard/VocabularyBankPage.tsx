@@ -7,6 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { AddWordDialog } from '@/components/AddWordDialog';
 import { ImportAnkiApkgDialog } from '@/components/ImportAnkiApkgDialog';
 import { ImportWordBookDialog } from '@/components/ImportWordBookDialog';
@@ -21,6 +27,10 @@ import {
   CheckCircle2,
   Trash2,
   BookOpen,
+  MoreHorizontal,
+  Plus,
+  Upload,
+  BookOpenCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { wordsDatabase, type WordData } from '@/data/words';
@@ -46,10 +56,10 @@ interface LastImportSummary {
 }
 
 const statusColors: Record<string, string> = {
-  new: 'border border-border bg-muted text-muted-foreground',
-  learning: 'border border-[hsl(var(--accent-practice)/0.24)] bg-[hsl(var(--accent-practice)/0.12)] text-foreground',
-  review: 'border border-[hsl(var(--warning)/0.28)] bg-[hsl(var(--warning)/0.12)] text-foreground',
-  mastered: 'border border-[hsl(var(--success)/0.28)] bg-[hsl(var(--success)/0.12)] text-foreground',
+  new: 'bg-muted text-muted-foreground',
+  learning: 'bg-[hsl(var(--accent-practice)/0.12)] text-foreground',
+  review: 'bg-[hsl(var(--warning)/0.12)] text-foreground',
+  mastered: 'bg-[hsl(var(--success)/0.12)] text-foreground',
 };
 
 const statusLabels: Record<string, string> = {
@@ -151,6 +161,9 @@ export default function VocabularyBankPage() {
   }, [vocabulary]);
 
   const [exportOpen, setExportOpen] = useState(false);
+  const [addWordOpen, setAddWordOpen] = useState(false);
+  const [importAnkiOpen, setImportAnkiOpen] = useState(false);
+  const [importBookOpen, setImportBookOpen] = useState(false);
   const [lastImportSummary, setLastImportSummary] = useState<LastImportSummary | null>(null);
 
   const handleExport = (format: 'csv' | 'csv-progress' | 'anki') => {
@@ -275,11 +288,49 @@ export default function VocabularyBankPage() {
               : `${filteredVocabulary.length} words`}
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <AddWordDialog onAddWord={handleAddWord} />
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="glass"
+                size="icon"
+                className="h-11 w-11 rounded-full"
+                aria-label={isZh ? '词典工具' : 'Dictionary tools'}
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onSelect={() => setAddWordOpen(true)}>
+                <Plus className="h-4 w-4" />
+                {isZh ? '添加单词' : 'Add word'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setImportAnkiOpen(true)}>
+                <BookOpenCheck className="h-4 w-4" />
+                {isZh ? '导入 Anki (.apkg)' : 'Import Anki (.apkg)'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setImportBookOpen(true)}>
+                <Upload className="h-4 w-4" />
+                {isZh ? '导入词书' : 'Import word book'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setExportOpen(true)}>
+                <Download className="h-4 w-4" />
+                {isZh ? '导出当前筛选' : 'Export current filter'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <AddWordDialog
+            onAddWord={handleAddWord}
+            open={addWordOpen}
+            onOpenChange={setAddWordOpen}
+            hideTrigger
+          />
           <ImportAnkiApkgDialog
             onInspect={handleInspectAnki}
             onImport={handleImportAnki}
+            open={importAnkiOpen}
+            onOpenChange={setImportAnkiOpen}
+            hideTrigger
             onSuccess={(result) => {
               setLastImportSummary({
                 source: 'anki',
@@ -300,6 +351,9 @@ export default function VocabularyBankPage() {
           />
           <ImportWordBookDialog
             onImport={handleImportBook}
+            open={importBookOpen}
+            onOpenChange={setImportBookOpen}
+            hideTrigger
             onSuccess={(result) => {
               if (result.createdBookId) {
                 setLastImportSummary({
@@ -318,12 +372,6 @@ export default function VocabularyBankPage() {
             }}
           />
           <Dialog open={exportOpen} onOpenChange={setExportOpen}>
-            <DialogTrigger asChild>
-              <Button variant="glass">
-                <Download className="h-4 w-4 mr-2" />
-                导出
-              </Button>
-            </DialogTrigger>
             <DialogContent className="max-w-sm">
               <DialogHeader>
                 <DialogTitle>导出词汇</DialogTitle>
@@ -348,7 +396,7 @@ export default function VocabularyBankPage() {
       </div>
 
       {lastImportSummary && (
-        <section className="rounded-md border border-[hsl(var(--accent-practice)/0.28)] bg-[hsl(var(--accent-practice)/0.08)] p-4">
+        <section className="border-l border-[hsl(var(--accent-practice)/0.34)] bg-[hsl(var(--accent-practice)/0.07)] px-4 py-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">
@@ -362,16 +410,12 @@ export default function VocabularyBankPage() {
                 {lastImportSummary.errorCount > 0 ? ` · ${lastImportSummary.errorCount} 条错误已导出报告` : ''}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="glassPrimary">
-                <Link to="/dashboard/today">今天学这本</Link>
-              </Button>
-              <Button asChild variant="glass" size="sm">
-                <Link to="/dashboard/review">复习到期词</Link>
-              </Button>
-              <Button variant="glass" size="sm" onClick={() => setExportOpen(true)}>
+            <div className="flex flex-wrap gap-4 text-sm font-medium">
+              <Link className="text-primary hover:text-primary/80" to="/dashboard/today">今天学这本</Link>
+              <Link className="text-muted-foreground hover:text-foreground" to="/dashboard/review">复习到期词</Link>
+              <button className="text-muted-foreground hover:text-foreground" type="button" onClick={() => setExportOpen(true)}>
                 导出备份
-              </Button>
+              </button>
             </div>
           </div>
         </section>
@@ -381,7 +425,7 @@ export default function VocabularyBankPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="rounded-md border border-[hsl(var(--accent-exam)/0.28)] bg-[hsl(var(--accent-exam)/0.12)] text-foreground hover:bg-[hsl(var(--accent-exam)/0.12)]">
+              <Badge className="rounded-md bg-[hsl(var(--accent-exam)/0.12)] text-foreground hover:bg-[hsl(var(--accent-exam)/0.12)]">
                 IELTS
               </Badge>
               <Badge variant="outline" className="rounded-md">
@@ -400,34 +444,48 @@ export default function VocabularyBankPage() {
                 : 'IELTS writing and speaking expressions with meanings, examples, collocations, and Chinese notes.'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {ieltsAnkiBook ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
-                type="button"
-                variant={isIeltsAnkiActive ? 'secondary' : 'default'}
-                className="rounded-md"
-                onClick={() => setActiveBook(BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION)}
-                disabled={isIeltsAnkiActive}
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label={isZh ? 'IELTS 卡片动作' : 'IELTS deck actions'}
               >
-                {isIeltsAnkiActive ? (isZh ? '正在使用' : 'Active deck') : (isZh ? '设为当前词书' : 'Set as active')}
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
-            ) : null}
-            <Button asChild variant="outline" className="rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted">
-              <Link to="/dashboard/today">{isZh ? '今天学这套' : 'Study today'}</Link>
-            </Button>
-            {firstIeltsCard ? (
-              <Button asChild variant="outline" className="rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted">
-                <Link to={`/dashboard/practice?source=ielts-anki&wordId=${encodeURIComponent(firstIeltsCard.id)}&q=${encodeURIComponent(firstIeltsCard.word)}`}>
-                  {isZh ? '练第一张' : 'Practice first card'}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              {ieltsAnkiBook ? (
+                <DropdownMenuItem
+                  disabled={isIeltsAnkiActive}
+                  onSelect={() => setActiveBook(BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION)}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  {isIeltsAnkiActive ? (isZh ? '正在使用' : 'Active deck') : (isZh ? '设为当前词书' : 'Set as active')}
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/today">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  {isZh ? '今天学这套' : 'Study today'}
                 </Link>
-              </Button>
-            ) : null}
-          </div>
+              </DropdownMenuItem>
+              {firstIeltsCard ? (
+                <DropdownMenuItem asChild>
+                  <Link to={`/dashboard/practice?source=ielts-anki&wordId=${encodeURIComponent(firstIeltsCard.id)}&q=${encodeURIComponent(firstIeltsCard.word)}`}>
+                    <Brain className="mr-2 h-4 w-4" />
+                    {isZh ? '练第一张' : 'Practice first card'}
+                  </Link>
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {ieltsAnkiDeck.cards.slice(0, 3).map((card) => (
-            <article key={card.id} className="lexicon-row-panel rounded-md p-4">
+            <article key={card.id} className="lexicon-row-panel py-2 pl-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-lg font-semibold text-foreground">{card.word}</p>
@@ -440,7 +498,7 @@ export default function VocabularyBankPage() {
               <p className="mt-3 text-sm leading-6 text-foreground">{card.meaning}</p>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">{card.chineseHint}</p>
               <div className="mt-4 flex flex-wrap gap-1.5">
-                <Badge className="rounded-md border border-border bg-muted text-muted-foreground hover:bg-muted">
+                <Badge className="rounded-md bg-muted text-muted-foreground hover:bg-muted">
                   {card.ieltsTag}
                 </Badge>
                 {card.collocations.slice(0, 2).map((item) => (
@@ -459,7 +517,7 @@ export default function VocabularyBankPage() {
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_320px] lg:items-stretch">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="rounded-md border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))] hover:bg-[hsl(var(--accent-memory)/0.1)]">
+                <Badge className="rounded-md bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))] hover:bg-[hsl(var(--accent-memory)/0.1)]">
                   {isZh ? '当前词条' : 'Current entry'}
                 </Badge>
                 <Badge variant="outline" className="rounded-md">
@@ -482,7 +540,7 @@ export default function VocabularyBankPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted"
+                  className="h-11 w-11 rounded-full border-border bg-transparent text-foreground hover:bg-muted"
                   onClick={() => playAudio(featuredEntry.headword)}
                   aria-label={isZh ? `播放 ${featuredEntry.headword} 发音` : `Play pronunciation for ${featuredEntry.headword}`}
                 >
@@ -491,7 +549,7 @@ export default function VocabularyBankPage() {
               </div>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="lexicon-row-panel rounded-md p-4">
+                <div className="lexicon-row-panel py-2 pl-4">
                   <p className="text-xs text-muted-foreground">{isZh ? '核心释义' : 'Core meaning'}</p>
                   <p className="mt-2 text-sm leading-6 text-foreground">
                     {featuredSense.definition || (isZh ? '暂无英文释义' : 'No English definition yet')}
@@ -500,7 +558,7 @@ export default function VocabularyBankPage() {
                     {featuredSense.definitionZh || (isZh ? '暂无中文释义' : 'No Chinese definition yet')}
                   </p>
                 </div>
-                <div className="lexicon-row-panel rounded-md p-4">
+                <div className="lexicon-row-panel py-2 pl-4">
                   <p className="text-xs text-muted-foreground">{isZh ? '可练例句' : 'Practice example'}</p>
                   {featuredExample ? (
                     <>
@@ -515,19 +573,33 @@ export default function VocabularyBankPage() {
                 </div>
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Button asChild className="rounded-md">
-                  <Link to={`/dashboard/practice?source=lexicon&wordId=${encodeURIComponent(featuredEntry.id)}&q=${encodeURIComponent(featuredEntry.headword)}`}>
-                    <Brain className="mr-2 h-4 w-4" />
-                    {isZh ? '用这个词练一次' : 'Practice this word'}
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="rounded-md border-border bg-[hsl(var(--surface-raised))] text-foreground hover:bg-muted">
-                  <Link to={`/dashboard/review?source=lexicon&wordId=${encodeURIComponent(featuredEntry.id)}`}>
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    {isZh ? '加入复习回合' : 'Open in review'}
-                  </Link>
-                </Button>
+              <div className="mt-5 flex flex-wrap items-center gap-4 text-sm font-medium">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="glass"
+                      size="icon"
+                      className="h-10 w-10 rounded-full"
+                      aria-label={isZh ? '词条动作' : 'Entry actions'}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    <DropdownMenuItem asChild>
+                      <Link to={`/dashboard/practice?source=lexicon&wordId=${encodeURIComponent(featuredEntry.id)}&q=${encodeURIComponent(featuredEntry.headword)}`}>
+                        <Brain className="mr-2 h-4 w-4" />
+                        {isZh ? '用这个词练一次' : 'Practice this word'}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={`/dashboard/review?source=lexicon&wordId=${encodeURIComponent(featuredEntry.id)}`}>
+                        <BookOpen className="mr-2 h-4 w-4" />
+                        {isZh ? '加入复习回合' : 'Open in review'}
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -537,7 +609,7 @@ export default function VocabularyBankPage() {
                 { label: isZh ? '词条总数' : 'Total words', value: totalWords },
                 { label: isZh ? '需要复习' : 'Needs review', value: needsReviewCount },
               ].map((item) => (
-                <div key={item.label} className="lexicon-row-panel rounded-md p-4">
+                <div key={item.label} className="lexicon-row-panel py-2 pl-4">
                   <p className="text-xs text-muted-foreground">{item.label}</p>
                   <p className="mt-2 truncate text-lg font-semibold text-foreground">{item.value}</p>
                 </div>
@@ -546,7 +618,7 @@ export default function VocabularyBankPage() {
           </div>
         ) : (
           <div className="mx-auto flex max-w-2xl flex-col items-center py-8 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
               <BookOpen className="h-6 w-6" />
             </div>
             <h2 className="mt-4 text-xl font-semibold text-foreground">
@@ -557,60 +629,38 @@ export default function VocabularyBankPage() {
                 ? '导入词书或添加自定义词后，这里会显示释义、例句和练习入口。'
                 : 'Import a word book or add a custom word to see definitions, examples, and practice actions.'}
             </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              <AddWordDialog onAddWord={handleAddWord} />
-              <ImportWordBookDialog
-                onImport={handleImportBook}
-                onSuccess={(result) => {
-                  if (result.createdBookId) {
-                    setLastImportSummary({
-                      source: 'csv',
-                      successCount: result.successCount,
-                      errorCount: result.errorRows.length,
-                    });
-                    toast.success('词书导入成功并已设为当前词书');
-                  }
-                }}
-                onError={(errors) => {
-                  if (errors.length > 0) {
-                    toast.warning(`有 ${errors.length} 行导入失败，请检查格式`);
-                    downloadImportErrors(errors);
-                  }
-                }}
-              />
-              <ImportAnkiApkgDialog
-                onInspect={handleInspectAnki}
-                onImport={handleImportAnki}
-                onSuccess={(result) => {
-                  setLastImportSummary({
-                    source: 'anki',
-                    successCount: result.successCount,
-                    mappedProgressCount: result.mappedProgressCount,
-                    errorCount: result.unmappedRows.length,
-                  });
-                  toast.success(
-                    `Anki 导入完成：${result.successCount} 词，映射进度 ${result.mappedProgressCount} 条`,
-                  );
-                }}
-                onError={(errors) => {
-                  if (errors.length > 0) {
-                    toast.warning(`Anki 导入有 ${errors.length} 条无法映射，已导出错误报告`);
-                    downloadImportErrors(errors);
-                  }
-                }}
-              />
-              {wordBooks.filter((book) => book.isBuiltIn).slice(0, 2).map((book) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
-                  key={book.id}
-                  type="button"
-                  variant="secondary"
-                  className="rounded-md"
-                  onClick={() => setActiveBook(book.id)}
+                  variant="ghost"
+                  size="icon"
+                  className="mt-5 h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label={isZh ? '开始添加词条' : 'Start adding words'}
                 >
-                  {isZh ? `使用 ${book.name}` : `Use ${book.name}`}
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
-              ))}
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-56">
+                <DropdownMenuItem onSelect={() => setAddWordOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {isZh ? '添加单词' : 'Add word'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setImportBookOpen(true)}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {isZh ? '导入词书' : 'Import word book'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setImportAnkiOpen(true)}>
+                  <BookOpenCheck className="mr-2 h-4 w-4" />
+                  {isZh ? '导入 Anki' : 'Import Anki'}
+                </DropdownMenuItem>
+                {wordBooks.filter((book) => book.isBuiltIn).slice(0, 2).map((book) => (
+                  <DropdownMenuItem key={book.id} onSelect={() => setActiveBook(book.id)}>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    {isZh ? `使用 ${book.name}` : `Use ${book.name}`}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </section>
@@ -631,8 +681,8 @@ export default function VocabularyBankPage() {
               <div
                 key={book.id}
                 className={cn(
-                  'rounded-md border border-border bg-card p-3 transition-colors flex flex-col md:flex-row md:items-start md:justify-between gap-3',
-                  isActive && 'border-[hsl(var(--accent-memory)/0.55)] bg-[hsl(var(--accent-memory)/0.08)]',
+                  'rounded-md border-t border-border/20 py-3 transition-colors flex flex-col md:flex-row md:items-start md:justify-between gap-3',
+                  isActive && 'bg-muted/30 px-3',
                 )}
               >
                 <div className="space-y-1">
@@ -671,22 +721,37 @@ export default function VocabularyBankPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {!isActive && (
-                    <Button size="sm" variant="outline" onClick={() => setActiveBook(book.id)}>
-                      设为当前
-                    </Button>
-                  )}
-                  {!book.isBuiltIn && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleDeleteBook(book.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      删除
-                    </Button>
-                  )}
+                  {!isActive || !book.isBuiltIn ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                          aria-label={isZh ? `${book.name} 词书动作` : `${book.name} book actions`}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        {!isActive ? (
+                          <DropdownMenuItem onSelect={() => setActiveBook(book.id)}>
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            {isZh ? '设为当前' : 'Set active'}
+                          </DropdownMenuItem>
+                        ) : null}
+                        {!book.isBuiltIn ? (
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onSelect={() => handleDeleteBook(book.id)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            {isZh ? '删除' : 'Delete'}
+                          </DropdownMenuItem>
+                        ) : null}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : null}
                 </div>
               </div>
             );
@@ -784,13 +849,13 @@ export default function VocabularyBankPage() {
           return (
             <Dialog key={item.word.id}>
               <DialogTrigger asChild>
-                <Card
+                <div
                   role="button"
                   tabIndex={0}
                   aria-label={isZh ? `打开 ${entry.headword} 词条详情` : `Open ${entry.headword} details`}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  className="cursor-pointer border-t border-border/20 py-4 transition-colors hover:bg-muted/30"
                 >
-                  <CardContent className="p-4">
+                  <div className="px-1">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold text-lg">{entry.headword}</h3>
@@ -799,7 +864,7 @@ export default function VocabularyBankPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-	                        <Badge className={statusColors[status]}>
+	                        <Badge className={cn('rounded-full px-2.5 py-1 text-xs', statusColors[status])}>
                             {isZh ? (statusLabelsZh[status] || status) : (statusLabels[status] || status)}
                           </Badge>
                         <Button
@@ -837,8 +902,8 @@ export default function VocabularyBankPage() {
                         </Badge>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
@@ -865,13 +930,13 @@ export default function VocabularyBankPage() {
                   </p>
 
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <div className="rounded-md border border-border bg-muted/35 p-3">
+                    <div className="border-l border-border/20 py-1 pl-3">
                       <p className="text-xs text-muted-foreground">{isZh ? '学习状态' : 'Learning status'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">
                         {isZh ? (statusLabelsZh[status] || status) : (statusLabels[status] || status)}
                       </p>
                     </div>
-                    <div className="rounded-md border border-border bg-muted/35 p-3">
+                    <div className="border-l border-border/20 py-1 pl-3">
                       <p className="text-xs text-muted-foreground">{isZh ? '来源词书' : 'Source book'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">{sourceBookLabel}</p>
                     </div>
@@ -936,7 +1001,7 @@ export default function VocabularyBankPage() {
                     <h4 className="font-semibold mb-2">{isZh ? '训练模板 / Drills' : 'Drills'}</h4>
                     <div className="space-y-2">
                       {entry.trainingTemplates.map((template) => (
-                        <div key={template.type} className="rounded-lg border border-border bg-muted/40 p-3">
+                        <div key={template.type} className="border-l border-border/20 bg-muted/30 px-3 py-2">
                           <p className="text-sm font-medium">{isZh ? template.label.zh : template.label.en}</p>
                           <p className="mt-1 text-sm text-muted-foreground">
                             {isZh ? template.promptZh : template.prompt}

@@ -95,7 +95,7 @@ export function AuthShell({
 
             <section
               className={cn(
-                'rounded-[1.35rem] border border-border/85 bg-[hsl(var(--surface-raised))] p-6 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.035),0_18px_40px_-32px_hsl(var(--shadow-studio)/0.26)] sm:p-7',
+                'border-y border-border/24 py-5 sm:py-6',
                 panelClassName,
               )}
             >
@@ -123,7 +123,7 @@ export function AuthShell({
         {/* Brand / reassurance column — hidden on mobile, primary on lg. */}
         <aside className="order-2 hidden flex-col justify-center lg:order-1 lg:flex">
           <BrandMark />
-          <GlassSurface variant="panel" className="mt-7 max-w-md p-6">
+          <section className="mt-7 max-w-md border-l border-border/24 pl-6">
             <h2 className="text-2xl font-semibold leading-tight text-foreground">
               {isZh ? rail.headlineZh : rail.headline}
             </h2>
@@ -138,7 +138,7 @@ export function AuthShell({
                 </li>
               ))}
             </ul>
-          </GlassSurface>
+          </section>
         </aside>
       </main>
     </div>

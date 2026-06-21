@@ -403,10 +403,10 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
   const catMeta = CATEGORY_META[rule.category];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden border-t border-border/24">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full px-5 py-4 text-left flex items-center gap-3 hover:bg-muted transition-colors"
+        className="w-full py-4 text-left flex items-center gap-3 transition-colors hover:bg-muted/20"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -431,9 +431,9 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
             exit={{ height: 0 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-border px-5 py-4 space-y-4">
+            <div className="border-t border-border/24 py-4 space-y-4">
               {/* Explanation */}
-              <div className="rounded-lg bg-muted p-4 space-y-2">
+              <div className="border-l border-border/24 pl-4 space-y-2">
                 <p className="text-sm leading-6 text-foreground">{rule.explanation}</p>
                 <p className="text-sm leading-6 text-muted-foreground">{rule.explanationZh}</p>
               </div>
@@ -443,7 +443,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
                 <p className="text-[11px] text-muted-foreground mb-2">{isZh ? '例句' : 'Examples'}</p>
                 <div className="space-y-2">
                   {rule.examples.map((ex, i) => (
-                    <div key={i} className="rounded-lg border border-border px-4 py-2.5">
+                    <div key={i} className="border-l border-border/24 px-4 py-2.5">
                       <p className="text-sm text-foreground">{ex.en}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{ex.zh}</p>
                     </div>
@@ -503,12 +503,12 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
 
   return (
     <div className={cn(
-      'space-y-3 rounded-2xl border p-4 transition-all duration-300',
+      'space-y-3 border-t px-1 py-4 transition-all duration-300',
       !submitted
-        ? 'border-border bg-card'
+        ? 'border-border/24 bg-transparent'
         : isCorrect
-          ? 'border-primary/40 bg-primary/5'
-          : 'border-destructive/30 bg-destructive/5',
+          ? 'border-primary/40 bg-primary/5 px-4'
+          : 'border-destructive/30 bg-destructive/5 px-4',
     )}>
       {/* Question number + result indicator */}
       <div className="flex items-start gap-3">
@@ -656,8 +656,8 @@ export default function GrammarPage() {
 
   if (phase === 'browse') {
     return (
-      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-        <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <div className="learning-open-route mx-auto max-w-5xl space-y-6 px-4 py-6">
+        <section className="learning-open-hero pb-5">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)]">
             <div className="space-y-4">
               <div>
@@ -670,7 +670,7 @@ export default function GrammarPage() {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="learning-open-panel py-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={cn('rounded-md border px-2.5 py-1 text-[11px] font-semibold', CATEGORY_META[featuredRule.category].color)}>
                     {isZh ? CATEGORY_META[featuredRule.category].labelZh : CATEGORY_META[featuredRule.category].label}
@@ -693,11 +693,11 @@ export default function GrammarPage() {
               </Button>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="learning-open-panel py-1">
               <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '当前题型' : 'Current exercise'}
               </p>
-              <div className="mt-4 rounded-2xl border border-border bg-card p-4">
+              <div className="learning-open-muted mt-4 py-3">
                 <p className="text-sm leading-7 text-foreground">
                   {featuredSentenceParts[0]}
                   <span className="mx-1 inline-block min-w-[86px] rounded-lg border-b-2 border-primary/50 bg-primary/10 px-2 text-center text-primary">
@@ -715,7 +715,7 @@ export default function GrammarPage() {
                   { label: isZh ? '类别' : 'Categories', value: Object.keys(CATEGORY_META).length },
                   { label: isZh ? '本轮题' : 'Items', value: featuredRule.practice.length },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border bg-card p-3 text-center">
+                  <div key={item.label} className="border-l border-border/24 px-3 py-2 text-center">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -772,7 +772,7 @@ export default function GrammarPage() {
     const catMeta = CATEGORY_META[activeRule.category];
 
     return (
-      <div className="mx-auto max-w-2xl space-y-5 px-4 py-6">
+      <div className="learning-open-route mx-auto max-w-2xl space-y-5 px-4 py-6">
         {/* Back */}
         <button
           onClick={handleBack}
@@ -845,7 +845,7 @@ export default function GrammarPage() {
 
         {/* Rule quick-reference */}
         {!submitted && (
-          <div className="rounded-md border border-border bg-muted px-4 py-3">
+          <div className="border-l border-border/24 bg-transparent px-4 py-2">
             <div className="flex items-center gap-1.5 mb-1.5">
               <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
               <p className="text-[11px] text-muted-foreground">{isZh ? '规则小结' : 'Rule summary'}</p>

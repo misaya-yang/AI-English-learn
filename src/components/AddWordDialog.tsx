@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,15 +27,21 @@ import { fetchWordFromAPI } from '@/data/extendedWords';
 
 interface AddWordDialogProps {
   onAddWord: (word: WordData) => void;
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
 const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const TOPICS = ['daily', 'business', 'technology', 'travel', 'academic', 'science', 'health', 'arts', 'food', 'sports'];
 
-export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
+export function AddWordDialog({ onAddWord, trigger, open: controlledOpen, onOpenChange, hideTrigger = false }: AddWordDialogProps) {
   const { i18n } = useTranslation();
   const isZh = i18n.language.startsWith('zh');
   const [open, setOpen] = useState(false);
+  const dialogOpen = controlledOpen ?? open;
+  const setDialogOpen = onOpenChange ?? setOpen;
   const [searchWord, setSearchWord] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [wordData, setWordData] = useState<Partial<WordData>>({
@@ -90,19 +96,23 @@ export function AddWordDialog({ onAddWord }: AddWordDialogProps) {
 
     onAddWord(newWord);
     toast.success(isZh ? '单词已加入自定义词书' : 'Word added successfully!');
-    setOpen(false);
+    setDialogOpen(false);
     setSearchWord('');
     setWordData({ level: 'B1', topic: 'daily' });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          {isZh ? '添加单词' : 'Add Word'}
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              {isZh ? '添加单词' : 'Add Word'}
+            </Button>
+          )}
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isZh ? '添加新单词' : 'Add New Word'}</DialogTitle>

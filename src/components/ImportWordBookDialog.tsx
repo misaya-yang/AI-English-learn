@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Upload, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,24 @@ interface ImportWordBookDialogProps {
   onImport: (file: File, bookName: string) => Promise<ImportResult> | ImportResult;
   onSuccess?: (result: ImportResult) => void;
   onError?: (errors: ImportRowError[]) => void;
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
-export function ImportWordBookDialog({ onImport, onSuccess, onError }: ImportWordBookDialogProps) {
+export function ImportWordBookDialog({
+  onImport,
+  onSuccess,
+  onError,
+  trigger,
+  open: controlledOpen,
+  onOpenChange,
+  hideTrigger = false,
+}: ImportWordBookDialogProps) {
   const [open, setOpen] = useState(false);
+  const dialogOpen = controlledOpen ?? open;
+  const setDialogOpen = onOpenChange ?? setOpen;
   const [bookName, setBookName] = useState('My Imported Book');
   const [file, setFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -74,7 +88,7 @@ export function ImportWordBookDialog({ onImport, onSuccess, onError }: ImportWor
         `Imported ${result.successCount}/${result.totalRows} rows (${result.duplicateCount} duplicates).`,
       );
 
-      setOpen(false);
+      setDialogOpen(false);
       resetForm();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Import failed';
@@ -86,20 +100,24 @@ export function ImportWordBookDialog({ onImport, onSuccess, onError }: ImportWor
 
   return (
       <Dialog
-        open={open}
+        open={dialogOpen}
         onOpenChange={(nextOpen) => {
-          setOpen(nextOpen);
+          setDialogOpen(nextOpen);
           if (!nextOpen) {
             resetForm();
           }
         }}
       >
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          导入词书
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button variant="outline">
+              <Upload className="h-4 w-4 mr-2" />
+              导入词书
+            </Button>
+          )}
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>导入词书 (CSV/TSV)</DialogTitle>

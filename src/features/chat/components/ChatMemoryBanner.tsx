@@ -22,7 +22,7 @@ export function ChatMemoryBanner({
 
   return (
     <div className="px-4 pb-2">
-      <div className={cn(contentWidthClass, 'mx-auto rounded-xl border border-cyan-300/45 bg-cyan-50/55 p-3 dark:bg-cyan-900/20')}>
+      <div className={cn(contentWidthClass, 'mx-auto border-l border-cyan-300/45 bg-cyan-50/45 px-3 py-2 dark:bg-cyan-900/18')}>
         <p className="text-xs font-medium text-cyan-700 dark:text-cyan-300">
           {language.startsWith('zh') ? '记忆透明卡' : 'Memory transparency'}
         </p>

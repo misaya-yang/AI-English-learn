@@ -206,7 +206,7 @@ export default function ProfilePage() {
   const levelProgressLabel = isZh ? '能力阶段' : levelName;
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="profile-unframed-route mx-auto max-w-5xl">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">{isZh ? '个人资料' : 'Profile'}</h1>
@@ -215,7 +215,7 @@ export default function ProfilePage() {
           </p>
         </div>
         <Button
-          variant={isEditing ? 'default' : 'outline'}
+          variant={isEditing ? 'default' : 'glass'}
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
           disabled={isSaving}
           className={isEditing ? 'bg-primary hover:bg-primary/90' : ''}
@@ -239,7 +239,7 @@ export default function ProfilePage() {
         </Button>
       </div>
 
-      <Card className="mb-6 rounded-md border-border">
+      <Card className="mb-8 border-transparent">
         <CardContent className="p-5">
           <div className="flex flex-col gap-5 md:flex-row md:items-start">
             <div className="relative">
@@ -305,18 +305,18 @@ export default function ProfilePage() {
             </div>
 
             <div className="grid w-full grid-cols-3 gap-2 md:w-auto md:min-w-[280px]">
-              <div className="rounded-md border border-border bg-background px-3 py-2">
+              <div className="border-l border-border/20 px-3 py-1.5">
                 <p className="text-lg font-semibold tabular-nums">{xp.total.toLocaleString()}</p>
-	                <p className="text-xs text-muted-foreground">{isZh ? '学习记录' : 'Points'}</p>
+		                <p className="text-xs text-muted-foreground">{isZh ? '学习记录' : 'Points'}</p>
               </div>
-	              <div className="rounded-md border border-border bg-background px-3 py-2">
-	                <p className="text-lg font-semibold tabular-nums">{streak.current}</p>
-	                <p className="text-xs text-muted-foreground">{isZh ? '连续' : 'Streak'}</p>
-	              </div>
-	              <div className="rounded-md border border-border bg-background px-3 py-2">
-	                <p className="text-lg font-semibold tabular-nums">{stats.masteredWords}</p>
-	                <p className="text-xs text-muted-foreground">{isZh ? '已掌握' : 'Mastered'}</p>
-	              </div>
+		              <div className="border-l border-border/20 px-3 py-1.5">
+		                <p className="text-lg font-semibold tabular-nums">{streak.current}</p>
+		                <p className="text-xs text-muted-foreground">{isZh ? '连续' : 'Streak'}</p>
+		              </div>
+		              <div className="border-l border-border/20 px-3 py-1.5">
+		                <p className="text-lg font-semibold tabular-nums">{stats.masteredWords}</p>
+		                <p className="text-xs text-muted-foreground">{isZh ? '已掌握' : 'Mastered'}</p>
+		              </div>
             </div>
           </div>
 
@@ -336,7 +336,7 @@ export default function ProfilePage() {
       </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="rounded-md border-border">
+        <Card className="border-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
@@ -376,7 +376,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-md border-border">
+        <Card className="border-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
@@ -401,7 +401,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted">
+	                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted">
                   <span className="font-semibold text-foreground">{profile?.dailyGoal || 10}</span>
                 </div>
                 <div>
@@ -413,7 +413,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-md border-border">
+        <Card className="border-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
@@ -450,7 +450,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-md border-border">
+        <Card className="border-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5" />
@@ -478,7 +478,7 @@ export default function ProfilePage() {
               </Select>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted">
+	                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted">
                   <ShieldCheck className="h-5 w-5 text-foreground" />
                 </div>
                 <div>
@@ -493,7 +493,7 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      <Card className="mt-6 rounded-md border-border">
+      <Card className="mt-8 border-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
@@ -502,22 +502,22 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="rounded-md border border-border bg-background p-3">
+	            <div className="border-l border-border/20 py-1 pl-3">
               <ShieldCheck className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{streak.current}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '当前连续' : 'Current streak'}</p>
             </div>
-            <div className="rounded-md border border-border bg-background p-3">
+	            <div className="border-l border-border/20 py-1 pl-3">
               <BadgeCheck className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{streak.longest}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '最长连续' : 'Longest streak'}</p>
             </div>
-            <div className="rounded-md border border-border bg-background p-3">
+	            <div className="border-l border-border/20 py-1 pl-3">
               <BookOpen className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{stats.totalWords}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '累计词汇' : 'Total words'}</p>
             </div>
-            <div className="rounded-md border border-border bg-background p-3">
+	            <div className="border-l border-border/20 py-1 pl-3">
               <Target className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{stats.masteredWords}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '已掌握' : 'Mastered'}</p>
@@ -527,7 +527,7 @@ export default function ProfilePage() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <Card className="rounded-md border-border">
+        <Card className="border-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-muted-foreground" />
@@ -569,7 +569,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-md border-border">
+        <Card className="border-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BadgeCheck className="h-5 w-5 text-muted-foreground" />
@@ -591,7 +591,7 @@ export default function ProfilePage() {
                     )}
                     title={unlocked ? `${achievementName} - ${achievementDescription}` : achievementDescription}
                   >
-                    <span className="grid h-8 w-8 place-items-center rounded-md border border-border bg-muted text-[11px] font-semibold tabular-nums text-muted-foreground">
+	                    <span className="grid h-8 w-8 place-items-center rounded-md bg-muted text-[11px] font-semibold tabular-nums text-muted-foreground">
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <span className="text-[10px] leading-tight text-muted-foreground">{achievementName}</span>
@@ -603,7 +603,7 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      <Card className="mt-6 rounded-md border-border">
+      <Card className="mt-8 border-transparent">
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -656,7 +656,7 @@ export default function ProfilePage() {
             })}
           </div>
           {plan === 'free' && (
-	            <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+		            <div className="mt-4 flex flex-col gap-3 border-l border-warning/35 bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 	              <p className="text-sm leading-relaxed text-warning">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
 	              <Button asChild size="sm" variant="glassPrimary" className="h-8 flex-shrink-0 rounded-full px-3 text-xs font-semibold">
 	                <Link to="/pricing">

@@ -149,6 +149,13 @@ const renderPage = () => {
   );
 };
 
+const openMenu = (name: string | RegExp) => {
+  fireEvent.pointerDown(screen.getByRole('button', { name }), {
+    button: 0,
+    ctrlKey: false,
+  });
+};
+
 describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -173,11 +180,12 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
     expect(screen.getAllByText('IELTS核心自建').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('需要复习').length).toBeGreaterThanOrEqual(1);
 
-    const practiceLink = screen.getByRole('link', { name: /用这个词练一次/ });
+    openMenu('词条动作');
+    const practiceLink = screen.getByRole('menuitem', { name: /用这个词练一次/ });
     expect(practiceLink.getAttribute('href')).toContain('/dashboard/practice?source=lexicon');
     expect(practiceLink.getAttribute('href')).toContain('wordId=custom-mitigate');
 
-    const reviewLink = screen.getByRole('link', { name: /加入复习回合/ });
+    const reviewLink = screen.getByRole('menuitem', { name: /加入复习回合/ });
     expect(reviewLink.getAttribute('href')).toContain('/dashboard/review?source=lexicon');
 
     expect(screen.getAllByLabelText(/播放 mitigate 发音/).length).toBeGreaterThanOrEqual(1);
@@ -202,7 +210,8 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
     expect(within(activeBookRow as HTMLElement).getByText(/来源: Cambridge notes/)).toBeInTheDocument();
     expect(within(activeBookRow as HTMLElement).getByText(/许可: User provided/)).toBeInTheDocument();
 
-    expect(screen.getAllByRole('button', { name: /删除/ })).toHaveLength(1);
+    openMenu(/IELTS核心自建 词书动作/);
+    expect(screen.getByRole('menuitem', { name: /删除/ })).toBeInTheDocument();
   });
 
   it('keeps import and add actions visible in the empty state', () => {
@@ -215,10 +224,11 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
 
     expect(screen.getByText('添加第一个词')).toBeInTheDocument();
     expect(screen.getByText('导入词书或添加自定义词后，这里会显示释义、例句和练习入口。')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /添加单词/ }).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByRole('button', { name: /导入词书/ }).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByRole('button', { name: /导入 Anki/ }).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByRole('button', { name: /使用 A1基础/ })).toBeInTheDocument();
+    openMenu(/开始添加词条/);
+    expect(screen.getByRole('menuitem', { name: /添加单词/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /导入词书/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /导入 Anki/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /使用 A1基础/ })).toBeInTheDocument();
   });
 
   it('surfaces the IELTS Anki card foundation with study and practice entry points', () => {
@@ -229,12 +239,13 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
     expect(screen.getAllByText('alleviate').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('写解决方案时用，比 make better 更正式。')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: '设为当前词书' }));
-    expect(userDataState.setActiveBook).toHaveBeenCalledWith(BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION);
-
-    expect(screen.getByRole('link', { name: '今天学这套' }).getAttribute('href')).toBe('/dashboard/today');
-    const firstCardLink = screen.getByRole('link', { name: '练第一张' });
+    openMenu('IELTS 卡片动作');
+    expect(screen.getByRole('menuitem', { name: '今天学这套' }).getAttribute('href')).toBe('/dashboard/today');
+    const firstCardLink = screen.getByRole('menuitem', { name: '练第一张' });
     expect(firstCardLink.getAttribute('href')).toContain('/dashboard/practice?source=ielts-anki');
     expect(firstCardLink.getAttribute('href')).toContain('wordId=ielts_anki_alleviate');
+
+    fireEvent.click(screen.getByRole('menuitem', { name: '设为当前词书' }));
+    expect(userDataState.setActiveBook).toHaveBeenCalledWith(BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION);
   });
 });

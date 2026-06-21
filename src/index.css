@@ -214,16 +214,11 @@
   .study-premium-bg {
     position: relative;
     isolation: isolate;
-    background:
-      radial-gradient(circle at 18% 0%, hsl(var(--primary) / 0.08), transparent 32%),
-      radial-gradient(circle at 88% 12%, hsl(var(--accent-memory) / 0.08), transparent 30%),
-      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken) / 0.58) 100%);
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken) / 0.58) 100%);
   }
 
   .dark .study-premium-bg {
-    background:
-      radial-gradient(circle at 16% -10%, hsl(var(--primary) / 0.025), transparent 28%),
-      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken)) 100%);
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-sunken)) 100%);
   }
 
   .study-premium-bg::before {
@@ -322,17 +317,32 @@
   }
 
   .dense-solid-route [data-slot="card"],
+  .settings-unframed-route [data-slot="card"],
+  .profile-unframed-route [data-slot="card"],
+  .vocab-lexicon-route [data-slot="card"],
+  .pricing-unframed-route [data-slot="card"],
+  .learning-open-route [data-slot="card"],
   .dense-solid-route .premium-panel-soft,
   .dense-solid-route .analytics-solid-panel {
-    border-color: hsl(var(--border) / 0.82);
-    background: hsl(var(--card));
-    box-shadow: 0 1px 1px hsl(var(--shadow-studio) / 0.035);
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
 
   .dense-solid-route [data-slot="card"]::before,
   .dense-solid-route [data-slot="card"]::after,
+  .settings-unframed-route [data-slot="card"]::before,
+  .settings-unframed-route [data-slot="card"]::after,
+  .profile-unframed-route [data-slot="card"]::before,
+  .profile-unframed-route [data-slot="card"]::after,
+  .vocab-lexicon-route [data-slot="card"]::before,
+  .vocab-lexicon-route [data-slot="card"]::after,
+  .pricing-unframed-route [data-slot="card"]::before,
+  .pricing-unframed-route [data-slot="card"]::after,
+  .learning-open-route [data-slot="card"]::before,
+  .learning-open-route [data-slot="card"]::after,
   .dense-solid-route .premium-panel-soft::before,
   .dense-solid-route .premium-panel-soft::after,
   .dense-solid-route .analytics-solid-panel::before,
@@ -340,19 +350,107 @@
     display: none;
   }
 
+  .dense-solid-route [data-slot="card-header"],
+  .dense-solid-route [data-slot="card-content"],
+  .settings-unframed-route [data-slot="card-header"],
+  .settings-unframed-route [data-slot="card-content"],
+  .profile-unframed-route [data-slot="card-header"],
+  .profile-unframed-route [data-slot="card-content"],
+  .vocab-lexicon-route [data-slot="card-header"],
+  .vocab-lexicon-route [data-slot="card-content"],
+  .pricing-unframed-route [data-slot="card-header"],
+  .pricing-unframed-route [data-slot="card-content"],
+  .learning-open-route [data-slot="card-header"],
+  .learning-open-route [data-slot="card-content"] {
+    padding-inline: 0;
+  }
+
+  .dense-solid-route [data-slot="card-content"],
+  .settings-unframed-route [data-slot="card-content"],
+  .profile-unframed-route [data-slot="card-content"],
+  .vocab-lexicon-route [data-slot="card-content"] {
+    padding-block: 0.25rem 1.15rem;
+  }
+
+  .learning-open-route [data-slot="card-content"] {
+    padding-block: 0.35rem 1rem;
+  }
+
+  .pricing-unframed-route [data-slot="card-content"] {
+    padding-block: 0.25rem 1.15rem;
+  }
+
+  .dense-solid-route [data-slot="card-title"],
+  .settings-unframed-route [data-slot="card-title"],
+  .profile-unframed-route [data-slot="card-title"],
+  .vocab-lexicon-route [data-slot="card-title"] {
+    font-size: 0.95rem;
+    letter-spacing: 0;
+  }
+
+  .learning-open-route [data-slot="card-title"] {
+    font-size: 0.95rem;
+    letter-spacing: 0;
+  }
+
+  .learning-open-route .learning-open-hero {
+    border-bottom: 1px solid hsl(var(--border) / 0.22);
+    background: transparent;
+  }
+
+  .learning-open-route .learning-open-panel {
+    border-left: 1px solid hsl(var(--border) / 0.24);
+    border-radius: 0;
+    background: transparent;
+    padding-left: 1rem;
+  }
+
+  .learning-open-route .learning-open-muted {
+    border-block: 1px solid hsl(var(--border) / 0.22);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .pricing-unframed-route .pricing-plan-surface {
+    border-width: 0 0 0 1px;
+    border-color: hsl(var(--border) / 0.24);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .pricing-unframed-route .pricing-plan-surface[data-highlighted="true"] {
+    border-color: hsl(var(--primary) / 0.42);
+  }
+
+  .pricing-unframed-route .pricing-plan-surface [data-slot="card-content"] {
+    padding-inline: 0 1.25rem;
+  }
+
   .dense-solid-route .analytics-muted-panel {
-    border-color: hsl(var(--border) / 0.72);
-    background: hsl(var(--surface-raised));
+    border-width: 0 0 0 1px;
+    border-color: hsl(var(--border) / 0.2);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .dense-solid-route .analytics-solid-panel {
+    border-width: 0 0 0 1px;
+    border-color: hsl(var(--border) / 0.22);
+    border-radius: 0;
+    background: transparent;
   }
 
   .vocab-lexicon-route .lexicon-unframed-section {
-    border-block: 1px solid hsl(var(--border) / 0.72);
+    border-block: 1px solid hsl(var(--border) / 0.22);
     background: transparent;
   }
 
   .vocab-lexicon-route .lexicon-row-panel {
-    border: 1px solid hsl(var(--border) / 0.72);
-    background: hsl(var(--surface-raised));
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: inset 1px 0 0 hsl(var(--border) / 0.2);
   }
 
   .focus-study-page {
@@ -413,7 +511,7 @@
   .focus-page-title {
     font-family: var(--font-display);
     font-weight: 680;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     color: hsl(var(--foreground));
   }
 
@@ -428,7 +526,7 @@
   .lexical-type {
     font-family: var(--font-lexical);
     font-weight: 650;
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
     font-feature-settings: "kern" 1, "liga" 1;
   }
 
@@ -436,7 +534,7 @@
     font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
     font-weight: 680;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
 
   .focus-quiet-card {
@@ -496,11 +594,15 @@
   .dark .premium-word-card-back,
   .dark .dense-solid-route [data-slot="card"],
   .dark .dense-solid-route .premium-panel-soft,
-  .dark .dense-solid-route .analytics-solid-panel,
-  .dark .vocab-lexicon-route .lexicon-row-panel {
+  .dark .dense-solid-route .analytics-solid-panel {
     border-color: hsl(var(--paper-line) / 0.68);
     background: hsl(var(--surface-elevated));
     box-shadow: none;
+  }
+
+  .dark .vocab-lexicon-route .lexicon-row-panel {
+    background: transparent;
+    box-shadow: inset 1px 0 0 hsl(var(--border) / 0.28);
   }
 
   .dark .hover-lift:hover {
@@ -536,31 +638,30 @@
   .question-sheet,
   .study-rail-section {
     position: relative;
-    border: 1px solid hsl(var(--border) / 0.76);
-    border-radius: 18px;
-    background: hsl(var(--card) / 0.96);
-    box-shadow:
-      inset 0 1px 0 hsl(var(--glass-highlight) / 0.18),
-      0 1px 0 hsl(var(--shadow-studio) / 0.035),
-      0 18px 38px -34px hsl(var(--shadow-studio) / 0.22);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .study-sheet,
   .question-sheet {
-    padding: 1.25rem;
+    padding: 1rem 0;
   }
 
   @media (min-width: 640px) {
     .study-sheet,
     .question-sheet {
-      padding: 1.5rem;
+      padding: 1.25rem 0;
     }
   }
 
   .study-rail-section {
-    padding: 1rem;
-    background: hsl(var(--surface-raised) / 0.9);
-    box-shadow: inset 0 1px 0 hsl(var(--glass-highlight) / 0.12);
+    padding: 0;
+  }
+
+  .study-action-cluster {
+    align-self: flex-start;
   }
 
   .study-label {
@@ -575,7 +676,7 @@
     font-size: clamp(1.65rem, 1.2rem + 1.5vw, 2.35rem);
     font-weight: 680;
     line-height: 1.12;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     color: hsl(var(--foreground));
   }
 
@@ -584,7 +685,7 @@
     font-size: clamp(1.45rem, 1.1rem + 1vw, 2rem);
     font-weight: 650;
     line-height: 1.18;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
     color: hsl(var(--foreground));
   }
 
@@ -596,17 +697,17 @@
 
   .study-task-list {
     overflow: hidden;
-    border: 1px solid hsl(var(--border) / 0.64);
-    border-radius: 16px;
-    background: hsl(var(--surface-sunken) / 0.42);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .study-task-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 0.85rem;
-    padding: 0.95rem 1rem;
-    border-bottom: 1px solid hsl(var(--border) / 0.56);
+    padding: 1rem 0;
+    border-bottom: 1px solid hsl(var(--border) / 0.2);
   }
 
   .study-task-row:last-child {
@@ -634,10 +735,18 @@
 
   .word-entry-headword {
     font-family: var(--font-lexical);
-    font-size: clamp(3.1rem, 2rem + 5vw, 5.4rem);
+    max-width: 14ch;
+    font-size: clamp(2.6rem, 1.8rem + 3.6vw, 4.35rem);
     font-weight: 650;
-    line-height: 0.98;
-    letter-spacing: -0.035em;
+    line-height: 1.02;
+    letter-spacing: 0;
+  }
+
+  .word-entry-headword-compact {
+    max-width: 16ch;
+    font-size: clamp(2.25rem, 1.35rem + 3vw, 3.35rem);
+    line-height: 1.06;
+    letter-spacing: 0;
   }
 
   .answer-row {
@@ -664,15 +773,16 @@
   .dark .study-sheet,
   .dark .question-sheet,
   .dark .study-rail-section {
-    border-color: hsl(var(--border) / 0.72);
-    background: hsl(var(--card) / 0.94);
-    box-shadow:
-      inset 0 1px 0 hsl(var(--glass-highlight) / 0.07),
-      0 1px 0 hsl(var(--shadow-studio) / 0.05);
+    background: transparent;
+    box-shadow: none;
   }
 
-  .dark .study-rail-section {
-    background: hsl(var(--surface-raised) / 0.92);
+  .dark .study-task-list {
+    background: transparent;
+  }
+
+  .dark .study-task-row {
+    border-bottom-color: hsl(var(--border) / 0.24);
   }
 }
 
@@ -713,11 +823,15 @@
   overflow: hidden;
   color: hsl(var(--glass-ink));
   border: 1px solid hsl(var(--glass-edge) / 0.42);
-  background: hsl(var(--glass-surface-solid) / 0.94);
+  background:
+    radial-gradient(140% 90% at 12% -28%, hsl(var(--glass-highlight) / 0.18), transparent 42%),
+    linear-gradient(135deg, hsl(var(--glass-highlight) / 0.12), transparent 34%, hsl(var(--glass-tint) / 0.08)),
+    hsl(var(--glass-surface-solid) / 0.92);
   box-shadow:
-    inset 0 1px 0 hsl(var(--glass-highlight) / 0.28),
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.32),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.05),
     0 1px 1px hsl(var(--glass-shadow) / 0.035),
-    0 18px 50px -38px hsl(var(--glass-shadow) / 0.34);
+    0 20px 56px -40px hsl(var(--glass-shadow) / 0.38);
 }
 
 .liquid-glass-bar:not(.fixed):not(.sticky):not(.absolute):not(.relative),
@@ -735,13 +849,19 @@
 .glass-strong::before {
   content: "";
   position: absolute;
-  inset: 0;
-  z-index: -1;
+  inset: -35%;
+  z-index: 0;
   border-radius: inherit;
   pointer-events: none;
+  opacity: 0.72;
   background:
-    radial-gradient(circle at 18% 0%, hsl(var(--glass-highlight) / 0.5), transparent 32%),
-    linear-gradient(110deg, hsl(var(--glass-highlight) / 0.18), transparent 44%, hsl(var(--glass-tint) / 0.1));
+    radial-gradient(56% 36% at 18% 18%, hsl(var(--glass-highlight) / 0.5), transparent 62%),
+    radial-gradient(52% 32% at 82% 74%, hsl(var(--glass-tint) / 0.18), transparent 68%),
+    linear-gradient(112deg, transparent 8%, hsl(var(--glass-highlight) / 0.2) 24%, transparent 44%, hsl(var(--glass-tint) / 0.12) 72%, transparent 94%);
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity var(--duration-base) var(--ease-standard),
+    transform 520ms var(--ease-emphasized);
 }
 
 .liquid-glass-bar::after,
@@ -752,9 +872,22 @@
   content: "";
   position: absolute;
   inset: 1px;
+  z-index: 2;
   border: 1px solid hsl(var(--glass-border) / 0.16);
   border-radius: inherit;
   pointer-events: none;
+  box-shadow:
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.18),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.08);
+}
+
+.liquid-glass-bar > *,
+.liquid-glass-panel > *,
+.liquid-glass-control > *,
+.glass > *,
+.glass-strong > * {
+  position: relative;
+  z-index: 1;
 }
 
 .liquid-glass-bar:not([class*="rounded-"]) {
@@ -777,19 +910,79 @@
     border-color var(--duration-base) var(--ease-standard),
     background-color var(--duration-base) var(--ease-standard),
     box-shadow var(--duration-base) var(--ease-standard);
+  will-change: transform;
 }
 
 .liquid-glass-interactive:hover {
   transform: translateY(-1px);
   border-color: hsl(var(--glass-border) / 0.56);
   box-shadow:
-    inset 0 1px 0 hsl(var(--glass-highlight) / 0.36),
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.42),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.06),
     0 1px 1px hsl(var(--glass-shadow) / 0.04),
-    0 22px 56px -40px hsl(var(--glass-shadow) / 0.42);
+    0 22px 60px -40px hsl(var(--glass-shadow) / 0.46);
+}
+
+.liquid-glass-interactive:hover::before {
+  opacity: 0.86;
+  transform: translate3d(2.5%, -1.5%, 0) scale(1.04);
 }
 
 .liquid-glass-interactive:active {
-  transform: translateY(1px) scale(0.99);
+  transform: translateY(1px) scale(0.985);
+}
+
+.liquid-glass-interactive:active::before {
+  opacity: 0.62;
+  transform: translate3d(0, 1%, 0) scale(0.98);
+}
+
+.liquid-glass-active,
+.liquid-glass-selection {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: hsl(var(--glass-border) / 0.24);
+  background:
+    radial-gradient(120% 92% at 10% -24%, hsl(var(--glass-highlight) / 0.24), transparent 46%),
+    linear-gradient(135deg, hsl(var(--primary) / 0.16), hsl(var(--glass-surface-solid) / 0.7) 58%, hsl(var(--glass-tint) / 0.12));
+  box-shadow:
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.26),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.08);
+}
+
+.liquid-glass-active.absolute {
+  position: absolute;
+}
+
+.liquid-glass-active::before,
+.liquid-glass-selection::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(42% 30% at 18% 20%, hsl(var(--glass-highlight) / 0.42), transparent 72%),
+    linear-gradient(110deg, transparent 18%, hsl(var(--glass-highlight) / 0.18) 38%, transparent 58%);
+  transform: translate3d(-4%, 0, 0);
+}
+
+.liquid-glass-active::after,
+.liquid-glass-selection::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 2;
+  border: 1px solid hsl(var(--glass-border) / 0.14);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.liquid-glass-active > *,
+.liquid-glass-selection > * {
+  position: relative;
+  z-index: 1;
 }
 
 .dark .liquid-glass-bar,
@@ -797,12 +990,16 @@
 .dark .liquid-glass-control,
 .dark .glass,
 .dark .glass-strong {
-  border-color: hsl(var(--glass-edge) / 0.44);
-  background: hsl(var(--glass-surface-solid) / 0.94);
+  border-color: hsl(var(--glass-edge) / 0.38);
+  background:
+    radial-gradient(150% 90% at 12% -26%, hsl(var(--glass-highlight) / 0.045), transparent 44%),
+    linear-gradient(135deg, hsl(var(--glass-highlight) / 0.025), transparent 38%, hsl(var(--glass-tint) / 0.035)),
+    hsl(var(--glass-surface-solid) / 0.96);
   box-shadow:
-    inset 0 1px 0 hsl(var(--glass-highlight) / 0.08),
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.07),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.28),
     0 1px 1px hsl(var(--glass-shadow) / 0.14),
-    0 20px 54px -42px hsl(var(--glass-shadow) / 0.55);
+    0 22px 58px -42px hsl(var(--glass-shadow) / 0.62);
 }
 
 .dark .liquid-glass-bar::before,
@@ -810,9 +1007,11 @@
 .dark .liquid-glass-control::before,
 .dark .glass::before,
 .dark .glass-strong::before {
+  opacity: 0.46;
   background:
-    radial-gradient(circle at 18% 0%, hsl(var(--glass-highlight) / 0.1), transparent 34%),
-    linear-gradient(110deg, hsl(var(--glass-highlight) / 0.055), transparent 48%, hsl(var(--glass-tint) / 0.055));
+    radial-gradient(54% 34% at 18% 18%, hsl(var(--glass-highlight) / 0.075), transparent 66%),
+    radial-gradient(50% 30% at 84% 76%, hsl(var(--glass-tint) / 0.095), transparent 70%),
+    linear-gradient(112deg, transparent 10%, hsl(var(--glass-highlight) / 0.045) 28%, transparent 50%, hsl(var(--glass-tint) / 0.06) 72%, transparent 94%);
 }
 
 .dark .liquid-glass-bar::after,
@@ -821,14 +1020,77 @@
 .dark .glass::after,
 .dark .glass-strong::after {
   border-color: hsl(var(--glass-border) / 0.07);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.08),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.32);
 }
 
 .dark .liquid-glass-interactive:hover {
-  border-color: hsl(var(--glass-border) / 0.2);
+  border-color: hsl(var(--glass-border) / 0.24);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.15),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.32),
+    0 1px 1px hsl(var(--glass-shadow) / 0.16),
+    0 24px 62px -44px hsl(var(--glass-shadow) / 0.7);
+}
+
+.dark .liquid-glass-active,
+.dark .liquid-glass-selection {
+  border-color: hsl(var(--glass-border) / 0.09);
+  background:
+    radial-gradient(120% 90% at 10% -24%, hsl(var(--glass-highlight) / 0.055), transparent 48%),
+    linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--glass-surface-solid) / 0.84) 62%, hsl(var(--glass-tint) / 0.055));
+  box-shadow:
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.075),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.34);
+}
+
+.dark .liquid-glass-active::before,
+.dark .liquid-glass-selection::before {
+  background:
+    radial-gradient(42% 30% at 18% 20%, hsl(var(--glass-highlight) / 0.09), transparent 72%),
+    linear-gradient(110deg, transparent 18%, hsl(var(--glass-highlight) / 0.045) 38%, transparent 58%);
+}
+
+.dark .liquid-glass-active::after,
+.dark .liquid-glass-selection::after {
+  border-color: hsl(var(--glass-border) / 0.055);
+}
+
+.liquid-glass-bar .liquid-glass-active,
+.liquid-glass-bar .liquid-glass-selection,
+.liquid-glass-panel .liquid-glass-active,
+.liquid-glass-panel .liquid-glass-selection {
+  background:
+    linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--glass-surface-solid) / 0.7));
   box-shadow:
     inset 0 1px 0 hsl(var(--glass-highlight) / 0.12),
-    0 1px 1px hsl(var(--glass-shadow) / 0.16),
-    0 22px 56px -44px hsl(var(--glass-shadow) / 0.62);
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.08);
+}
+
+.liquid-glass-bar .liquid-glass-active::before,
+.liquid-glass-bar .liquid-glass-selection::before,
+.liquid-glass-panel .liquid-glass-active::before,
+.liquid-glass-panel .liquid-glass-selection::before {
+  opacity: 0.34;
+}
+
+.dark .liquid-glass-bar .liquid-glass-active,
+.dark .liquid-glass-bar .liquid-glass-selection,
+.dark .liquid-glass-panel .liquid-glass-active,
+.dark .liquid-glass-panel .liquid-glass-selection {
+  background:
+    linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--glass-surface-solid) / 0.9));
+  box-shadow:
+    inset 0 1px 0 hsl(var(--glass-highlight) / 0.045),
+    inset 0 -1px 0 hsl(var(--glass-shadow) / 0.34);
+}
+
+.dark .liquid-glass-bar .liquid-glass-active::before,
+.dark .liquid-glass-bar .liquid-glass-selection::before,
+.dark .liquid-glass-panel .liquid-glass-active::before,
+.dark .liquid-glass-panel .liquid-glass-selection::before {
+  opacity: 0.18;
 }
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -838,8 +1100,9 @@
   .glass,
   .glass-strong {
     background:
-      linear-gradient(135deg, hsl(var(--glass-highlight) / 0.26), hsl(var(--glass-surface) / 0.1)),
-      hsl(var(--glass-surface) / 0.52);
+      radial-gradient(140% 90% at 12% -28%, hsl(var(--glass-highlight) / 0.28), transparent 42%),
+      linear-gradient(135deg, hsl(var(--glass-highlight) / 0.2), hsl(var(--glass-surface) / 0.28) 42%, hsl(var(--glass-tint) / 0.12)),
+      hsl(var(--glass-surface) / 0.58);
     backdrop-filter: blur(24px) saturate(180%) contrast(1.05);
     -webkit-backdrop-filter: blur(24px) saturate(180%) contrast(1.05);
   }
@@ -850,10 +1113,11 @@
   .dark .glass,
   .dark .glass-strong {
     background:
-      linear-gradient(135deg, hsl(var(--glass-highlight) / 0.07), hsl(var(--glass-surface) / 0.16)),
-      hsl(var(--glass-surface) / 0.8);
-    backdrop-filter: blur(18px) saturate(130%) contrast(1.02);
-    -webkit-backdrop-filter: blur(18px) saturate(130%) contrast(1.02);
+      radial-gradient(150% 90% at 12% -28%, hsl(var(--glass-highlight) / 0.045), transparent 44%),
+      linear-gradient(135deg, hsl(var(--glass-highlight) / 0.028), hsl(var(--glass-surface) / 0.34) 44%, hsl(var(--glass-tint) / 0.045)),
+      hsl(var(--glass-surface-solid) / 0.9);
+    backdrop-filter: blur(18px) saturate(132%) contrast(1.08) brightness(0.93);
+    -webkit-backdrop-filter: blur(18px) saturate(132%) contrast(1.08) brightness(0.93);
   }
 
   .liquid-glass-bar .liquid-glass-control,
@@ -871,9 +1135,22 @@
   .dark .liquid-glass-control .liquid-glass-control,
   .dark .glass-strong .glass,
   .dark .glass .glass {
-    background: hsl(var(--glass-surface-solid) / 0.72);
+    background:
+      linear-gradient(135deg, hsl(var(--glass-highlight) / 0.018), transparent 52%),
+      hsl(var(--glass-surface-solid) / 0.86);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .liquid-glass-interactive:hover::before {
+    animation: liquid-glass-glint 1450ms var(--ease-standard) both;
+  }
+
+  .liquid-glass-active::before,
+  .liquid-glass-selection::before {
+    animation: liquid-glass-drift 7s ease-in-out infinite;
   }
 }
 
@@ -896,6 +1173,50 @@
     background: hsl(var(--glass-surface-solid) / 0.98);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+
+  .liquid-glass-active,
+  .liquid-glass-selection {
+    background: hsl(var(--glass-surface-solid) / 0.98);
+  }
+
+  .dark .liquid-glass-active,
+  .dark .liquid-glass-selection {
+    background: hsl(var(--glass-surface-solid) / 0.98);
+  }
+
+  .liquid-glass-bar::before,
+  .liquid-glass-panel::before,
+  .liquid-glass-control::before,
+  .glass::before,
+  .glass-strong::before,
+  .liquid-glass-active::before,
+  .liquid-glass-selection::before {
+    opacity: 0.12;
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  [data-slot="button"],
+  [data-slot="select-trigger"],
+  [data-slot="tabs-trigger"],
+  button.liquid-glass-control,
+  button.liquid-glass-interactive {
+    min-height: 44px;
+  }
+
+  [data-slot="button"][data-size="icon"],
+  [data-slot="button"][data-size="icon-sm"],
+  [data-slot="button"][data-size="icon-lg"],
+  [data-slot="select-trigger"],
+  button.liquid-glass-control,
+  button.liquid-glass-interactive {
+    min-width: 44px;
+  }
+
+  [data-slot="tabs-list"] {
+    min-height: 44px;
   }
 }
 
@@ -1032,6 +1353,30 @@ html {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes liquid-glass-glint {
+  0% {
+    opacity: 0.5;
+    transform: translate3d(-8%, -3%, 0) scale(1.02);
+  }
+  52% {
+    opacity: 0.9;
+    transform: translate3d(7%, 2%, 0) scale(1.04);
+  }
+  100% {
+    opacity: 0.68;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes liquid-glass-drift {
+  0%, 100% {
+    transform: translate3d(-4%, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -1%, 0) scale(1.02);
+  }
 }
 
 @keyframes float {

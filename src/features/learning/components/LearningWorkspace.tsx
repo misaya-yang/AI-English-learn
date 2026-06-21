@@ -111,7 +111,7 @@ export function LearningHeroPanel({
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn('focus-sheet px-4 py-4 sm:px-5 sm:py-5', className)}
+      className={cn('border-b border-border/22 pb-5', className)}
     >
       <div className="relative z-10 space-y-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -132,9 +132,9 @@ export function LearningHeroPanel({
         </div>
 
         {(typeof progress === 'number' || metrics.length > 0) ? (
-          <div className="grid gap-0 overflow-hidden rounded-2xl border border-border/65 bg-[hsl(var(--surface-sunken)/0.42)] sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-0 border-y border-border/25 sm:grid-cols-2 lg:grid-cols-5">
           {typeof progress === 'number' ? (
-            <div className="border-b border-border/70 px-3 py-2 sm:border-r lg:border-b-0">
+            <div className="border-b border-border/25 px-3 py-2 sm:border-r lg:border-b-0">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] text-muted-foreground">{progressLabel || '进度'}</p>
@@ -151,7 +151,7 @@ export function LearningHeroPanel({
           ) : null}
 
           {metrics.map((item) => (
-            <div key={`${item.label}-${String(item.value)}`} className="border-t border-border/70 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 lg:border-t-0">
+            <div key={`${item.label}-${String(item.value)}`} className="border-t border-border/25 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 lg:border-t-0">
               <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
               <div className={cn('mt-1 text-base font-medium', metricToneClass[item.accent || 'default'])}>
                 {item.value}
@@ -167,7 +167,7 @@ export function LearningHeroPanel({
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn('space-y-3 rounded-[18px] border border-border/70 bg-[hsl(var(--surface-raised)/0.9)] p-3.5 shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.1)]', className)}>
+    <section className={cn('space-y-3 border-l border-border/24 pl-4', className)}>
       <div className="space-y-1.5">
         <p className="focus-kicker">{title}</p>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
@@ -208,7 +208,7 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
       {items.map((item) => (
         <div
           key={`${item.label}-${String(item.value)}`}
-          className="min-w-0 rounded-2xl border border-border/65 bg-[hsl(var(--surface-sunken)/0.42)] px-3 py-2.5"
+          className="min-w-0 border-l border-border/24 px-3 py-2.5"
         >
           <p className="focus-kicker">{item.label}</p>
           <div className={cn('study-number mt-1 break-words text-lg', metricToneClass[item.accent || 'default'])}>
@@ -265,10 +265,10 @@ export function LearningCompletionState({
     <motion.section
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn(learningFrameClassName, 'overflow-hidden px-4 py-5 sm:px-8 sm:py-8', className)}
+      className={cn('border-y border-border/24 px-1 py-5 sm:py-7', className)}
     >
       <div className="relative text-center z-10">
-        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary sm:h-12 sm:w-12">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary sm:h-12 sm:w-12">
           <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
         </div>
         {eyebrow ? <p className="focus-kicker mt-4 sm:mt-6">{eyebrow}</p> : null}

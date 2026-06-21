@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Upload, Layers, Loader2, BookOpenCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,10 @@ interface ImportAnkiApkgDialogProps {
   onImport: (file: File, options: AnkiImportOptions) => Promise<AnkiImportResult>;
   onSuccess?: (result: AnkiImportResult) => void;
   onError?: (errors: ImportRowError[]) => void;
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
 export function ImportAnkiApkgDialog({
@@ -50,8 +54,14 @@ export function ImportAnkiApkgDialog({
   onImport,
   onSuccess,
   onError,
+  trigger,
+  open: controlledOpen,
+  onOpenChange,
+  hideTrigger = false,
 }: ImportAnkiApkgDialogProps) {
   const [open, setOpen] = useState(false);
+  const dialogOpen = controlledOpen ?? open;
+  const setDialogOpen = onOpenChange ?? setOpen;
   const [bookName, setBookName] = useState('Imported Anki Deck');
   const [file, setFile] = useState<File | null>(null);
   const [isInspecting, setIsInspecting] = useState(false);
@@ -149,7 +159,7 @@ export function ImportAnkiApkgDialog({
         `Imported ${result.successCount} words from ${result.selectedDeck?.deckName || 'selected deck'}`,
       );
 
-      setOpen(false);
+      setDialogOpen(false);
       resetState();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to import Anki deck';
@@ -161,20 +171,24 @@ export function ImportAnkiApkgDialog({
 
   return (
     <Dialog
-      open={open}
+      open={dialogOpen}
       onOpenChange={(nextOpen) => {
-        setOpen(nextOpen);
+        setDialogOpen(nextOpen);
         if (!nextOpen) {
           resetState();
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <BookOpenCheck className="h-4 w-4 mr-2" />
-          导入 Anki (.apkg)
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button variant="outline">
+              <BookOpenCheck className="h-4 w-4 mr-2" />
+              导入 Anki (.apkg)
+            </Button>
+          )}
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Anki 卡组导入 (.apkg)</DialogTitle>

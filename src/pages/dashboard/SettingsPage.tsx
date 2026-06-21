@@ -187,7 +187,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="settings-unframed-route max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{isZh ? '设置' : 'Settings'}</h1>
         <p className="text-muted-foreground">{copy.subtitle}</p>
@@ -201,7 +201,7 @@ export default function SettingsPage() {
           <TabsTrigger value="account">账号</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-8">
           {/* Appearance */}
           <Card>
             <CardHeader>
@@ -287,7 +287,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-6">
+        <TabsContent value="notifications" className="space-y-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -390,7 +390,7 @@ export default function SettingsPage() {
 
                   <Separator />
 
-                  <div className="space-y-4 rounded-2xl border border-border bg-muted/25 p-4">
+                  <div className="space-y-4 border-y border-border/20 py-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <Label>学习提醒</Label>
@@ -428,7 +428,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-dashed border-border bg-background/80 p-3">
+                    <div className="border-l border-warning/35 py-1 pl-3">
                       <div className="flex items-start gap-3">
                         <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning" />
                         <div className="min-w-0 flex-1">
@@ -457,7 +457,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="learning" className="space-y-6">
+        <TabsContent value="learning" className="space-y-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -524,7 +524,7 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">更高保持率会减少新词、增加复习权重。</p>
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-border p-4">
+                <div className="flex items-center justify-between border-t border-border/20 pt-4">
                   <div>
                     <Label>考前强化周</Label>
                     <p className="mt-1 text-sm text-muted-foreground">优先安排考试输出和更多复习。</p>
@@ -606,7 +606,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="account" className="space-y-6">
+        <TabsContent value="account" className="space-y-8">
           {/* Account Info */}
           <Card>
             <CardHeader>
@@ -637,7 +637,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-destructive/25">
+          <Card className="border-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />

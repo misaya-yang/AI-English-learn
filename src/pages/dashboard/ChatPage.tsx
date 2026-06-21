@@ -1391,26 +1391,26 @@ export default function ChatPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="rounded-2xl border border-border bg-background px-3 py-2">
-                <p className="text-muted-foreground">{isZh ? '到期' : 'Due'}</p>
-                <p className="mt-1 font-semibold">{coachEvidence.dueReviewCount}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-background px-3 py-2">
-                <p className="text-muted-foreground">{isZh ? '错误' : 'Mistakes'}</p>
-                <p className="mt-1 font-semibold">{coachEvidence.recentMistakeCount}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-background px-3 py-2">
-                <p className="text-muted-foreground">{isZh ? '保持' : 'Retention'}</p>
-                <p className="mt-1 font-semibold">{coachRetentionLabel}</p>
-              </div>
+	            <div className="grid grid-cols-3 gap-2 text-xs">
+	              <div className="border-l border-border/20 px-3 py-1.5">
+	                <p className="text-muted-foreground">{isZh ? '到期' : 'Due'}</p>
+	                <p className="mt-1 font-semibold">{coachEvidence.dueReviewCount}</p>
+	              </div>
+	              <div className="border-l border-border/20 px-3 py-1.5">
+	                <p className="text-muted-foreground">{isZh ? '错误' : 'Mistakes'}</p>
+	                <p className="mt-1 font-semibold">{coachEvidence.recentMistakeCount}</p>
+	              </div>
+	              <div className="border-l border-border/20 px-3 py-1.5">
+	                <p className="text-muted-foreground">{isZh ? '保持' : 'Retention'}</p>
+	                <p className="mt-1 font-semibold">{coachRetentionLabel}</p>
+	              </div>
             </div>
           </div>
         </section>
 
         {dailyPlanHandoff ? (
           <section className="border-b border-border bg-[hsl(var(--accent-coach)/0.06)] px-4 py-3 md:px-6 lg:px-8">
-            <div className={cn(contentWidthClass, 'mx-auto flex flex-col gap-3 rounded-2xl border border-[hsl(var(--accent-coach)/0.22)] bg-background p-3 sm:flex-row sm:items-center sm:justify-between')}>
+	            <div className={cn(contentWidthClass, 'mx-auto flex flex-col gap-3 border-l border-[hsl(var(--accent-coach)/0.28)] bg-background/60 px-3 py-2 sm:flex-row sm:items-center sm:justify-between')}>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[hsl(var(--accent-coach))]">
                   {language.startsWith('zh') ? '已载入今日计划' : 'Daily plan loaded'}
@@ -1573,7 +1573,7 @@ export default function ChatPage() {
 
         {chatError && (
           <div className="px-4 pb-2">
-            <div className={cn(contentWidthClass, 'mx-auto flex items-start gap-3 rounded-2xl border border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] p-3')}>
+            <div className={cn(contentWidthClass, 'mx-auto flex items-start gap-3 border-l border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] px-3 py-2')}>
               <AlertTriangle className="h-4 w-4 mt-0.5 text-[hsl(var(--warning))] flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">

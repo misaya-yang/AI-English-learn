@@ -233,7 +233,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="study-premium-bg min-h-screen bg-background text-foreground">
+    <div className="pricing-unframed-route study-premium-bg min-h-screen bg-background text-foreground">
       {/* Header reuses the shared brand mark so Pricing matches Home / Auth. */}
       <header className="sticky top-3 z-30 px-3 sm:px-4">
         <GlassSurface variant="bar" className="mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-5">
@@ -272,7 +272,7 @@ export default function PricingPage() {
         <div className="max-w-3xl">
           <Badge
             variant="secondary"
-            className="rounded-md border border-border bg-muted text-muted-foreground"
+            className="rounded-full bg-muted text-muted-foreground"
           >
             <BookOpen className="mr-1 h-3 w-3" />
             {isZh ? '定价与会员' : 'Pricing & membership'}
@@ -292,13 +292,13 @@ export default function PricingPage() {
           aria-label={isZh ? '方案任务分工' : 'Plan jobs to be done'}
           className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2"
         >
-          <div className="rounded-md border border-border/85 bg-[hsl(var(--surface-raised))]/80 p-4">
+          <div className="border-l border-border/24 px-4 py-2">
             <p className="text-xs font-semibold text-muted-foreground">
               {isZh ? '免费版包含' : 'Free includes'}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(FREE_JOB, i18n.language || 'en')}</p>
           </div>
-          <div className="rounded-md border border-primary/30 bg-primary/5 p-4">
+          <div className="border-l border-primary/34 px-4 py-2">
             <p className="text-xs font-semibold text-primary">
               {isZh ? '专业版适合' : 'Pro is for'}
             </p>
@@ -306,7 +306,7 @@ export default function PricingPage() {
           </div>
         </section>
 
-        <Card className="mt-8 max-w-4xl border-primary/25 [padding-block:0]">
+        <Card className="mt-8 max-w-4xl border-transparent [padding-block:0]">
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -372,15 +372,12 @@ export default function PricingPage() {
                 <Card
                   data-testid={`pricing-plan-${plan.id}`}
                   className={cn(
-                    'relative h-full overflow-hidden rounded-md border bg-[hsl(var(--surface-raised))] [padding-block:0]',
-                    plan.highlighted
-                      ? 'border-primary/45 shadow-[0_1px_1px_hsl(var(--shadow-studio)/0.04),0_14px_28px_-28px_hsl(var(--shadow-studio)/0.28)]'
-                      : 'border-border',
-                  )}
-                >
-                  {plan.highlighted && <div className="absolute inset-x-0 top-0 h-1 bg-primary" />}
-                  {plan.highlighted && (
-                    <Badge className="absolute right-5 top-5 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+	                    'pricing-plan-surface relative h-full overflow-hidden pl-5 [padding-block:0]',
+	                  )}
+	                  data-highlighted={plan.highlighted ? 'true' : 'false'}
+	                >
+	                  {plan.highlighted && (
+	                    <Badge className="absolute right-0 top-0 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
                       {isZh ? '备考方案' : 'Exam prep'}
                     </Badge>
                   )}
@@ -394,18 +391,33 @@ export default function PricingPage() {
                     </div>
 
                     <div className="mt-6">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-semibold">
-                          ${price.toFixed(2).replace(/\.00$/, '')}
-                        </span>
-                        <span className="text-sm text-muted-foreground">{isZh ? '/ 月' : '/ month'}</span>
-                      </div>
-                      {isYearly && plan.yearlyPrice > 0 && (
-                        <p className="mt-1 text-xs text-primary">
-                          {isZh
-                            ? `按年结算（$${(plan.yearlyPrice * 12).toFixed(0)}/年）`
-                            : `Billed annually ($${(plan.yearlyPrice * 12).toFixed(0)}/year)`}
-                        </p>
+                      {showFailClosedNotice ? (
+                        <div>
+                          <p className="text-sm font-semibold text-[hsl(var(--warning))]">
+                            {isZh ? '暂未开放' : 'Coming soon'}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {isZh
+                              ? `参考价 $${price.toFixed(2).replace(/\.00$/, '')}${isYearly ? ' / 月，按年结算' : ' / 月'}`
+                              : `Reference price $${price.toFixed(2).replace(/\.00$/, '')}${isYearly ? ' / month, billed yearly' : ' / month'}`}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-semibold">
+                              ${price.toFixed(2).replace(/\.00$/, '')}
+                            </span>
+                            <span className="text-sm text-muted-foreground">{isZh ? '/ 月' : '/ month'}</span>
+                          </div>
+                          {isYearly && plan.yearlyPrice > 0 && (
+                            <p className="mt-1 text-xs text-primary">
+                              {isZh
+                                ? `按年结算（$${(plan.yearlyPrice * 12).toFixed(0)}/年）`
+                                : `Billed annually ($${(plan.yearlyPrice * 12).toFixed(0)}/year)`}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
 
@@ -438,8 +450,8 @@ export default function PricingPage() {
                       {plan.id === 'free' ? (
                         <Button
                           asChild
-                          className="h-11 w-full rounded-md"
-                          variant="outline"
+	                          className="h-11 w-full rounded-full"
+	                          variant="glass"
                         >
                           <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
                             {isZh ? plan.ctaZh : plan.cta}
@@ -452,7 +464,7 @@ export default function PricingPage() {
                         // local product intent so we can measure Pro demand.
                         <div
                           data-testid="pricing-pro-coming-soon"
-                          className="rounded-md border border-dashed border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.1)] p-4 text-center"
+	                          className="border-l border-[hsl(var(--warning)/0.38)] bg-[hsl(var(--warning)/0.1)] px-4 py-3 text-left"
                         >
                           <p className="text-sm font-semibold text-[hsl(var(--warning))]">
                             {isZh ? '暂未开放' : 'Coming soon'}
@@ -469,7 +481,7 @@ export default function PricingPage() {
                             type="button"
                             data-testid="pricing-pro-waitlist-button"
                             variant={isWaitlistedForCycle ? 'secondary' : 'default'}
-                            className="mt-4 h-10 w-full rounded-md"
+	                            className="mt-4 h-11 w-full rounded-full"
                             onClick={handleProWaitlist}
                           >
                             {isWaitlistedForCycle ? (
@@ -497,7 +509,7 @@ export default function PricingPage() {
                         // behind this branch so we can lift it back in once
                         // VITE_BILLING_ENABLED=true is set on the deploy.
                         <Button
-                          className="h-11 w-full rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+	                          className="h-11 w-full rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                           onClick={() =>
                             toast.info(isZh ? '支付服务配置完成后即可开始结账。' : 'Checkout will start when payment provider is configured.')
                           }
@@ -518,7 +530,7 @@ export default function PricingPage() {
         {!isCheckoutLive && (
           <div
             role="status"
-            className="mt-8 flex max-w-4xl flex-col gap-2 rounded-lg border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.1)] px-5 py-4 text-sm text-[hsl(var(--warning))] sm:flex-row sm:items-center sm:gap-3"
+	            className="mt-8 flex max-w-4xl flex-col gap-2 border-l border-[hsl(var(--warning)/0.36)] bg-[hsl(var(--warning)/0.1)] px-4 py-3 text-sm text-[hsl(var(--warning))] sm:flex-row sm:items-center sm:gap-3"
           >
             <ShieldAlert className="h-5 w-5 flex-shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" />
             <div className="space-y-1">
@@ -548,7 +560,7 @@ export default function PricingPage() {
           </h2>
           <div className="mt-8 space-y-3">
             {faqs.map((faq) => (
-              <Card key={faq.question} className="border-border">
+	              <Card key={faq.question} className="border-transparent">
                 <CardContent className="p-4 sm:p-5">
                   <h3 className="flex items-start gap-2 text-sm font-semibold">
                     <HelpCircle
@@ -575,7 +587,7 @@ export default function PricingPage() {
           <Button
             asChild
             size="lg"
-            className="mt-5 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+	            className="mt-5 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
           >
             <Link to="/register">
               {isZh ? '免费开始' : 'Start free'}
