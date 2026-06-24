@@ -41,20 +41,20 @@ export function DashboardSkeleton() {
 
         <div className="space-y-4">
           <div className="study-sheet flex items-center gap-3 px-4 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.6)] text-primary">
-            <BookOpen className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground">
-              {isZh ? '正在加载' : 'Loading'}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {isZh ? '保持当前页面，马上继续。' : 'Keeping this page ready.'}
-            </p>
-          </div>
-          <div className="hidden h-1 w-24 overflow-hidden rounded-full bg-muted sm:block">
-            <div className="h-full w-1/2 rounded-full bg-primary/55 animate-shimmer" />
-          </div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.6)] text-primary">
+              <BookOpen className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground">
+                {isZh ? '正在加载' : 'Loading'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isZh ? '保持当前页面，马上继续。' : 'Keeping this page ready.'}
+              </p>
+            </div>
+            <div className="hidden h-1 w-24 overflow-hidden rounded-full bg-muted sm:block">
+              <div className="h-full w-1/2 rounded-full bg-primary/55 animate-shimmer" />
+            </div>
           </div>
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_240px]">
             <div className="rounded-xl border border-[hsl(var(--paper-line)/0.75)] bg-[hsl(var(--paper)/0.72)] p-5 shadow-[var(--shadow-paper)]">

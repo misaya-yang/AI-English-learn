@@ -956,51 +956,40 @@ export default function PracticePage() {
     </StudyRail>
   );
 
-  const pageTitle = !selectedMode
-    ? (isZh ? '练习' : 'Practice')
-    : !hasStarted
-      ? focusedModeLabel
-      : isComplete
-        ? (isZh ? '完成' : 'Done')
-        : focusedModeLabel;
+  let pageTitle: string = focusedModeLabel;
+  if (!selectedMode) {
+    pageTitle = isZh ? '练习' : 'Practice';
+  } else if (isComplete) {
+    pageTitle = isZh ? '完成' : 'Done';
+  }
 
-  const pageDescription = !selectedMode
-    ? (isZh ? '选一项开始。' : 'Pick one.')
-  : !hasStarted
-      ? focusedBlueprint.insight
-    : isComplete
-      ? (isZh ? '完成。' : 'Done.')
-      : undefined;
+  let pageDescription: string | undefined;
+  if (!selectedMode) {
+    pageDescription = isZh ? '选一项开始。' : 'Pick one.';
+  } else if (!hasStarted) {
+    pageDescription = focusedBlueprint.insight;
+  } else if (isComplete) {
+    pageDescription = isZh ? '完成。' : 'Done.';
+  }
 
-  const heroProgress =
-    selectedMode && hasStarted && !isComplete && selectedMode !== 'writing'
-      ? Math.min(100, Math.round(sessionProgress))
-      : selectedMode === 'writing' && writingFeedback
-        ? 100
-        : null;
+  let heroProgress: number | null = null;
+  if (selectedMode && hasStarted && !isComplete && selectedMode !== 'writing') {
+    heroProgress = Math.min(100, Math.round(sessionProgress));
+  } else if (selectedMode === 'writing' && writingFeedback) {
+    heroProgress = 100;
+  }
 
   const renderPageShell = (mainContent: ReactNode) => {
     const showHeaderSheet = hasStarted || isComplete;
     const showModePicker = !hasStarted;
-    const showInsightRail = hasStarted || isComplete;
-    const primaryAction = selectedMode && !hasStarted
-      ? { label: isZh ? '开始练习' : 'Start practice', onClick: startFocusedMode }
+    const showInsightRail = showHeaderSheet;
+    const headerActions = selectedMode
+      ? (
+          <Button variant="outline" className={workbookOutlineButtonClass} onClick={exitToPicker}>
+            {isZh ? '换一项' : 'Change mode'}
+          </Button>
+        )
       : null;
-    const secondaryActions: Array<{ label: string; onClick?: () => void; href?: string; variant?: 'outline' }> = [];
-    if (selectedMode && !hasStarted && (selectedMode === 'quiz' || selectedMode === 'fill_blank')) {
-      secondaryActions.push({
-        label: timedMode ? (isZh ? '60 秒限时：开' : '60s timer on') : (isZh ? '60 秒限时' : '60s timer'),
-        onClick: () => setTimedMode((prev) => !prev),
-        variant: 'outline',
-      });
-    }
-    if (selectedMode) {
-      secondaryActions.push({
-        label: isZh ? '换一项' : 'Change mode',
-        onClick: exitToPicker,
-        variant: 'outline',
-      });
-    }
 
     return (
       <StudyShell>
@@ -1009,26 +998,7 @@ export default function PracticePage() {
             eyebrow={selectedMode ? focusedModeLabel : isZh ? '练习' : 'Practice'}
             title={selectedMode && hasStarted && !isComplete ? (isZh ? '练习' : 'Practice') : pageTitle}
             description={pageDescription}
-            actions={(primaryAction || secondaryActions.length > 0) ? (
-              <>
-                {primaryAction ? (
-                  <Button className={workbookButtonClass} onClick={primaryAction.onClick}>
-                    {primaryAction.label}
-                  </Button>
-                ) : null}
-                {secondaryActions.map((action) => (
-                  <Button
-                    key={action.label}
-                    variant="outline"
-                    className={workbookOutlineButtonClass}
-                    onClick={action.onClick}
-                    asChild={Boolean(action.href)}
-                  >
-                    {action.href ? <a href={action.href}>{action.label}</a> : action.label}
-                  </Button>
-                ))}
-              </>
-            ) : null}
+            actions={headerActions}
           >
             {typeof heroProgress === 'number' ? (
               <div>
