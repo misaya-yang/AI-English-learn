@@ -65,6 +65,12 @@ import {
 import { getStudySessions } from '@/data/localStorage';
 import { computeLevel, getLevelName } from '@/services/gamification';
 import { buildWeeklyLearningRecap } from '@/features/learning/weeklyRecap';
+import {
+  filterStudySessionsByRange,
+  getAnalyticsCutoffDate,
+  getAnalyticsEventWindowDays,
+  type AnalyticsTimeRange,
+} from './analyticsRange';
 
 // ── Theme-aware chart color hook ─────────────────────────────────────────────
 function readHslToken(style: CSSStyleDeclaration, token: string, alpha?: number): string {
@@ -474,20 +480,13 @@ export default function AnalyticsPage() {
     () => ({ color: colors.foreground }),
     [colors.foreground],
   );
-  const [timeRange, setTimeRange] = useState('week');
+  const [timeRange, setTimeRange] = useState<AnalyticsTimeRange>('week');
   const [weeklyData, setWeeklyData] = useState<WeeklyActivityPoint[]>([]);
   const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
   const [eventHistory, setEventHistory] = useState<LearningEventRecord[]>([]);
 
   // Cutoff date derived from the selected time range
-  const cutoffDate = useMemo(() => {
-    if (timeRange === 'all') return null;
-    const days = timeRange === 'year' ? 365 : timeRange === 'month' ? 30 : 7;
-    const d = new Date();
-    d.setDate(d.getDate() - days);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, [timeRange]);
+  const cutoffDate = useMemo(() => getAnalyticsCutoffDate(timeRange), [timeRange]);
 
   // Derive topic data filtered by the selected time range
   const topicData = useMemo(() => {
@@ -514,7 +513,7 @@ export default function AnalyticsPage() {
 
     const loadAnalytics = async () => {
       // Map timeRange to how many days of event history to fetch
-      const eventDays = timeRange === 'year' || timeRange === 'all' ? 365 : timeRange === 'month' ? 30 : 7;
+      const eventDays = getAnalyticsEventWindowDays(timeRange);
 
       const [weekly, heatmap, events] = await Promise.all([
         // getWeeklyActivity always returns last-7-day buckets; only include for week view
@@ -526,10 +525,7 @@ export default function AnalyticsPage() {
       // For month/year/all views build activity buckets from study sessions
       let displayData = weekly;
       if (timeRange !== 'week') {
-        const cutoffMs = timeRange === 'all' ? 0 : Date.now() - eventDays * 24 * 60 * 60 * 1000;
-        const sessions = getStudySessions(userId).filter(
-          (s) => new Date(s.date).getTime() >= cutoffMs,
-        );
+        const sessions = filterStudySessionsByRange(getStudySessions(userId), timeRange);
 
         if (timeRange === 'month') {
           // Group by individual day for the last 30 days
@@ -803,7 +799,7 @@ export default function AnalyticsPage() {
           <h1 className="text-2xl font-bold">{copy.headerTitle}</h1>
           <p className="text-muted-foreground">{copy.headerSubtitle}</p>
         </div>
-        <Select value={timeRange} onValueChange={setTimeRange}>
+        <Select value={timeRange} onValueChange={(value) => setTimeRange(value as AnalyticsTimeRange)}>
           <SelectTrigger className="liquid-glass-control w-full rounded-full border-border/65 bg-transparent md:w-[150px]">
             <Calendar className="h-4 w-4 mr-2" />
             <SelectValue placeholder={copy.timeRanges.week} />

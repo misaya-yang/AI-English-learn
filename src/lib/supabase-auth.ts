@@ -21,6 +21,8 @@ export interface UserProfile {
 const PROFILE_KEY_PREFIX = 'vocabdaily-profile-';
 const LOCAL_AUTH_USER_KEY = 'vocabdaily-local-auth-user';
 const LOCAL_AUTH_EVENT = 'vocabdaily-local-auth-change';
+const LEARNING_PROFILE_MAP_KEY = 'vocabdaily_user_learning_profiles';
+const LEARNING_MISSION_MAP_KEY = 'vocabdaily_learning_missions';
 const DEFAULT_DEMO_EMAIL = 'demo@example.com';
 const AUTH_SESSION_TIMEOUT_MS = 2500;
 const AUTH_EXPIRY_GRACE_SECONDS = 30;
@@ -240,6 +242,40 @@ function normalizeLocalUserId(email: string): string {
   return buildLocalAuthUserId(email);
 }
 
+function migrateStorageMapEntry(storageKey: string, previousUserId: string, nextUserId: string): void {
+  const raw = localStorage.getItem(storageKey);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!(previousUserId in parsed) || nextUserId in parsed) {
+      return;
+    }
+
+    parsed[nextUserId] = parsed[previousUserId];
+    delete parsed[previousUserId];
+    localStorage.setItem(storageKey, JSON.stringify(parsed));
+  } catch {
+    // Keep migration best-effort; invalid cached JSON should not block auth.
+  }
+}
+
+function migrateLocalAuthUserState(previousUserId: string, nextUserId: string): void {
+  if (previousUserId === nextUserId) {
+    return;
+  }
+
+  const previousProfile = loadLocalProfile(previousUserId);
+  if (previousProfile && !loadLocalProfile(nextUserId)) {
+    saveLocalProfile({ ...previousProfile, userId: nextUserId });
+  }
+
+  migrateStorageMapEntry(LEARNING_PROFILE_MAP_KEY, previousUserId, nextUserId);
+  migrateStorageMapEntry(LEARNING_MISSION_MAP_KEY, previousUserId, nextUserId);
+}
+
 function ensureLocalAuthUserIdentity(user: AuthUser): AuthUser {
   if (isLocalAuthUserId(user.id)) {
     return user;
@@ -247,11 +283,9 @@ function ensureLocalAuthUserIdentity(user: AuthUser): AuthUser {
 
   const nextId = normalizeLocalUserId(user.email || DEFAULT_DEMO_EMAIL);
   const migrated = { ...user, id: nextId };
-  const previousProfile = loadLocalProfile(user.id);
-  if (previousProfile && !loadLocalProfile(nextId)) {
-    saveLocalProfile({ ...previousProfile, userId: nextId });
-  }
+  migrateLocalAuthUserState(user.id, nextId);
   localStorage.setItem(LOCAL_AUTH_USER_KEY, JSON.stringify(migrated));
+  syncCompatibilityAuthCache(migrated);
   return migrated;
 }
 

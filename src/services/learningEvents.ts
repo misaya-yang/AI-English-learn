@@ -159,8 +159,8 @@ export const completeMissionTaskEvent = async (args: {
   });
 };
 
-export const getLearningEvents = async (userId: string, days = 30): Promise<LearningEventRecord[]> => {
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+export const getLearningEvents = async (userId: string, days: number | null = 30): Promise<LearningEventRecord[]> => {
+  const cutoff = days === null ? null : Date.now() - days * 24 * 60 * 60 * 1000;
   const localRows = await getEventsForUser(userId, 2500);
   const local = localRows
     .map((row) => ({
@@ -174,21 +174,25 @@ export const getLearningEvents = async (userId: string, days = 30): Promise<Lear
       ),
       createdAt: row.created_at,
     }))
-    .filter((event) => new Date(event.createdAt).getTime() >= cutoff);
+    .filter((event) => (cutoff === null ? true : new Date(event.createdAt).getTime() >= cutoff));
 
   if (isLocalAuthUserId(userId)) {
     return dedupeEvents(local);
   }
 
   try {
-    const fromIso = new Date(cutoff).toISOString();
-    const { data, error } = await supabase
+    let query = supabase
       .from('learning_events')
       .select('id,user_id,event_name,event_source,session_id,payload,created_at')
       .eq('user_id', userId)
-      .gte('created_at', fromIso)
       .order('created_at', { ascending: false })
       .limit(1500);
+
+    if (cutoff !== null) {
+      query = query.gte('created_at', new Date(cutoff).toISOString());
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return dedupeEvents(local);
