@@ -200,7 +200,7 @@ export default function ProfilePage() {
   };
   const displayName =
     isZh && user?.email === 'demo@example.com' && user?.displayName === 'Demo Learner'
-      ? '演示学习者'
+      ? '演示账号'
       : (user?.displayName || (isZh ? '学习者' : 'Learner'));
   const avatarInitial = displayName[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U';
   const levelProgressLabel = isZh ? '能力阶段' : levelName;
@@ -307,7 +307,7 @@ export default function ProfilePage() {
             <div className="grid w-full grid-cols-3 gap-2 md:w-auto md:min-w-[280px]">
               <div className="border-l border-border/20 px-3 py-1.5">
                 <p className="text-lg font-semibold tabular-nums">{xp.total.toLocaleString()}</p>
-		                <p className="text-xs text-muted-foreground">{isZh ? '学习记录' : 'Points'}</p>
+		                <p className="text-xs text-muted-foreground">{isZh ? '积分' : 'Points'}</p>
               </div>
 		              <div className="border-l border-border/20 px-3 py-1.5">
 		                <p className="text-lg font-semibold tabular-nums">{streak.current}</p>
@@ -327,7 +327,7 @@ export default function ProfilePage() {
 		                {levelProgressLabel} → {isZh ? `阶段 ${currentLevel + 1}` : `Level ${currentLevel + 1}`}
 	              </span>
               <span className="text-sm text-muted-foreground">
-	                {xpInCurrentLevel} / {xpNeededForNext} {isZh ? '记录' : 'points'}
+	                {xpInCurrentLevel} / {xpNeededForNext} {isZh ? '积分' : 'points'}
               </span>
             </div>
             <Progress value={progressPercent} className="h-2" />
@@ -542,7 +542,7 @@ export default function ProfilePage() {
               </div>
               {dailyMultiplier > 1 && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
-	                  {dailyMultiplier}x {isZh ? '学习记录' : 'points'}
+	                  {dailyMultiplier}x {isZh ? '积分' : 'points'}
                 </Badge>
               )}
             </div>
@@ -557,14 +557,14 @@ export default function ProfilePage() {
               onClick={() => {
                 const result = purchaseStreakFreeze();
                 if (result.success) {
-	                  toast.success(`已兑换打卡冻结（消耗 ${result.cost} 条记录）`);
+	                  toast.success(`已兑换打卡冻结（消耗 ${result.cost} 积分）`);
 	                } else {
-	                  toast.error(`学习记录不足（需要 ${result.cost} 条记录）`);
+	                  toast.error(`积分不足（需要 ${result.cost}）`);
 	                }
               }}
             >
               <ShieldCheck className="h-4 w-4 mr-1" />
-		              {isZh ? '兑换冻结（50 条记录）' : 'Buy freeze (50 points)'}
+		              {isZh ? '兑换冻结（50 积分）' : 'Buy freeze (50 points)'}
             </Button>
           </CardContent>
         </Card>
@@ -658,7 +658,7 @@ export default function ProfilePage() {
           {plan === 'free' && (
 		            <div className="mt-4 flex flex-col gap-3 border-l border-warning/35 bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 	              <p className="text-sm leading-relaxed text-warning">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
-	              <Button asChild size="sm" variant="glassPrimary" className="h-8 flex-shrink-0 rounded-full px-3 text-xs font-semibold">
+	              <Button asChild size="sm" variant="glassPrimary" className="h-8 flex-shrink-0 rounded-lg px-3 text-xs font-semibold">
 	                <Link to="/pricing">
 	                  {isZh ? '查看方案入口' : 'View plan access'}
 	                </Link>

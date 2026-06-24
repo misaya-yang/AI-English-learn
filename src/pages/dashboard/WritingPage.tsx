@@ -86,10 +86,10 @@ export default function WritingPage() {
       ]}
       actions={
         <>
-          <Button variant="glass" onClick={() => setGradeResult(null)} className="rounded-full">
+          <Button variant="glass" onClick={() => setGradeResult(null)} className="rounded-lg">
             {isZh ? '回到草稿修改' : 'Revise this draft'}
           </Button>
-          <Button variant="glassPrimary" onClick={handleReset} className="rounded-full">
+          <Button variant="glassPrimary" onClick={handleReset} className="rounded-lg">
             <RefreshCw className="mr-2 h-4 w-4" />
             {isZh ? '重新写一篇' : 'Start a new draft'}
           </Button>
@@ -173,7 +173,7 @@ export default function WritingPage() {
 
       {/* Writing type selector */}
       <Tabs value={writingType} onValueChange={(v) => { setWritingType(v as WritingType); setGradeResult(null); }}>
-        <TabsList className="liquid-glass-control w-full rounded-full p-1">
+        <TabsList className="liquid-glass-control w-full rounded-lg p-1">
           {WRITING_TYPES.map((t) => (
             <TabsTrigger key={t.id} value={t.id} className="flex-1 text-xs sm:text-sm">
               {isZh ? t.labelZh : t.label}

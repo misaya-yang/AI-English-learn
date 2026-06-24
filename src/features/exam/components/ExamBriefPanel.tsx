@@ -70,16 +70,16 @@ export function ExamBriefPanel({
               <SelectItem value="hard">进阶</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={onGeneratePrompt} disabled={isBusy} variant="glass" className="h-10 rounded-full md:w-[130px]">
+          <Button onClick={onGeneratePrompt} disabled={isBusy} variant="glass" className="h-10 rounded-lg md:w-[130px]">
             <RefreshCw className="mr-1.5 h-4 w-4" /> 随机题
           </Button>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => void onGenerateSimulation()} disabled={isBusy} variant="glassPrimary" className="rounded-full">
+          <Button onClick={() => void onGenerateSimulation()} disabled={isBusy} variant="glassPrimary" className="rounded-lg">
             <Target className="mr-1.5 h-4 w-4" /> 准备仿真题
           </Button>
-          <Button variant="glass" className="rounded-full" onClick={onOpenDraft}>
+          <Button variant="glass" className="rounded-lg" onClick={onOpenDraft}>
             开始写作
           </Button>
         </div>

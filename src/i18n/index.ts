@@ -648,7 +648,7 @@ const zh = {
         desc: '选择题、填空、配对、听力和写作练习。',
       },
       gamification: {
-        title: '学习记录',
+        title: '排行',
         desc: '查看已完成内容、复习节奏和近期记录。',
       },
       aiTutor: {
@@ -835,7 +835,7 @@ const zh = {
         totalWords: '总单词数',
         mastered: '已掌握',
         streak: '连续学习',
-        xp: '学习记录',
+        xp: '积分',
       },
       charts: {
         weekly: '每周活动',

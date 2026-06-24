@@ -64,10 +64,10 @@ export function InsightRail({
                 <p className="text-[11px] font-medium text-muted-foreground/80">数据</p>
                 <h2 className="mt-2 text-lg font-semibold">只看这次练习相关的记录</h2>
               </div>
-              <TabsList className="liquid-glass-control grid w-full grid-cols-3 rounded-full p-1">
-                <TabsTrigger value="weakness" className="rounded-full">弱项</TabsTrigger>
-                <TabsTrigger value="trend" className="rounded-full">走势</TabsTrigger>
-                <TabsTrigger value="history" className="rounded-full">历史</TabsTrigger>
+              <TabsList className="liquid-glass-control grid w-full grid-cols-3 rounded-lg p-1">
+                <TabsTrigger value="weakness" className="rounded-md">弱项</TabsTrigger>
+                <TabsTrigger value="trend" className="rounded-md">走势</TabsTrigger>
+                <TabsTrigger value="history" className="rounded-md">历史</TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -100,7 +100,7 @@ export function InsightRail({
                       <Button onClick={() => void onGenerateMicroLesson()} disabled={isBusy || !feedback}>
                         <ListChecks className="mr-1.5 h-4 w-4" /> 错题练习
                       </Button>
-                      <Button variant="glass" className="rounded-full" onClick={onJumpToVocabulary}>
+                      <Button variant="glass" className="rounded-lg" onClick={onJumpToVocabulary}>
                         <BookOpen className="mr-1.5 h-4 w-4" /> 跳转词库补强
                       </Button>
                     </div>
@@ -185,7 +185,7 @@ export function InsightRail({
                           </div>
 
                           <div className="mt-4 flex gap-2">
-                            <Button size="sm" variant="glass" className="rounded-full" onClick={() => onRetryFeedback(item)}>
+                            <Button size="sm" variant="glass" className="rounded-lg" onClick={() => onRetryFeedback(item)}>
                               再练一次
                             </Button>
                             <Button

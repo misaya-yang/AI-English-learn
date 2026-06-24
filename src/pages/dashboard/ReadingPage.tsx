@@ -418,14 +418,14 @@ export default function ReadingPage() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button onClick={() => startPassage(featuredPassage)} variant="glassPrimary" className="min-h-11 rounded-full px-5">
+                <Button onClick={() => startPassage(featuredPassage)} variant="glassPrimary" className="min-h-11 rounded-lg px-5">
                   {isZh ? '开始这篇' : 'Start this passage'}
                   <ChevronRight className="ml-1.5 h-4 w-4" />
                 </Button>
                 <Button
                   onClick={handleGenerateNew}
                   disabled={isGenerating}
-                  className="min-h-11 rounded-full px-5"
+                  className="min-h-11 rounded-lg px-5"
                   variant="glass"
                 >
                   {isGenerating ? (
@@ -534,7 +534,7 @@ export default function ReadingPage() {
               size="sm"
               onClick={() => setPhase('select')}
               variant="ghost"
-              className="liquid-glass-control liquid-glass-interactive min-h-11 rounded-full border border-border text-muted-foreground hover:text-foreground text-xs sm:min-h-9"
+              className="liquid-glass-control liquid-glass-interactive min-h-11 rounded-lg border border-border text-muted-foreground hover:text-foreground text-xs sm:min-h-9"
             >
               {isZh ? '换文章' : 'Change passage'}
             </Button>
@@ -579,7 +579,7 @@ export default function ReadingPage() {
                         key={opt}
                         onClick={() => setAnswer(q.id, opt)}
                         className={cn(
-                          'min-h-11 rounded-full border px-4 py-1.5 text-xs font-medium transition sm:min-h-9',
+                          'min-h-11 rounded-lg border px-4 py-1.5 text-xs font-medium transition sm:min-h-9',
                           answers[q.id] === opt
                             ? 'border-primary/45 bg-primary/12 text-primary'
                             : 'border-transparent bg-muted/45 text-muted-foreground hover:bg-muted/70',
@@ -626,7 +626,7 @@ export default function ReadingPage() {
 
             <Button
               onClick={handleSubmit}
-              className="mt-2 min-h-11 w-full rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+              className="mt-2 min-h-11 w-full rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90"
             >
               {isZh ? '提交答案' : 'Submit answers'}
               <ChevronRight className="ml-1 h-4 w-4" />
@@ -663,14 +663,14 @@ export default function ReadingPage() {
             <Button
               onClick={() => setPhase('select')}
               variant="glassPrimary"
-              className="rounded-full"
+              className="rounded-lg"
             >
               {isZh ? '换一篇文章' : 'Choose another passage'}
             </Button>
             <Button
               onClick={() => startPassage(current)}
               variant="glass"
-              className="rounded-full"
+              className="rounded-lg"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               {isZh ? '重练本篇' : 'Retry this passage'}

@@ -51,10 +51,10 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? 'IELTS 词汇和练习' : 'IELTS words and practice',
+      title: isZh ? 'IELTS 词汇练习' : 'IELTS vocabulary practice',
       subtitle: isZh
-        ? '先复习到期词，再学新词，最后做一组题。'
-        : 'Review due words, add new ones, then finish one short set.',
+        ? '到期词先复习，新词学几个，再做一组短练。'
+        : 'Review due words, add a few new ones, then do one short set.',
       primaryCta: isZh ? '开始练习' : 'Start practice',
       secondaryCta: isZh ? '看样课' : 'Sample lesson',
     },
@@ -213,21 +213,9 @@ export default function Home() {
               </div>
               <h1
                 aria-label={copy.hero.title}
-                className="mt-8 max-w-xl text-[3.25rem] font-bold leading-[0.98] text-foreground sm:text-[4.8rem] lg:text-[5.6rem]"
+                className="mt-8 max-w-xl text-[2.7rem] font-bold leading-[1.02] text-foreground sm:text-[3.65rem] lg:text-[4.15rem]"
               >
-                {isZh ? (
-                  <>
-                    IELTS 词汇
-                    <br />
-                    和 <span className="text-[hsl(var(--accent-memory))]">练习</span>
-                  </>
-                ) : (
-                  <>
-                    IELTS words
-                    <br />
-                    and <span className="text-[hsl(var(--accent-memory))]">practice</span>
-                  </>
-                )}
+                {copy.hero.title}
               </h1>
               <p className="mt-7 max-w-xl text-xl leading-9 text-muted-foreground">
                 {copy.hero.subtitle}
@@ -311,7 +299,7 @@ export default function Home() {
 
             <div className="mt-7 grid gap-4 md:grid-cols-[1.08fr_0.92fr] md:grid-rows-2">
               {workflowCards.map((step) => (
-                <article key={step.title} className={`rounded-2xl border border-border/30 p-5 ${step.className}`}>
+                <article key={step.title} className={`workbook-surface p-5 ${step.className}`}>
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <step.icon className="h-5 w-5" />
                   </div>

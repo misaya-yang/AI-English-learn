@@ -6,14 +6,14 @@ export function DashboardSkeleton() {
   const { i18n } = useTranslation();
   const isZh = i18n.language?.startsWith('zh');
   const rows = isZh
-    ? ['今天的内容', '复习词卡', '短练习', '学习记录']
-    : ['Today', 'Review cards', 'Short practice', 'Study record'];
+    ? ['今天', '复习', '练习', '进度']
+    : ['Today', 'Review', 'Practice', 'Progress'];
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className="min-h-[calc(100vh-5rem)] bg-background p-4 text-foreground animate-in fade-in duration-200 sm:p-6"
+      className="study-app-bg min-h-[calc(100vh-5rem)] bg-background p-4 text-foreground animate-in fade-in duration-200 sm:p-6"
     >
       <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-[13rem_minmax(0,1fr)]">
         <aside className="hidden rounded-xl border border-[hsl(var(--paper-line)/0.75)] bg-[hsl(var(--paper)/0.74)] p-3 shadow-[var(--shadow-paper)] md:block">

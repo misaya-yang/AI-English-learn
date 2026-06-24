@@ -878,7 +878,7 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-2xl border px-3 py-3 text-left transition-colors',
+                'group relative w-full rounded-lg border px-3 py-2.5 text-left transition-colors sm:py-3',
                 active
                   ? 'border-[hsl(var(--accent-practice)/0.32)] bg-[hsl(var(--accent-practice)/0.08)]'
                   : 'border-transparent hover:border-border/70 hover:bg-muted/60',
@@ -893,7 +893,7 @@ export default function PracticePage() {
               <div className="flex items-start gap-3">
                 <span
                   className={cn(
-                    'mt-0.5 flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground',
+                    'flex h-8 w-8 items-center justify-center rounded-md border text-muted-foreground sm:mt-0.5 sm:h-9 sm:w-9',
                     active ? 'border-[hsl(var(--accent-practice)/0.3)] bg-card/70 text-[hsl(var(--accent-practice))]' : 'border-border/60 bg-muted/50',
                   )}
                 >
@@ -910,7 +910,7 @@ export default function PracticePage() {
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                  <span className="mt-0.5 hidden text-xs leading-5 text-muted-foreground sm:block">
                     {isZh ? mode.descriptionZh : mode.description}
                   </span>
                 </span>
@@ -980,6 +980,9 @@ export default function PracticePage() {
         : null;
 
   const renderPageShell = (mainContent: ReactNode) => {
+    const showHeaderSheet = hasStarted || isComplete;
+    const showModePicker = !hasStarted;
+    const showInsightRail = hasStarted || isComplete;
     const primaryAction = selectedMode && !hasStarted
       ? { label: isZh ? '开始练习' : 'Start practice', onClick: startFocusedMode }
       : null;
@@ -1001,55 +1004,57 @@ export default function PracticePage() {
 
     return (
       <StudyShell>
-        <StudySheet
-          eyebrow={selectedMode ? focusedModeLabel : isZh ? '练习' : 'Practice'}
-          title={selectedMode && hasStarted && !isComplete ? (isZh ? '练习' : 'Practice') : pageTitle}
-          description={pageDescription}
-          actions={(primaryAction || secondaryActions.length > 0) ? (
-            <>
-              {primaryAction ? (
-                <Button className={workbookButtonClass} onClick={primaryAction.onClick}>
-                  {primaryAction.label}
-                </Button>
-              ) : null}
-              {secondaryActions.map((action) => (
-                <Button
-                  key={action.label}
-                  variant="outline"
-                  className={workbookOutlineButtonClass}
-                  onClick={action.onClick}
-                  asChild={Boolean(action.href)}
-                >
-                  {action.href ? <a href={action.href}>{action.label}</a> : action.label}
-                </Button>
-              ))}
-            </>
-          ) : null}
-        >
-          {typeof heroProgress === 'number' ? (
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-                <span>
-                  {selectedMode === 'writing'
-                    ? (isZh ? '写作' : 'Writing')
-                    : isZh
-                      ? `第 ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions} 题`
-                      : `Question ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions}`}
-                </span>
-                <span>{heroProgress}%</span>
+        {showHeaderSheet ? (
+          <StudySheet
+            eyebrow={selectedMode ? focusedModeLabel : isZh ? '练习' : 'Practice'}
+            title={selectedMode && hasStarted && !isComplete ? (isZh ? '练习' : 'Practice') : pageTitle}
+            description={pageDescription}
+            actions={(primaryAction || secondaryActions.length > 0) ? (
+              <>
+                {primaryAction ? (
+                  <Button className={workbookButtonClass} onClick={primaryAction.onClick}>
+                    {primaryAction.label}
+                  </Button>
+                ) : null}
+                {secondaryActions.map((action) => (
+                  <Button
+                    key={action.label}
+                    variant="outline"
+                    className={workbookOutlineButtonClass}
+                    onClick={action.onClick}
+                    asChild={Boolean(action.href)}
+                  >
+                    {action.href ? <a href={action.href}>{action.label}</a> : action.label}
+                  </Button>
+                ))}
+              </>
+            ) : null}
+          >
+            {typeof heroProgress === 'number' ? (
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+                  <span>
+                    {selectedMode === 'writing'
+                      ? (isZh ? '写作' : 'Writing')
+                      : isZh
+                        ? `第 ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions} 题`
+                        : `Question ${Math.min(currentQuestionIndex + 1, totalQuestions)} / ${totalQuestions}`}
+                  </span>
+                  <span>{heroProgress}%</span>
+                </div>
+                <Progress value={heroProgress} className={practiceProgressClass} />
               </div>
-              <Progress value={heroProgress} className={practiceProgressClass} />
-            </div>
-          ) : null}
-        </StudySheet>
+            ) : null}
+          </StudySheet>
+        ) : null}
 
         <div className={cn(
           'grid gap-5 xl:items-start',
-          hasStarted ? 'xl:grid-cols-[minmax(0,1fr)_260px]' : 'xl:grid-cols-[220px_minmax(0,1fr)_260px]',
+          showInsightRail ? 'xl:grid-cols-[minmax(0,1fr)_260px]' : 'xl:grid-cols-[220px_minmax(0,1fr)]',
         )}>
-          {!hasStarted ? <div className="order-2 min-w-0 xl:order-none">{renderModeSelector()}</div> : null}
-          <div className={cn('min-w-0', !hasStarted && 'order-1 xl:order-none')}>{mainContent}</div>
-          <div className={cn('min-w-0', !hasStarted && 'order-3 xl:order-none')}>{renderInsightRail()}</div>
+          {showModePicker ? <div className="order-2 min-w-0 xl:order-none">{renderModeSelector()}</div> : null}
+          <div className={cn('min-w-0', showModePicker && 'order-1 xl:order-none')}>{mainContent}</div>
+          {showInsightRail ? <div className="min-w-0">{renderInsightRail()}</div> : null}
         </div>
       </StudyShell>
     );
@@ -1116,6 +1121,15 @@ export default function PracticePage() {
 
           <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-end">
             <div className="flex flex-col gap-2 sm:flex-row">
+              {selectedMode === 'quiz' || selectedMode === 'fill_blank' ? (
+                <Button
+                  variant="outline"
+                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                  onClick={() => setTimedMode((prev) => !prev)}
+                >
+                  {timedMode ? (isZh ? '60 秒限时：开' : '60s timer on') : (isZh ? '60 秒限时' : '60s timer')}
+                </Button>
+              ) : null}
               <Button className={workbookButtonClass} onClick={startFocusedMode}>
                 {isZh ? '开始练习' : 'Start practice'}
                 <ChevronRight className="ml-2 h-4 w-4" />
@@ -1525,7 +1539,7 @@ export default function PracticePage() {
                         ? 'practice'
                         : listeningOutcome === 'needsReview'
                           ? 'warning'
-                          : 'danger'
+                          : 'warning'
                   }
                   className="mx-auto max-w-md text-left"
                 >
@@ -1753,7 +1767,7 @@ export default function PracticePage() {
                     ? 'practice'
                     : choiceOutcome === 'needsReview'
                       ? 'warning'
-                      : 'danger'
+                      : 'warning'
               }
             >
               {choiceOutcome === 'needsReview'

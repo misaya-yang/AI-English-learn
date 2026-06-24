@@ -621,7 +621,7 @@ export default function ListeningPage() {
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">{featuredListening.subtitle}</p>
               </div>
 
-              <Button onClick={() => handleSelect(featuredListening)} variant="glassPrimary" className="rounded-full">
+              <Button onClick={() => handleSelect(featuredListening)} variant="glassPrimary" className="rounded-lg">
                 {isZh ? '开始这段' : 'Start this clip'}
                 <ChevronRight className="ml-1.5 h-4 w-4" />
               </Button>
@@ -774,7 +774,7 @@ export default function ListeningPage() {
                 variant="glass"
                 size="sm"
                 onClick={tts.stop}
-                className="rounded-full"
+                className="rounded-lg"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
@@ -782,7 +782,7 @@ export default function ListeningPage() {
                 size="sm"
                 onClick={tts.isPlaying ? tts.pause : tts.play}
                 variant="glassPrimary"
-                className="rounded-full px-6"
+                className="rounded-lg px-6"
               >
                 {tts.isPlaying
                   ? <><Pause className="h-4 w-4 mr-1.5" />{isZh ? '暂停' : 'Pause'}</>
@@ -794,7 +794,7 @@ export default function ListeningPage() {
                 variant="glass"
                 size="sm"
                 onClick={handleStartQuestions}
-                className="rounded-full"
+                className="rounded-lg"
               >
                 <SkipForward className="h-3.5 w-3.5" />
               </Button>
@@ -832,7 +832,7 @@ export default function ListeningPage() {
         {/* CTA */}
         <Button
           onClick={handleStartQuestions}
-          className="w-full rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+          className="w-full rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
         >
           {isZh ? '开始答题' : 'Start Questions'} <ChevronRight className="ml-1.5 h-4 w-4" />
         </Button>
@@ -895,11 +895,11 @@ export default function ListeningPage() {
                 ]}
                 actions={
                   <>
-                    <Button onClick={() => setShowTranscript(true)} variant="glass" className="rounded-full">
+                    <Button onClick={() => setShowTranscript(true)} variant="glass" className="rounded-lg">
                       <Volume2 className="mr-2 h-4 w-4" />
                       {isZh ? '打开文字稿' : 'Review transcript'}
                     </Button>
-                    <Button onClick={handleReset} variant="glassPrimary" className="rounded-full">
+                    <Button onClick={handleReset} variant="glassPrimary" className="rounded-lg">
                       {isZh ? '换一段听力' : 'Try another clip'}
                     </Button>
                   </>
@@ -926,7 +926,7 @@ export default function ListeningPage() {
               <Button
                 onClick={handleSubmit}
                 disabled={!allAnswered}
-                className="w-full rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+                className="w-full rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
               >
                 {isZh ? '提交答案' : 'Submit Answers'}
               </Button>

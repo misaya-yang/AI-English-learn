@@ -64,13 +64,13 @@ export function ExamDraftPanel({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="glass" className="rounded-full" onClick={onBuildOutline} disabled={isBusy}>
+            <Button variant="glass" className="rounded-lg" onClick={onBuildOutline} disabled={isBusy}>
               <ListChecks className="mr-1.5 h-4 w-4" /> 提纲
             </Button>
-            <Button variant="glass" className="rounded-full" onClick={onEnhanceVocabulary} disabled={isBusy}>
+            <Button variant="glass" className="rounded-lg" onClick={onEnhanceVocabulary} disabled={isBusy}>
               <PenLine className="mr-1.5 h-4 w-4" /> 词汇改写
             </Button>
-            <Button variant="glass" className="rounded-full" onClick={() => onToolPanelChange('coach')}>
+            <Button variant="glass" className="rounded-lg" onClick={() => onToolPanelChange('coach')}>
               <Bot className="mr-1.5 h-4 w-4" /> 答疑
             </Button>
           </div>
@@ -125,7 +125,7 @@ export function ExamDraftPanel({
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">先根据当前题目整理一版可执行提纲。</p>
-                  <Button size="sm" variant="glassPrimary" className="rounded-full" onClick={onBuildOutline} disabled={isBusy}>
+                  <Button size="sm" variant="glassPrimary" className="rounded-lg" onClick={onBuildOutline} disabled={isBusy}>
                   整理提纲
                 </Button>
               </div>
@@ -153,7 +153,7 @@ export function ExamDraftPanel({
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">先写出草稿，再抽取低阶表达做改写。</p>
-                <Button size="sm" variant="glassPrimary" className="rounded-full" onClick={onEnhanceVocabulary} disabled={isBusy}>
+                <Button size="sm" variant="glassPrimary" className="rounded-lg" onClick={onEnhanceVocabulary} disabled={isBusy}>
                   词汇改写
                 </Button>
               </div>
@@ -171,7 +171,7 @@ export function ExamDraftPanel({
               placeholder="例如：我的论证不够深入，如何改到 6.5+？"
             />
             <div className="flex justify-end">
-              <Button variant="glass" className="rounded-full" onClick={() => void onAskTutor()} disabled={isBusy}>
+              <Button variant="glass" className="rounded-lg" onClick={() => void onAskTutor()} disabled={isBusy}>
                 {loadingStage === 'tutoring' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
                 提交问题
               </Button>
@@ -188,14 +188,14 @@ export function ExamDraftPanel({
       <div className="flex flex-wrap gap-2">
         <Button
           variant="glassPrimary"
-          className="rounded-full"
+          className="rounded-lg"
           onClick={() => void onSubmitWriting()}
           disabled={isBusy}
         >
           {loadingStage === 'grading' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
           查看评分反馈
         </Button>
-        <Button variant="glass" className="rounded-full" onClick={onBackToBrief}>
+        <Button variant="glass" className="rounded-lg" onClick={onBackToBrief}>
           回到策略
         </Button>
       </div>

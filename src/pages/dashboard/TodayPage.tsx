@@ -240,7 +240,7 @@ const XPCounter = memo(function XPCounter({ value }: { value: number }) {
         animate={{ y: 0, opacity: 1 }}
         className="text-xs font-bold text-[hsl(var(--accent-practice))]"
       >
-        {isZh ? `今日记录 +${value}` : `Today +${value}`}
+        {isZh ? `今日积分 +${value}` : `Today +${value}`}
       </motion.span>
     </motion.div>
   );

@@ -41,7 +41,7 @@ describe('Home i18n surface', () => {
   it('does not mix Chinese-only marketing labels into English mode', () => {
     renderHome();
 
-    expect(screen.getByRole('heading', { name: 'IELTS words and practice' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'IELTS vocabulary practice' })).toBeInTheDocument();
     expect(screen.getAllByText('Review 12 words').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Learn 5 new words').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Do 1 practice set').length).toBeGreaterThan(0);

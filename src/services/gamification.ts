@@ -176,7 +176,7 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
     nameEn: 'Steady record',
     nameZh: '稳定记录',
     descriptionEn: 'Reach 1000 study records',
-    descriptionZh: '学习记录达到 1000',
+    descriptionZh: '积分达到 1000',
     check: (s) => s.totalXP >= 1000,
   },
 ];

@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useMemo, useState, type ComponentType } from 'react';
+import { useCallback, useMemo, useState, type ComponentType } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchPalette, useSearchPalette } from '@/components/SearchPalette';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -26,29 +26,23 @@ import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useTranslation } from 'react-i18next';
 import { buildLifecycleNotification } from '@/features/learning/lifecycleNotifications';
 import {
+  getDashboardRouteByPath,
+  getRoutesByGroup,
+  type DashboardRouteMeta,
+} from '@/features/learning/routeRegistry';
+import {
   BookOpen,
   BookText,
-  Brain,
-  BarChart2,
-  CalendarDays,
   ChevronRight,
   ClipboardList,
-  Headphones,
-  GraduationCap,
   LayoutGrid,
-  AudioLines,
-  PenTool,
-  Library,
   LogOut,
   Menu,
-  MessageCircleMore,
   MoreHorizontal,
   Moon,
   Search,
   Settings,
-  Shield,
   Sun,
-  Target,
   User,
   Globe,
 } from 'lucide-react';
@@ -74,77 +68,6 @@ const localDateKey = (date: Date): string => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-};
-
-const shellTitleMap: Record<string, { title: LocalizedText; description: LocalizedText }> = {
-  '/dashboard/today': {
-    title: { en: 'Today', zh: '今日' },
-    description: { en: 'Review, new words, and practice.', zh: '复习、新词和练习。' },
-  },
-  '/dashboard/review': {
-    title: { en: 'Review', zh: '复习' },
-    description: { en: 'Cards that are due today.', zh: '今天到期的词卡。' },
-  },
-  '/dashboard/practice': {
-    title: { en: 'Practice', zh: '练习' },
-    description: { en: 'Quizzes, dictation, and writing.', zh: '测验、听写和写作。' },
-  },
-  '/dashboard/chat': {
-    title: { en: 'Help', zh: '答疑' },
-    description: { en: 'Ask questions, revise sentences, and practice mistakes.', zh: '提问、改句和错题练习。' },
-  },
-  '/dashboard/exam': {
-    title: { en: 'Exam Prep', zh: '考试训练' },
-    description: { en: 'IELTS practice, timed prompts, and writing feedback.', zh: 'IELTS 练习、计时题和写作反馈。' },
-  },
-  '/dashboard/vocabulary': {
-    title: { en: 'Vocabulary', zh: '词汇' },
-    description: { en: 'Manage word books and imported lists.', zh: '管理词书和导入词表。' },
-  },
-  '/dashboard/analytics': {
-    title: { en: 'Progress', zh: '学习进度' },
-    description: { en: 'See completed practice, review, and study time.', zh: '查看已完成的练习、复习和学习时间。' },
-  },
-  '/dashboard/memory': {
-    title: { en: 'Memory', zh: '记忆' },
-    description: { en: 'Manage reusable learning notes.', zh: '管理下次练习可用的信息。' },
-  },
-  '/dashboard/pronunciation': {
-    title: { en: 'Pronunciation', zh: '发音练习' },
-    description: { en: 'Practice sounds, stress, and short spoken answers.', zh: '练发音、重音和短口语回答。' },
-  },
-  '/dashboard/writing': {
-    title: { en: 'Writing', zh: '写作练习' },
-    description: { en: 'Write, score, and revise short answers.', zh: '写一段、看评分、再修改。' },
-  },
-  '/dashboard/reading': {
-    title: { en: 'Reading', zh: '阅读' },
-    description: { en: 'Reading drills.', zh: '阅读练习。' },
-  },
-  '/dashboard/listening': {
-    title: { en: 'Listening', zh: '听力' },
-    description: { en: 'Listening drills.', zh: '听力练习。' },
-  },
-  '/dashboard/grammar': {
-    title: { en: 'Grammar', zh: '语法' },
-    description: { en: 'Grammar drills.', zh: '语法练习。' },
-  },
-  '/dashboard/learning-path': {
-    title: { en: 'Learning Path', zh: '学习路径' },
-    description: { en: 'A staged plan.', zh: '分阶段学习计划。' },
-  },
-  '/dashboard/leaderboard': {
-    title: { en: 'Leaderboard', zh: '学习记录' },
-    description: { en: 'Compare weekly progress with other learners.', zh: '查看本周学习记录。' },
-  },
-  '/dashboard/settings': {
-    title: { en: 'Settings', zh: '设置' },
-    description: { en: 'Adjust preferences, feedback style, and system behavior.', zh: '调整偏好、反馈风格和系统行为。' },
-  },
-  '/dashboard/profile': {
-    title: { en: 'Profile', zh: '个人资料' },
-    description: { en: 'Review account information and learner identity.', zh: '查看账号信息和学习身份。' },
-  },
 };
 
 const learningPrimaryLabelByRoute: Record<(typeof LEARNING_ROUTE_PREFIXES)[number], LocalizedText> = {
@@ -207,7 +130,7 @@ const dashboardLayoutCopy = {
 } as const;
 
 export default function DashboardLayout() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { user, logout } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const { streak, xp, dueWords, dailyMission, settings, learningProfile } = useUserData();
@@ -255,107 +178,25 @@ export default function DashboardLayout() {
 
   useStudyReminder(lifecycleReminder);
 
+  const routeToNavItem = useCallback((route: DashboardRouteMeta): NavItem => ({
+    path: route.path,
+    label: pickLocalized(route.label, isZh),
+    description: pickLocalized(route.description, isZh),
+    icon: route.icon as ComponentType<{ className?: string }>,
+    badge: route.id === 'review' && dueWords.length > 0 ? dueWords.length : null,
+  }), [dueWords.length, isZh]);
+
   const primaryNav = useMemo<NavItem[]>(
-    () => [
-      {
-        path: '/dashboard/today',
-        label: t('nav.today'),
-        description: pickLocalized({ en: "Today's list", zh: '今天要做的事' }, isZh),
-        icon: CalendarDays,
-      },
-      {
-        path: '/dashboard/review',
-        label: t('nav.review'),
-        description: pickLocalized({ en: 'Cards due today', zh: '到期词卡' }, isZh),
-        icon: Brain,
-        badge: dueWords.length > 0 ? dueWords.length : null,
-      },
-      {
-        path: '/dashboard/practice',
-        label: t('nav.practice'),
-        description: pickLocalized({ en: 'Short quiz, dictation, writing', zh: '短测、听写、写作' }, isZh),
-        icon: LayoutGrid,
-      },
-      {
-        path: '/dashboard/reading',
-        label: t('nav.reading'),
-        description: pickLocalized({ en: 'Reading drills', zh: '阅读练习' }, isZh),
-        icon: BookOpen,
-      },
-      {
-        path: '/dashboard/listening',
-        label: t('nav.listening'),
-        description: pickLocalized({ en: 'Listening drills', zh: '听力练习' }, isZh),
-        icon: Headphones,
-      },
-      {
-        path: '/dashboard/grammar',
-        label: t('nav.grammar'),
-        description: pickLocalized({ en: 'Grammar drills', zh: '语法练习' }, isZh),
-        icon: GraduationCap,
-      },
-      {
-        path: '/dashboard/pronunciation',
-        label: t('nav.pronunciation'),
-        description: pickLocalized({ en: 'Pronunciation drills', zh: '发音练习' }, isZh),
-        icon: AudioLines,
-      },
-      {
-        path: '/dashboard/writing',
-        label: t('nav.writing'),
-        description: pickLocalized({ en: 'Writing practice', zh: '写作练习' }, isZh),
-        icon: PenTool,
-      },
-      {
-        path: '/dashboard/chat',
-        label: t('nav.coach'),
-        description: pickLocalized({ en: 'Questions, revision, and drills', zh: '提问、改句、短测' }, isZh),
-        icon: MessageCircleMore,
-      },
-      {
-        path: '/dashboard/exam',
-        label: t('nav.examPrep'),
-        description: pickLocalized({ en: 'IELTS practice', zh: 'IELTS 练习' }, isZh),
-        icon: Target,
-      },
-    ],
-    [dueWords.length, isZh, t],
+    () => [...getRoutesByGroup('learning'), ...getRoutesByGroup('practice')].map(routeToNavItem),
+    [routeToNavItem],
   );
 
   const toolNav = useMemo<NavItem[]>(
     () => [
-      {
-        path: '/dashboard/vocabulary',
-        label: t('nav.vocabulary'),
-        description: pickLocalized({ en: 'Word books and review words', zh: '词书与复习词' }, isZh),
-        icon: Library,
-      },
-      {
-        path: '/dashboard/analytics',
-        label: t('nav.analytics'),
-        description: pickLocalized({ en: 'Learning evidence and trends', zh: '学习数据与趋势' }, isZh),
-        icon: BarChart2,
-      },
-      {
-        path: '/dashboard/memory',
-        label: t('nav.memory'),
-        description: pickLocalized({ en: 'Long-term memory management', zh: '长期记忆管理' }, isZh),
-        icon: Shield,
-      },
-      {
-        path: '/dashboard/leaderboard',
-        label: pickLocalized({ en: 'Leaderboard', zh: '学习记录' }, isZh),
-        description: pickLocalized({ en: 'Weekly progress with other learners', zh: '本周练习记录' }, isZh),
-        icon: CalendarDays,
-      },
-      {
-        path: '/dashboard/settings',
-        label: t('common.settings'),
-        description: pickLocalized({ en: 'System settings', zh: '系统设置' }, isZh),
-        icon: Settings,
-      },
-    ],
-    [isZh, t],
+      ...getRoutesByGroup('tools'),
+      getRoutesByGroup('admin').find((route) => route.id === 'settings'),
+    ].filter((route): route is DashboardRouteMeta => Boolean(route)).map(routeToNavItem),
+    [routeToNavItem],
   );
 
   const learningNav = useMemo(() => primaryNav.filter((item) => LEARNING_ROUTE_PREFIXES.includes(item.path as (typeof LEARNING_ROUTE_PREFIXES)[number])), [primaryNav]);
@@ -381,12 +222,9 @@ export default function DashboardLayout() {
     [primaryNav],
   );
 
-  const activeShellEntry =
-    shellTitleMap[location.pathname] ||
-    shellTitleMap[primaryNav.find((item) => location.pathname.startsWith(item.path))?.path ?? ''] ||
-    shellTitleMap['/dashboard/today'];
+  const activeShellEntry = getDashboardRouteByPath(location.pathname) || getDashboardRouteByPath('/dashboard/today')!;
   const activeShell = {
-    title: pickLocalized(activeShellEntry.title, isZh),
+    title: pickLocalized(activeShellEntry.label, isZh),
     description: pickLocalized(activeShellEntry.description, isZh),
   };
 
@@ -397,7 +235,7 @@ export default function DashboardLayout() {
   const demoBadgeText = copy.demo;
   const displayName =
     isDemoSession && isZh && user?.displayName === 'Demo Learner'
-      ? '演示学习者'
+      ? '演示账号'
       : (user?.displayName || user?.email || copy.learner);
   const avatarInitial = displayName.charAt(0).toUpperCase();
   const levelLabel = isZh ? `阶段 ${xp?.level || 1}` : `Level ${xp?.level || 1}`;
@@ -717,8 +555,8 @@ export default function DashboardLayout() {
   if (isLearningRoute) {
     return (
       <>
-        <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="hidden h-[100dvh] min-h-0 w-[224px] flex-col border-r border-border/24 bg-transparent px-3 py-4 text-sidebar-foreground lg:flex">
+        <div className="study-app-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
+        <aside className="app-glass-bar hidden h-[100dvh] min-h-0 w-[224px] flex-col rounded-none border-y-0 border-l-0 border-r border-border/24 bg-sidebar/62 px-3 py-4 text-sidebar-foreground lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sidebar-primary/10 text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
@@ -804,11 +642,11 @@ export default function DashboardLayout() {
         <main
           id="main-content"
           className={cn(
-            'flex min-h-0 flex-col overflow-hidden',
+            'flex min-h-0 min-w-0 w-full flex-col overflow-hidden',
             isMobile ? mobileMainHeightClass : 'flex-1',
           )}
         >
-          <header className="border-b border-border/28 bg-background/78 backdrop-blur-md">
+          <header className="app-glass-bar rounded-none border-x-0 border-t-0 border-border/28 bg-background/72 backdrop-blur-md">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-6">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
@@ -877,8 +715,8 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background">
-      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[284px] flex-col border-r border-border/24 bg-transparent px-4 py-4 text-sidebar-foreground lg:flex">
+    <div className="study-app-bg flex h-[100dvh] overflow-hidden bg-background">
+      <aside className="app-glass-bar hidden h-[100dvh] min-h-0 w-[284px] flex-col rounded-none border-y-0 border-l-0 border-r border-border/24 bg-sidebar/62 px-4 py-4 text-sidebar-foreground lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sidebar-primary/10 text-sidebar-primary">
             <BookText className="h-5 w-5" />
@@ -1001,11 +839,11 @@ export default function DashboardLayout() {
 
       <main
         className={cn(
-          'flex min-h-0 flex-col overflow-hidden',
+          'flex min-h-0 min-w-0 w-full flex-col overflow-hidden',
           isMobile && !isChatRoute ? mobileMainHeightClass : 'flex-1',
         )}
       >
-        <header className="border-b border-border/28 bg-background/78 backdrop-blur-md">
+        <header className="app-glass-bar rounded-none border-x-0 border-t-0 border-border/28 bg-background/72 backdrop-blur-md">
           <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7">
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>

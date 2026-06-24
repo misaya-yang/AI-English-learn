@@ -119,7 +119,7 @@ export function ChatComposer({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
               transition={{ duration: 0.18 }}
-              className="liquid-glass-panel absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-2xl border border-border/70 bg-popover/80 px-3 py-3 text-popover-foreground shadow-lg"
+              className="liquid-glass-panel absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-lg border border-border/70 bg-popover/80 px-3 py-3 text-popover-foreground shadow-lg"
             >
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">
@@ -142,7 +142,7 @@ export function ChatComposer({
                       key={option.id}
                       onClick={() => onSelectMode(option.id)}
                       className={cn(
-                        'liquid-glass-control liquid-glass-interactive inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                        'liquid-glass-control liquid-glass-interactive inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors',
                         currentMode === option.id
                           ? 'border-primary/50 bg-primary/10 text-primary'
                           : 'border-border hover:border-primary/40 hover:bg-primary/5',
@@ -236,7 +236,7 @@ export function ChatComposer({
               <button
                 key={prompt.text}
                 onClick={() => onQuickPrompt(prompt.text)}
-                className="liquid-glass-control liquid-glass-interactive w-full min-w-0 rounded-full border border-border/65 px-4 py-2 text-left text-sm transition-all hover:border-primary/40 sm:w-auto sm:flex-shrink-0 sm:whitespace-nowrap sm:text-center"
+                className="liquid-glass-control liquid-glass-interactive w-full min-w-0 rounded-lg border border-border/65 px-4 py-2 text-left text-sm transition-all hover:border-primary/40 sm:w-auto sm:flex-shrink-0 sm:whitespace-nowrap sm:text-center"
               >
                 {prompt.textZh}
               </button>

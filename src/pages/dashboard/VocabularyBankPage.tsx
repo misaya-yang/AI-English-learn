@@ -294,7 +294,7 @@ export default function VocabularyBankPage() {
               <Button
                 variant="glass"
                 size="icon"
-                className="h-11 w-11 rounded-full"
+                className="h-11 w-11 rounded-lg"
                 aria-label={isZh ? '词典工具' : 'Dictionary tools'}
               >
                 <MoreHorizontal className="h-5 w-5" />
@@ -443,13 +443,26 @@ export default function VocabularyBankPage() {
                 ? '一组雅思写作和口语常用表达，包含释义、例句、搭配和中文提示。'
                 : 'IELTS writing and speaking expressions with meanings, examples, collocations, and Chinese notes.'}
             </p>
+            <div className="mt-4 flex flex-wrap gap-3 text-sm font-medium">
+              <Link className="text-primary hover:text-primary/80" to="/dashboard/today">
+                {isZh ? '今天学这套' : 'Study today'}
+              </Link>
+              {firstIeltsCard ? (
+                <Link
+                  className="text-primary hover:text-primary/80"
+                  to={`/dashboard/practice?source=ielts-anki&wordId=${encodeURIComponent(firstIeltsCard.id)}&q=${encodeURIComponent(firstIeltsCard.word)}`}
+                >
+                  {isZh ? '练第一张' : 'Practice first card'}
+                </Link>
+              ) : null}
+            </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="h-10 w-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                 aria-label={isZh ? 'IELTS 卡片动作' : 'IELTS deck actions'}
               >
                 <MoreHorizontal className="h-4 w-4" />
@@ -540,7 +553,7 @@ export default function VocabularyBankPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-11 w-11 rounded-full border-border bg-transparent text-foreground hover:bg-muted"
+                  className="h-11 w-11 rounded-lg border-border bg-transparent text-foreground hover:bg-muted"
                   onClick={() => playAudio(featuredEntry.headword)}
                   aria-label={isZh ? `播放 ${featuredEntry.headword} 发音` : `Play pronunciation for ${featuredEntry.headword}`}
                 >
@@ -579,7 +592,7 @@ export default function VocabularyBankPage() {
                     <Button
                       variant="glass"
                       size="icon"
-                      className="h-10 w-10 rounded-full"
+                  className="h-10 w-10 rounded-lg"
                       aria-label={isZh ? '词条动作' : 'Entry actions'}
                     >
                       <MoreHorizontal className="h-4 w-4" />
@@ -618,7 +631,7 @@ export default function VocabularyBankPage() {
           </div>
         ) : (
           <div className="mx-auto flex max-w-2xl flex-col items-center py-8 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
               <BookOpen className="h-6 w-6" />
             </div>
             <h2 className="mt-4 text-xl font-semibold text-foreground">
@@ -634,7 +647,7 @@ export default function VocabularyBankPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="mt-5 h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  className="mt-5 h-10 w-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                   aria-label={isZh ? '开始添加词条' : 'Start adding words'}
                 >
                   <MoreHorizontal className="h-4 w-4" />
@@ -727,7 +740,7 @@ export default function VocabularyBankPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                          className="h-10 w-10 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                           aria-label={isZh ? `${book.name} 词书动作` : `${book.name} book actions`}
                         >
                           <MoreHorizontal className="h-4 w-4" />
@@ -760,18 +773,18 @@ export default function VocabularyBankPage() {
       </Card>
 
       {/* Filters */}
-      <div className="liquid-glass-bar flex flex-col gap-3 rounded-2xl border border-border/55 bg-background/70 p-3 md:flex-row">
+      <div className="liquid-glass-bar flex flex-col gap-3 rounded-lg border border-border/55 bg-background/70 p-3 md:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 	          <Input
 	            placeholder={isZh ? '搜索单词、释义或中文解释...' : 'Search words, meanings, or notes...'}
 	            value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 rounded-full border-border/70 bg-card pl-10"
+            className="h-10 rounded-lg border-border/70 bg-card pl-10"
           />
         </div>
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="liquid-glass-control w-full rounded-full border-border/65 bg-transparent md:w-[160px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-border/65 bg-transparent md:w-[160px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="状态" />
           </SelectTrigger>
@@ -784,7 +797,7 @@ export default function VocabularyBankPage() {
           </SelectContent>
         </Select>
         <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-          <SelectTrigger className="liquid-glass-control w-full rounded-full border-border/65 bg-transparent md:w-[160px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-border/65 bg-transparent md:w-[160px]">
             <Tag className="h-4 w-4 mr-2" />
             <SelectValue placeholder="分类" />
           </SelectTrigger>
@@ -864,7 +877,7 @@ export default function VocabularyBankPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-	                        <Badge className={cn('rounded-full px-2.5 py-1 text-xs', statusColors[status])}>
+	                        <Badge className={cn('rounded-md px-2.5 py-1 text-xs', statusColors[status])}>
                             {isZh ? (statusLabelsZh[status] || status) : (statusLabels[status] || status)}
                           </Badge>
                         <Button
@@ -1015,7 +1028,7 @@ export default function VocabularyBankPage() {
                     <Button variant="outline" className="flex-1" asChild>
                       <Link to={`/dashboard/practice?source=lexicon&wordId=${encodeURIComponent(entry.id)}&q=${encodeURIComponent(entry.headword)}`}>
                         <Brain className="h-4 w-4 mr-2" />
-                        {isZh ? '开始 Lexicon drill' : 'Start Lexicon drill'}
+                        {isZh ? '开始练习' : 'Practice this word'}
                       </Link>
                     </Button>
                     <Button variant="outline" className="flex-1" asChild>

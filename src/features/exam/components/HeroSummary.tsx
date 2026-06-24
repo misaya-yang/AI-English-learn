@@ -153,7 +153,7 @@ export function HeroSummary({
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
-          <Button className="rounded-full" onClick={onContinueWriting}>
+          <Button className="rounded-lg" onClick={onContinueWriting}>
             继续今日写作
           </Button>
           <Button variant="glass" onClick={onStartSimulation} disabled={isBusy}>

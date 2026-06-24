@@ -53,7 +53,7 @@ function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) 
   const value = tab === 'weekly' ? entry.weeklyXp : tab === 'streak' ? entry.streak : entry.totalWords;
   const unit = tab === 'weekly' ? '记录' : tab === 'streak' ? '天' : '词';
   const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
-    ? '演示学习者'
+    ? '演示账号'
     : entry.displayName;
 
   return (
@@ -119,7 +119,7 @@ export default function LeaderboardPage() {
     () =>
       buildSocialLeaderboardSnapshot({
         userId: user?.id || 'guest',
-        displayName: user?.displayName || user?.email?.split('@')[0] || '演示学习者',
+        displayName: user?.displayName || user?.email?.split('@')[0] || '演示账号',
         level: profile?.cefrLevel || 'B1',
         weeklyXp: stats.weeklyXP || xp.today || 0,
         streak: currentStreak,
@@ -165,14 +165,14 @@ export default function LeaderboardPage() {
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">学习记录</h1>
+          <h1 className="text-2xl font-bold text-foreground">排行</h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Users className="h-3.5 w-3.5" />
             本周 {entries.length} 名学习者
           </p>
         </div>
 
-        <div className="liquid-glass-control rounded-2xl border border-border bg-card/80 px-4 py-3 text-right">
+        <div className="liquid-glass-control rounded-lg border border-border bg-card/80 px-4 py-3 text-right">
           <p className="text-xs text-muted-foreground">当前视图</p>
           <p className="mt-1 text-lg font-semibold text-foreground">本周记录</p>
         </div>
@@ -185,7 +185,7 @@ export default function LeaderboardPage() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-primary">
-              {currentUserEntry.displayName === 'Demo Learner' ? '演示学习者' : currentUserEntry.displayName}
+              {currentUserEntry.displayName === 'Demo Learner' ? '演示账号' : currentUserEntry.displayName}
             </p>
             <p className="text-xs text-muted-foreground">
               第 {currentUserEntry.rank} 名 · 本周 {currentUserEntry.weeklyXp} 条记录
@@ -230,14 +230,14 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="liquid-glass-control flex gap-1 rounded-full border border-border p-1">
+      <div className="liquid-glass-control flex gap-1 rounded-lg border border-border p-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors',
+              'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors',
               activeTab === tab.id
                 ? 'bg-primary/10 text-primary shadow-sm'
                 : 'text-muted-foreground hover:text-foreground',
@@ -254,7 +254,7 @@ export default function LeaderboardPage() {
           const value = activeTab === 'weekly' ? entry.weeklyXp : activeTab === 'streak' ? entry.streak : entry.totalWords;
           const unit = activeTab === 'weekly' ? '记录' : activeTab === 'streak' ? '天' : '词';
           const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
-            ? '演示学习者'
+            ? '演示账号'
             : entry.displayName;
 
           return (

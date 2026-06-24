@@ -194,7 +194,7 @@ export default function MemoryCenterPage() {
                 key={option.value}
                 variant={kind === option.value ? 'glassPrimary' : 'glass'}
                 size="sm"
-                className="rounded-full"
+                className="rounded-lg"
                 onClick={() => setKind(option.value)}
               >
                 {isZh ? option.labelZh : option.labelEn}
@@ -204,11 +204,11 @@ export default function MemoryCenterPage() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="glass" className="rounded-full" onClick={() => void load()} disabled={loading}>
+          <Button size="sm" variant="glass" className="rounded-lg" onClick={() => void load()} disabled={loading}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             {isZh ? '刷新' : 'Refresh'}
           </Button>
-          <Button size="sm" variant="glass" className="rounded-full" onClick={handleClearExpired} disabled={loading}>
+          <Button size="sm" variant="glass" className="rounded-lg" onClick={handleClearExpired} disabled={loading}>
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             {isZh ? '清理过期记忆' : 'Clear expired'}
           </Button>
@@ -237,7 +237,7 @@ export default function MemoryCenterPage() {
                   {loading
                     ? t('common.loading')
                     : isZh
-                      ? '还没有保存的学习记录'
+                      ? '还没有保存的线索'
                       : 'No saved learning records yet'}
                 </h2>
                 {!loading && (
@@ -259,10 +259,10 @@ export default function MemoryCenterPage() {
                       ))}
                     </div>
                     <div className="mt-6 flex flex-wrap justify-center gap-2">
-                      <Button asChild variant="glassPrimary" className="rounded-full">
+                      <Button asChild variant="glassPrimary" className="rounded-lg">
                         <Link to="/dashboard/chat">{isZh ? '打开答疑' : 'Open help'}</Link>
                       </Button>
-                      <Button asChild variant="glass" className="rounded-full">
+                      <Button asChild variant="glass" className="rounded-lg">
                         <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Start practice'}</Link>
                       </Button>
                     </div>

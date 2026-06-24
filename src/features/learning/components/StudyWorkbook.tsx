@@ -185,3 +185,7 @@ export function InlineStudyNote({ title, children, tone = 'neutral', className, 
     </div>
   );
 }
+
+export const WorkbookPage = StudyShell;
+export const SolidStudySurface = StudySheet;
+export const StudyMetricRail = StudyRail;

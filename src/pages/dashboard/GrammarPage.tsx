@@ -468,7 +468,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
               <Button
                 onClick={() => onPractice(rule)}
                 variant="glassPrimary"
-                className="w-full rounded-full font-semibold"
+                className="w-full rounded-lg font-semibold"
               >
                 <Play className="mr-2 h-3.5 w-3.5" />
                 {isZh ? `练习（${rule.practice.length} 题）` : `Practice (${rule.practice.length} questions)`}
@@ -687,7 +687,7 @@ export default function GrammarPage() {
                 </p>
               </div>
 
-              <Button onClick={() => handlePractice(featuredRule)} variant="glassPrimary" className="rounded-full">
+              <Button onClick={() => handlePractice(featuredRule)} variant="glassPrimary" className="rounded-lg">
                 <Play className="mr-2 h-4 w-4" />
                 {isZh ? '开始这组' : 'Start this set'}
               </Button>
@@ -730,7 +730,7 @@ export default function GrammarPage() {
           <button
             onClick={() => setFilterCategory('all')}
             className={cn(
-              'liquid-glass-control liquid-glass-interactive rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+              'liquid-glass-control liquid-glass-interactive rounded-lg border px-3 py-1 text-xs font-medium transition-colors',
               filterCategory === 'all'
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border text-muted-foreground hover:bg-muted',
@@ -743,7 +743,7 @@ export default function GrammarPage() {
               key={cat}
               onClick={() => setFilterCategory(cat as GrammarCategory)}
               className={cn(
-              'liquid-glass-control liquid-glass-interactive rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+              'liquid-glass-control liquid-glass-interactive rounded-lg border px-3 py-1 text-xs font-medium transition-colors',
                 filterCategory === cat
                   ? meta.color
                   : 'border-border text-muted-foreground hover:bg-muted',
@@ -830,12 +830,12 @@ export default function GrammarPage() {
                 <Button
                   onClick={() => { setAnswers({}); setSubmitted(false); setPhase('practice'); }}
                   variant="glass"
-                  className="rounded-full"
+                  className="rounded-lg"
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {isZh ? '重练这条规则' : 'Retry this rule'}
                 </Button>
-                <Button onClick={handleBack} variant="glassPrimary" className="rounded-full">
+                <Button onClick={handleBack} variant="glassPrimary" className="rounded-lg">
                   {isZh ? '换一个规则' : 'Choose another rule'}
                 </Button>
               </>
@@ -873,7 +873,7 @@ export default function GrammarPage() {
           <Button
             onClick={handleSubmit}
             disabled={!allAnswered}
-          className="w-full rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+          className="w-full rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
           >
             {isZh ? '检查答案' : 'Check Answers'}
           </Button>

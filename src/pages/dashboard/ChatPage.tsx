@@ -1358,7 +1358,7 @@ export default function ChatPage() {
         <section className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-[hsl(var(--surface-sunken))]/55 px-4 py-2.5 md:px-6 lg:px-8">
           <div className={cn(contentWidthClass, 'mx-auto grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center')}>
             <div className="flex min-w-0 items-start gap-2.5">
-              <div className="liquid-glass-control flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/65 bg-transparent text-muted-foreground">
+              <div className="liquid-glass-control flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/65 bg-transparent text-muted-foreground">
                 <MessageSquare className="h-4 w-4" />
               </div>
               <div className="min-w-0">
@@ -1378,7 +1378,7 @@ export default function ChatPage() {
                     <span
                       key={step.id}
                       className={cn(
-                        'liquid-glass-control rounded-full border px-2 py-1 text-[11px] font-medium',
+                        'liquid-glass-control rounded-lg border px-2 py-1 text-[11px] font-medium',
                         step.active
                           ? 'border-primary/30 bg-primary/10 text-primary'
                           : 'border-border bg-background/70 text-muted-foreground',

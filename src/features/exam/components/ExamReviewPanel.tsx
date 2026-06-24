@@ -117,10 +117,10 @@ export function ExamReviewPanel({
               <Button onClick={() => void onGenerateMicroLesson()} disabled={isBusy || !feedback}>
                 <Brain className="mr-1.5 h-4 w-4" /> 错题练习
               </Button>
-              <Button variant="glass" className="rounded-full" onClick={onJumpToVocabulary}>
+              <Button variant="glass" className="rounded-lg" onClick={onJumpToVocabulary}>
                 <BookOpen className="mr-1.5 h-4 w-4" /> 跳转词库补强
               </Button>
-              <Button variant="ghost" className="rounded-full" onClick={onReturnToDraft}>
+              <Button variant="ghost" className="rounded-lg" onClick={onReturnToDraft}>
                 返回草稿再练一轮
               </Button>
             </div>

@@ -48,7 +48,7 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
         <div className="flex items-center gap-1.5">
           <CircleGauge className={cn('h-3.5 w-3.5', isComplete ? 'text-primary' : 'text-muted-foreground')} />
           <span className="text-xs font-semibold text-muted-foreground">
-            {todayXP} / {dailyGoal} {isZh ? '学习记录' : 'points'}
+            {todayXP} / {dailyGoal} {isZh ? '积分' : 'points'}
           </span>
         </div>
         <span className="text-xs font-semibold text-muted-foreground">{isZh ? '阶段' : 'Level'} {level}</span>
@@ -58,7 +58,7 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
         <motion.div
           className={cn(
             'absolute inset-y-0 left-0 rounded-md',
-            isComplete ? 'bg-emerald-500' : 'bg-primary',
+            isComplete ? 'bg-[hsl(var(--success))]' : 'bg-primary',
           )}
           initial={false}
           animate={{ width: `${progress}%` }}
@@ -71,13 +71,13 @@ export function XPProgressBar({ todayXP, dailyGoal = 200, level, className }: XP
         {xpBurst && (
           <motion.span
             key={`xp-${xpBurst.id}`}
-            className="absolute -top-1 right-0 text-xs font-bold text-emerald-500 pointer-events-none"
+            className="pointer-events-none absolute -top-1 right-0 text-xs font-bold text-[hsl(var(--success))]"
             initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 0, y: -18 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
           >
-            +{xpBurst.gain} {isZh ? '记录' : 'points'}
+            +{xpBurst.gain} {isZh ? '积分' : 'points'}
           </motion.span>
         )}
       </AnimatePresence>

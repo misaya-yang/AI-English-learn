@@ -428,7 +428,7 @@ export default function ExamPrepPage() {
 
       {runtime.showCelebrate && (
         <div className="pointer-events-none fixed inset-x-0 top-5 z-50 flex justify-center px-4">
-          <div className="liquid-glass-control rounded-full border border-[hsl(var(--accent-exam)/0.32)] bg-[hsl(var(--accent-exam)/0.12)] px-4 py-2 text-sm font-medium text-foreground">
+          <div className="rounded-lg border border-[hsl(var(--accent-exam)/0.32)] bg-[hsl(var(--accent-exam)/0.12)] px-4 py-2 text-sm font-medium text-foreground">
             <CheckCircle2 className="mr-1 inline h-4 w-4" /> 评分已更新，这次结构更稳。
           </div>
         </div>

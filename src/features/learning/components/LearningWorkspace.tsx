@@ -77,7 +77,7 @@ interface LearningStatePanelProps {
 }
 
 export const learningFrameClassName =
-  'relative rounded-[18px] border border-border/75 bg-card shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.14),0_18px_38px_-34px_hsl(var(--shadow-studio)/0.22)] transition-colors duration-150';
+  'workbook-surface relative transition-colors duration-150';
 
 const metricToneClass: Record<AccentTone, string> = {
   default: 'text-foreground',
@@ -117,7 +117,7 @@ export function LearningHeroPanel({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl space-y-3">
           {eyebrow ? (
-            <Badge className="focus-kicker rounded-md border border-border/70 bg-[hsl(var(--surface-elevated))] px-2.5 py-1 text-muted-foreground hover:bg-[hsl(var(--surface-elevated))]">
+            <Badge className="rounded-md border border-border/45 bg-muted/45 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted/45">
               {eyebrow}
             </Badge>
           ) : null}
@@ -167,7 +167,7 @@ export function LearningHeroPanel({
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn('space-y-3 border-l border-border/24 pl-4', className)}>
+    <section className={cn('space-y-3 border-l border-border/28 pl-4', className)}>
       <div className="space-y-1.5">
         <p className="focus-kicker">{title}</p>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
@@ -187,7 +187,7 @@ export function LearningWorkspaceSurface({
 }: LearningWorkspaceSurfaceProps) {
   return (
     <section className={cn(learningFrameClassName, 'overflow-hidden', className)}>
-      <div className="border-b border-[hsl(var(--paper-line)/0.72)] bg-transparent px-4 py-4 sm:px-5">
+      <div className="border-b border-[hsl(var(--paper-line)/0.52)] bg-transparent px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             {eyebrow ? <p className="focus-kicker">{eyebrow}</p> : null}
@@ -238,7 +238,7 @@ export function LearningEmptyState({
     <motion.section
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn(learningFrameClassName, 'px-5 py-8 text-center sm:px-8', className)}
+      className={cn('border-y border-border/28 px-5 py-8 text-center sm:px-8', className)}
     >
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
         <Icon className="h-6 w-6" />

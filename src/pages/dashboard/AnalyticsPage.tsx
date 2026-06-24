@@ -267,7 +267,7 @@ const analyticsCopy = {
       totalWords: '总单词数',
       mastered: '已掌握',
       streak: '连续学习',
-      xp: '学习记录',
+      xp: '积分',
       streakUnit: '天',
       streakActive: '今日有记录',
       streakStart: '从今天开始',
@@ -295,7 +295,7 @@ const analyticsCopy = {
         subtitleAll: '全部历史活动',
       },
       topics: '主题分布',
-      topicsSubtitle: '来自已完成学习记录的主题',
+      topicsSubtitle: '来自已完成练习的主题',
       studyTime: '学习时长',
       studyTimeSubtitle: '学习时间',
       wordsTrend: '词汇积累趋势',
@@ -341,7 +341,7 @@ const analyticsCopy = {
       },
       window: {
         title: '还没有可靠复习时段',
-        description: '多积累几个时段的学习记录后，这里会显示更稳定的复习时段。',
+        description: '多练几个时段后，这里会显示更稳定的复习时间。',
         action: '记录一次学习',
       },
       risk: {
@@ -430,7 +430,7 @@ function AnalyticsEmptyCard({
         <EmptyDescription>{description}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button size="sm" variant="glassPrimary" className="rounded-full" asChild>
+        <Button size="sm" variant="glassPrimary" className="rounded-lg" asChild>
           <Link to={actionHref}>{actionLabel}</Link>
         </Button>
       </EmptyContent>
@@ -759,7 +759,7 @@ export default function AnalyticsPage() {
     { name: '100 words', nameZh: '累计 100 词', detailZh: '词汇量达到 100', detailEn: 'Reached 100 learned words', icon: BookOpen, color: 'text-muted-foreground', earned: stats.totalWords >= 100 },
     { name: 'Full week', nameZh: '完整一周', detailZh: '本周每天都有记录', detailEn: 'Recorded activity every day this week', icon: Calendar, color: 'text-muted-foreground', earned: hasPerfectWeek },
     { name: 'Vocabulary milestone', nameZh: '词汇里程碑', detailZh: '已掌握词数达到 50', detailEn: 'Mastered 50 words', icon: Target, color: 'text-muted-foreground', earned: stats.masteredWords >= 50 },
-    { name: 'Steady learner', nameZh: '稳定学习者', detailZh: '学习记录达到 1000', detailEn: 'Reached 1000 study records', icon: CircleGauge, color: 'text-muted-foreground', earned: xp.total >= 1000 },
+    { name: 'Steady learner', nameZh: '稳定学习者', detailZh: '积分达到 1000', detailEn: 'Reached 1000 points', icon: CircleGauge, color: 'text-muted-foreground', earned: xp.total >= 1000 },
   ];
 
   const formatRiskDueLabel = (hoursUntilDue: number): string => {
@@ -800,7 +800,7 @@ export default function AnalyticsPage() {
           <p className="text-muted-foreground">{copy.headerSubtitle}</p>
         </div>
         <Select value={timeRange} onValueChange={(value) => setTimeRange(value as AnalyticsTimeRange)}>
-          <SelectTrigger className="liquid-glass-control w-full rounded-full border-border/65 bg-transparent md:w-[150px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-border/65 bg-transparent md:w-[150px]">
             <Calendar className="h-4 w-4 mr-2" />
             <SelectValue placeholder={copy.timeRanges.week} />
           </SelectTrigger>
@@ -822,20 +822,20 @@ export default function AnalyticsPage() {
               </div>
               <div>
                 <p className="font-semibold text-foreground">
-                  {isZh ? '还没有学习记录，所以这里暂时为空。' : 'No learning records yet, so trends stay empty.'}
+                  {isZh ? '还没有练习，所以这里暂时为空。' : 'No practice yet, so trends stay empty.'}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {isZh
-                    ? '完成一次今日、复习或练习后，图表会开始显示学习记录、复习时段和需要注意的词。'
+                    ? '完成一次今日、复习或练习后，图表会显示进度、复习时段和需要注意的词。'
                     : 'Complete Today, Review, or Practice once and charts will start showing records, review timing, and words to watch.'}
                 </p>
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
-              <Button asChild className="rounded-full">
+              <Button asChild className="rounded-lg">
                 <Link to="/dashboard/today">{isZh ? '开始今日' : 'Start Today'}</Link>
               </Button>
-              <Button asChild variant="glass" className="rounded-full">
+              <Button asChild variant="glass" className="rounded-lg">
                 <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Practice'}</Link>
               </Button>
             </div>
@@ -891,7 +891,7 @@ export default function AnalyticsPage() {
 
       {/* Charts */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="liquid-glass-control h-auto w-full justify-start overflow-x-auto rounded-full border border-border/60 bg-transparent p-1 sm:w-fit">
+        <TabsList className="liquid-glass-control h-auto w-full justify-start overflow-x-auto rounded-lg border border-border/60 bg-transparent p-1 sm:w-fit">
           <TabsTrigger value="overview">{copy.tabs.overview}</TabsTrigger>
           <TabsTrigger value="words">{copy.tabs.words}</TabsTrigger>
           <TabsTrigger value="retention">{copy.tabs.retention}</TabsTrigger>
@@ -916,7 +916,7 @@ export default function AnalyticsPage() {
                     <YAxis stroke={colors.border} tick={{ fill: colors.mutedForeground, fontSize: 12 }} />
                     <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
                     <Bar dataKey="words" fill={colors.words} name={isZh ? '学习词数' : 'Words learned'} />
-                    <Bar dataKey="xp" fill={colors.xp} name={isZh ? '学习记录' : 'Points earned'} />
+                    <Bar dataKey="xp" fill={colors.xp} name={isZh ? '积分' : 'Points earned'} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -1459,7 +1459,7 @@ export default function AnalyticsPage() {
                 <p className="mt-2 text-sm font-medium text-primary">
                   {isZh ? weeklyReport.nextRecommendation.zh : weeklyReport.nextRecommendation.en}
                 </p>
-                <Button size="sm" variant="glassPrimary" className="mt-3 rounded-full" asChild>
+                <Button size="sm" variant="glassPrimary" className="mt-3 rounded-lg" asChild>
                   <Link to={weeklyReport.nextRecommendation.href}>{copy.insights.openNext}</Link>
                 </Button>
               </div>

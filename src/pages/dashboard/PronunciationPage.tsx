@@ -113,12 +113,12 @@ export default function PronunciationPage() {
       ]}
       actions={
         <>
-          <Button variant="glass" onClick={() => session.reset()} className="rounded-full">
+          <Button variant="glass" onClick={() => session.reset()} className="rounded-lg">
             <RefreshCw className="mr-2 h-4 w-4" />
             {t('pronunciation.tryAgain')}
           </Button>
           {currentIndex < items.length - 1 && (
-            <Button variant="glassPrimary" onClick={handleNext} className="rounded-full">
+            <Button variant="glassPrimary" onClick={handleNext} className="rounded-lg">
               {t('common.next')}
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
@@ -177,7 +177,7 @@ export default function PronunciationPage() {
                     <p className="mt-1 font-mono text-sm text-muted-foreground">{item.phonetic}</p>
                   ) : null}
                 </div>
-                <Button variant="glass" className="rounded-full" onClick={handlePlayAudio}>
+                <Button variant="glass" className="rounded-lg" onClick={handlePlayAudio}>
                   <Volume2 className="mr-2 h-4 w-4" />
                   {isZh ? '听标准音' : 'Hear model'}
                 </Button>
@@ -229,7 +229,7 @@ export default function PronunciationPage() {
 
       {/* Mode tabs */}
       <Tabs value={mode} onValueChange={(v) => { setMode(v as PracticeMode); session.reset(); }}>
-        <TabsList className="liquid-glass-control w-full rounded-full p-1">
+        <TabsList className="liquid-glass-control w-full rounded-lg p-1">
           <TabsTrigger value="word" className="flex-1">
             {t('pronunciation.wordMode')}
           </TabsTrigger>

@@ -18,7 +18,7 @@ describe('DashboardSkeleton', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('正在加载');
     expect(screen.getByText('保持当前页面，马上继续。')).toBeInTheDocument();
-    expect(screen.getByText('今天的内容')).toBeInTheDocument();
+    expect(screen.getByText('今天')).toBeInTheDocument();
   });
 
   it('names the public-page loading operation', () => {

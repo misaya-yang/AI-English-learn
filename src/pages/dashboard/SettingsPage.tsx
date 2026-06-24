@@ -194,7 +194,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue={initialTab} className="space-y-6">
-        <TabsList className="liquid-glass-control grid w-full grid-cols-4 rounded-full p-1">
+        <TabsList className="liquid-glass-control grid w-full grid-cols-4 rounded-lg p-1">
           <TabsTrigger value="general">通用</TabsTrigger>
           <TabsTrigger value="notifications">通知</TabsTrigger>
           <TabsTrigger value="learning">学习</TabsTrigger>
@@ -438,7 +438,7 @@ export default function SettingsPage() {
                               <p className="mt-1 text-sm text-muted-foreground">
                                 {lifecyclePreview.titleZh}：{lifecyclePreview.bodyZh}
                               </p>
-                              <Button asChild variant="glass" size="sm" className="mt-3 h-8 rounded-full">
+                              <Button asChild variant="glass" size="sm" className="mt-3 h-8 rounded-lg">
                                 <Link to={lifecyclePreview.href}>打开对应练习</Link>
                               </Button>
                             </>
