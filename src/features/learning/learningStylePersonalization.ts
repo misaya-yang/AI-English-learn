@@ -11,8 +11,8 @@ export interface LearningStylePersonalization {
 
 export const LEARNING_STYLE_PERSONALIZATION: Record<LearningStyle, LearningStylePersonalization> = {
   visual: {
-    label: { en: 'Visual cues', zh: '视觉线索' },
-    practiceBadge: { en: 'Visual-first', zh: '视觉优先' },
+    label: { en: 'Examples', zh: '例句' },
+    practiceBadge: { en: 'Examples first', zh: '先看例句' },
     todayNudge: {
       en: 'Use examples, patterns, and contrast cues as you work.',
       zh: '练习时优先看例句和句子结构。',

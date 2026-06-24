@@ -3,11 +3,13 @@
 import { normalizeWordKey, parseWordBookText } from '@/services/bookImport';
 import { importApkg, inspectApkg, type AnkiProgressMapping } from '@/services/ankiApkgImport';
 import { useStreakFreeze as tryUseStreakFreeze } from '@/services/gamification';
+import { buildLocalAuthUserId } from '@/lib/localAuthIdentity';
 import type { FSRSState, FontSize, ThemePreference, UserSettings } from '@/types/core';
 import {
   type AnkiDeckSummary,
   type AnkiImportOptions,
   type AnkiImportResult,
+  BUILT_IN_WORD_BOOK_IDS,
   BUILT_IN_BOOK_IDS,
   DEFAULT_ACTIVE_BOOK_ID,
   getBuiltInWordBooks,
@@ -106,6 +108,8 @@ interface ImportHistoryItem {
 
 const LEGACY_CUSTOM_WORDS_KEY = 'customWords';
 const MANUAL_WORD_BOOK_ID = 'custom_manual_entries';
+const GUEST_USER_ID = 'guest';
+const DEMO_USER_ID = buildLocalAuthUserId('demo@example.com');
 
 // Storage keys
 const KEYS = {
@@ -371,6 +375,11 @@ const getBookSelectionMap = (): Record<string, UserBookSelection> => {
 
 const setBookSelectionMap = (selectionMap: Record<string, UserBookSelection>): void => {
   setItem(KEYS.USER_BOOK_SELECTION, selectionMap);
+};
+
+const shouldMigrateLegacyDemoStarterBook = (userId: string, bookId?: string): boolean => {
+  if (bookId !== BUILT_IN_WORD_BOOK_IDS.A1_FOUNDATION) return false;
+  return userId === GUEST_USER_ID || userId === DEMO_USER_ID;
 };
 
 const resolveDailyGoal = (userId: string): number => {
@@ -792,6 +801,21 @@ export const getActiveBook = (userId: string): WordBook | null => {
   const selectedBook = books.find((book) => book.id === savedSelection?.activeBookId);
 
   if (selectedBook) {
+    if (shouldMigrateLegacyDemoStarterBook(userId, selectedBook.id)) {
+      const defaultBook = books.find((book) => book.id === DEFAULT_ACTIVE_BOOK_ID);
+
+      if (defaultBook) {
+        selectionMap[userId] = {
+          userId,
+          activeBookId: defaultBook.id,
+          dailyGoalOverride: savedSelection?.dailyGoalOverride,
+        };
+        setBookSelectionMap(selectionMap);
+        clearDailyWordsCacheForUser(userId);
+        return defaultBook;
+      }
+    }
+
     return selectedBook;
   }
 

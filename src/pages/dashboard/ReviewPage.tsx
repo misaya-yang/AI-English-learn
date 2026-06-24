@@ -64,7 +64,7 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="study-sheet min-h-[360px] overflow-hidden"
+      className="min-h-[360px] overflow-hidden"
     >
       {!isRevealed ? (
         <div
@@ -590,7 +590,7 @@ export default function ReviewPage() {
         </div>
 
         <StudyRail>
-          <StudyRailSection title={isZh ? '统计' : 'Stats'}>
+          <StudyRailSection title={isZh ? '本轮' : 'This round'}>
             <StudyStatRows
               items={[
                 { label: isZh ? '忘了' : 'Again', value: sessionStats.again, tone: 'warning' },
@@ -647,7 +647,7 @@ export default function ReviewPage() {
           ) : null}
 
           {currentItem && isRevealed && !currentRecoveryPlan && (currentItem.word.memoryTip || currentItem.word.etymology) ? (
-            <StudyRailSection title={isZh ? '线索' : 'Cue'}>
+            <StudyRailSection title={isZh ? '助记' : 'Hint'}>
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}

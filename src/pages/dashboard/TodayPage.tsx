@@ -69,16 +69,16 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section className="study-sheet word-entry">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-muted/45 px-2.5 py-1 text-xs text-muted-foreground">
+          <span className="rounded-md bg-muted/45 px-2.5 py-1 text-xs text-muted-foreground">
             {word.level}
           </span>
-          {isLearned ? <span className="rounded-full bg-[hsl(var(--success)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--success))]">已学会</span> : null}
-          {isHard ? <span className="rounded-full bg-[hsl(var(--warning)/0.12)] px-2.5 py-1 text-xs text-[hsl(var(--warning))]">需复习</span> : null}
+          {isLearned ? <span className="rounded-md bg-[hsl(var(--success)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--success))]">已学会</span> : null}
+          {isHard ? <span className="rounded-md bg-[hsl(var(--warning)/0.12)] px-2.5 py-1 text-xs text-[hsl(var(--warning))]">需复习</span> : null}
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="h-11 min-h-11 w-11 min-w-11 rounded-full border border-transparent bg-muted/35 text-foreground hover:bg-muted hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
+          className="h-11 min-h-11 w-11 min-w-11 rounded-lg border border-border/45 bg-muted/35 text-foreground hover:bg-muted hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
           onClick={() => playAudio(word.word)}
           aria-label={`Play ${word.word}`}
         >
@@ -127,7 +127,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
               <p className="study-label">搭配</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.collocations.slice(0, isFlipped ? 8 : 4).map((collocation) => (
-                  <span key={collocation} className="rounded-full bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-sm text-[hsl(var(--accent-practice))]">
+                  <span key={collocation} className="rounded-md bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-sm text-[hsl(var(--accent-practice))]">
                     {collocation}
                   </span>
                 ))}
@@ -633,11 +633,11 @@ export default function TodayPage() {
         title={isZh ? '今天' : 'Today'}
         description={isZh ? `预计 ${heroEstimatedMinutes} 分钟` : `About ${heroEstimatedMinutes} min`}
         actions={todayPrimaryHref ? (
-          <Button className="min-h-11 rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90" asChild data-testid="today-primary-mission-cta">
+          <Button className="min-h-11 rounded-lg bg-primary px-5 text-primary-foreground hover:bg-primary/90" asChild data-testid="today-primary-mission-cta">
             <Link to={todayPrimaryHref}>{todayPrimaryLabel}</Link>
           </Button>
         ) : (
-          <Button className="min-h-11 rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90" onClick={scrollToVocabularyWorkspace} data-testid="today-primary-mission-cta">
+          <Button className="min-h-11 rounded-lg bg-primary px-5 text-primary-foreground hover:bg-primary/90" onClick={scrollToVocabularyWorkspace} data-testid="today-primary-mission-cta">
             {todayPrimaryLabel}
           </Button>
         )}
@@ -649,11 +649,11 @@ export default function TodayPage() {
             unit: row.unit,
             note: row.note,
             action: row.href ? (
-              <Button variant="outline" size="sm" className="min-h-11 rounded-full border-border bg-transparent px-4" asChild>
+              <Button variant="outline" size="sm" className="min-h-11 rounded-lg border-border bg-transparent px-4" asChild>
                 <Link to={row.href}>{isZh ? '开始' : 'Open'}</Link>
               </Button>
             ) : row.onClick ? (
-              <Button variant="outline" size="sm" className="min-h-11 rounded-full border-border bg-transparent px-4" onClick={row.onClick}>
+              <Button variant="outline" size="sm" className="min-h-11 rounded-lg border-border bg-transparent px-4" onClick={row.onClick}>
                 {isZh ? '开始' : 'Open'}
               </Button>
             ) : null,
@@ -869,7 +869,7 @@ export default function TodayPage() {
                 ))
               ) : (
                 <p className="text-sm leading-6 text-muted-foreground">
-                  {isZh ? '完成练习后，这里会显示需要多练的地方。' : 'Needs practice will appear after drills.'}
+                  {isZh ? '练过以后会出现在这里。' : 'Items appear here after practice.'}
                 </p>
               )}
             </div>

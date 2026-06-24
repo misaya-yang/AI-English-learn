@@ -4,16 +4,13 @@ import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
   BookOpen,
-  Calendar,
   CheckCircle2,
   Menu,
   MessageSquare,
-  Sparkles,
   Target,
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { GlassSurface } from '@/components/ui/glass-surface';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -54,12 +51,12 @@ export default function Home() {
       menu: isZh ? '切换菜单' : 'Toggle menu',
     },
     hero: {
-      title: isZh ? '今天要做的事' : 'Today\'s list',
+      title: isZh ? 'IELTS 词汇和练习' : 'IELTS words and practice',
       subtitle: isZh
-        ? '复习到期词，看几个新词，做一组题。'
-        : 'Review due words, add a few new ones, then do one set.',
-      primaryCta: isZh ? '开始' : 'Start',
-      secondaryCta: isZh ? '试用' : 'Try sample',
+        ? '先复习到期词，再学新词，最后做一组题。'
+        : 'Review due words, add new ones, then finish one short set.',
+      primaryCta: isZh ? '开始练习' : 'Start practice',
+      secondaryCta: isZh ? '看样课' : 'Sample lesson',
     },
     today: {
       label: isZh ? '今日安排' : 'Today',
@@ -107,7 +104,7 @@ export default function Home() {
 
   const workflowCards = [
     {
-      icon: Calendar,
+      icon: BookOpen,
       title: copy.workflow.steps[0].title,
       body: copy.workflow.steps[0].body,
       className: 'bg-primary/[0.07] md:row-span-2',
@@ -137,16 +134,13 @@ export default function Home() {
 
   return (
     <div className="home-study-bg min-h-[100dvh] text-foreground">
-      <header className="sticky top-3 z-40 px-3 sm:px-4">
-        <GlassSurface
-          variant="bar"
-          className="mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-5"
-        >
+      <header className="z-40 px-5 pt-5 sm:px-6 sm:pt-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between sm:h-20">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="liquid-glass-control flex h-9 w-9 items-center justify-center text-primary">
-              <BookOpen className="h-4 w-4" />
+            <span className="flex h-14 w-14 items-center justify-center rounded-[1.35rem] bg-primary/10 text-primary shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.24)]">
+              <BookOpen className="h-6 w-6" />
             </span>
-            <span className="text-sm font-semibold">VocabDaily</span>
+            <span className="text-2xl font-bold tracking-normal">VocabDaily</span>
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
@@ -166,24 +160,24 @@ export default function Home() {
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
-            <Button asChild size="sm" variant="glassPrimary" className="hidden h-9 px-4 sm:inline-flex">
+            <Button asChild size="sm" className="hidden h-10 rounded-lg px-4 sm:inline-flex">
               <Link to={continuePath}>
                 {copy.nav.auth}
               </Link>
             </Button>
             <button
               type="button"
-              className="liquid-glass-control liquid-glass-interactive flex h-9 w-9 items-center justify-center text-foreground md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border/45 bg-card/40 text-foreground md:hidden"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label={copy.nav.menu}
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
-        </GlassSurface>
+        </div>
 
         {mobileMenuOpen && (
-          <GlassSurface variant="panel" className="mx-auto mt-2 max-w-6xl p-2 md:hidden">
+          <div className="liquid-glass-panel mx-auto mt-2 max-w-6xl p-2 md:hidden">
             <div className="flex flex-col gap-1">
               <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-3 py-2 text-sm hover:bg-muted">
                 {copy.nav.workflow}
@@ -206,38 +200,56 @@ export default function Home() {
                 <LanguageSwitcher />
               </div>
             </div>
-          </GlassSurface>
+          </div>
         )}
       </header>
 
       <main id="main-content">
         <section>
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 pb-10 pt-10 sm:px-6 sm:pb-14 sm:pt-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,0.9fr)] lg:items-center lg:py-14">
+          <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.74fr)] lg:items-start lg:py-16">
             <div className="max-w-2xl">
-              <h1 className="max-w-xl text-4xl font-semibold leading-[1.04] text-foreground sm:text-5xl lg:text-6xl">
-                {copy.hero.title}
+              <div className="border-l-4 border-primary pl-5 text-base font-semibold text-muted-foreground">
+                {isZh ? '每日 IELTS 练习' : 'Daily IELTS practice'}
+              </div>
+              <h1
+                aria-label={copy.hero.title}
+                className="mt-8 max-w-xl text-[3.25rem] font-bold leading-[0.98] text-foreground sm:text-[4.8rem] lg:text-[5.6rem]"
+              >
+                {isZh ? (
+                  <>
+                    IELTS 词汇
+                    <br />
+                    和 <span className="text-[hsl(var(--accent-memory))]">练习</span>
+                  </>
+                ) : (
+                  <>
+                    IELTS words
+                    <br />
+                    and <span className="text-[hsl(var(--accent-memory))]">practice</span>
+                  </>
+                )}
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+              <p className="mt-7 max-w-xl text-xl leading-9 text-muted-foreground">
                 {copy.hero.subtitle}
               </p>
 
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild size="lg" className="h-11 px-5 text-sm font-medium">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button asChild size="lg" className="h-12 rounded-xl px-6 text-sm font-semibold">
                   <Link to={primaryCtaPath}>
                     {copy.hero.primaryCta}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="glass" className="h-11 px-5 text-sm font-medium">
+                <Button asChild size="lg" variant="ghost" className="h-12 rounded-xl px-5 text-sm font-semibold">
                   <Link to="/demo">
                     {copy.hero.secondaryCta}
                   </Link>
                 </Button>
               </div>
 
-              <div className="mt-8 divide-y divide-border/24 border-y border-border/24 sm:max-w-lg">
+              <div className="mt-10 divide-y divide-border/30 border-y border-border/30 sm:max-w-xl">
                 {copy.today.items.map((item) => (
-                  <div key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3">
+                  <div key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-4">
                     <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />
                     <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
                     <span className="text-xs text-muted-foreground">{item.duration}</span>
@@ -246,25 +258,23 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[2rem] shadow-[0_34px_80px_-64px_hsl(var(--shadow-studio)/0.58)]">
-              <img
-                src="/vocabdaily-study-desk.jpg"
-                alt={isZh ? '桌面上的笔记本和学习记录' : 'Notebook and study notes on a desk'}
-                className="aspect-[4/3] w-full object-cover"
-              />
-              <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4">
-                <GlassSurface variant="bar" className="flex items-center justify-between gap-4 px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-muted-foreground">{copy.today.label}</p>
-                    <p className="mt-0.5 truncate text-base font-semibold">{copy.today.title}</p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{copy.today.subtitle}</p>
+            <aside className="border-l border-border/40 pl-6 lg:mt-8">
+              <p className="text-sm font-semibold text-muted-foreground">{copy.today.label}</p>
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-foreground">{copy.today.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.today.subtitle}</p>
+              <div className="mt-7 divide-y divide-border/30 border-y border-border/30">
+                {copy.today.items.map((item, index) => (
+                  <div key={item.title} className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 py-4">
+                    <span className="study-number text-xl text-primary">{index + 1}</span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
+                      <p className="mt-1 truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{item.duration}</span>
                   </div>
-                  <span className="liquid-glass-control flex h-10 w-10 shrink-0 items-center justify-center text-primary">
-                    <Calendar className="h-4 w-4" />
-                  </span>
-                </GlassSurface>
+                ))}
               </div>
-            </div>
+            </aside>
           </div>
         </section>
 
@@ -272,7 +282,7 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-foreground">{copy.examplesLabel}</h2>
-              <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+              <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
             </div>
             <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2">
               {sampleWords.map((w) => (
@@ -301,8 +311,8 @@ export default function Home() {
 
             <div className="mt-7 grid gap-4 md:grid-cols-[1.08fr_0.92fr] md:grid-rows-2">
               {workflowCards.map((step) => (
-	                <article key={step.title} className={`rounded-[1.6rem] p-5 ${step.className}`}>
-                  <div className="liquid-glass-control flex h-11 w-11 items-center justify-center text-primary">
+                <article key={step.title} className={`rounded-2xl border border-border/30 p-5 ${step.className}`}>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <step.icon className="h-5 w-5" />
                   </div>
                   <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
@@ -317,7 +327,7 @@ export default function Home() {
       <footer className="border-t border-border/45 bg-[hsl(var(--surface-raised)/0.52)]">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
           <div className="flex items-center gap-2">
-            <span className="liquid-glass-control flex h-7 w-7 items-center justify-center text-primary">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <BookOpen className="h-3.5 w-3.5" />
             </span>
             <span className="font-medium text-foreground">VocabDaily</span>

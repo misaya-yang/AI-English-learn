@@ -718,18 +718,18 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="hidden h-[100dvh] min-h-0 w-[218px] flex-col border-r border-border/30 bg-transparent px-2.5 py-3 text-sidebar-foreground lg:flex">
-          <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-primary">
+        <aside className="hidden h-[100dvh] min-h-0 w-[224px] flex-col border-r border-border/24 bg-transparent px-3 py-4 text-sidebar-foreground lg:flex">
+          <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sidebar-primary/10 text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold">VocabDaily</p>
+              <p className="text-base font-bold">VocabDaily</p>
               <p className="text-[11px] text-sidebar-foreground/55">{isZh ? '每日练习' : 'Daily practice'}</p>
             </div>
           </Link>
 
-          <div className="mt-4 border-y border-sidebar-border/70 py-3">
+          <div className="mt-5 border-y border-sidebar-border/55 py-4">
             <h2 className="text-sm font-semibold">{activeShell.title}</h2>
             <div className="mt-3 grid grid-cols-3 gap-2">
               <div>
@@ -787,7 +787,7 @@ export default function DashboardLayout() {
             </div>
           </ScrollArea>
 
-          <div className="mt-3 border-t border-sidebar-border/70 px-1 py-2.5">
+          <div className="mt-3 border-t border-sidebar-border/55 px-1 py-2.5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -808,12 +808,12 @@ export default function DashboardLayout() {
             isMobile ? mobileMainHeightClass : 'flex-1',
           )}
         >
-          <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-background/80">
-            <div className="flex items-center justify-between gap-3 px-4 py-2 lg:px-5">
+          <header className="border-b border-border/28 bg-background/78 backdrop-blur-md">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-6">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-md sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
+                    <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-lg sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
@@ -846,7 +846,7 @@ export default function DashboardLayout() {
           <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-pb-[calc(7rem+env(safe-area-inset-bottom))]">
             <div
               className={cn(
-                'mx-auto w-full max-w-[1180px] px-4 py-4 sm:px-5 lg:px-6 lg:py-5',
+                'mx-auto w-full max-w-[1120px] px-4 py-5 sm:px-5 lg:px-7 lg:py-7',
                 isMobile && 'pb-[calc(7rem+env(safe-area-inset-bottom))]',
               )}
             >
@@ -878,13 +878,13 @@ export default function DashboardLayout() {
 
   return (
     <div className="study-premium-bg flex h-[100dvh] overflow-hidden bg-background">
-      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[284px] flex-col border-r border-border/30 bg-transparent px-3 py-3 text-sidebar-foreground lg:flex">
-        <Link to="/dashboard/today" className="flex items-center gap-3 rounded-md px-1 py-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-primary">
+      <aside className="premium-sidebar hidden h-[100dvh] min-h-0 w-[284px] flex-col border-r border-border/24 bg-transparent px-4 py-4 text-sidebar-foreground lg:flex">
+        <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sidebar-primary/10 text-sidebar-primary">
             <BookText className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold">VocabDaily</p>
+            <p className="text-base font-bold">VocabDaily</p>
             <p className="text-xs text-sidebar-foreground/55">{copy.learning}</p>
           </div>
         </Link>
@@ -1005,12 +1005,12 @@ export default function DashboardLayout() {
           isMobile && !isChatRoute ? mobileMainHeightClass : 'flex-1',
         )}
       >
-        <header className="liquid-glass-bar rounded-none border-x-0 border-t-0 border-border/45 bg-[hsl(var(--surface-raised))]/80">
-          <div className="flex items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
+        <header className="border-b border-border/28 bg-background/78 backdrop-blur-md">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7">
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-md sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
+                  <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-lg sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -1043,7 +1043,7 @@ export default function DashboardLayout() {
           <div
             className={cn(
               'mx-auto w-full',
-              isChatRoute ? 'h-full max-w-none' : 'max-w-[1360px] px-5 py-6 lg:px-10 lg:py-8',
+              isChatRoute ? 'h-full max-w-none' : 'max-w-[1280px] px-5 py-7 lg:px-10 lg:py-9',
               isMobile && !isChatRoute && 'pb-[calc(9rem+env(safe-area-inset-bottom))]',
             )}
           >

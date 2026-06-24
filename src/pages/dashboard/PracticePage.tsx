@@ -102,11 +102,11 @@ const lightInputClass =
 const lightSelectContentClass = 'border-border bg-background text-foreground';
 
 const workbookButtonClass =
-  'liquid-glass-control liquid-glass-interactive rounded-full border-primary/25 bg-primary/10 px-4 text-primary shadow-none hover:text-primary';
+  'rounded-lg border border-primary/20 bg-primary px-4 text-primary-foreground shadow-none hover:bg-primary/92 hover:text-primary-foreground';
 const workbookOutlineButtonClass =
-  'liquid-glass-control liquid-glass-interactive rounded-full border-border/65 bg-transparent px-4 text-foreground shadow-none hover:text-foreground';
+  'rounded-lg border-border/70 bg-transparent px-4 text-foreground shadow-none hover:bg-muted/60 hover:text-foreground';
 const practiceBadgeClass =
-  'liquid-glass-control rounded-full border border-[hsl(var(--accent-practice)/0.28)] bg-transparent px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))]';
+  'rounded-md border border-[hsl(var(--accent-practice)/0.26)] bg-[hsl(var(--accent-practice)/0.08)] px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))]';
 const practiceProgressClass =
   'h-1.5 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]';
 
@@ -880,7 +880,7 @@ export default function PracticePage() {
               className={cn(
                 'group relative w-full rounded-2xl border px-3 py-3 text-left transition-colors',
                 active
-                  ? 'liquid-glass-control liquid-glass-interactive border-[hsl(var(--accent-practice)/0.34)] bg-transparent'
+                  ? 'border-[hsl(var(--accent-practice)/0.32)] bg-[hsl(var(--accent-practice)/0.08)]'
                   : 'border-transparent hover:border-border/70 hover:bg-muted/60',
               )}
             >
@@ -894,7 +894,7 @@ export default function PracticePage() {
                 <span
                   className={cn(
                     'mt-0.5 flex h-9 w-9 items-center justify-center rounded-md border text-muted-foreground',
-                    active ? 'border-border bg-card text-[hsl(var(--accent-practice))]' : 'border-border bg-muted/70',
+                    active ? 'border-[hsl(var(--accent-practice)/0.3)] bg-card/70 text-[hsl(var(--accent-practice))]' : 'border-border/60 bg-muted/50',
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -924,7 +924,7 @@ export default function PracticePage() {
 
   const renderInsightRail = () => (
     <StudyRail>
-      <StudyRailSection title={isZh ? '统计' : 'Stats'}>
+      <StudyRailSection title={isZh ? '本轮' : 'This set'}>
         <StudyStatRows
           items={[
             { label: isZh ? '首答正确' : 'First try', value: firstTryCorrect, tone: 'success' },
@@ -943,7 +943,7 @@ export default function PracticePage() {
       </StudyRailSection>
 
       {selectedMode === 'writing' ? (
-        <StudyRailSection title={isZh ? '反馈' : 'Feedback'}>
+        <StudyRailSection title={isZh ? '次数' : 'Attempts'}>
           <div className="flex items-center gap-2 text-muted-foreground">
             <PenTool className="h-4 w-4" />
             <p className="text-sm font-medium">{isZh ? '剩余次数' : 'Left'}</p>

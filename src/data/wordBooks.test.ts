@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { getActiveBook, getDailyWords } from './localStorage';
+import { buildLocalAuthUserId } from '@/lib/localAuthIdentity';
+
+import { getActiveBook, getDailyWords, setActiveBook } from './localStorage';
 import { ieltsPhraseBankWords } from './ieltsPhraseBank';
 import {
   IELTS_SEARCHED_VOCABULARY_SOURCE,
@@ -80,5 +82,21 @@ describe('built-in word book defaults', () => {
     expect(dailyWords.length).toBeGreaterThan(0);
     expect(dailyWords.every((word) => activeBook?.wordIds.includes(word.id))).toBe(true);
     expect(dailyWords.map((word) => word.word)).not.toContain('air');
+  });
+
+  it('migrates stale guest and demo starter-book selections back to IELTS', () => {
+    const demoUser = buildLocalAuthUserId('demo@example.com');
+
+    setActiveBook('guest', BUILT_IN_WORD_BOOK_IDS.A1_FOUNDATION);
+    setActiveBook(demoUser, BUILT_IN_WORD_BOOK_IDS.A1_FOUNDATION);
+
+    expect(getActiveBook('guest')?.id).toBe(BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE);
+    expect(getActiveBook(demoUser)?.id).toBe(BUILT_IN_WORD_BOOK_IDS.IELTS_ACADEMIC_CORE);
+  });
+
+  it('does not override a signed-in learner who intentionally selected A1', () => {
+    setActiveBook('signed-in-beginner', BUILT_IN_WORD_BOOK_IDS.A1_FOUNDATION);
+
+    expect(getActiveBook('signed-in-beginner')?.id).toBe(BUILT_IN_WORD_BOOK_IDS.A1_FOUNDATION);
   });
 });
