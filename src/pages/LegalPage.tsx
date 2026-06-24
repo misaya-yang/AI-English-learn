@@ -148,14 +148,14 @@ export default function LegalPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
-        <Button asChild variant="ghost" className="-ml-3 mb-6 h-9 rounded-full px-3">
+        <Button asChild variant="ghost" className="-ml-3 mb-6 h-9 rounded-lg px-3">
           <Link to="/register">
             <ArrowLeft className="h-4 w-4" />
             {isZh ? '返回注册' : 'Back to register'}
           </Link>
         </Button>
 
-        <Badge variant="secondary" className="mb-4 rounded-full">
+        <Badge variant="secondary" className="mb-4 rounded-md">
           <ShieldCheck className="h-3.5 w-3.5" />
           {isZh ? '当前版本' : 'Current version'}
         </Badge>
@@ -163,7 +163,7 @@ export default function LegalPage() {
         <h1 className="text-3xl font-semibold sm:text-4xl">{title}</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
 
-        <dl className="mt-6 grid gap-3 border-y border-border/20 py-4 text-sm sm:grid-cols-2">
+        <dl className="mt-6 grid gap-3 rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-4 py-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="font-medium text-foreground">{isZh ? '产品' : 'Product'}</dt>
             <dd className="mt-1 text-muted-foreground">VocabDaily</dd>
@@ -193,7 +193,7 @@ export default function LegalPage() {
           ))}
         </article>
 
-        <div className="mt-10 border-l border-border/24 bg-[hsl(var(--surface-raised))]/35 px-4 py-3 text-sm text-muted-foreground">
+        <div className="mt-10 rounded-lg bg-[hsl(var(--surface-raised))]/35 px-4 py-3 text-sm text-muted-foreground">
           {isZh
             ? '如本页面与应用内功能说明不一致，请以本页面和结账前显示的具体说明为准。'
             : 'If this page differs from in-app feature descriptions, this page and the specific pre-checkout disclosures control.'}

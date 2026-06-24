@@ -42,7 +42,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {recap.improved && (
-          <div className="rounded-2xl border border-primary/20 bg-primary/10 p-3">
+          <div className="rounded-xl border border-transparent bg-primary/10 p-3">
             <p className="text-[10px] font-medium text-primary">
               {isZh ? '已巩固' : 'Improved'}
             </p>
@@ -54,7 +54,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         )}
 
         {recap.needsReview && (
-          <div className="rounded-2xl border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.10)] p-3">
+          <div className="rounded-xl border border-transparent bg-[hsl(var(--warning)/0.10)] p-3">
             <p className="text-[10px] font-semibold text-[hsl(var(--warning))]">
               {isZh ? '仍需再练' : 'Needs review'}
             </p>
@@ -66,7 +66,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         )}
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-border/70 bg-[hsl(var(--surface-sunken)/0.42)] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-5 flex flex-col gap-3 rounded-xl border border-transparent bg-[hsl(var(--surface-sunken)/0.42)] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <p className="text-[10px] font-semibold text-muted-foreground">
             {isZh ? '下一步' : 'Next step'}

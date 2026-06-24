@@ -132,9 +132,9 @@ export function LearningHeroPanel({
         </div>
 
         {(typeof progress === 'number' || metrics.length > 0) ? (
-          <div className="grid gap-0 border-y border-border/25 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-2 rounded-xl bg-[hsl(var(--surface-sunken)/0.34)] p-2 sm:grid-cols-2 lg:grid-cols-5">
           {typeof progress === 'number' ? (
-            <div className="border-b border-border/25 px-3 py-2 sm:border-r lg:border-b-0">
+            <div className="rounded-lg bg-background/55 px-3 py-2">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] text-muted-foreground">{progressLabel || '进度'}</p>
@@ -151,7 +151,7 @@ export function LearningHeroPanel({
           ) : null}
 
           {metrics.map((item) => (
-            <div key={`${item.label}-${String(item.value)}`} className="border-t border-border/25 px-3 py-2 first:border-t-0 sm:border-l sm:first:border-l-0 lg:border-t-0">
+            <div key={`${item.label}-${String(item.value)}`} className="rounded-lg bg-background/45 px-3 py-2">
               <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
               <div className={cn('mt-1 text-base font-medium', metricToneClass[item.accent || 'default'])}>
                 {item.value}

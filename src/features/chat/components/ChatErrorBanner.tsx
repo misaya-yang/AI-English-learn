@@ -22,7 +22,7 @@ export const ChatErrorBanner = ({
   const isZh = language.startsWith('zh');
   return (
     <div className="px-4 pb-2">
-      <div className={cn(contentWidthClass, 'mx-auto flex items-start gap-3 rounded-2xl border border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] p-3')}>
+      <div className={cn(contentWidthClass, 'mx-auto flex items-start gap-3 rounded-xl border border-transparent bg-[hsl(var(--warning)/0.10)] p-3')}>
         <AlertTriangle className="h-4 w-4 mt-0.5 text-[hsl(var(--warning))] flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">

@@ -60,7 +60,7 @@ export function ChatArtifactRenderer({
           return (
             <div
               key={`${messageId}-sources-${index}`}
-              className="mt-3 space-y-2 rounded-2xl border border-[hsl(var(--info)/0.34)] bg-[hsl(var(--info)/0.08)] p-3"
+              className="mt-3 space-y-2 rounded-xl border border-transparent bg-[hsl(var(--info)/0.08)] p-3"
             >
               <p className="text-xs font-semibold text-[hsl(var(--info))]">
                 {artifact.payload.title || (language.startsWith('zh') ? '资料来源' : 'Sources')}
@@ -72,7 +72,7 @@ export function ChatArtifactRenderer({
                     href={source.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="block rounded-xl border border-[hsl(var(--info)/0.24)] bg-background/70 px-3 py-2 transition-colors hover:border-[hsl(var(--info)/0.45)]"
+                    className="block rounded-lg border border-transparent bg-background/70 px-3 py-2 transition-colors hover:border-[hsl(var(--info)/0.35)]"
                   >
                     <div className="flex items-start gap-2">
                       <Link2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[hsl(var(--info))]" />
@@ -97,7 +97,7 @@ export function ChatArtifactRenderer({
           return (
             <div
               key={`${messageId}-canvas-summary-${index}`}
-              className="mt-3 space-y-2 rounded-2xl border border-primary/25 bg-primary/5 p-3"
+              className="mt-3 space-y-2 rounded-xl border border-transparent bg-primary/5 p-3"
             >
               <p className="text-xs font-semibold text-primary">
                 {artifact.payload.title}
@@ -137,7 +137,7 @@ export function ChatArtifactRenderer({
           return (
             <div
               key={`${messageId}-canvas-hint-${index}`}
-              className="mt-3 space-y-2 rounded-2xl border border-[hsl(var(--warning)/0.34)] bg-[hsl(var(--warning)/0.10)] p-3"
+              className="mt-3 space-y-2 rounded-xl border border-transparent bg-[hsl(var(--warning)/0.10)] p-3"
             >
               <p className="text-xs font-semibold text-[hsl(var(--warning))]">
                 {artifact.payload.title}

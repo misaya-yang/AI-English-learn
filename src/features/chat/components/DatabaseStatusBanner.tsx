@@ -23,7 +23,7 @@ export const DatabaseStatusBanner = ({ language, dbStatus }: DatabaseStatusBanne
   }
 
   return (
-    <div className="fixed top-20 left-1/2 z-50 max-w-lg -translate-x-1/2 rounded-2xl border border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.10)] p-4 shadow-lg">
+    <div className="fixed top-20 left-1/2 z-50 max-w-lg -translate-x-1/2 rounded-xl border border-transparent bg-[hsl(var(--warning)/0.10)] p-4 shadow-none">
       <div className="flex items-start gap-3">
         <div className="w-8 h-8 rounded-md bg-[hsl(var(--warning)/0.14)] flex items-center justify-center flex-shrink-0">
           <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />

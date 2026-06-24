@@ -203,7 +203,7 @@ export default function LearningPathPage() {
             return (
               <motion.div key={path.id} {...motionStagger(index)}>
                 <Card
-                  className="h-full cursor-pointer rounded-2xl transition-colors hover:border-primary/45"
+                  className="h-full cursor-pointer rounded-xl transition-colors hover:border-primary/45"
                   onClick={() => handleSelectPath(path.id)}
                 >
                   <CardContent className="flex items-center gap-4 p-4">
@@ -398,7 +398,7 @@ export default function LearningPathPage() {
             </div>
           ))}
 
-          <div className="flex items-center justify-between border-y border-border/24 py-3 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between rounded-lg bg-[hsl(var(--paper-muted)/0.20)] px-3 py-3 text-sm text-muted-foreground">
             <span>{isZh ? '点击课程名称打开具体任务；勾选后会记录课程完成。' : 'Click a lesson to open the exact task; checking it records completion.'}</span>
             <Badge variant="secondary">{progressPercent}%</Badge>
           </div>

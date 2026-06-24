@@ -198,7 +198,7 @@ export default function PronunciationPage() {
                   {isZh ? '录完后查看准确度、流利度和语调。' : 'Record once, then check accuracy, fluency, and intonation.'}
                 </p>
               </div>
-              <div className="border-l border-border/24 px-4 py-2 text-right">
+              <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-4 py-2 text-right">
                 <span className="block text-lg font-semibold text-foreground">80+</span>
                 <span className="block text-[11px] text-muted-foreground">{isZh ? '目标分' : 'goal'}</span>
               </div>
@@ -209,7 +209,7 @@ export default function PronunciationPage() {
                 { label: isZh ? '进度' : 'Progress', value: `${completedCount}/${items.length}` },
                 { label: isZh ? '记录' : 'Records', value: session.records.length },
               ].map((stat) => (
-                <div key={stat.label} className="border-l border-border/24 px-3 py-2 text-center">
+                <div key={stat.label} className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2 text-center">
                   <p className="text-base font-semibold text-foreground">{stat.value}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{stat.label}</p>
                 </div>

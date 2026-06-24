@@ -300,7 +300,7 @@ export default function DashboardLayout() {
             <div className="flex items-center gap-2">
               <p className="truncate text-sm font-medium">{item.label}</p>
               {item.badge ? (
-                <Badge className="rounded-md border border-sidebar-border bg-sidebar-primary/[0.12] px-1.5 text-[10px] text-sidebar-primary hover:bg-sidebar-primary/[0.12]">
+                <Badge className="rounded-md border-transparent bg-sidebar-primary/[0.12] px-1.5 text-[10px] text-sidebar-primary hover:bg-sidebar-primary/[0.12]">
                   {item.badge}
                 </Badge>
               ) : null}
@@ -347,7 +347,7 @@ export default function DashboardLayout() {
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-medium">{item.label}</p>
                 {item.badge ? (
-                  <span className="rounded-md border border-sidebar-border bg-sidebar-primary/[0.12] px-1.5 py-0.5 text-[10px] font-medium text-sidebar-primary">
+                  <span className="rounded-md bg-sidebar-primary/[0.12] px-1.5 py-0.5 text-[10px] font-medium text-sidebar-primary">
                     {item.badge}
                   </span>
                 ) : null}
@@ -416,7 +416,7 @@ export default function DashboardLayout() {
         <Button
           variant="ghost"
           size="icon"
-          className="liquid-glass-control liquid-glass-interactive h-11 min-h-11 w-11 min-w-11 border border-border/55 bg-transparent hover:bg-muted sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
+          className="glass-icon-button liquid-glass-control liquid-glass-interactive h-11 min-h-11 w-11 min-w-11 bg-transparent sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
           aria-label={currentLang === 'zh' ? '打开页面操作' : 'Open page actions'}
         >
           <MoreHorizontal className="h-5 w-5" />
@@ -461,7 +461,7 @@ export default function DashboardLayout() {
 
   const standardMobileSheetBody = (
     <div className="flex h-full flex-col gap-4 px-1 text-sidebar-foreground">
-      <div className="border-y border-sidebar-border/60 py-3">
+      <div className="rounded-xl bg-sidebar-accent/28 px-3 py-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 rounded-md">
             <AvatarFallback className="rounded-md">{avatarInitial}</AvatarFallback>
@@ -493,7 +493,7 @@ export default function DashboardLayout() {
         {toolNav.map((item) => renderStandardNavItem(item))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-sidebar-border/70 pb-4 pt-3">
+      <div className="mt-auto flex items-center justify-between pb-4 pt-3">
         {renderTopbarControlsMenu()}
         {learningAccountMenu}
       </div>
@@ -502,7 +502,7 @@ export default function DashboardLayout() {
 
   const learningMobileSheetBody = (
     <div className="flex h-full flex-col gap-6 bg-sidebar text-sidebar-foreground">
-      <div className="border-y border-sidebar-border/60 py-3">
+      <div className="rounded-xl bg-sidebar-accent/28 px-3 py-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 rounded-md">
             <AvatarFallback className="rounded-md bg-sidebar-primary/14 text-sidebar-primary">
@@ -514,7 +514,7 @@ export default function DashboardLayout() {
             <p className="text-xs text-sidebar-foreground/55">{levelLabel}</p>
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-sidebar-border pt-4">
+        <div className="mt-4 grid grid-cols-3 gap-3">
           <div>
             <p className="text-[11px] text-sidebar-foreground/55">{copy.mission}</p>
             <p className="mt-1 text-base font-semibold text-sidebar-primary">{missionProgress}%</p>
@@ -545,7 +545,7 @@ export default function DashboardLayout() {
         {learningTools.map((item) => renderLearningNavItem(item, true))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-sidebar-border pt-4">
+      <div className="mt-auto flex items-center justify-between pt-4">
         {renderTopbarControlsMenu()}
         {learningAccountMenu}
       </div>
@@ -556,9 +556,9 @@ export default function DashboardLayout() {
     return (
       <>
         <div className="study-app-bg flex h-[100dvh] overflow-hidden bg-background text-foreground">
-        <aside className="app-glass-bar hidden h-[100dvh] min-h-0 w-[224px] flex-col rounded-none border-y-0 border-l-0 border-r border-border/24 bg-sidebar/62 px-3 py-4 text-sidebar-foreground lg:flex">
+        <aside className="app-glass-bar hidden h-[100dvh] min-h-0 w-[224px] flex-col rounded-none border-0 bg-sidebar/44 px-3 py-4 text-sidebar-foreground lg:flex">
           <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sidebar-primary/10 text-sidebar-primary">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sidebar-primary/10 text-sidebar-primary">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
@@ -567,7 +567,7 @@ export default function DashboardLayout() {
             </div>
           </Link>
 
-          <div className="mt-5 border-y border-sidebar-border/55 py-4">
+          <div className="mt-5 rounded-xl bg-sidebar-accent/28 px-3 py-3">
             <h2 className="text-sm font-semibold">{activeShell.title}</h2>
             <div className="mt-3 grid grid-cols-3 gap-2">
               <div>
@@ -590,8 +590,8 @@ export default function DashboardLayout() {
             className={cn(
               'mt-4 min-h-0 flex-1 pr-2',
               '[&_[data-slot=scroll-area-scrollbar]]:w-1.5',
-              '[&_[data-slot=scroll-area-thumb]]:bg-border/45',
-              'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/35',
+              '[&_[data-slot=scroll-area-thumb]]:bg-transparent',
+              'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/22',
             )}
           >
             <div className="space-y-5 pb-4">
@@ -610,7 +610,7 @@ export default function DashboardLayout() {
                 {learningTools.map((item) => renderLearningNavItem(item, true))}
               </div>
 
-              <div className="border-t border-sidebar-border/70 pt-3">
+              <div className="rounded-xl bg-sidebar-accent/22 px-3 py-3">
                 <div className="flex items-center justify-between">
                   <StreakCounter
                     current={streak?.current || 0}
@@ -625,7 +625,7 @@ export default function DashboardLayout() {
             </div>
           </ScrollArea>
 
-          <div className="mt-3 border-t border-sidebar-border/55 px-1 py-2.5">
+          <div className="mt-3 px-1 py-2.5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -646,16 +646,16 @@ export default function DashboardLayout() {
             isMobile ? mobileMainHeightClass : 'flex-1',
           )}
         >
-          <header className="app-glass-bar rounded-none border-x-0 border-t-0 border-border/28 bg-background/72 backdrop-blur-md">
+          <header className="app-glass-bar rounded-none border-0 bg-background/66 backdrop-blur-md">
             <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-6">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-lg sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
+                    <Button variant="ghost" size="icon" className="glass-icon-button h-11 min-h-11 w-11 min-w-11 rounded-lg sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-[320px] border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
+                  <SheetContent side="left" className="w-[320px] border-r border-transparent bg-sidebar p-4 text-sidebar-foreground">
                     <SheetTitle className="sr-only">
                       {currentLang === 'zh' ? '学习导航' : 'Learning navigation'}
                     </SheetTitle>
@@ -697,7 +697,7 @@ export default function DashboardLayout() {
         <>
           <BottomNavBar isLearningMode onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
-            <SheetContent side="bottom" className="border-t border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
+            <SheetContent side="bottom" className="border-t border-transparent bg-sidebar p-4 text-sidebar-foreground">
               <SheetTitle className="sr-only">
                 {currentLang === 'zh' ? '更多学习工具' : 'More learning tools'}
               </SheetTitle>
@@ -716,9 +716,9 @@ export default function DashboardLayout() {
 
   return (
     <div className="study-app-bg flex h-[100dvh] overflow-hidden bg-background">
-      <aside className="app-glass-bar hidden h-[100dvh] min-h-0 w-[284px] flex-col rounded-none border-y-0 border-l-0 border-r border-border/24 bg-sidebar/62 px-4 py-4 text-sidebar-foreground lg:flex">
+      <aside className="app-glass-bar hidden h-[100dvh] min-h-0 w-[284px] flex-col rounded-none border-0 bg-sidebar/44 px-4 py-4 text-sidebar-foreground lg:flex">
         <Link to="/dashboard/today" className="flex items-center gap-3 rounded-xl px-1 py-2">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sidebar-primary/10 text-sidebar-primary">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sidebar-primary/10 text-sidebar-primary">
             <BookText className="h-5 w-5" />
           </div>
           <div>
@@ -733,12 +733,12 @@ export default function DashboardLayout() {
             'mt-4 min-h-0 flex-1 pr-2',
             '[&_[data-slot=scroll-area-scrollbar]]:w-1.5',
             '[&_[data-slot=scroll-area-scrollbar]]:rounded-full',
-            '[&_[data-slot=scroll-area-thumb]]:bg-border/45',
-            'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/35',
+            '[&_[data-slot=scroll-area-thumb]]:bg-transparent',
+            'hover:[&_[data-slot=scroll-area-thumb]]:bg-muted-foreground/22',
           )}
         >
           <div className="space-y-5 pb-4">
-            <div className="border-y border-sidebar-border/60 py-3">
+            <div className="rounded-xl bg-sidebar-accent/28 px-3 py-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="mt-1 text-base font-semibold">{copy.continueTodayHeading}</p>
@@ -761,17 +761,17 @@ export default function DashboardLayout() {
               </div>
               <Link
                 to="/dashboard/today"
-                className="mt-4 flex min-h-10 items-center justify-between border-y border-sidebar-border/70 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:text-sidebar-primary"
+                className="mt-4 flex min-h-10 items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent/45 hover:text-sidebar-primary"
               >
                 <span>{copy.todayPlan}</span>
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <div className="space-y-3 border-t border-sidebar-border/60 pt-3">
+            <div className="space-y-3 rounded-xl bg-sidebar-accent/22 px-3 py-3">
               <div className="flex items-center justify-between">
                 <StreakCounter current={streak?.current || 0} longest={streak?.longest || 0} />
-                <Badge variant="outline" className="rounded-md border-sidebar-border/60 bg-transparent text-sidebar-foreground">
+                <Badge variant="outline" className="rounded-md border-transparent bg-sidebar-accent/35 text-sidebar-foreground">
                   {isZh ? '阶段' : 'Level'} {xp?.level || 1}
                 </Badge>
               </div>
@@ -790,7 +790,7 @@ export default function DashboardLayout() {
           </div>
         </ScrollArea>
 
-        <div className="mt-3 border-t border-sidebar-border/60 px-1 py-2.5">
+        <div className="mt-3 px-1 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -843,16 +843,16 @@ export default function DashboardLayout() {
           isMobile && !isChatRoute ? mobileMainHeightClass : 'flex-1',
         )}
       >
-        <header className="app-glass-bar rounded-none border-x-0 border-t-0 border-border/28 bg-background/72 backdrop-blur-md">
+        <header className="app-glass-bar rounded-none border-0 bg-background/66 backdrop-blur-md">
           <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-7">
             <div className="flex min-w-0 items-center gap-3">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-11 min-h-11 w-11 min-w-11 rounded-lg sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
+                  <Button variant="ghost" size="icon" className="glass-icon-button h-11 min-h-11 w-11 min-w-11 rounded-lg sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9 lg:hidden" aria-label={currentLang === 'zh' ? '打开导航菜单' : 'Open navigation menu'}>
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[320px] border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
+                <SheetContent side="left" className="w-[320px] border-r border-transparent bg-sidebar p-4 text-sidebar-foreground">
                   <SheetTitle className="sr-only">
                     {currentLang === 'zh' ? '应用导航' : 'App navigation'}
                   </SheetTitle>
@@ -893,7 +893,7 @@ export default function DashboardLayout() {
         <>
           <BottomNavBar isLearningMode={false} onMoreClick={() => setMoreSheetOpen(true)} />
           <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
-            <SheetContent side="bottom" className="border-t border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
+            <SheetContent side="bottom" className="border-t border-transparent bg-sidebar p-4 text-sidebar-foreground">
               <SheetTitle className="sr-only">
                 {currentLang === 'zh' ? '更多工具' : 'More tools'}
               </SheetTitle>

@@ -29,7 +29,7 @@ const Toaster = ({ position = "bottom-right", mobileOffset, ...props }: ToasterP
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:border-border/70 group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground group-[.toaster]:shadow-lg",
+            "group toast group-[.toaster]:border-transparent group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground group-[.toaster]:shadow-none",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",

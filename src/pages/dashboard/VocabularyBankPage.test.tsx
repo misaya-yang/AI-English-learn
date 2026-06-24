@@ -199,7 +199,7 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
   it('surfaces source, license, level range, topic tags, and safe delete affordances for books', () => {
     renderPage();
 
-    const activeBookRow = screen.getByText(/来源: Cambridge notes/).closest('div.rounded-md');
+    const activeBookRow = screen.getByTestId('word-book-row-book-ielts-core');
     expect(activeBookRow).not.toBeNull();
     expect(within(activeBookRow as HTMLElement).getByText('当前词书')).toBeInTheDocument();
     expect(within(activeBookRow as HTMLElement).getByText('B2')).toBeInTheDocument();

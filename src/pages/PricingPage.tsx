@@ -272,7 +272,7 @@ export default function PricingPage() {
         <div className="max-w-3xl">
           <Badge
             variant="secondary"
-            className="rounded-full bg-muted text-muted-foreground"
+            className="rounded-md bg-muted text-muted-foreground"
           >
             <BookOpen className="mr-1 h-3 w-3" />
             {isZh ? '定价与会员' : 'Pricing & membership'}
@@ -292,13 +292,13 @@ export default function PricingPage() {
           aria-label={isZh ? '方案任务分工' : 'Plan jobs to be done'}
           className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2"
         >
-          <div className="border-l border-border/24 px-4 py-2">
+          <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.24)] px-4 py-3">
             <p className="text-xs font-semibold text-muted-foreground">
               {isZh ? '免费版包含' : 'Free includes'}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-foreground">{pickLocalized(FREE_JOB, i18n.language || 'en')}</p>
           </div>
-          <div className="border-l border-primary/34 px-4 py-2">
+          <div className="rounded-xl bg-primary/10 px-4 py-3">
             <p className="text-xs font-semibold text-primary">
               {isZh ? '专业版适合' : 'Pro is for'}
             </p>
@@ -323,7 +323,7 @@ export default function PricingPage() {
                   'px-3 py-1 text-xs',
                   currentPlan === 'pro'
                     ? 'bg-primary text-primary-foreground'
-                    : 'border-border text-muted-foreground',
+                    : 'border-transparent bg-muted/55 text-muted-foreground',
                 )}
               >
                 {currentPlan === 'pro'
@@ -377,7 +377,7 @@ export default function PricingPage() {
 	                  data-highlighted={plan.highlighted ? 'true' : 'false'}
 	                >
 	                  {plan.highlighted && (
-	                    <Badge className="absolute right-0 top-0 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                    <Badge className="absolute right-0 top-0 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
                       {isZh ? '备考方案' : 'Exam prep'}
                     </Badge>
                   )}
@@ -450,7 +450,7 @@ export default function PricingPage() {
                       {plan.id === 'free' ? (
                         <Button
                           asChild
-	                          className="h-11 w-full rounded-full"
+                          className="h-11 w-full rounded-lg"
 	                          variant="glass"
                         >
                           <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
@@ -464,7 +464,7 @@ export default function PricingPage() {
                         // local product intent so we can measure Pro demand.
                         <div
                           data-testid="pricing-pro-coming-soon"
-	                          className="border-l border-[hsl(var(--warning)/0.38)] bg-[hsl(var(--warning)/0.1)] px-4 py-3 text-left"
+                          className="rounded-lg bg-[hsl(var(--warning)/0.1)] px-4 py-3 text-left"
                         >
                           <p className="text-sm font-semibold text-[hsl(var(--warning))]">
                             {isZh ? '暂未开放' : 'Coming soon'}
@@ -481,7 +481,7 @@ export default function PricingPage() {
                             type="button"
                             data-testid="pricing-pro-waitlist-button"
                             variant={isWaitlistedForCycle ? 'secondary' : 'default'}
-	                            className="mt-4 h-11 w-full rounded-full"
+                            className="mt-4 h-11 w-full rounded-lg"
                             onClick={handleProWaitlist}
                           >
                             {isWaitlistedForCycle ? (
@@ -509,7 +509,7 @@ export default function PricingPage() {
                         // behind this branch so we can lift it back in once
                         // VITE_BILLING_ENABLED=true is set on the deploy.
                         <Button
-	                          className="h-11 w-full rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+                          className="h-11 w-full rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
                           onClick={() =>
                             toast.info(isZh ? '支付服务配置完成后即可开始结账。' : 'Checkout will start when payment provider is configured.')
                           }
@@ -530,7 +530,7 @@ export default function PricingPage() {
         {!isCheckoutLive && (
           <div
             role="status"
-	            className="mt-8 flex max-w-4xl flex-col gap-2 border-l border-[hsl(var(--warning)/0.36)] bg-[hsl(var(--warning)/0.1)] px-4 py-3 text-sm text-[hsl(var(--warning))] sm:flex-row sm:items-center sm:gap-3"
+            className="mt-8 flex max-w-4xl flex-col gap-2 rounded-lg bg-[hsl(var(--warning)/0.1)] px-4 py-3 text-sm text-[hsl(var(--warning))] sm:flex-row sm:items-center sm:gap-3"
           >
             <ShieldAlert className="h-5 w-5 flex-shrink-0 text-[hsl(var(--warning))]" aria-hidden="true" />
             <div className="space-y-1">
@@ -587,7 +587,7 @@ export default function PricingPage() {
           <Button
             asChild
             size="lg"
-	            className="mt-5 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+            className="mt-5 rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
           >
             <Link to="/register">
               {isZh ? '免费开始' : 'Start free'}
@@ -597,7 +597,7 @@ export default function PricingPage() {
         </div>
       </main>
 
-      <footer className="border-t border-border py-8">
+      <footer className="py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6">
           <BrandMark variant="compact" />
           <p className="text-xs text-muted-foreground">

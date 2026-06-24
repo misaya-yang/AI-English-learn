@@ -311,7 +311,7 @@ export default function ExamPrepPage() {
         isBusy={runtime.loadingStage !== 'idle'}
       />
 
-      <section className="border-y border-border/24 py-3">
+      <section className="rounded-xl bg-[hsl(var(--paper-muted)/0.18)] px-3 py-3">
         <div className="grid gap-2 md:grid-cols-4">
           {sprintSteps.map((step, index) => {
             const active = runtime.workspaceView === step.id;
@@ -320,10 +320,10 @@ export default function ExamPrepPage() {
                 key={step.id}
                 type="button"
                 onClick={() => runtime.setWorkspaceView(step.id)}
-                className={`flex min-h-[112px] flex-col items-start justify-between border-l p-3 text-left transition hover:bg-primary/5 ${
+                className={`flex min-h-[112px] flex-col items-start justify-between rounded-lg p-3 text-left transition hover:bg-primary/5 ${
                   active
-                    ? 'border-primary/45 bg-primary/10 text-foreground'
-                    : 'border-border/24 bg-transparent text-muted-foreground'
+                    ? 'bg-primary/10 text-foreground'
+                    : 'bg-transparent text-muted-foreground'
                 }`}
               >
                 <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">

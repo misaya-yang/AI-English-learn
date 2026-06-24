@@ -396,7 +396,7 @@ export default function VocabularyBankPage() {
       </div>
 
       {lastImportSummary && (
-        <section className="border-l border-[hsl(var(--accent-practice)/0.34)] bg-[hsl(var(--accent-practice)/0.07)] px-4 py-3">
+        <section className="rounded-lg bg-[hsl(var(--accent-practice)/0.07)] px-4 py-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">
@@ -693,8 +693,9 @@ export default function VocabularyBankPage() {
             return (
               <div
                 key={book.id}
+                data-testid={`word-book-row-${book.id}`}
                 className={cn(
-                  'rounded-md border-t border-border/20 py-3 transition-colors flex flex-col md:flex-row md:items-start md:justify-between gap-3',
+                  'rounded-lg bg-[hsl(var(--paper-muted)/0.18)] px-3 py-3 transition-colors flex flex-col md:flex-row md:items-start md:justify-between gap-3',
                   isActive && 'bg-muted/30 px-3',
                 )}
               >
@@ -866,7 +867,7 @@ export default function VocabularyBankPage() {
                   role="button"
                   tabIndex={0}
                   aria-label={isZh ? `打开 ${entry.headword} 词条详情` : `Open ${entry.headword} details`}
-                  className="cursor-pointer border-t border-border/20 py-4 transition-colors hover:bg-muted/30"
+                  className="cursor-pointer rounded-lg px-3 py-4 transition-colors hover:bg-muted/30"
                 >
                   <div className="px-1">
                     <div className="flex items-center justify-between">
@@ -943,13 +944,13 @@ export default function VocabularyBankPage() {
                   </p>
 
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <div className="border-l border-border/20 py-1 pl-3">
+                    <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
                       <p className="text-xs text-muted-foreground">{isZh ? '学习状态' : 'Learning status'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">
                         {isZh ? (statusLabelsZh[status] || status) : (statusLabels[status] || status)}
                       </p>
                     </div>
-                    <div className="border-l border-border/20 py-1 pl-3">
+                    <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
                       <p className="text-xs text-muted-foreground">{isZh ? '来源词书' : 'Source book'}</p>
                       <p className="mt-1 text-sm font-medium text-foreground">{sourceBookLabel}</p>
                     </div>
@@ -1014,7 +1015,7 @@ export default function VocabularyBankPage() {
                     <h4 className="font-semibold mb-2">{isZh ? '训练模板 / Drills' : 'Drills'}</h4>
                     <div className="space-y-2">
                       {entry.trainingTemplates.map((template) => (
-                        <div key={template.type} className="border-l border-border/20 bg-muted/30 px-3 py-2">
+                        <div key={template.type} className="rounded-lg bg-muted/30 px-3 py-2">
                           <p className="text-sm font-medium">{isZh ? template.label.zh : template.label.en}</p>
                           <p className="mt-1 text-sm text-muted-foreground">
                             {isZh ? template.promptZh : template.prompt}

@@ -78,7 +78,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
         <Button
           variant="ghost"
           size="icon"
-          className="h-11 min-h-11 w-11 min-w-11 rounded-lg border border-border/45 bg-muted/35 text-foreground hover:bg-muted hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
+          className="glass-icon-button h-11 min-h-11 w-11 min-w-11 rounded-lg text-foreground hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
           onClick={() => playAudio(word.word)}
           aria-label={`Play ${word.word}`}
         >
@@ -96,21 +96,21 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.45fr)]">
         <div className="space-y-4">
-          <div className="border-t border-[hsl(var(--paper-line)/0.76)] pt-4">
+          <div className="pt-2">
             <p className="study-label">释义</p>
             <p className="mt-2 text-lg leading-8 text-foreground">{word.definition}</p>
             <p className="mt-2 text-base leading-8 text-muted-foreground">{word.definitionZh}</p>
           </div>
 
           {word.examples[0] ? (
-            <div className="border-t border-[hsl(var(--paper-line)/0.76)] pt-4">
+            <div className="pt-2">
               <p className="study-label">例句</p>
               <p className="mt-2 lexical-type text-xl leading-8 text-foreground">{word.examples[0].en}</p>
               <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p>
               {isFlipped ? (
                 <div className="mt-3 space-y-3">
                   {word.examples.slice(1, 3).map((example, index) => (
-                    <div key={`${example.en}-${index}`} className="border-t border-[hsl(var(--paper-line)/0.6)] pt-3">
+                    <div key={`${example.en}-${index}`} className="rounded-lg bg-[hsl(var(--paper-muted)/0.34)] px-3 py-2">
                       <p className="text-sm leading-7 text-foreground">{example.en}</p>
                       <p className="mt-1 text-sm leading-7 text-muted-foreground">{example.zh}</p>
                     </div>
@@ -121,7 +121,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
           ) : null}
         </div>
 
-        <div className="space-y-4 border-t border-[hsl(var(--paper-line)/0.76)] pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+        <div className="space-y-4 rounded-xl bg-[hsl(var(--paper-muted)/0.28)] p-4 lg:p-5">
           {word.collocations.length > 0 ? (
             <div>
               <p className="study-label">搭配</p>
@@ -143,12 +143,12 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-[hsl(var(--paper-line)/0.76)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="outline" className="rounded-md border-border bg-transparent text-foreground hover:bg-muted" onClick={onFlip}>
+      <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
+        <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted" onClick={onFlip}>
           {isFlipped ? '收起例句' : '看例句'}
         </Button>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button variant="outline" className="rounded-md border-border bg-transparent text-foreground hover:bg-muted" onClick={() => onMarkStatus('hard')} disabled={isHard}>
+          <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted" onClick={() => onMarkStatus('hard')} disabled={isHard}>
             <Brain className="mr-2 h-4 w-4" />
             {isHard ? '已加入复习' : '需要复习'}
           </Button>
@@ -211,7 +211,7 @@ const StreakStatus = memo(function StreakStatus({ days }: { days: number }) {
   if (days <= 0) return null;
   return (
     <motion.div
-      className="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-3 py-1 text-muted-foreground"
+      className="flex items-center gap-1.5 rounded-md bg-muted/40 px-3 py-1 text-muted-foreground"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.18 }}
@@ -229,7 +229,7 @@ const XPCounter = memo(function XPCounter({ value }: { value: number }) {
 
   return (
     <motion.div
-      className="flex items-center gap-1.5 rounded-md border border-border bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1"
+      className="flex items-center gap-1.5 rounded-md bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
@@ -649,11 +649,11 @@ export default function TodayPage() {
             unit: row.unit,
             note: row.note,
             action: row.href ? (
-              <Button variant="outline" size="sm" className="min-h-11 rounded-lg border-border bg-transparent px-4" asChild>
+              <Button variant="outline" size="sm" className="min-h-11 rounded-lg bg-transparent px-4" asChild>
                 <Link to={row.href}>{isZh ? '开始' : 'Open'}</Link>
               </Button>
             ) : row.onClick ? (
-              <Button variant="outline" size="sm" className="min-h-11 rounded-lg border-border bg-transparent px-4" onClick={row.onClick}>
+              <Button variant="outline" size="sm" className="min-h-11 rounded-lg bg-transparent px-4" onClick={row.onClick}>
                 {isZh ? '开始' : 'Open'}
               </Button>
             ) : null,
@@ -706,10 +706,10 @@ export default function TodayPage() {
                     }}
                   />
 
-                  <div className="mt-4 flex flex-col gap-2 border-t border-[hsl(var(--paper-line)/0.72)] pt-4 sm:flex-row sm:justify-end">
+                  <div className="mt-4 flex flex-col gap-2 rounded-lg bg-[hsl(var(--paper-muted)/0.34)] p-2 sm:flex-row sm:justify-end">
                     <Button
                       variant="outline"
-                      className="rounded-md border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground"
+                      className="rounded-md bg-transparent text-foreground hover:bg-muted hover:text-foreground"
                       onClick={handleBookmark}
                       disabled={!currentWord}
                     >
@@ -718,7 +718,7 @@ export default function TodayPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="rounded-md border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground"
+                      className="rounded-md bg-transparent text-foreground hover:bg-muted hover:text-foreground"
                       onClick={handleShare}
                       disabled={!currentWord}
                     >
@@ -736,7 +736,7 @@ export default function TodayPage() {
               description={isZh ? `${words.length} 个新词已完成。` : `${words.length} words completed.`}
               actions={
                 <>
-                  <Button variant="outline" className="rounded-md border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground" asChild>
+                  <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted hover:text-foreground" asChild>
                     <Link to="/dashboard/review">{isZh ? '去复习' : 'Review'}</Link>
                   </Button>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
@@ -767,7 +767,7 @@ export default function TodayPage() {
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">{dailyCoachPlan.dictionaryFocus.cefrLevel}</p>
                   </div>
-                  <Button variant="outline" size="sm" className="rounded-md border-border bg-transparent" asChild>
+                  <Button variant="outline" size="sm" className="rounded-md bg-transparent" asChild>
                     <Link to={`/dashboard/vocabulary?q=${encodeURIComponent(dailyCoachPlan.dictionaryFocus.headword)}`}>
                       {isZh ? '词条' : 'Entry'}
                     </Link>
@@ -811,21 +811,21 @@ export default function TodayPage() {
             <StudyRailSection title={isZh ? '下一步' : 'Next'}>
               <div className="space-y-3">
                 {activePathNextLesson ? (
-                  <div className="border-l border-[hsl(var(--paper-line)/0.58)] py-1 pl-3">
+                  <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.36)] px-3 py-3">
                     <p className="text-sm font-semibold text-foreground">
                       {isZh ? activePathNextLesson.lesson.titleZh : activePathNextLesson.lesson.title}
                     </p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
                       {isZh ? activePathNextLesson.target.labelZh : activePathNextLesson.target.label}
                     </p>
-                    <Button variant="outline" size="sm" className="mt-3 rounded-md border-border bg-transparent" asChild>
+                    <Button variant="outline" size="sm" className="mt-3 rounded-md bg-transparent" asChild>
                       <Link to={activePathNextLesson.target.href}>{isZh ? '打开' : 'Open'}</Link>
                     </Button>
                   </div>
                 ) : null}
 
                 {recommendedUnit ? (
-                  <div className="border-l border-[hsl(var(--paper-line)/0.58)] py-1 pl-3">
+                  <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.36)] px-3 py-3">
                     <div className="flex items-start gap-2">
                       <Target className="mt-0.5 h-4 w-4 text-[hsl(var(--accent-practice))]" />
                       <div>
@@ -835,7 +835,7 @@ export default function TodayPage() {
                         <p className="mt-1 text-xs text-muted-foreground">{recommendedUnit.estimatedMinutes} 分钟</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="mt-3 rounded-md border-border bg-transparent" asChild>
+                    <Button variant="outline" size="sm" className="mt-3 rounded-md bg-transparent" asChild>
                       <Link to="/dashboard/exam">{isZh ? '打开' : 'Open'}</Link>
                     </Button>
                   </div>
@@ -848,7 +848,7 @@ export default function TodayPage() {
             <div className="space-y-2">
               {weaknesses.length > 0 ? (
                 weaknesses.slice(0, 3).map((weakness) => (
-                  <div key={weakness.tag} className="flex items-center justify-between gap-3 border-b border-[hsl(var(--paper-line)/0.64)] py-2 last:border-b-0">
+                  <div key={weakness.tag} className="flex items-center justify-between gap-3 rounded-lg bg-[hsl(var(--paper-muted)/0.30)] px-3 py-2">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">{weakness.titleZh}</p>
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">{weakness.title}</p>

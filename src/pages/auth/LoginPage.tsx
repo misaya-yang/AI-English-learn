@@ -263,7 +263,7 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
+            className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground shadow-none transition-colors hover:bg-primary/90 disabled:opacity-60"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -309,7 +309,7 @@ export default function LoginPage() {
           aria-modal="true"
           aria-labelledby="reset-password-title"
         >
-          <div className="w-full max-w-[400px] rounded-md border border-border bg-card p-7 shadow-lg">
+          <div className="w-full max-w-[400px] rounded-xl bg-card p-7 shadow-none">
             <h3
               id="reset-password-title"
               className="text-center text-lg font-semibold text-foreground"

@@ -167,7 +167,7 @@ export default function Home() {
             </Button>
             <button
               type="button"
-              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border/45 bg-card/40 text-foreground md:hidden"
+              className="glass-icon-button flex h-11 w-11 items-center justify-center rounded-lg text-foreground md:hidden"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label={copy.nav.menu}
             >
@@ -195,7 +195,7 @@ export default function Home() {
               >
                 {copy.nav.auth}
               </Link>
-              <div className="mt-2 flex items-center gap-1 border-t border-border/45 pt-3">
+              <div className="mt-2 flex items-center gap-1 pt-2">
                 <ThemeToggle />
                 <LanguageSwitcher />
               </div>
@@ -208,7 +208,7 @@ export default function Home() {
         <section>
           <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.74fr)] lg:items-start lg:py-16">
             <div className="max-w-2xl">
-              <div className="border-l-4 border-primary pl-5 text-base font-semibold text-muted-foreground">
+              <div className="inline-flex rounded-md bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary">
                 {isZh ? '每日 IELTS 练习' : 'Daily IELTS practice'}
               </div>
               <h1
@@ -235,9 +235,9 @@ export default function Home() {
                 </Button>
               </div>
 
-              <div className="mt-10 divide-y divide-border/30 border-y border-border/30 sm:max-w-xl">
+              <div className="mt-10 space-y-1 sm:max-w-xl">
                 {copy.today.items.map((item) => (
-                  <div key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-4">
+                  <div key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-3 py-3">
                     <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />
                     <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
                     <span className="text-xs text-muted-foreground">{item.duration}</span>
@@ -246,13 +246,13 @@ export default function Home() {
               </div>
             </div>
 
-            <aside className="border-l border-border/40 pl-6 lg:mt-8">
+            <aside className="rounded-xl bg-[hsl(var(--paper-muted)/0.30)] p-5 lg:mt-8">
               <p className="text-sm font-semibold text-muted-foreground">{copy.today.label}</p>
               <h2 className="mt-3 text-3xl font-bold leading-tight text-foreground">{copy.today.title}</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.today.subtitle}</p>
-              <div className="mt-7 divide-y divide-border/30 border-y border-border/30">
+              <div className="mt-7 space-y-1">
                 {copy.today.items.map((item, index) => (
-                  <div key={item.title} className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 py-4">
+                  <div key={item.title} className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-3 py-3">
                     <span className="study-number text-xl text-primary">{index + 1}</span>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
@@ -266,7 +266,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-y border-border/20 bg-[hsl(var(--surface-raised)/0.16)]">
+        <section className="bg-[hsl(var(--surface-raised)/0.16)]">
           <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-foreground">{copy.examplesLabel}</h2>
@@ -274,7 +274,7 @@ export default function Home() {
             </div>
             <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2">
               {sampleWords.map((w) => (
-                <article key={w.word} className="min-w-[240px] snap-start border-l border-border/22 py-2 pl-4 sm:min-w-0 sm:flex-1">
+                <article key={w.word} className="min-w-[240px] snap-start rounded-xl bg-[hsl(var(--paper-muted)/0.28)] px-4 py-3 sm:min-w-0 sm:flex-1">
                   <div className="flex items-baseline gap-2">
                     <h3 className="text-lg font-semibold">{w.word}</h3>
                     <span className="text-xs text-muted-foreground">{w.pos}</span>
@@ -312,7 +312,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-border/45 bg-[hsl(var(--surface-raised)/0.52)]">
+      <footer className="bg-[hsl(var(--surface-raised)/0.52)]">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
           <div className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">

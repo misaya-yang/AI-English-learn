@@ -179,7 +179,7 @@ export default function LeaderboardPage() {
       </div>
 
       {currentUserEntry ? (
-        <div className="flex items-center gap-3 rounded-2xl border border-primary/25 bg-primary/[0.06] px-4 py-3">
+        <div className="flex items-center gap-3 rounded-xl border border-transparent bg-primary/[0.06] px-4 py-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-xs font-semibold text-foreground">
             {currentUserEntry.avatarInitials}
           </div>
@@ -196,7 +196,7 @@ export default function LeaderboardPage() {
       ) : null}
 
       <div className="grid items-start gap-4 md:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="rounded-xl border border-transparent bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs text-muted-foreground">本周状态</p>
@@ -212,7 +212,7 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="rounded-xl border border-transparent bg-card p-4">
           <p className="text-xs text-muted-foreground">好友动态</p>
           <div className="mt-3 space-y-2">
             {snapshot.friends.slice(0, 4).map((friend) => (
@@ -239,7 +239,7 @@ export default function LeaderboardPage() {
             className={cn(
               'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors',
               activeTab === tab.id
-                ? 'bg-primary/10 text-primary shadow-sm'
+                ? 'bg-primary/10 text-primary shadow-none'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
@@ -261,8 +261,8 @@ export default function LeaderboardPage() {
             <div
               key={entry.userId}
               className={cn(
-                'flex flex-col items-center rounded-2xl border border-border bg-card p-3 transition-colors',
-                entry.isCurrentUser && 'border-primary/35 bg-primary/[0.05]',
+                'flex flex-col items-center rounded-xl border border-transparent bg-card p-3 transition-colors',
+                entry.isCurrentUser && 'bg-primary/[0.05]',
               )}
             >
               <div className="mb-1">
@@ -290,7 +290,7 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 rounded-2xl border border-border bg-card px-4 py-3">
+      <div className="flex items-center gap-2.5 rounded-xl border border-transparent bg-card px-4 py-3">
         <Users className="h-4 w-4 shrink-0 text-primary" />
         <p className="text-sm text-muted-foreground">
           本页按周重置。当前先展示本地快照，接入后端同步后会切换到实时记录。

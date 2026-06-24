@@ -305,15 +305,15 @@ export default function ProfilePage() {
             </div>
 
             <div className="grid w-full grid-cols-3 gap-2 md:w-auto md:min-w-[280px]">
-              <div className="border-l border-border/20 px-3 py-1.5">
+              <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-1.5">
                 <p className="text-lg font-semibold tabular-nums">{xp.total.toLocaleString()}</p>
 		                <p className="text-xs text-muted-foreground">{isZh ? '积分' : 'Points'}</p>
               </div>
-		              <div className="border-l border-border/20 px-3 py-1.5">
+              <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-1.5">
 		                <p className="text-lg font-semibold tabular-nums">{streak.current}</p>
 		                <p className="text-xs text-muted-foreground">{isZh ? '连续' : 'Streak'}</p>
 		              </div>
-		              <div className="border-l border-border/20 px-3 py-1.5">
+              <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-1.5">
 		                <p className="text-lg font-semibold tabular-nums">{stats.masteredWords}</p>
 		                <p className="text-xs text-muted-foreground">{isZh ? '已掌握' : 'Mastered'}</p>
 		              </div>
@@ -502,22 +502,22 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-	            <div className="border-l border-border/20 py-1 pl-3">
+            <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
               <ShieldCheck className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{streak.current}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '当前连续' : 'Current streak'}</p>
             </div>
-	            <div className="border-l border-border/20 py-1 pl-3">
+            <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
               <BadgeCheck className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{streak.longest}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '最长连续' : 'Longest streak'}</p>
             </div>
-	            <div className="border-l border-border/20 py-1 pl-3">
+            <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
               <BookOpen className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{stats.totalWords}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '累计词汇' : 'Total words'}</p>
             </div>
-	            <div className="border-l border-border/20 py-1 pl-3">
+            <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
               <Target className="mb-3 h-5 w-5 text-muted-foreground" />
               <p className="text-xl font-semibold tabular-nums">{stats.masteredWords}</p>
 	              <p className="text-sm text-muted-foreground">{isZh ? '已掌握' : 'Mastered'}</p>
@@ -656,7 +656,7 @@ export default function ProfilePage() {
             })}
           </div>
           {plan === 'free' && (
-		            <div className="mt-4 flex flex-col gap-3 border-l border-warning/35 bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-4 flex flex-col gap-3 rounded-lg bg-warning/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 	              <p className="text-sm leading-relaxed text-warning">{pickLocalized(PRO_JOB, isZh ? 'zh' : 'en')}</p>
 	              <Button asChild size="sm" variant="glassPrimary" className="h-8 flex-shrink-0 rounded-lg px-3 text-xs font-semibold">
 	                <Link to="/pricing">

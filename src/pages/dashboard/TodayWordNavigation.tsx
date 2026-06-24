@@ -75,7 +75,7 @@ export function TodayWordNavigation({
           onClick={onPrevious}
           disabled={currentWordIndex === 0}
           aria-label={buildDirectionalLabel({ isZh, direction: 'previous', targetWord: previousWord })}
-          className="h-11 w-11 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+          className="glass-icon-button h-11 w-11 rounded-lg bg-transparent text-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-5 w-5" aria-hidden="true" />
         </Button>
@@ -85,7 +85,7 @@ export function TodayWordNavigation({
           onClick={onNext}
           disabled={currentWordIndex === words.length - 1}
           aria-label={buildDirectionalLabel({ isZh, direction: 'next', targetWord: nextWord })}
-          className="h-11 w-11 rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+          className="glass-icon-button h-11 w-11 rounded-lg bg-transparent text-foreground hover:text-foreground"
         >
           <ChevronRight className="h-5 w-5" aria-hidden="true" />
         </Button>

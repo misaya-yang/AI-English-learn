@@ -177,7 +177,7 @@ export default function MemoryCenterPage() {
         </div>
       </div>
 
-        <div className="liquid-glass-bar rounded-2xl border border-border bg-card/80 p-3">
+        <div className="liquid-glass-bar rounded-xl border border-transparent bg-card/72 p-3">
         <div className="flex flex-wrap gap-2">
           <div className="relative min-w-[260px] flex-1">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -220,12 +220,12 @@ export default function MemoryCenterPage() {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-xl border border-transparent bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="min-h-[420px] rounded-2xl border border-border bg-card">
+      <div className="min-h-[420px] rounded-xl border border-transparent bg-card">
         <ScrollArea className="h-[520px]">
           <div className="p-3 space-y-2">
             {items.length === 0 ? (
@@ -271,7 +271,7 @@ export default function MemoryCenterPage() {
               </div>
             ) : (
               items.map((item) => (
-                <div key={item.id} className="space-y-2 rounded-2xl border bg-background p-3">
+                <div key={item.id} className="space-y-2 rounded-xl border border-transparent bg-background p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
 	                      <Badge variant="outline">{kindLabel(item.kind, language)}</Badge>

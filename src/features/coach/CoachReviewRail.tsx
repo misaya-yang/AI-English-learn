@@ -127,7 +127,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    'rounded-2xl border px-3 py-2.5 text-sm shadow-sm',
+                    'rounded-xl border border-transparent px-3 py-2.5 text-sm shadow-none',
                     URGENCY_COLOR[urgency],
                   )}
                 >
@@ -150,7 +150,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 shrink-0 rounded-full border border-current/30 px-2 text-[11px] text-current hover:bg-current/10 hover:text-current"
+                      className="h-7 shrink-0 rounded-md border border-transparent px-2 text-[11px] text-current hover:border-current/25 hover:bg-current/10 hover:text-current"
                       onClick={() => handleComplete(entry.id)}
                       data-testid="coach-review-complete"
                     >
@@ -176,7 +176,7 @@ export function CoachReviewRail({ language, now }: CoachReviewRailProps) {
                 <div
                   key={entry.id}
                   className={cn(
-                    'rounded-2xl border px-3 py-2 text-xs',
+                    'rounded-xl border border-transparent px-3 py-2 text-xs',
                     URGENCY_COLOR[urgency],
                   )}
                 >

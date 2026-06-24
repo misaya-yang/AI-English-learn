@@ -149,13 +149,13 @@ export default function WritingPage() {
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {rubricPreview.map((item) => (
-                <div key={item.label} className="border-l border-border/24 px-3 py-2">
+                <div key={item.label} className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
                   <p className="text-sm font-semibold text-foreground">{item.label}</p>
                   <p className="mt-2 text-xs text-muted-foreground">{item.value}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 border-l border-primary/34 bg-transparent px-4 py-2">
+            <div className="mt-4 rounded-lg bg-primary/10 px-4 py-2">
               <p className="text-sm font-semibold text-foreground">
                 {gradeResult
                   ? (isZh ? `当前得分 ${gradeResult.overallScore}/100` : `Current score ${gradeResult.overallScore}/100`)

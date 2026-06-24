@@ -85,9 +85,9 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 
           <div className="mt-8 flex items-center gap-3">
             <Button
-              variant="outline"
+              variant="glass"
               size="icon"
-              className="h-12 w-12 rounded-md border-border bg-card text-foreground hover:bg-muted"
+              className="glass-icon-button h-12 w-12 rounded-md text-foreground hover:text-foreground"
               onClick={(event) => {
                 event.stopPropagation();
                 playAudio(word.word);
@@ -107,9 +107,9 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
               <p className="mt-2 font-mono text-sm text-muted-foreground">{word.partOfSpeech} / {word.phonetic}</p>
             </div>
             <Button
-              variant="ghost"
+              variant="glass"
               size="icon"
-              className="rounded-md border border-border bg-card text-foreground hover:bg-muted"
+              className="glass-icon-button rounded-md text-foreground hover:text-foreground"
               onClick={() => playAudio(word.word)}
             >
               <Volume2 className="h-5 w-5" />
@@ -118,14 +118,14 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
 
           <div className="mt-6 grid flex-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_0.8fr]">
             <div className="space-y-4">
-              <section className="border-t border-[hsl(var(--paper-line)/0.72)] pt-4">
+              <section className="pt-2">
                 <p className="study-label">释义</p>
                 <p className="mt-3 text-base leading-7 text-foreground">{word.definition}</p>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
               </section>
 
               {word.examples[0] ? (
-                <section className="border-t border-[hsl(var(--paper-line)/0.72)] pt-4">
+                <section className="pt-2">
                   <p className="study-label">例句</p>
                   <p className="mt-3 text-sm leading-7 text-foreground">{word.examples[0].en}</p>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p>
@@ -133,16 +133,16 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
               ) : null}
             </div>
 
-            <section className="border-t border-[hsl(var(--paper-line)/0.72)] pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+            <section className="rounded-xl bg-[hsl(var(--paper-muted)/0.28)] p-4 lg:p-5">
               <p className="study-label">线索</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.synonyms.slice(0, 5).map((synonym) => (
-                  <span key={synonym} className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+                  <span key={synonym} className="rounded-md bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                     {synonym}
                   </span>
                 ))}
                 {word.collocations.slice(0, 4).map((collocation) => (
-                  <span key={collocation} className="rounded-md border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                  <span key={collocation} className="rounded-md bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                     {collocation}
                   </span>
                 ))}
@@ -402,7 +402,7 @@ export default function ReviewPage() {
           description={isZh ? '今天先去练习。' : 'Practice first today.'}
           actions={
             <>
-              <Button variant="outline" className="rounded-md border-border bg-transparent text-foreground hover:bg-muted" asChild>
+              <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted" asChild>
                 <Link to="/dashboard/today">{isZh ? '返回今日' : 'Back to Today'}</Link>
               </Button>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
@@ -441,7 +441,7 @@ export default function ReviewPage() {
           description={isZh ? '这一轮已经结束。' : 'This round is done.'}
           actions={
             <>
-              <Button variant="outline" className="rounded-md border-border bg-card text-foreground hover:bg-muted" onClick={handleRestart}>
+              <Button variant="outline" className="rounded-md bg-card text-foreground hover:bg-muted" onClick={handleRestart}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {isZh ? '再次复习' : 'Review again'}
               </Button>
@@ -603,7 +603,7 @@ export default function ReviewPage() {
 
           {currentItem ? (
             <StudyRailSection title={isZh ? '当前卡' : 'Current card'}>
-              <div className="rounded-md border border-border bg-card p-4 space-y-4">
+              <div className="rounded-md bg-[hsl(var(--paper-muted)/0.34)] p-4 space-y-4">
                 <div className="flex items-center gap-2 text-foreground">
                   <p className="text-sm font-medium">第 {currentItem.reviewCount + 1} 次复习</p>
                 </div>

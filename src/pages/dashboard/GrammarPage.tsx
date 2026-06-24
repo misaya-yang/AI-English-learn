@@ -403,7 +403,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
   const catMeta = CATEGORY_META[rule.category];
 
   return (
-    <div className="overflow-hidden border-t border-border/24">
+    <div className="overflow-hidden rounded-xl bg-[hsl(var(--paper-muted)/0.18)]">
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full py-4 text-left flex items-center gap-3 transition-colors hover:bg-muted/20"
@@ -431,9 +431,9 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
             exit={{ height: 0 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-border/24 py-4 space-y-4">
+            <div className="space-y-4 px-3 pb-4">
               {/* Explanation */}
-              <div className="border-l border-border/24 pl-4 space-y-2">
+              <div className="space-y-2 rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-4 py-3">
                 <p className="text-sm leading-6 text-foreground">{rule.explanation}</p>
                 <p className="text-sm leading-6 text-muted-foreground">{rule.explanationZh}</p>
               </div>
@@ -443,7 +443,7 @@ function RuleCard({ rule, onPractice }: RuleCardProps) {
                 <p className="text-[11px] text-muted-foreground mb-2">{isZh ? '例句' : 'Examples'}</p>
                 <div className="space-y-2">
                   {rule.examples.map((ex, i) => (
-                    <div key={i} className="border-l border-border/24 px-4 py-2.5">
+                    <div key={i} className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-4 py-2.5">
                       <p className="text-sm text-foreground">{ex.en}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{ex.zh}</p>
                     </div>
@@ -715,7 +715,7 @@ export default function GrammarPage() {
                   { label: isZh ? '类别' : 'Categories', value: Object.keys(CATEGORY_META).length },
                   { label: isZh ? '本轮题' : 'Items', value: featuredRule.practice.length },
                 ].map((item) => (
-                  <div key={item.label} className="border-l border-border/24 px-3 py-2 text-center">
+                  <div key={item.label} className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2 text-center">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -845,7 +845,7 @@ export default function GrammarPage() {
 
         {/* Rule quick-reference */}
         {!submitted && (
-          <div className="border-l border-border/24 bg-transparent px-4 py-2">
+          <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-4 py-2">
             <div className="flex items-center gap-1.5 mb-1.5">
               <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
               <p className="text-[11px] text-muted-foreground">{isZh ? '规则小结' : 'Rule summary'}</p>

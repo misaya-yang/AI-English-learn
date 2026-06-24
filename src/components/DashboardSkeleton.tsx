@@ -16,9 +16,9 @@ export function DashboardSkeleton() {
       className="study-app-bg min-h-[calc(100vh-5rem)] bg-background p-4 text-foreground animate-in fade-in duration-200 sm:p-6"
     >
       <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-[13rem_minmax(0,1fr)]">
-        <aside className="hidden rounded-xl border border-[hsl(var(--paper-line)/0.75)] bg-[hsl(var(--paper)/0.74)] p-3 shadow-[var(--shadow-paper)] md:block">
+        <aside className="hidden rounded-xl border border-transparent bg-[hsl(var(--paper)/0.74)] p-3 shadow-none md:block">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.6)] text-primary">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-[hsl(var(--paper-muted)/0.6)] text-primary">
               <BookOpen className="h-4 w-4" />
             </div>
             <div>
@@ -41,7 +41,7 @@ export function DashboardSkeleton() {
 
         <div className="space-y-4">
           <div className="study-sheet flex items-center gap-3 px-4 py-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.6)] text-primary">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-[hsl(var(--paper-muted)/0.6)] text-primary">
               <BookOpen className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
@@ -57,7 +57,7 @@ export function DashboardSkeleton() {
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_240px]">
-            <div className="rounded-xl border border-[hsl(var(--paper-line)/0.75)] bg-[hsl(var(--paper)/0.72)] p-5 shadow-[var(--shadow-paper)]">
+            <div className="rounded-xl border border-transparent bg-[hsl(var(--paper)/0.72)] p-5 shadow-none">
               <Skeleton className="mb-5 h-4 w-24 rounded-md bg-muted/65" />
               <Skeleton className="mb-6 h-8 w-2/3 rounded-md bg-muted/70" />
               <div className="space-y-3">
@@ -66,7 +66,7 @@ export function DashboardSkeleton() {
                 <Skeleton className="h-12 rounded-lg bg-muted/50" />
               </div>
             </div>
-            <div className="rounded-xl border border-[hsl(var(--paper-line)/0.75)] bg-[hsl(var(--paper)/0.7)] p-4 shadow-[var(--shadow-paper)]">
+            <div className="rounded-xl border border-transparent bg-[hsl(var(--paper)/0.7)] p-4 shadow-none">
               <p className="mb-3 text-xs font-medium text-muted-foreground">{isZh ? '当前页面' : 'Current page'}</p>
               <Skeleton className="mb-3 h-8 w-20 rounded-md bg-muted/65" />
               <Skeleton className="h-2 w-full rounded-full bg-muted/60" />

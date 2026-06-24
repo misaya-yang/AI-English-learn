@@ -95,7 +95,7 @@ export function AuthShell({
 
             <section
               className={cn(
-                'border-y border-border/24 py-5 sm:py-6',
+                'py-5 sm:py-6',
                 panelClassName,
               )}
             >
@@ -123,16 +123,16 @@ export function AuthShell({
         {/* Brand / reassurance column — hidden on mobile, primary on lg. */}
         <aside className="order-2 hidden flex-col justify-center lg:order-1 lg:flex">
           <BrandMark />
-          <section className="mt-7 max-w-md border-l border-border/24 pl-6">
+          <section className="mt-7 max-w-md rounded-xl bg-[hsl(var(--paper-muted)/0.30)] p-5">
             <h2 className="text-2xl font-semibold leading-tight text-foreground">
               {isZh ? rail.headlineZh : rail.headline}
             </h2>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
               {railBody}
             </p>
-            <ul className="mt-6 max-w-sm divide-y divide-border/55 border-y border-border/55 text-xs text-muted-foreground">
+            <ul className="mt-6 max-w-sm space-y-1 text-xs text-muted-foreground">
               {rail.bullets.map((b) => (
-                <li key={b.en} className="flex items-center gap-2 py-2.5">
+                <li key={b.en} className="flex items-center gap-2 rounded-xl bg-[hsl(var(--paper-muted)/0.28)] px-3 py-2.5">
                   <Check className="h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden="true" />
                   <span>{isZh ? b.zh : b.en}</span>
                 </li>

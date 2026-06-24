@@ -56,9 +56,9 @@ export function InsightRail({
 }: InsightRailProps) {
   return (
     <motion.aside initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
-      <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
+      <section className="overflow-hidden rounded-xl border border-transparent bg-card/90">
         <Tabs value={insightView} onValueChange={(value) => onInsightViewChange(value as InsightView)} className="gap-0">
-          <div className="border-b border-border/70 px-4 py-4">
+          <div className="border-b border-transparent px-4 py-4">
             <div className="flex flex-col gap-3">
               <div>
                 <p className="text-[11px] font-medium text-muted-foreground/80">数据</p>

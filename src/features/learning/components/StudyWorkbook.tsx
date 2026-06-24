@@ -76,11 +76,11 @@ const toneClass = {
 } satisfies Record<NonNullable<StudyStatItem['tone']>, string>;
 
 const noteToneClass = {
-  neutral: 'border-[hsl(var(--paper-line)/0.86)] bg-[hsl(var(--paper-muted)/0.5)]',
-  success: 'border-[hsl(var(--success)/0.34)] bg-[hsl(var(--success)/0.08)]',
-  warning: 'border-[hsl(var(--warning)/0.38)] bg-[hsl(var(--warning)/0.1)]',
-  danger: 'border-destructive/30 bg-destructive/5',
-  practice: 'border-[hsl(var(--accent-practice)/0.34)] bg-[hsl(var(--accent-practice)/0.08)]',
+  neutral: 'border-transparent bg-[hsl(var(--paper-muted)/0.5)]',
+  success: 'border-transparent bg-[hsl(var(--success)/0.08)]',
+  warning: 'border-transparent bg-[hsl(var(--warning)/0.1)]',
+  danger: 'border-transparent bg-destructive/5',
+  practice: 'border-transparent bg-[hsl(var(--accent-practice)/0.08)]',
 } satisfies Record<NonNullable<InlineStudyNoteProps['tone']>, string>;
 
 export function StudyShell({ children, className }: StudyShellProps) {
@@ -91,7 +91,7 @@ export function StudySheet({ children, className, title, eyebrow, description, a
   return (
     <section className={cn('study-sheet', className)}>
       {(title || eyebrow || description || actions) ? (
-        <div className="mb-5 flex flex-col gap-4 border-b border-[hsl(var(--paper-line)/0.72)] pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             {eyebrow ? <p className="study-label">{eyebrow}</p> : null}
             {title ? <h1 className="study-heading mt-2">{title}</h1> : null}
@@ -112,7 +112,7 @@ export function StudySheet({ children, className, title, eyebrow, description, a
 export function QuestionSheet({ children, className, title, meta, prompt, actions }: QuestionSheetProps) {
   return (
     <section className={cn('question-sheet', className)}>
-      <div className="border-b border-[hsl(var(--paper-line)/0.76)] pb-5">
+      <div className="pb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {meta ? <div className="study-label">{meta}</div> : null}
           {actions ? (
@@ -124,7 +124,7 @@ export function QuestionSheet({ children, className, title, meta, prompt, action
         <h2 className="question-title mt-4">{title}</h2>
         {prompt ? <div className="study-copy mt-3 text-base leading-7">{prompt}</div> : null}
       </div>
-      <div className="pt-5">{children}</div>
+      <div className="pt-4">{children}</div>
     </section>
   );
 }
@@ -166,9 +166,9 @@ export function StudyTaskList({ items, className }: StudyTaskListProps) {
 
 export function StudyStatRows({ items, className }: StudyStatRowsProps) {
   return (
-    <div className={cn('divide-y divide-[hsl(var(--paper-line)/0.7)]', className)}>
+    <div className={cn('space-y-1', className)}>
       {items.map((item) => (
-        <div key={String(item.label)} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+        <div key={String(item.label)} className="flex items-center justify-between gap-3 rounded-lg px-1 py-2.5">
           <span className="text-sm text-muted-foreground">{item.label}</span>
           <span className={cn('study-number text-xl', toneClass[item.tone || 'default'])}>{item.value}</span>
         </div>

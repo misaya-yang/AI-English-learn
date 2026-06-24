@@ -35,7 +35,7 @@ export function ExamReviewPanel({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
+      <div className="rounded-xl border border-transparent bg-background/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <p className="text-[11px] font-medium text-muted-foreground/80">最新评分结果</p>
@@ -67,7 +67,7 @@ export function ExamReviewPanel({
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="rounded-2xl border border-border/70 bg-background/35 p-4">
+        <div className="rounded-xl border border-transparent bg-background/35 p-4">
           <p className="text-sm font-semibold">核心问题</p>
           <div className="mt-3 space-y-2">
             {feedback.issues.length === 0 ? (
@@ -96,7 +96,7 @@ export function ExamReviewPanel({
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border border-border/70 bg-background/35 p-4">
+          <div className="rounded-xl border border-transparent bg-background/35 p-4">
             <p className="text-sm font-semibold">下一组练习</p>
             <div className="mt-3 space-y-2">
               {latestNextActions.length === 0 ? (
@@ -111,7 +111,7 @@ export function ExamReviewPanel({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[hsl(var(--accent-exam)/0.24)] bg-[hsl(var(--accent-exam)/0.08)] p-4">
+          <div className="rounded-xl border border-transparent bg-[hsl(var(--accent-exam)/0.08)] p-4">
             <p className="text-sm font-semibold text-foreground">把这次错因立即转成动作</p>
             <div className="mt-3 grid gap-2">
               <Button onClick={() => void onGenerateMicroLesson()} disabled={isBusy || !feedback}>

@@ -30,7 +30,7 @@ export function LanguageSwitcher() {
         <Button
           variant="glass"
           size="icon"
-          className="relative h-11 min-h-11 w-11 min-w-11 text-muted-foreground hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
+          className="glass-icon-button relative h-11 min-h-11 w-11 min-w-11 text-muted-foreground hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
           aria-label={triggerLabel}
           title={triggerLabel}
         >

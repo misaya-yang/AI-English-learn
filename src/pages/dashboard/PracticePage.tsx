@@ -102,11 +102,11 @@ const lightInputClass =
 const lightSelectContentClass = 'border-border bg-background text-foreground';
 
 const workbookButtonClass =
-  'rounded-lg border border-primary/20 bg-primary px-4 text-primary-foreground shadow-none hover:bg-primary/92 hover:text-primary-foreground';
+  'rounded-lg border border-transparent bg-primary px-4 text-primary-foreground shadow-none hover:border-primary/24 hover:bg-primary/92 hover:text-primary-foreground';
 const workbookOutlineButtonClass =
-  'rounded-lg border-border/70 bg-transparent px-4 text-foreground shadow-none hover:bg-muted/60 hover:text-foreground';
+  'rounded-lg bg-transparent px-4 text-foreground shadow-none hover:bg-muted/60 hover:text-foreground';
 const practiceBadgeClass =
-  'rounded-md border border-[hsl(var(--accent-practice)/0.26)] bg-[hsl(var(--accent-practice)/0.08)] px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))]';
+  'rounded-md bg-[hsl(var(--accent-practice)/0.08)] px-2.5 py-1 text-[11px] font-medium text-[hsl(var(--accent-practice))]';
 const practiceProgressClass =
   'h-1.5 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]';
 
@@ -878,23 +878,17 @@ export default function PracticePage() {
               type="button"
               onClick={() => pickMode(mode.id)}
               className={cn(
-                'group relative w-full rounded-lg border px-3 py-2.5 text-left transition-colors sm:py-3',
+                'group relative w-full rounded-lg border border-transparent px-3 py-2.5 text-left transition-colors sm:py-3',
                 active
-                  ? 'border-[hsl(var(--accent-practice)/0.32)] bg-[hsl(var(--accent-practice)/0.08)]'
-                  : 'border-transparent hover:border-border/70 hover:bg-muted/60',
+                  ? 'bg-[hsl(var(--accent-practice)/0.08)]'
+                  : 'hover:border-border/35 hover:bg-muted/60',
               )}
             >
-              <span
-                className={cn(
-                  'absolute inset-y-3 left-0 w-[3px] rounded-full transition-colors',
-                  active ? 'bg-[hsl(var(--accent-practice))]' : 'bg-transparent group-hover:bg-border',
-                )}
-              />
               <div className="flex items-start gap-3">
                 <span
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-md border text-muted-foreground sm:mt-0.5 sm:h-9 sm:w-9',
-                    active ? 'border-[hsl(var(--accent-practice)/0.3)] bg-card/70 text-[hsl(var(--accent-practice))]' : 'border-border/60 bg-muted/50',
+                    'flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-muted-foreground sm:mt-0.5 sm:h-9 sm:w-9',
+                    active ? 'bg-card/70 text-[hsl(var(--accent-practice))]' : 'bg-muted/50',
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -908,6 +902,9 @@ export default function PracticePage() {
                       <span className={practiceBadgeClass}>
                         {isZh ? '开始' : 'Start'}
                       </span>
+                    ) : null}
+                    {active ? (
+                      <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent-practice))]" aria-hidden="true" />
                     ) : null}
                   </span>
                   <span className="mt-0.5 hidden text-xs leading-5 text-muted-foreground sm:block">
@@ -1089,12 +1086,12 @@ export default function PracticePage() {
             {focusedModeDescription}
           </InlineStudyNote>
 
-          <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-end">
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
             <div className="flex flex-col gap-2 sm:flex-row">
               {selectedMode === 'quiz' || selectedMode === 'fill_blank' ? (
                 <Button
                   variant="outline"
-                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                  className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
                   onClick={() => setTimedMode((prev) => !prev)}
                 >
                   {timedMode ? (isZh ? '60 秒限时：开' : '60s timer on') : (isZh ? '60 秒限时' : '60s timer')}
@@ -1106,7 +1103,7 @@ export default function PracticePage() {
               </Button>
               <Button
                 variant="outline"
-                className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
                 onClick={exitToPicker}
               >
                 {isZh ? '返回列表' : 'Back to mode picker'}
@@ -1130,7 +1127,7 @@ export default function PracticePage() {
                 {isZh ? `第 ${writingRound} 轮` : `Round ${writingRound}`}
               </span>
             )}
-            <span className="rounded-md border border-border bg-muted px-3 py-1 text-xs text-muted-foreground">
+            <span className="rounded-md bg-muted px-3 py-1 text-xs text-muted-foreground">
               {isZh ? '反馈次数' : 'Feedback left'}: {isQuotaLoading || feedbackQuotaRemaining === null ? '...' : feedbackQuotaRemaining}
             </span>
           </div>
@@ -1198,7 +1195,7 @@ export default function PracticePage() {
             </motion.div>
           )}
 
-          <div className="space-y-3 border-t border-border pt-5">
+          <div className="space-y-3 pt-2">
             <Label className="text-foreground">{isZh ? '你的作答' : 'Your response'}</Label>
             <Textarea
               value={writingInput}
@@ -1209,7 +1206,7 @@ export default function PracticePage() {
           </div>
 
           {!writingFeedback ? (
-            <div className="flex flex-col gap-4 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-4 pt-2 lg:flex-row lg:items-center lg:justify-between">
               <Button
                 onClick={handleWritingSubmit}
                 className={cn(workbookButtonClass, 'px-5')}
@@ -1234,7 +1231,7 @@ export default function PracticePage() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-5 border-t border-border pt-6"
+              className="space-y-5 pt-2"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
@@ -1270,7 +1267,7 @@ export default function PracticePage() {
                   <div
                     key={label}
                     className={cn(
-                      'rounded-md border border-border bg-card p-4',
+                      'rounded-md bg-[hsl(var(--paper-muted)/0.34)] p-4',
                       index === 4 && 'border-border bg-[hsl(var(--accent-practice)/0.08)] text-[hsl(var(--accent-practice))]',
                     )}
                   >
@@ -1287,7 +1284,7 @@ export default function PracticePage() {
               </div>
 
               {writingFeedback.summary && (
-                <div className="flex gap-3 rounded-md border border-border bg-card p-4">
+                <div className="flex gap-3 rounded-md bg-[hsl(var(--paper-muted)/0.34)] p-4">
                   <Quote className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--info))]" />
                   <div>
                     <p className="text-sm leading-6 text-foreground">
@@ -1329,7 +1326,7 @@ export default function PracticePage() {
                       ? 'border-destructive/20 bg-destructive/5'
                       : issue.severity === 'medium'
                         ? 'border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.1)]'
-                        : 'border-border bg-card';
+                        : 'border-transparent bg-[hsl(var(--paper-muted)/0.28)]';
                   const tagColors: Record<string, string> = {
                     grammar:       'bg-destructive/10 text-destructive',
                     lexical:       'bg-primary/10 text-primary',
@@ -1356,7 +1353,7 @@ export default function PracticePage() {
                       </div>
 
                       {issue.sentence && (
-                        <div className="rounded-md border border-border bg-muted px-3 py-2">
+                        <div className="rounded-md bg-muted px-3 py-2">
                           <p className="text-[11px] text-muted-foreground mb-1">原句</p>
                           <p className="text-sm italic text-foreground leading-relaxed">"{issue.sentence}"</p>
                         </div>
@@ -1398,7 +1395,7 @@ export default function PracticePage() {
                 </div>
               )}
 
-              <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   onClick={handleRevise}
                   disabled={feedbackQuotaRemaining !== null && feedbackQuotaRemaining <= 0}
@@ -1415,7 +1412,7 @@ export default function PracticePage() {
                 <Button
                   onClick={handleRestart}
                   variant="outline"
-                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                  className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {isZh ? '换一题' : 'Try another'}
@@ -1444,7 +1441,7 @@ export default function PracticePage() {
           actions={
             <Button
               variant="outline"
-              className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+              className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
               onClick={exitToPicker}
             >
               {isZh ? '返回模式列表' : 'Back to modes'}
@@ -1534,7 +1531,7 @@ export default function PracticePage() {
                     {listeningAttemptState.attempts.length > 0 ? (
                       <Button
                         variant="outline"
-                        className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                        className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
                         onClick={handleListeningReveal}
                       >
                         {isZh ? '看答案' : 'Show answer'}
@@ -1582,7 +1579,7 @@ export default function PracticePage() {
               <Button
                 onClick={handleRestart}
                 variant="outline"
-                className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {isZh ? '再练一次' : 'Try again'}
@@ -1611,7 +1608,7 @@ export default function PracticePage() {
             </h3>
             <div className="space-y-3">
               {errorNotebook.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-md border border-border bg-card p-3">
+                <div key={i} className="flex items-start gap-3 rounded-md bg-[hsl(var(--paper-muted)/0.34)] p-3">
                   <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-destructive/10 text-xs font-bold text-destructive">
                     {i + 1}
                   </span>
@@ -1638,7 +1635,7 @@ export default function PracticePage() {
         actions={
           <Button
             variant="outline"
-            className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+            className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
             onClick={exitToPicker}
           >
             {isZh ? '返回模式列表' : 'Back to modes'}
@@ -1751,7 +1748,7 @@ export default function PracticePage() {
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-border pt-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 pt-2 lg:flex-row lg:items-center lg:justify-between">
           {!isChoiceTerminal ? (
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button onClick={handleAnswer} disabled={!selectedAnswer} className={cn(workbookButtonClass, 'lg:min-w-[180px]')}>
@@ -1761,7 +1758,7 @@ export default function PracticePage() {
                 <Button
                   variant="outline"
                   onClick={handleRevealAnswer}
-                  className="rounded-md border-border bg-card text-foreground hover:bg-muted hover:text-foreground"
+                  className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
                 >
                   {isZh ? '看答案' : 'Show answer'}
                 </Button>

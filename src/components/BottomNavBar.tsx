@@ -22,7 +22,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
   return (
     <nav
       className={cn(
-        'liquid-glass-bar fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around border border-border/50',
+        'liquid-glass-bar fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around border border-transparent',
         'pb-[env(safe-area-inset-bottom)]',
         isLearningMode
           ? 'premium-bottom-nav-learning'
@@ -39,7 +39,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
             to={item.path}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'liquid-glass-interactive relative flex h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl px-2.5 py-1.5 transition-colors',
+              'liquid-glass-interactive relative flex h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl px-2.5 py-1.5 transition-colors',
               active
                 ? isLearningMode
                   ? 'text-primary'
@@ -52,7 +52,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
             {active && (
               <motion.div
                 layoutId="bottomnav-active-pill"
-                className="liquid-glass-active absolute inset-0 rounded-2xl"
+                className="liquid-glass-active absolute inset-0 rounded-xl"
                 transition={{ type: 'spring', stiffness: 380, damping: 32, mass: 0.75 }}
               />
             )}
@@ -76,14 +76,14 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
         onClick={onMoreClick}
         aria-current={moreActive ? 'page' : undefined}
         className={cn(
-          'liquid-glass-interactive relative flex h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl px-2.5 py-1.5 transition-colors',
+          'liquid-glass-interactive relative flex h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl px-2.5 py-1.5 transition-colors',
           moreActive ? 'text-primary' : 'text-muted-foreground active:text-foreground',
         )}
       >
         {moreActive && (
           <motion.div
             layoutId="bottomnav-active-pill"
-            className="liquid-glass-active absolute inset-0 rounded-2xl"
+            className="liquid-glass-active absolute inset-0 rounded-xl"
             transition={{ type: 'spring', stiffness: 380, damping: 32, mass: 0.75 }}
           />
         )}

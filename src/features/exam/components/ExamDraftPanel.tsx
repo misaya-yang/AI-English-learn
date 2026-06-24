@@ -55,7 +55,7 @@ export function ExamDraftPanel({
 }: ExamDraftPanelProps) {
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
+      <div className="rounded-xl border border-transparent bg-background/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-medium text-muted-foreground/80">题目已就绪</p>
@@ -93,7 +93,7 @@ export function ExamDraftPanel({
               void onSubmitWriting();
             }
           }}
-          className="min-h-[320px] rounded-2xl bg-background/70 leading-8"
+          className="min-h-[320px] rounded-xl bg-background/70 leading-8"
           placeholder="在这里写 IELTS 作文正文..."
         />
       </div>
@@ -103,7 +103,7 @@ export function ExamDraftPanel({
         collapsible
         value={toolPanel}
         onValueChange={(value) => onToolPanelChange((value || undefined) as ToolPanel | undefined)}
-        className="rounded-2xl border border-border/70 bg-background/35 px-4"
+        className="rounded-xl border border-transparent bg-background/35 px-4"
       >
         <AccordionItem value="outline" className="border-border/60">
           <AccordionTrigger className="py-4 text-base">提纲</AccordionTrigger>
@@ -167,7 +167,7 @@ export function ExamDraftPanel({
             <Textarea
               value={tutorQuestion}
               onChange={(event) => onTutorQuestionChange(event.target.value)}
-              className="min-h-[96px] rounded-2xl bg-background/70"
+              className="min-h-[96px] rounded-xl bg-background/70"
               placeholder="例如：我的论证不够深入，如何改到 6.5+？"
             />
             <div className="flex justify-end">

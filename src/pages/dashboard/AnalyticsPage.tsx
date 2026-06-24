@@ -814,7 +814,7 @@ export default function AnalyticsPage() {
       </div>
 
       {!hasAnyLearningEvidence && (
-        <div className="analytics-solid-panel mb-6 border-l py-2 pl-4">
+        <div className="analytics-solid-panel mb-6 rounded-xl bg-[hsl(var(--paper-muted)/0.22)] px-4 py-3">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-[hsl(var(--accent-memory)/0.1)] text-[hsl(var(--accent-memory))]">
@@ -1202,7 +1202,7 @@ export default function AnalyticsPage() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-		                <div className="mt-3 flex gap-2 border-l border-[hsl(var(--success)/0.34)] bg-[hsl(var(--success)/0.08)] px-3 py-2">
+                <div className="mt-3 flex gap-2 rounded-lg bg-[hsl(var(--success)/0.08)] px-3 py-2">
 	                  <span className="text-lg text-[hsl(var(--success))]">✓</span>
 	                  <p className="text-sm text-[hsl(var(--success))]">
 	                    {isZh
@@ -1226,7 +1226,7 @@ export default function AnalyticsPage() {
               <CardContent>
                 {reviewWindowInsight ? (
                   <div className="space-y-4">
-		                    <div className="border-l border-primary/30 bg-primary/10 px-4 py-3">
+                    <div className="rounded-lg bg-primary/10 px-4 py-3">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-xs text-primary">
@@ -1359,28 +1359,28 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-		                  <div className="border-l border-border/20 py-1 pl-3">
+                  <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
 	                    <p className="text-xs text-muted-foreground">{copy.coach.diagnosed}</p>
 	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.diagnosed}</p>
 	                    <p className="mt-1 text-xs text-muted-foreground">
                         {isZh ? '对话 / 测验 / 练习事件' : 'chat / quiz / practice events'}
                       </p>
 	                  </div>
-		                  <div className="border-l border-border/20 py-1 pl-3">
+                  <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
 	                    <p className="text-xs text-muted-foreground">{copy.coach.completed}</p>
 	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.completedReinforcements}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {isZh ? '复习卡片 + 已完成练习' : 'review cards + completed practice'}
                       </p>
 	                  </div>
-		                  <div className="border-l border-border/20 py-1 pl-3">
+                  <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
 	                    <p className="text-xs text-muted-foreground">{copy.coach.repeatedErrors}</p>
 	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.repeatedErrors}</p>
 	                    <p className="mt-1 text-xs text-muted-foreground">
                         {isZh ? '反复遗忘词' : 'stubborn FSRS items'}
                       </p>
 	                  </div>
-		                  <div className="border-l border-border/20 py-1 pl-3">
+                  <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
 	                    <p className="text-xs text-muted-foreground">{copy.coach.retention}</p>
 	                    <p className="mt-2 text-2xl font-semibold">{coachImpact.retentionPct}%</p>
 	                    <p className="mt-1 text-xs text-muted-foreground">
@@ -1390,7 +1390,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 {coachImpact.primaryFocus ? (
-		                  <div className="border-l border-primary/25 bg-primary/5 px-4 py-3">
+                  <div className="rounded-lg bg-primary/5 px-4 py-3">
                     <p className="text-xs font-medium text-muted-foreground">
                       {copy.coach.focus}
                     </p>
@@ -1424,15 +1424,15 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4 text-center">
-		                <div className="border-l border-border/20 py-1 pl-3 text-left">
+                <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2 text-left">
                   <p className="text-2xl font-bold text-[hsl(var(--success))]">{weeklyReport.wordsStrengthened}</p>
                   <p className="text-xs text-muted-foreground">{copy.insights.wordsStrengthened}</p>
                 </div>
-		                <div className="border-l border-border/20 py-1 pl-3 text-left">
+                <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2 text-left">
                   <p className="text-2xl font-bold text-[hsl(var(--accent-practice))]">{weeklyReport.activeDays}/7</p>
                   <p className="text-xs text-muted-foreground">{copy.insights.activeDays}</p>
                 </div>
-		                <div className="border-l border-border/20 py-1 pl-3 text-left">
+                <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2 text-left">
                   <p className="text-2xl font-bold text-muted-foreground">{weeklyReport.reviewDebtTrend.count}</p>
                   <p className="text-xs text-muted-foreground">{copy.insights.reviewDebt}</p>
                 </div>
@@ -1446,7 +1446,7 @@ export default function AnalyticsPage() {
                   </p>
                 )}
               </div>
-              <div className="border-l border-primary/25 bg-primary/5 px-3 py-2">
+              <div className="rounded-lg bg-primary/5 px-3 py-2">
                 <p className="text-xs text-muted-foreground">
                   {weeklyReport.strongestSkill
                     ? `${copy.insights.strongestPrefix}: ${isZh ? weeklyReport.strongestSkill.labelZh : weeklyReport.strongestSkill.label}`

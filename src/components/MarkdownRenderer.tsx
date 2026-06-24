@@ -122,7 +122,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
           ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
           // Custom blockquotes
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-emerald-500 pl-4 py-1 my-2 bg-muted/30 rounded-r">
+            <blockquote className="my-2 rounded-lg border border-transparent bg-muted/30 px-4 py-2">
               {children}
             </blockquote>
           ),

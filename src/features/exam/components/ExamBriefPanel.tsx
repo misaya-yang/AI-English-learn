@@ -84,7 +84,7 @@ export function ExamBriefPanel({
           </Button>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
+        <div className="rounded-xl border border-transparent bg-background/40 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-[11px] font-medium text-muted-foreground/80">当前题目</p>
@@ -102,7 +102,7 @@ export function ExamBriefPanel({
         </div>
 
         {isSimulationMode && (
-          <div className="rounded-2xl border border-[hsl(var(--accent-exam)/0.32)] bg-[hsl(var(--accent-exam)/0.08)] p-4">
+          <div className="rounded-xl border border-transparent bg-[hsl(var(--accent-exam)/0.08)] p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-medium text-foreground">仿真计时进行中</p>
@@ -120,7 +120,7 @@ export function ExamBriefPanel({
         )}
       </div>
 
-      <div className="rounded-2xl border border-border/70 bg-background/35 p-4">
+      <div className="rounded-xl border border-transparent bg-background/35 p-4">
         <p className="text-[11px] font-medium text-muted-foreground/80">本轮目标</p>
         <p className="mt-2 text-base font-semibold">{selectedUnit ? getExamUnitTitle(selectedUnit) : '先从左侧选择一个单元'}</p>
         <p className="mt-1 text-sm text-muted-foreground">{selectedTrackTitle || '系统会按目标 Band 自动关联轨道。'}</p>

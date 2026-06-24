@@ -647,7 +647,7 @@ export default function ListeningPage() {
                   { label: isZh ? '题量' : 'Questions', value: featuredListening.questions.length },
                   { label: isZh ? '主题' : 'Topic', value: featuredListening.topic },
                 ].map((item) => (
-                    <div key={item.label} className="border-l border-border/24 px-3 py-2">
+                  <div key={item.label} className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
                     <p className="text-[11px] text-muted-foreground">{item.label}</p>
                     <p className="mt-1 truncate text-sm font-semibold text-foreground">{item.value}</p>
                   </div>
@@ -679,7 +679,7 @@ export default function ListeningPage() {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleSelect(passage)}
-              className="w-full border-t border-border/24 py-4 text-left transition-colors hover:bg-muted/20"
+              className="w-full rounded-xl bg-[hsl(var(--paper-muted)/0.16)] px-3 py-4 text-left transition-colors hover:bg-muted/25"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -734,7 +734,7 @@ export default function ListeningPage() {
         </button>
 
         {/* Passage info */}
-        <div className="border-b border-border/24 pb-5">
+        <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.18)] px-4 py-4">
           <div className="flex items-center gap-2 mb-3">
             <LevelBadge level={selected.level} />
             <span className="text-xs text-muted-foreground">{selected.topic}</span>
@@ -744,7 +744,7 @@ export default function ListeningPage() {
         </div>
 
         {/* Audio player */}
-        <div className="border-y border-border/24 py-5">
+        <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.18)] px-4 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Headphones className="h-5 w-5 text-primary" />
@@ -819,7 +819,7 @@ export default function ListeningPage() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 border-l border-border/24 pl-4">
+                <div className="mt-3 rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-4 py-3">
                   <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                     {selected.transcript}
                   </p>
@@ -948,7 +948,7 @@ export default function ListeningPage() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="rounded-md border border-border bg-muted p-4">
+                      <div className="rounded-md border border-transparent bg-muted p-4">
                         <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                           {selected.transcript}
                         </p>
@@ -959,7 +959,7 @@ export default function ListeningPage() {
                 <Button
                   onClick={handleReset}
                   variant="outline"
-                  className="w-full rounded-md border-border hover:bg-muted text-foreground"
+                  className="w-full rounded-md border-transparent hover:bg-muted text-foreground"
                 >
                   {isZh ? '换一段' : 'Try Another Passage'}
                 </Button>
@@ -968,18 +968,18 @@ export default function ListeningPage() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-            <div className="border-l border-border/24 pl-4">
+            <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.18)] px-4 py-4">
               <p className="text-xs font-medium text-primary">
                 {isZh ? '听力任务栏' : 'Listening brief'}
               </p>
               <h3 className="mt-2 text-base font-semibold text-foreground">{selected.title}</h3>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">{selected.subtitle}</p>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <div className="border-l border-border/24 px-3 py-2">
+                <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
                   <p className="text-xs text-muted-foreground">{isZh ? '题目' : 'Questions'}</p>
                   <p className="mt-1 text-lg font-semibold">{totalQ}</p>
                 </div>
-                <div className="border-l border-border/24 px-3 py-2">
+                <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-2">
                   <p className="text-xs text-muted-foreground">{isZh ? '时长' : 'Length'}</p>
                   <p className="mt-1 text-lg font-semibold">{selected.durationLabel}</p>
                 </div>
@@ -993,7 +993,7 @@ export default function ListeningPage() {
               </div>
             </div>
 
-            <div className="border-l border-border/24 pl-4">
+            <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.18)] px-4 py-4">
               <p className="text-sm font-semibold text-foreground">
                 {submitted ? (isZh ? '回顾重点' : 'Review focus') : (isZh ? '答题策略' : 'Answering strategy')}
               </p>

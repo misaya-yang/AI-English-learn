@@ -390,7 +390,7 @@ export default function SettingsPage() {
 
                   <Separator />
 
-                  <div className="space-y-4 border-y border-border/20 py-4">
+                  <div className="space-y-4 rounded-xl bg-[hsl(var(--paper-muted)/0.20)] px-4 py-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <Label>学习提醒</Label>
@@ -428,7 +428,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="border-l border-warning/35 py-1 pl-3">
+                    <div className="rounded-lg bg-warning/10 px-3 py-3">
                       <div className="flex items-start gap-3">
                         <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning" />
                         <div className="min-w-0 flex-1">
@@ -524,7 +524,7 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">更高保持率会减少新词、增加复习权重。</p>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-border/20 pt-4">
+                <div className="flex items-center justify-between rounded-lg bg-[hsl(var(--paper-muted)/0.18)] px-3 py-3">
                   <div>
                     <Label>考前强化周</Label>
                     <p className="mt-1 text-sm text-muted-foreground">优先安排考试输出和更多复习。</p>

@@ -136,13 +136,13 @@ export function ExamWorkspaceTabs({
 }: ExamWorkspaceTabsProps) {
   return (
     <motion.main initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
+      <section className="overflow-hidden rounded-xl border border-transparent bg-card/90">
         <Tabs
           value={workspaceView}
           onValueChange={(value) => onWorkspaceViewChange(value as WorkspaceView)}
           className="gap-0"
         >
-          <div className="border-b border-border/70 px-5 py-4">
+          <div className="border-b border-transparent px-5 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <WorkspaceLead eyebrow={workspaceCopy.eyebrow} title={workspaceCopy.title} body={workspaceCopy.body} />
               <TabsList className="liquid-glass-control grid h-auto w-full max-w-[420px] grid-cols-4 rounded-lg p-1">

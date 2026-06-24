@@ -70,7 +70,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   if (variant === 'banner') {
     return (
       <div className={cn(
-        'flex items-center justify-between gap-4 rounded-md border border-border bg-card px-4 py-3',
+        'flex items-center justify-between gap-4 rounded-lg border border-transparent bg-card px-4 py-3 transition-colors hover:border-border/35',
         className,
       )}>
         <div className="flex items-center gap-2.5">
@@ -100,7 +100,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   if (variant === 'modal') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 backdrop-blur-sm p-4">
-        <div className="w-full max-w-sm rounded-md border border-border bg-card p-6 shadow-lg">
+        <div className="w-full max-w-sm rounded-lg border border-transparent bg-card p-6 shadow-none">
           <UpgradeCard {...cardProps} />
         </div>
       </div>
@@ -110,7 +110,7 @@ export function UpgradePrompt({ feature, variant = 'card', onDismiss, className 
   // Default: card
   return (
     <div className={cn(
-        'rounded-md border border-border bg-card p-5',
+        'rounded-lg border border-transparent bg-card p-5 transition-colors hover:border-border/35',
       className,
     )}>
       <UpgradeCard {...cardProps} />
@@ -147,7 +147,7 @@ function UpgradeCard({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground">
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-transparent bg-muted/40 text-muted-foreground">
           <BookOpen className="h-5 w-5" />
         </div>
         {onDismiss && (

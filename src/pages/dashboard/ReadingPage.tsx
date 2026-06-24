@@ -403,7 +403,7 @@ export default function ReadingPage() {
                 </p>
               </div>
 
-              <div className="max-w-2xl border-t border-border/20 pt-4">
+              <div className="max-w-2xl rounded-xl bg-[hsl(var(--paper-muted)/0.24)] px-4 py-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{featuredPassage.level}</Badge>
                   <span className="text-xs text-muted-foreground">{featuredPassage.topic}</span>
@@ -437,13 +437,13 @@ export default function ReadingPage() {
               </div>
             </div>
 
-            <div className="lg:border-l lg:border-border/20 lg:pl-8">
+            <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.20)] px-4 py-4 lg:px-5">
               <p className="text-xs font-medium text-muted-foreground">
                 {isZh ? '题目结构' : 'Question mix'}
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {featuredQuestionMix.map((item) => (
-                  <div key={item.label} className="rounded-2xl bg-muted/35 p-3 text-center dark:bg-muted/22">
+                  <div key={item.label} className="rounded-lg bg-muted/35 p-3 text-center dark:bg-muted/22">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -452,7 +452,7 @@ export default function ReadingPage() {
               <div className="mt-4 space-y-3">
                 {readingStages.map((stage, index) => (
                   <div key={stage} className="flex items-start gap-3">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted/55 text-xs font-semibold text-muted-foreground">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-muted/55 text-xs font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
                     <p className="text-sm leading-6 text-muted-foreground">{stage}</p>
@@ -565,7 +565,7 @@ export default function ReadingPage() {
             </div>
 
             {current.questions.map((q) => (
-              <div key={q.id} className="space-y-3 border-b border-border/20 pb-5 last:border-b-0">
+              <div key={q.id} className="space-y-3 rounded-xl bg-[hsl(var(--paper-muted)/0.18)] px-3 py-4">
                 <p className="text-sm font-medium text-foreground leading-6">
                   <span className="text-muted-foreground mr-2">Q{q.id}.</span>
                   {q.question}
@@ -599,7 +599,7 @@ export default function ReadingPage() {
                         key={opt}
                         onClick={() => setAnswer(q.id, opt.charAt(0))}
                         className={cn(
-                          'min-h-11 w-full rounded-2xl border px-4 py-2 text-left text-sm transition',
+                          'min-h-11 w-full rounded-lg border px-4 py-2 text-left text-sm transition',
                           answers[q.id] === opt.charAt(0)
                             ? 'border-primary/45 bg-primary/12 text-primary'
                             : 'border-transparent bg-muted/42 text-muted-foreground hover:bg-muted/65',
@@ -618,7 +618,7 @@ export default function ReadingPage() {
                     value={answers[q.id] ?? ''}
                     onChange={(e) => setAnswer(q.id, e.target.value)}
                     placeholder={isZh ? '输入答案...' : 'Type your answer…'}
-                    className="min-h-11 w-full rounded-2xl border border-border/45 bg-background/60 px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
+                    className="min-h-11 w-full rounded-lg border border-input/55 bg-background/60 px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
                   />
                 )}
               </div>
@@ -697,8 +697,8 @@ export default function ReadingPage() {
             <div
               key={q.id}
               className={cn(
-                'space-y-2 rounded-2xl border p-4',
-                isCorrect ? 'border-success/30 bg-success/10' : 'border-destructive/20 bg-destructive/5',
+                'space-y-2 rounded-xl border border-transparent p-4',
+                isCorrect ? 'bg-success/10' : 'bg-destructive/5',
               )}
             >
               <div className="flex items-start gap-2">

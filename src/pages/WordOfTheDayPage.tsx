@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
@@ -305,7 +304,7 @@ export default function WordOfTheDayPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <section className="border-y border-border/20 py-5 md:py-6">
+      <section className="rounded-xl bg-[hsl(var(--paper)/0.74)] px-4 py-5 md:px-5 md:py-6">
           {/* Word Header */}
           <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
@@ -323,13 +322,13 @@ export default function WordOfTheDayPage() {
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="glass" size="icon" className="h-11 w-11 rounded-full" onClick={() => playAudio(word.word)}>
+              <Button variant="glass" size="icon" className="h-11 w-11 rounded-lg" onClick={() => playAudio(word.word)}>
                 <Volume2 className="h-4 w-4" />
               </Button>
               <Button
 	                variant="glass"
 	                size="icon"
-	                className="h-11 w-11 rounded-full"
+                className="h-11 w-11 rounded-lg"
                 aria-label={copy.shareButton}
                 title={copy.shareButton}
                 data-testid="word-share-card-button"
@@ -340,7 +339,7 @@ export default function WordOfTheDayPage() {
             </div>
           </div>
 
-          <Separator className="my-4" />
+          <div className="my-4 h-px bg-border/20" aria-hidden="true" />
 
           {/* Tabs Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -356,7 +355,7 @@ export default function WordOfTheDayPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold mb-3">{copy.definitionHeading}</h3>
-	                    <div className="mb-4 border-l border-border/20 bg-muted/35 px-4 py-3">
+                    <div className="mb-4 rounded-lg bg-muted/35 px-4 py-3">
                       <p className="text-base">{word.definition}</p>
                       <p className="text-muted-foreground mt-1">{word.definitionZh}</p>
                     </div>
@@ -368,7 +367,7 @@ export default function WordOfTheDayPage() {
                 <div className="space-y-4">
                   <h3 className="font-semibold mb-3">{copy.examplesHeading}</h3>
                   {word.examples.map((ex, index) => (
-	                    <div key={index} className="mb-4 border-l border-border/20 bg-muted/35 px-4 py-3">
+                    <div key={index} className="mb-4 rounded-lg bg-muted/35 px-4 py-3">
                       <p className="mb-2 text-base">"{ex.en}"</p>
                       <p className="text-muted-foreground">{ex.zh}</p>
                       <Button
@@ -471,7 +470,7 @@ export default function WordOfTheDayPage() {
 
       <main className="container mx-auto max-w-5xl px-4 py-8">
         {/* Date Header */}
-        <div className="mb-6 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-3 pb-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Badge variant="secondary" className="mb-3 rounded-md">
               <Calendar className="h-3 w-3 mr-1" />
@@ -491,7 +490,7 @@ export default function WordOfTheDayPage() {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             {isAuthenticated ? (
               <>
-                <Button asChild size="lg" className="h-11 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
+                <Button asChild size="lg" className="h-11 rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90">
                   <Link to={practiceHref} onClick={handlePracticeWord}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     {copy.practiceWord}
@@ -510,7 +509,7 @@ export default function WordOfTheDayPage() {
               </>
             ) : (
               <>
-                <Button asChild size="lg" className="h-11 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90">
+                <Button asChild size="lg" className="h-11 rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90">
                   <Link to={buildAuthRedirect(practiceHref, '/register')}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     {copy.startFree}
@@ -549,7 +548,7 @@ export default function WordOfTheDayPage() {
 	              <button
 	                type="button"
 	                key={item.date}
-	                className="border-t border-border/20 py-3 text-left transition-colors hover:bg-muted/30"
+                className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-3 text-left transition-colors hover:bg-muted/35"
 	                onClick={() => handlePreviousWordClick(item.date, item.word)}
 	              >
 	                <div className="px-1">
@@ -602,7 +601,7 @@ export default function WordOfTheDayPage() {
       </Dialog>
 
       {/* Footer */}
-      <footer className="mt-12 border-t border-border bg-card/30">
+      <footer className="mt-12 bg-transparent">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col items-center justify-between gap-3 md:flex-row">
             <div className="flex items-center gap-2">
