@@ -800,7 +800,7 @@ export default function AnalyticsPage() {
           <p className="text-muted-foreground">{copy.headerSubtitle}</p>
         </div>
         <Select value={timeRange} onValueChange={(value) => setTimeRange(value as AnalyticsTimeRange)}>
-          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-border/65 bg-transparent md:w-[150px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-transparent bg-transparent md:w-[150px]">
             <Calendar className="h-4 w-4 mr-2" />
             <SelectValue placeholder={copy.timeRanges.week} />
           </SelectTrigger>
@@ -891,7 +891,7 @@ export default function AnalyticsPage() {
 
       {/* Charts */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="liquid-glass-control h-auto w-full justify-start overflow-x-auto rounded-lg border border-border/60 bg-transparent p-1 sm:w-fit">
+        <TabsList className="liquid-glass-control h-auto w-full justify-start overflow-x-auto rounded-lg border border-transparent bg-transparent p-1 sm:w-fit">
           <TabsTrigger value="overview">{copy.tabs.overview}</TabsTrigger>
           <TabsTrigger value="words">{copy.tabs.words}</TabsTrigger>
           <TabsTrigger value="retention">{copy.tabs.retention}</TabsTrigger>

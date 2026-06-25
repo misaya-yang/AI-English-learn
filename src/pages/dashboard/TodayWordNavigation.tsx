@@ -117,7 +117,7 @@ export function TodayWordNavigation({
               })}
               aria-current={isCurrent ? 'step' : undefined}
               className={cn(
-                'grid h-11 w-11 place-items-center rounded-full transition-colors duration-200 hover:bg-muted/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35',
+                'liquid-glass-interactive grid h-10 min-w-10 place-items-center rounded-lg border border-transparent px-1 transition-[background-color,border-color,box-shadow,transform] duration-200 hover:border-primary/20 hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 sm:h-9 sm:min-w-9',
                 isCurrent && 'bg-primary/8',
               )}
               title={word.word}

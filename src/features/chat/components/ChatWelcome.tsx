@@ -53,7 +53,7 @@ export function ChatWelcome({
           <button
             key={prompt.text}
             onClick={() => onPromptClick(prompt.text)}
-            className="flex min-h-11 items-start gap-3 border-t border-border/20 py-3 text-left transition-colors hover:bg-primary/5"
+            className="liquid-glass-control liquid-glass-interactive flex min-h-11 items-start gap-3 rounded-xl border border-transparent px-3 py-3 text-left transition-[background-color,border-color,box-shadow,transform] hover:border-primary/20 hover:bg-primary/5"
           >
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
               <prompt.icon className="h-4 w-4" />

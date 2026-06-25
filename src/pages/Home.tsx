@@ -137,7 +137,7 @@ export default function Home() {
       <header className="z-40 px-5 pt-5 sm:px-6 sm:pt-6">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between sm:h-20">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-14 w-14 items-center justify-center rounded-[1.35rem] bg-primary/10 text-primary shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.24)]">
+            <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-none">
               <BookOpen className="h-6 w-6" />
             </span>
             <span className="text-2xl font-bold tracking-normal">VocabDaily</span>

@@ -25,7 +25,7 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
       className={cn(
-        'rounded-[18px] border border-border/75 bg-card p-4 shadow-[inset_0_1px_0_hsl(var(--glass-highlight)/0.12),0_18px_38px_-34px_hsl(var(--shadow-studio)/0.22)] sm:p-5',
+        'rounded-xl border border-transparent bg-card p-4 shadow-none transition-[box-shadow,transform] sm:p-5',
         className,
       )}
       data-testid="session-recap-card"

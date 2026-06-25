@@ -553,7 +553,7 @@ export default function VocabularyBankPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-11 w-11 rounded-lg border-border bg-transparent text-foreground hover:bg-muted"
+                  className="glass-icon-button h-11 w-11 rounded-lg border-transparent bg-transparent text-foreground hover:border-primary/20 hover:bg-muted"
                   onClick={() => playAudio(featuredEntry.headword)}
                   aria-label={isZh ? `播放 ${featuredEntry.headword} 发音` : `Play pronunciation for ${featuredEntry.headword}`}
                 >
@@ -774,7 +774,7 @@ export default function VocabularyBankPage() {
       </Card>
 
       {/* Filters */}
-      <div className="liquid-glass-bar flex flex-col gap-3 rounded-lg border border-border/55 bg-background/70 p-3 md:flex-row">
+      <div className="liquid-glass-bar flex flex-col gap-3 rounded-lg border border-transparent bg-background/70 p-3 md:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 	          <Input
@@ -785,7 +785,7 @@ export default function VocabularyBankPage() {
           />
         </div>
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-border/65 bg-transparent md:w-[160px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-transparent bg-transparent md:w-[160px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="状态" />
           </SelectTrigger>
@@ -798,7 +798,7 @@ export default function VocabularyBankPage() {
           </SelectContent>
         </Select>
         <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-border/65 bg-transparent md:w-[160px]">
+          <SelectTrigger className="liquid-glass-control w-full rounded-lg border-transparent bg-transparent md:w-[160px]">
             <Tag className="h-4 w-4 mr-2" />
             <SelectValue placeholder="分类" />
           </SelectTrigger>

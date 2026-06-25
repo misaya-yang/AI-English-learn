@@ -468,12 +468,12 @@ export default function ReadingPage() {
             <h2 className="text-sm font-semibold text-foreground">{isZh ? '可选文章' : 'Available passages'}</h2>
             <span className="text-xs text-muted-foreground">{SEED_PASSAGES.length} {isZh ? '篇' : 'passages'}</span>
           </div>
-          <div className="divide-y divide-border/20">
+          <div className="space-y-2">
             {SEED_PASSAGES.map((p) => (
               <button
                 key={p.id}
                 onClick={() => startPassage(p)}
-                className="group w-full rounded-[22px] px-1 py-4 text-left transition hover:bg-muted/35 active:scale-[0.99] active:bg-muted/50 sm:px-3"
+                className="liquid-glass-control liquid-glass-interactive group w-full rounded-xl border border-transparent px-3 py-4 text-left transition-[background-color,border-color,box-shadow,transform] hover:border-primary/20 hover:bg-muted/35 active:scale-[0.99] active:bg-muted/50 sm:px-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -534,7 +534,7 @@ export default function ReadingPage() {
               size="sm"
               onClick={() => setPhase('select')}
               variant="ghost"
-              className="liquid-glass-control liquid-glass-interactive min-h-11 rounded-lg border border-border text-muted-foreground hover:text-foreground text-xs sm:min-h-9"
+              className="liquid-glass-control liquid-glass-interactive min-h-11 rounded-lg border border-transparent text-xs text-muted-foreground hover:border-primary/20 hover:text-foreground sm:min-h-9"
             >
               {isZh ? '换文章' : 'Change passage'}
             </Button>
