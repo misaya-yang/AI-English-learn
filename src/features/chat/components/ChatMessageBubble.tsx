@@ -92,12 +92,12 @@ export function ChatMessageBubble({
         )}
       >
         {isUser ? (
-          <div className="relative overflow-hidden rounded-xl rounded-br-sm bg-primary px-4 py-3 text-primary-foreground">
+          <div className="relative overflow-hidden rounded-xl rounded-br-sm border border-primary/15 bg-primary/10 px-4 py-3 text-foreground">
             <p className="relative z-10 whitespace-pre-wrap text-sm leading-relaxed">
               {message.content}
             </p>
             {isStreaming && (
-              <span className="relative z-10 ml-1 inline-block h-4 w-2 animate-pulse bg-primary-foreground/70 align-middle" />
+              <span className="relative z-10 ml-1 inline-block h-4 w-2 animate-pulse bg-primary/70 align-middle" />
             )}
           </div>
         ) : (

@@ -128,7 +128,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="submit" className="rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button type="submit" className="rounded-lg">
               {copy.submit}
             </Button>
             {hasFeedback ? (
@@ -149,7 +149,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
             <div className="flex items-start gap-3">
               <span className={cn(
                 'flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
-                isCorrect ? 'bg-[hsl(var(--accent-practice))] text-primary-foreground' : 'bg-amber-500 text-warning-foreground',
+                isCorrect ? 'bg-[hsl(var(--accent-practice)/0.14)] text-[hsl(var(--accent-practice))]' : 'bg-[hsl(var(--warning)/0.14)] text-[hsl(var(--warning))]',
               )}>
                 <Check className="h-4 w-4" />
               </span>
@@ -169,7 +169,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
                         </span>
                       ))}
                     </div>
-                    <Button asChild className="mt-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Button asChild className="mt-4 rounded-lg">
                       <Link to={saveProgressHref}>
                         {copy.save}
                         <ArrowRight className="ml-2 h-4 w-4" />

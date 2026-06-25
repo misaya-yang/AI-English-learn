@@ -832,7 +832,7 @@ export default function ListeningPage() {
         {/* CTA */}
         <Button
           onClick={handleStartQuestions}
-          className="w-full rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+          className="w-full rounded-lg font-semibold"
         >
           {isZh ? '开始答题' : 'Start Questions'} <ChevronRight className="ml-1.5 h-4 w-4" />
         </Button>
@@ -926,7 +926,7 @@ export default function ListeningPage() {
               <Button
                 onClick={handleSubmit}
                 disabled={!allAnswered}
-                className="w-full rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+                className="w-full rounded-lg font-semibold disabled:opacity-50"
               >
                 {isZh ? '提交答案' : 'Submit Answers'}
               </Button>

@@ -218,7 +218,7 @@ export default function ProfilePage() {
           variant={isEditing ? 'default' : 'glass'}
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
           disabled={isSaving}
-          className={isEditing ? 'bg-primary hover:bg-primary/90' : ''}
+          className="rounded-lg"
         >
           {isSaving ? (
             <>
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                     className={cn(
 	                      'rounded-md px-3 py-1 text-sm transition-colors',
                       formData.preferredTopics.includes(topic)
-                        ? 'bg-primary text-primary-foreground'
+                        ? 'bg-primary/10 text-primary'
                         : 'bg-muted hover:bg-muted/80'
                     )}
                   >

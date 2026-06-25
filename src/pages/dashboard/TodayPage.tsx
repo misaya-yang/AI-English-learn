@@ -152,7 +152,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
             <Brain className="mr-2 h-4 w-4" />
             {isHard ? '已加入复习' : '需要复习'}
           </Button>
-          <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => onMarkStatus('learned')} disabled={isLearned}>
+          <Button className="rounded-md px-4" onClick={() => onMarkStatus('learned')} disabled={isLearned}>
             <Check className="mr-2 h-4 w-4" />
             {isLearned ? '已完成' : '完成'}
           </Button>
@@ -554,12 +554,12 @@ export default function TodayPage() {
           actions={
             <>
               {activeBook ? (
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={refreshDailyWords}>
+                <Button size="lg" className="rounded-md" onClick={refreshDailyWords}>
                   <ClipboardList className="mr-2 h-5 w-5" />
                   {isZh ? '准备单词' : 'Prepare words'}
                 </Button>
               ) : (
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
+                <Button size="lg" className="rounded-md" asChild>
                   <Link to="/onboarding?redirect=%2Fdashboard%2Ftoday">
                     <Target className="mr-2 h-5 w-5" />
                     {isZh ? '调整学习设置' : 'Change setup'}
@@ -633,11 +633,11 @@ export default function TodayPage() {
         title={isZh ? '今天' : 'Today'}
         description={isZh ? `预计 ${heroEstimatedMinutes} 分钟` : `About ${heroEstimatedMinutes} min`}
         actions={todayPrimaryHref ? (
-          <Button className="min-h-11 rounded-lg bg-primary px-5 text-primary-foreground hover:bg-primary/90" asChild data-testid="today-primary-mission-cta">
+          <Button className="min-h-11 rounded-lg px-5" asChild data-testid="today-primary-mission-cta">
             <Link to={todayPrimaryHref}>{todayPrimaryLabel}</Link>
           </Button>
         ) : (
-          <Button className="min-h-11 rounded-lg bg-primary px-5 text-primary-foreground hover:bg-primary/90" onClick={scrollToVocabularyWorkspace} data-testid="today-primary-mission-cta">
+          <Button className="min-h-11 rounded-lg px-5" onClick={scrollToVocabularyWorkspace} data-testid="today-primary-mission-cta">
             {todayPrimaryLabel}
           </Button>
         )}
@@ -739,7 +739,7 @@ export default function TodayPage() {
                   <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted hover:text-foreground" asChild>
                     <Link to="/dashboard/review">{isZh ? '去复习' : 'Review'}</Link>
                   </Button>
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
+                  <Button className="rounded-md" asChild>
                     <Link to="/dashboard/practice">{isZh ? '去练习' : 'Practice'}</Link>
                   </Button>
                 </>

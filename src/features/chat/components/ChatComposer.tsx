@@ -244,7 +244,7 @@ export function ChatComposer({
           </div>
         )}
 
-        <div className="relative flex items-end gap-2 rounded-xl border border-transparent bg-card p-3 transition-all focus-within:border-primary/35 focus-within:ring-2 focus-within:ring-primary/12">
+        <div className="relative flex items-end gap-2 rounded-xl border border-transparent bg-card p-3 transition-all focus-within:border-primary/35 focus-within:ring-2 focus-within:ring-primary/10">
           <Button
             variant="ghost"
             size="icon"
@@ -307,7 +307,7 @@ export function ChatComposer({
               <Button
                 onClick={onSend}
                 disabled={!input.trim()}
-                className="h-10 w-10 rounded-md bg-primary p-0 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                className="h-10 w-10 rounded-md bg-primary/10 p-0 text-primary hover:bg-primary/20 disabled:opacity-50"
                 aria-label={language.startsWith('zh') ? '发送消息' : 'Send message'}
               >
                 <Send className="h-5 w-5" />

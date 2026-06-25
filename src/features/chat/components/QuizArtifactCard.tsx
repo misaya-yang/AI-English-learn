@@ -88,7 +88,6 @@ export function QuizArtifactCard({
       {!localAttempted ? (
         <Button
           size="sm"
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={!canSubmit}
           onClick={() => {
             if (!sessionId || !selected) return;

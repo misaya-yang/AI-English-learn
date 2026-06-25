@@ -332,7 +332,7 @@ export default function RegisterPage() {
 
         <Button
           type="submit"
-          className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground shadow-none transition-colors hover:bg-primary/90 disabled:opacity-60"
+          className="h-11 w-full rounded-md text-sm font-medium shadow-none transition-colors disabled:opacity-60"
           disabled={isLoading || !allChecksPass || !agreeTerms || !passwordsMatch}
         >
           {isLoading ? (

@@ -322,7 +322,7 @@ export default function PricingPage() {
                 className={cn(
                   'px-3 py-1 text-xs',
                   currentPlan === 'pro'
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-primary/10 text-primary'
                     : 'border-transparent bg-muted/55 text-muted-foreground',
                 )}
               >
@@ -377,7 +377,7 @@ export default function PricingPage() {
 	                  data-highlighted={plan.highlighted ? 'true' : 'false'}
 	                >
 	                  {plan.highlighted && (
-                    <Badge className="absolute right-0 top-0 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                    <Badge className="absolute right-0 top-0 rounded-md bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                       {isZh ? '备考方案' : 'Exam prep'}
                     </Badge>
                   )}
@@ -509,7 +509,7 @@ export default function PricingPage() {
                         // behind this branch so we can lift it back in once
                         // VITE_BILLING_ENABLED=true is set on the deploy.
                         <Button
-                          className="h-11 w-full rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
+                          className="h-11 w-full rounded-lg shadow-none"
                           onClick={() =>
                             toast.info(isZh ? '支付服务配置完成后即可开始结账。' : 'Checkout will start when payment provider is configured.')
                           }
@@ -587,7 +587,7 @@ export default function PricingPage() {
           <Button
             asChild
             size="lg"
-            className="mt-5 rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
+            className="mt-5 rounded-lg shadow-none"
           >
             <Link to="/register">
               {isZh ? '免费开始' : 'Start free'}

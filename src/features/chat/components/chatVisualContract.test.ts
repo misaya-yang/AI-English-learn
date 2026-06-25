@@ -44,8 +44,8 @@ describe('chat visual shell contract', () => {
     const quiz = readSource('src/features/chat/components/QuizArtifactCard.tsx');
 
     expect(composer).toContain('focus-within:border-primary/35');
-    expect(composer).toContain('bg-primary p-0 text-primary-foreground');
-    expect(coach).toContain('border border-primary/60 bg-primary');
+    expect(composer).toContain('bg-primary/10 p-0 text-primary');
+    expect(coach).toContain('border border-primary/25 bg-primary/10');
     expect(coach).toContain('hsl(var(--success)');
     expect(quiz).toContain('border-primary/50 bg-primary/10');
     expect(quiz).toContain('hsl(var(--success)');

@@ -76,7 +76,7 @@ const renderAction = (action: CockpitMissionAction, key: string) => {
     'rounded-md',
     action.variant === 'outline'
       ? 'border-border bg-muted/20 text-foreground hover:bg-muted/50 hover:text-foreground'
-      : 'bg-primary text-primary-foreground hover:bg-primary/90',
+      : 'px-4',
   );
   if (action.href) {
     return (

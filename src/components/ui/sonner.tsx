@@ -32,7 +32,7 @@ const Toaster = ({ position = "bottom-right", mobileOffset, ...props }: ToasterP
             "group toast group-[.toaster]:border-transparent group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground group-[.toaster]:shadow-none",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+            "group-[.toast]:bg-primary/10 group-[.toast]:text-primary",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },

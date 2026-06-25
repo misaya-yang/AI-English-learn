@@ -9,11 +9,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "border border-transparent bg-primary text-primary-foreground hover:border-primary/24 hover:bg-primary/94",
+        default:
+          "border border-transparent bg-primary/10 text-primary hover:border-primary/25 hover:bg-primary/20 dark:bg-primary/15 dark:text-primary dark:hover:bg-primary/25",
         glass:
           "liquid-glass-control liquid-glass-interactive rounded-lg border-transparent border bg-transparent text-foreground hover:text-foreground",
         glassPrimary:
-          "liquid-glass-control liquid-glass-interactive rounded-lg border-transparent border bg-primary/10 text-primary hover:text-primary",
+          "liquid-glass-control liquid-glass-interactive rounded-lg border-transparent border bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary dark:bg-primary/10 dark:hover:bg-primary/20",
         destructive:
           "border border-transparent bg-destructive text-destructive-foreground hover:border-destructive/24 hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/72",
         outline:

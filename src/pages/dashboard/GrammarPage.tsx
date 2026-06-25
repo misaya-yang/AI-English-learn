@@ -732,7 +732,7 @@ export default function GrammarPage() {
             className={cn(
               'liquid-glass-control liquid-glass-interactive rounded-lg border px-3 py-1 text-xs font-medium transition-colors',
               filterCategory === 'all'
-                ? 'border-primary bg-primary text-primary-foreground'
+                ? 'border-primary/30 bg-primary/10 text-primary'
                 : 'border-border text-muted-foreground hover:bg-muted',
             )}
           >
@@ -873,7 +873,7 @@ export default function GrammarPage() {
           <Button
             onClick={handleSubmit}
             disabled={!allAnswered}
-          className="w-full rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+          className="w-full rounded-lg font-semibold disabled:opacity-50"
           >
             {isZh ? '检查答案' : 'Check Answers'}
           </Button>

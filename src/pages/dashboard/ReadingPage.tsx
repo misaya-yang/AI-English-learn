@@ -581,7 +581,7 @@ export default function ReadingPage() {
                         className={cn(
                           'min-h-11 rounded-lg border px-4 py-1.5 text-xs font-medium transition sm:min-h-9',
                           answers[q.id] === opt
-                            ? 'border-primary/45 bg-primary/12 text-primary'
+                            ? 'border-primary/45 bg-primary/10 text-primary'
                             : 'border-transparent bg-muted/45 text-muted-foreground hover:bg-muted/70',
                         )}
                       >
@@ -601,7 +601,7 @@ export default function ReadingPage() {
                         className={cn(
                           'min-h-11 w-full rounded-lg border px-4 py-2 text-left text-sm transition',
                           answers[q.id] === opt.charAt(0)
-                            ? 'border-primary/45 bg-primary/12 text-primary'
+                            ? 'border-primary/45 bg-primary/10 text-primary'
                             : 'border-transparent bg-muted/42 text-muted-foreground hover:bg-muted/65',
                         )}
                       >
@@ -626,7 +626,7 @@ export default function ReadingPage() {
 
             <Button
               onClick={handleSubmit}
-              className="mt-2 min-h-11 w-full rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+              className="mt-2 min-h-11 w-full rounded-lg font-medium"
             >
               {isZh ? '提交答案' : 'Submit answers'}
               <ChevronRight className="ml-1 h-4 w-4" />

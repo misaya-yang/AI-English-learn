@@ -191,7 +191,7 @@ export default function Home() {
               <Link
                 to={continuePath}
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-1 rounded-xl bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground"
+                className="mt-1 rounded-lg bg-primary/10 px-3 py-2 text-center text-sm font-medium text-primary hover:bg-primary/20"
               >
                 {copy.nav.auth}
               </Link>
@@ -222,13 +222,13 @@ export default function Home() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild size="lg" className="h-12 rounded-xl px-6 text-sm font-semibold">
+                <Button asChild size="lg" className="h-11 rounded-lg px-7 text-sm font-semibold">
                   <Link to={primaryCtaPath}>
                     {copy.hero.primaryCta}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="ghost" className="h-12 rounded-xl px-5 text-sm font-semibold">
+                <Button asChild size="lg" variant="ghost" className="h-11 rounded-lg px-5 text-sm font-semibold">
                   <Link to="/demo">
                     {copy.hero.secondaryCta}
                   </Link>

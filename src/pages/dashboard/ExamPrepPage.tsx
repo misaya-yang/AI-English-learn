@@ -329,7 +329,7 @@ export default function ExamPrepPage() {
                 <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <span
                     className={`grid h-6 w-6 place-items-center rounded-lg text-[11px] ${
-                      active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {index + 1}

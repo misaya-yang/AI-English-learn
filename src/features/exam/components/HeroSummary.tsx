@@ -65,7 +65,7 @@ export function HeroSummary({
       <div className="space-y-4">
         {/* Status badges row */}
         <div className="flex flex-wrap items-center gap-2">
-          <Badge className={cn('rounded-md border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-primary text-primary-foreground' : '')}>
+          <Badge className={cn('rounded-md border px-2.5 py-1 text-xs', plan === 'pro' ? 'bg-primary/10 text-primary' : '')}>
             <BookOpen className="mr-1 h-3.5 w-3.5" />
             {plan === 'pro' ? '专业版' : '基础版'}
           </Badge>

@@ -490,7 +490,7 @@ export default function WordOfTheDayPage() {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             {isAuthenticated ? (
               <>
-                <Button asChild size="lg" className="h-11 rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90">
+                <Button asChild size="lg" className="h-11 rounded-lg shadow-none">
                   <Link to={practiceHref} onClick={handlePracticeWord}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     {copy.practiceWord}
@@ -509,7 +509,7 @@ export default function WordOfTheDayPage() {
               </>
             ) : (
               <>
-                <Button asChild size="lg" className="h-11 rounded-lg bg-primary text-primary-foreground shadow-none hover:bg-primary/90">
+                <Button asChild size="lg" className="h-11 rounded-lg shadow-none">
                   <Link to={buildAuthRedirect(practiceHref, '/register')}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     {copy.startFree}

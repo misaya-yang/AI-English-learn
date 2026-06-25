@@ -505,7 +505,7 @@ export default function DashboardLayout() {
       <div className="rounded-xl bg-sidebar-accent/28 px-3 py-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 rounded-md">
-            <AvatarFallback className="rounded-md bg-sidebar-primary/14 text-sidebar-primary">
+            <AvatarFallback className="rounded-md bg-sidebar-primary/15 text-sidebar-primary">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>

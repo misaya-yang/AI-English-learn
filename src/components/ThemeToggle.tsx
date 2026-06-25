@@ -27,12 +27,14 @@ export function ThemeToggle() {
         <Button
           variant="glass"
           size="icon"
-          className="glass-icon-button h-11 min-h-11 w-11 min-w-11 text-muted-foreground hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
+          className="glass-icon-button relative h-11 min-h-11 w-11 min-w-11 overflow-visible text-muted-foreground hover:text-foreground sm:h-9 sm:min-h-9 sm:w-9 sm:min-w-9"
           aria-label={copy.trigger}
           title={copy.trigger}
         >
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span aria-hidden="true" className="pointer-events-none !absolute left-1/2 top-1/2 grid size-4 -translate-x-1/2 -translate-y-1/2 place-items-center">
+            <Sun className="size-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute size-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+          </span>
           <span className="sr-only">{copy.trigger}</span>
         </Button>
       </DropdownMenuTrigger>

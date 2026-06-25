@@ -264,7 +264,7 @@ export default function OnboardingPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-auto w-full rounded-lg bg-primary/10 py-4 text-foreground hover:bg-primary/10"
+              className="h-auto w-full rounded-lg bg-primary/10 py-4 text-foreground hover:bg-primary/15"
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
@@ -304,7 +304,7 @@ export default function OnboardingPage() {
                     className={cn(
                       'flex h-12 w-12 items-center justify-center rounded-md text-base font-bold',
                       preferences.cefrLevel === level.level
-                        ? 'bg-primary text-primary-foreground'
+                        ? 'bg-primary/10 text-primary'
                         : 'bg-muted text-muted-foreground',
                     )}
                   >
@@ -356,7 +356,7 @@ export default function OnboardingPage() {
                     className={cn(
                       'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
                       preferences.examTarget === target.id
-                        ? 'bg-primary text-primary-foreground'
+                        ? 'bg-primary/10 text-primary'
                         : 'bg-muted text-muted-foreground',
                     )}
                   >
@@ -411,7 +411,7 @@ export default function OnboardingPage() {
                         className={cn(
                           'rounded-lg border px-3 py-2 text-sm transition-colors',
 	                          preferences.deadline === deadline.id
-	                            ? 'border-primary bg-primary text-primary-foreground'
+	                            ? 'border-primary/30 bg-primary/10 text-primary'
 	                            : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
                         )}
                         aria-pressed={preferences.deadline === deadline.id}
@@ -499,7 +499,7 @@ export default function OnboardingPage() {
                       className={cn(
                         'rounded-lg border px-3 py-3 text-sm font-medium transition-colors',
 	                        preferences.dailyMinutes === minutes
-	                          ? 'border-primary bg-primary text-primary-foreground'
+	                          ? 'border-primary/30 bg-primary/10 text-primary'
 	                          : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
                       )}
                       aria-pressed={preferences.dailyMinutes === minutes}
@@ -592,7 +592,7 @@ export default function OnboardingPage() {
                     className={cn(
                       'flex h-10 w-10 items-center justify-center rounded-md',
                       preferences.learningStyle === style.id
-                        ? 'bg-primary text-primary-foreground'
+                        ? 'bg-primary/10 text-primary'
                         : 'bg-muted text-muted-foreground',
                     )}
                   >
@@ -693,7 +693,7 @@ export default function OnboardingPage() {
               isLoading ||
               (step === 4 && preferences.preferredTopics.length < 2)
             }
-            className="rounded-lg bg-primary text-primary-foreground shadow-none transition-colors hover:bg-primary/90"
+            className="rounded-lg shadow-none transition-colors"
           >
             {isLoading ? (
               <>

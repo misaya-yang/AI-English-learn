@@ -263,7 +263,7 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground shadow-none transition-colors hover:bg-primary/90 disabled:opacity-60"
+            className="h-11 w-full rounded-md text-sm font-medium shadow-none transition-colors disabled:opacity-60"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -342,7 +342,7 @@ export default function LoginPage() {
               </div>
               <Button
                 type="submit"
-                className="h-11 w-full rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="h-11 w-full rounded-md text-sm font-medium"
                 disabled={isResetting}
               >
                 {isResetting ? (

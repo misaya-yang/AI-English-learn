@@ -102,7 +102,7 @@ const lightInputClass =
 const lightSelectContentClass = 'border-border bg-background text-foreground';
 
 const workbookButtonClass =
-  'rounded-lg border border-transparent bg-primary px-4 text-primary-foreground shadow-none hover:border-primary/24 hover:bg-primary/92 hover:text-primary-foreground';
+  'rounded-lg border border-transparent bg-primary/10 px-4 text-primary shadow-none hover:border-primary/25 hover:bg-primary/20 hover:text-primary dark:bg-primary/15 dark:hover:bg-primary/25';
 const workbookOutlineButtonClass =
   'rounded-lg bg-transparent px-4 text-foreground shadow-none hover:bg-muted/60 hover:text-foreground';
 const practiceBadgeClass =
@@ -1404,7 +1404,7 @@ export default function PracticePage() {
                   <PenTool className="mr-2 h-4 w-4" />
                   {isZh ? '修改后再评分' : 'Revise and score again'}
                   {writingRound < 3 && (
-                    <span className="ml-1.5 text-xs text-primary-foreground/60">
+                    <span className="ml-1.5 text-xs text-primary/70">
                       {isZh ? `第 ${writingRound + 1} 轮` : `Round ${writingRound + 1}`}
                     </span>
                   )}
@@ -1531,7 +1531,7 @@ export default function PracticePage() {
                     {listeningAttemptState.attempts.length > 0 ? (
                       <Button
                         variant="outline"
-                        className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
+                        className="rounded-md bg-transparent px-4 text-foreground hover:bg-muted/60 hover:text-foreground"
                         onClick={handleListeningReveal}
                       >
                         {isZh ? '看答案' : 'Show answer'}
@@ -1758,7 +1758,7 @@ export default function PracticePage() {
                 <Button
                   variant="outline"
                   onClick={handleRevealAnswer}
-                  className="rounded-md bg-card text-foreground hover:bg-muted hover:text-foreground"
+                  className="rounded-md bg-transparent px-4 text-foreground hover:bg-muted/60 hover:text-foreground"
                 >
                   {isZh ? '看答案' : 'Show answer'}
                 </Button>

@@ -405,7 +405,7 @@ export default function ReviewPage() {
               <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted" asChild>
                 <Link to="/dashboard/today">{isZh ? '返回今日' : 'Back to Today'}</Link>
               </Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
+              <Button className="rounded-md" asChild>
                 <Link to="/dashboard/practice">{isZh ? '去练习' : 'Practice'}</Link>
               </Button>
             </>
@@ -445,7 +445,7 @@ export default function ReviewPage() {
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {isZh ? '再次复习' : 'Review again'}
               </Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" asChild>
+              <Button className="rounded-md" asChild>
                 <Link to="/dashboard/practice">{isZh ? '继续练习' : 'Continue in Practice'}</Link>
               </Button>
             </>
@@ -576,9 +576,9 @@ export default function ReviewPage() {
                 <InlineStudyNote title={isZh ? '先回忆' : 'Recall first'}>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p>想好后再看答案。</p>
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" onClick={handleReveal}>
+                  <Button className="rounded-md px-5" onClick={handleReveal}>
                     {isZh ? '看答案' : 'Reveal'}
-                    <kbd className="ml-2 rounded border border-primary-foreground/20 bg-primary-foreground/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold">
+                    <kbd className="ml-2 rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-primary/75">
                       Space
                     </kbd>
                   </Button>

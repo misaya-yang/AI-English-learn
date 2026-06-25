@@ -94,7 +94,7 @@ export function CoachActionPanel({ actions, language, onRunAction }: CoachAction
                 className={cn(
                   'group inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-colors',
                   entry.variant === 'primary'
-                    ? 'border border-primary/60 bg-primary text-primary-foreground hover:bg-primary/90'
+                    ? 'border border-primary/25 bg-primary/10 text-primary hover:bg-primary/20'
                     : 'border border-primary/20 bg-background text-primary hover:bg-primary/10',
                   !interactive && 'cursor-default opacity-80 hover:bg-current/0',
                 )}
@@ -106,7 +106,7 @@ export function CoachActionPanel({ actions, language, onRunAction }: CoachAction
                     className={cn(
                       'rounded-sm px-1 text-[10px] font-medium',
                       entry.variant === 'primary'
-                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                        ? 'bg-primary/10 text-primary'
                         : 'bg-primary/10 text-primary',
                     )}
                   >
