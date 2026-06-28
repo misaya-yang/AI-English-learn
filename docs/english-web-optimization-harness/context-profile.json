@@ -1,0 +1,63 @@
+{
+  "schema_version": "prd-phase-harness/context-profile/v1",
+  "strategy": "progressive disclosure: load the smallest hot path first, then open deferred files only when the trigger applies",
+  "cold_start": {
+    "required_files": [
+      "docs/english-web-optimization-harness/context-profile.json",
+      "docs/english-web-optimization-harness/loop-state.json",
+      "target phase_file"
+    ],
+    "procedure": [
+      "confirm repo root with pwd",
+      "read the active phase from loop-state.json",
+      "open the target phase file and only its PRIMARY_CONTEXT",
+      "write a plan before editing"
+    ]
+  },
+  "roles": {
+    "actor": {
+      "required_files": [
+        "docs/english-web-optimization-harness/context-profile.json",
+        "docs/english-web-optimization-harness/loop-state.json",
+        "target phase file"
+      ],
+      "primary_context_policy": "open at most the four PRIMARY_CONTEXT entries listed by the active phase before planning"
+    },
+    "critic": {
+      "required_files": [
+        "target phase file",
+        "actor report under docs/english-web-optimization-harness/reports",
+        "feature-oracle evidence excerpt"
+      ],
+      "review_policy": "independent critic checks changed files, command evidence, browser evidence, minimal-change scope, and oracle status"
+    },
+    "planner": {
+      "required_files": [
+        "docs/english-web-optimization-harness/source-packet.md",
+        "docs/english-web-optimization-harness/phase-manifest.md",
+        "docs/english-web-optimization-harness/continuity-ledger.md"
+      ],
+      "use_policy": "planner files are opened for scope changes, blocker triage, or phase-map updates"
+    }
+  },
+  "deferred": {
+    "README.md": "do not load unless the harness intent or loading protocol is unclear",
+    "phase-manifest.md": "do not load unless the target phase is unknown or dependency order is disputed",
+    "source-packet.md": "do not load unless repository evidence, assumptions, browser/subagent evidence, or code-summary writeback is needed",
+    "loop-contract.json": "do not load unless loop semantics are unclear",
+    "feature-oracle.json": "do not load unless selecting or updating the active feature item",
+    "progress-log.md": "do not load unless recent session status or blockers are needed",
+    "agent-handoff.md": "do not load unless next action or role handoff is unclear",
+    "continuity-ledger.md": "do not load unless dependency, interface, or code-summary writeback is needed",
+    "next-window-prompt.md": "do not load unless preparing a fresh-window continuation prompt",
+    "reports/": "do not load unless validating a dependency, completion claim, or critic review",
+    "product-audit-2026-06-28/english-web-harness-recheck/": "do not load unless browser baseline screenshots or route-sweep JSON are needed",
+    "product-audit-2026-06-28/english-web-harness-recheck-en/": "do not load unless English-mode browser baseline screenshots or route-sweep JSON are needed",
+    "product-audit-2026-06-28/english-web-harness-recheck-current/": "do not load unless validating the latest subagent-requested Playwright route recheck for Vocabulary, Pronunciation, Listening, Reading, Today, Settings, Profile, and Learning Path"
+  },
+  "caps": {
+    "cold_start_max_files": 3,
+    "read_first_max_files": 4,
+    "primary_context_max_items": 4
+  }
+}

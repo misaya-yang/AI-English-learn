@@ -557,14 +557,22 @@ export default function ProfilePage() {
               onClick={() => {
                 const result = purchaseStreakFreeze();
                 if (result.success) {
-	                  toast.success(`已兑换打卡冻结（消耗 ${result.cost} 积分）`);
-	                } else {
-	                  toast.error(`积分不足（需要 ${result.cost}）`);
-	                }
+                  toast.success(
+                    isZh
+                      ? `已兑换打卡冻结（消耗 ${result.cost} 积分）`
+                      : `Streak freeze redeemed (${result.cost} points)`,
+                  );
+                } else {
+                  toast.error(
+                    isZh
+                      ? `积分不足（需要 ${result.cost}）`
+                      : `Not enough points (${result.cost} needed)`,
+                  );
+                }
               }}
             >
               <ShieldCheck className="h-4 w-4 mr-1" />
-		              {isZh ? '兑换冻结（50 积分）' : 'Buy freeze (50 points)'}
+              {isZh ? '兑换冻结（50 积分）' : 'Buy freeze (50 points)'}
             </Button>
           </CardContent>
         </Card>
@@ -573,7 +581,9 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BadgeCheck className="h-5 w-5 text-muted-foreground" />
-		              {isZh ? '学习标记' : 'Achievement badges'}（{achievements.length}/{allAchievementDefs.length}）
+              {isZh
+                ? `学习标记（${achievements.length}/${allAchievementDefs.length}）`
+                : `Achievement badges (${achievements.length}/${allAchievementDefs.length})`}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -623,18 +633,20 @@ export default function ProfilePage() {
         <CardContent>
           <div className="space-y-3">
             {allStatuses.map((status) => {
-              const featureLabels: Record<QuotaFeature, string> = {
-                aiWritingGrade:   '写作反馈',
-                aiReadingGen:     '阅读材料',
-                aiChat:           '答疑对话',
-                aiExamFeedback:   '考试反馈',
-                aiListeningGen:   '听力材料',
+              const featureLabels: Record<QuotaFeature, { en: string; zh: string }> = {
+                aiWritingGrade:   { en: 'Writing feedback', zh: '写作反馈' },
+                aiReadingGen:     { en: 'Reading materials', zh: '阅读材料' },
+                aiChat:           { en: 'Q&A chat', zh: '答疑对话' },
+                aiExamFeedback:   { en: 'Exam feedback', zh: '考试反馈' },
+                aiListeningGen:   { en: 'Listening materials', zh: '听力材料' },
               };
               const pct = status.limit > 0 ? Math.min(100, Math.round((status.used / status.limit) * 100)) : 0;
               return (
                 <div key={status.feature}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm text-foreground">{featureLabels[status.feature]}</p>
+                    <p className="text-sm text-foreground">
+                      {isZh ? featureLabels[status.feature].zh : featureLabels[status.feature].en}
+                    </p>
                     <p className={cn(
                       'text-xs font-semibold',
                       status.isExhausted ? 'text-destructive' : 'text-muted-foreground',

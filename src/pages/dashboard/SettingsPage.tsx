@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { clearAllData } from '@/data/localStorage';
+import { clearLocalDbData } from '@/lib/localDb';
 import type { FontSize, UserSettings } from '@/types/core';
 import {
   buildLifecycleNotification,
@@ -79,24 +80,84 @@ export default function SettingsPage() {
       large: isZh ? '大' : 'Large',
     },
     remindersTitle: isZh ? '学习提醒' : 'Study reminders',
+    remindersDescription: isZh ? '每天在固定时间收到浏览器推送提醒，保持学习连续性' : 'Receive browser reminders at a fixed time to keep study consistent.',
+    notificationsUnsupported: isZh ? '当前浏览器不支持桌面通知' : 'This browser does not support desktop notifications.',
+    permissionLabel: isZh ? '浏览器通知权限' : 'Browser notification permission',
     permissionGranted: isZh ? '已授权' : 'Permission granted',
     permissionDenied: isZh ? '已拒绝，请在浏览器设置中重新允许' : 'Denied. Re-enable it in browser settings.',
     permissionPending: isZh ? '尚未授权，点击右侧按钮申请' : 'Not granted yet. Request permission to enable reminders.',
+    requestPermission: isZh ? '申请权限' : 'Request permission',
+    permissionGrantedToast: isZh ? '通知权限已授权！' : 'Notification permission granted.',
+    permissionDeniedToast: isZh ? '通知权限被拒绝' : 'Notification permission denied.',
+    dailyReminder: isZh ? '每日学习提醒' : 'Daily study reminder',
+    reminderEnabled: (hour: number) => isZh ? `已开启 · 每天 ${hour}:00` : `On · every day at ${hour}:00`,
+    reminderOff: isZh ? '未开启' : 'Off',
+    reminderOnToast: isZh ? '提醒已开启，每天 20:00 提醒' : 'Reminder enabled for 20:00 every day.',
+    reminderOffToast: isZh ? '已关闭每日提醒' : 'Daily reminder disabled.',
+    reminderTime: isZh ? '提醒时间' : 'Reminder time',
+    reminderTimeDesc: isZh ? '每天在此时间推送一条提醒' : 'Send one reminder at this time each day.',
+    reminderTimeUpdated: (hour: string) => isZh ? `提醒时间已更新为 ${hour}:00` : `Reminder time updated to ${hour}:00`,
+    lifecycleLabel: isZh ? '学习提醒' : 'Learning nudges',
+    lifecycleDesc: isZh ? '根据待复习、连续学习风险、考试周和周报整理提醒内容。' : 'Build reminder content from due reviews, streak risk, exam weeks, and weekly recaps.',
+    lifecycleEnabledToast: isZh ? '学习提醒已开启' : 'Learning nudges enabled.',
+    lifecycleDisabledToast: isZh ? '学习提醒已关闭' : 'Learning nudges disabled.',
+    lifecycleOff: isZh ? '学习提醒已关闭' : 'Learning nudges are off',
+    lifecycleComplete: isZh ? '今日内容已完成，不会继续提醒' : 'Today is complete, so no more nudges will be sent.',
+    lifecycleQuiet: isZh ? '现在处于安静时间，不会推送' : 'Quiet hours are active, so no push will be sent.',
+    lifecycleWillSend: isZh ? '当前会发送这条提醒' : 'This reminder would be sent now.',
+    lifecycleNoSignal: isZh ? '暂时没有需要打扰你的学习信号' : 'No learning signal needs a reminder right now.',
+    lifecycleOpen: isZh ? '打开对应练习' : 'Open related practice',
+    lifecycleFallback: isZh ? '提醒只会在开启通知、避开安静时间、且今日内容未完成时出现。' : 'Reminders only appear when notifications are on, quiet hours are clear, and today is unfinished.',
+    quietStart: isZh ? '安静时间开始' : 'Quiet hours start',
+    quietEnd: isZh ? '安静时间结束' : 'Quiet hours end',
     audioDesc: isZh ? '配置单词发音与播放偏好。' : 'Configure pronunciation and playback preferences.',
     ttsVoice: isZh ? 'TTS 语音' : 'TTS voice',
+    learningTitle: isZh ? 'FSRS 学习强度' : 'FSRS learning intensity',
+    learningDesc: isZh ? '控制每天新词、复习上限和考前强度，Today 与 Review 会按这里的设置调整。' : 'Control daily new words, review limits, and exam-week intensity. Today and Review use these settings.',
+    dailyNewLimit: isZh ? '每日新词上限' : 'Daily new-word limit',
+    dailyNewLimitDesc: isZh ? '影响 Today 的新词目标和每日词包大小。' : 'Affects Today goals and the daily word pack size.',
+    maxReviewCount: isZh ? '每日复习上限' : 'Daily review limit',
+    maxReviewCountDesc: isZh ? 'Review 页面和 Today 复习不会超过这个上限。' : 'Review and Today stay within this limit.',
+    targetRetention: isZh ? '目标记忆保持率' : 'Target retention',
+    retentionOptions: {
+      light: isZh ? '85% · 轻量' : '85% · Light',
+      standard: isZh ? '90% · 标准' : '90% · Standard',
+      strong: isZh ? '95% · 稳记' : '95% · Strong',
+    },
+    targetRetentionDesc: isZh ? '更高保持率会减少新词、增加复习权重。' : 'Higher retention reduces new words and increases review weight.',
+    examWeekBoost: isZh ? '考前强化周' : 'Exam-week boost',
+    examWeekDesc: isZh ? '优先安排考试输出和更多复习。' : 'Prioritize exam output and extra review.',
+    audioTitle: isZh ? '音频与发音' : 'Audio and pronunciation',
+    ttsEnabled: isZh ? '文字转语音' : 'Text to speech',
+    ttsEnabledDesc: isZh ? '启用单词和句子的朗读。' : 'Enable spoken playback for words and sentences.',
+    autoPlayAudio: isZh ? '自动播放音频' : 'Auto-play audio',
+    autoPlayAudioDesc: isZh ? '自动播放音档' : 'Automatically play audio clips where supported.',
     accountDesc: isZh ? '管理登录信息和个人资料入口。' : 'Manage sign-in details and profile entry.',
+    accountInfo: isZh ? '账号信息' : 'Account information',
     displayName: isZh ? '显示名称' : 'Display name',
     profileHint: isZh ? '如需修改名称，请前往' : 'To change your name, visit',
     profileLink: isZh ? '个人资料设置' : 'Profile settings',
+    dangerTitle: isZh ? '危险操作' : 'Danger zone',
     dangerDesc: isZh ? '这些操作会影响账号或本地学习数据。' : 'These actions affect your account or local learning data.',
     clearConfirmTitle: isZh ? '清除所有学习数据？' : 'Clear all learning data?',
     clearConfirmBody: isZh
-      ? '这会永久删除词汇进度、复习记录和本地设置。此操作无法撤销。'
-      : 'This will permanently delete all word progress, review history, and settings. This action cannot be undone.',
+      ? '这会永久删除本机浏览器里的词汇进度、复习记录、离线 IndexedDB 记录和本地设置。此操作无法撤销。'
+      : 'This permanently deletes local browser word progress, review history, offline IndexedDB records, and settings. This action cannot be undone.',
+    clearData: isZh ? '清除所有数据' : 'Clear all data',
+    clearDataDesc: isZh ? '删除本机浏览器中的学习进度、离线记录和本地设置' : 'Delete learning progress, offline records, and local settings from this browser',
+    clearDataButton: isZh ? '清除所有数据' : 'Clear all data',
     cancel: isZh ? '取消' : 'Cancel',
     confirmDelete: isZh ? '确认删除' : 'Yes, delete everything',
+    localDataCleared: isZh ? '本机学习数据已清除' : 'Local learning data cleared',
     signOutHint: isZh ? '退出当前账号' : 'Sign out of your account',
+    signOutLabel: isZh ? '退出登录' : 'Log out',
     signOut: isZh ? '退出登录' : 'Log out',
+    tabs: {
+      general: isZh ? '通用' : 'General',
+      notifications: isZh ? '通知' : 'Notifications',
+      learning: isZh ? '学习' : 'Learning',
+      account: isZh ? '账号' : 'Account',
+    },
   };
   const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
   const location = useLocation();
@@ -137,15 +198,18 @@ export default function SettingsPage() {
     updateSettings(patch);
   };
   const lifecycleQuietNow = isInQuietHours(now, localSettings.quietHoursStart, localSettings.quietHoursEnd);
-  const lifecycleStatus = !localSettings.notifications || !localSettings.lifecycleReminders
-    ? '学习提醒已关闭'
-    : todayCompleted
-      ? '今日内容已完成，不会继续提醒'
-      : lifecycleQuietNow
-        ? '现在处于安静时间，不会推送'
-        : lifecyclePreview
-          ? '当前会发送这条提醒'
-          : '暂时没有需要打扰你的学习信号';
+  const canSendNotifications = notifSupported && notifPermission === 'granted';
+  const actionableLifecyclePreview = canSendNotifications ? lifecyclePreview : null;
+  const lifecycleStatus = (() => {
+    if (!notifSupported) return copy.notificationsUnsupported;
+    if (notifPermission === 'denied') return copy.permissionDenied;
+    if (notifPermission !== 'granted') return copy.permissionPending;
+    if (!localSettings.notifications || !localSettings.lifecycleReminders) return copy.lifecycleOff;
+    if (todayCompleted) return copy.lifecycleComplete;
+    if (lifecycleQuietNow) return copy.lifecycleQuiet;
+    if (actionableLifecyclePreview) return copy.lifecycleWillSend;
+    return copy.lifecycleNoSignal;
+  })();
 
   // Apply font size to document
   useEffect(() => {
@@ -180,9 +244,10 @@ export default function SettingsPage() {
     toast.success(copy.loggedOut);
   };
 
-  const handleClearData = () => {
+  const handleClearData = async () => {
     clearAllData();
-    toast.success(copy.cleared);
+    await clearLocalDbData();
+    toast.success(copy.localDataCleared);
     window.location.reload();
   };
 
@@ -194,12 +259,14 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue={initialTab} className="space-y-6">
-        <TabsList className="liquid-glass-control grid w-full grid-cols-4 rounded-lg p-1">
-          <TabsTrigger value="general">通用</TabsTrigger>
-          <TabsTrigger value="notifications">通知</TabsTrigger>
-          <TabsTrigger value="learning">学习</TabsTrigger>
-          <TabsTrigger value="account">账号</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="liquid-glass-control grid w-max min-w-full grid-cols-4 rounded-lg p-1">
+            <TabsTrigger value="general">{copy.tabs.general}</TabsTrigger>
+            <TabsTrigger value="notifications">{copy.tabs.notifications}</TabsTrigger>
+            <TabsTrigger value="learning">{copy.tabs.learning}</TabsTrigger>
+            <TabsTrigger value="account">{copy.tabs.account}</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="general" className="space-y-8">
           {/* Appearance */}
@@ -212,13 +279,13 @@ export default function SettingsPage() {
               <CardDescription>{copy.appearanceDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <Label>{copy.theme}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '选择界面明暗风格' : 'Choose the app appearance'}</p>
                 </div>
                 <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-                  <SelectTrigger className="liquid-glass-control w-[180px]">
+                  <SelectTrigger className="liquid-glass-control w-full sm:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -231,7 +298,7 @@ export default function SettingsPage() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <Label>{copy.fontSize}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '调整阅读和练习文本大小' : 'Adjust reading and practice text size'}</p>
@@ -242,7 +309,7 @@ export default function SettingsPage() {
                     setLocalSettings((s) => ({ ...s, fontSize: v as FontSize }));
                   }}
                 >
-                  <SelectTrigger className="liquid-glass-control w-[180px]">
+                  <SelectTrigger className="liquid-glass-control w-full sm:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -255,7 +322,7 @@ export default function SettingsPage() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <Label>{copy.language}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '切换应用显示语言' : 'Switch the app display language'}</p>
@@ -268,7 +335,7 @@ export default function SettingsPage() {
                     toast.success(lang === 'zh' ? '已切换为中文' : 'Switched to English');
                   }}
                 >
-                  <SelectTrigger className="liquid-glass-control w-[180px]">
+                  <SelectTrigger className="liquid-glass-control w-full sm:w-[180px]">
                     <Globe className="h-4 w-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -295,18 +362,18 @@ export default function SettingsPage() {
                 {copy.remindersTitle}
               </CardTitle>
               <CardDescription>
-                每天在固定时间收到浏览器推送提醒，保持学习连续性
+                {copy.remindersDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               {!notifSupported ? (
-                <p className="text-sm text-muted-foreground">当前浏览器不支持桌面通知</p>
+                <p className="text-sm text-muted-foreground">{copy.notificationsUnsupported}</p>
               ) : (
                 <>
                   {/* Permission row */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <Label>浏览器通知权限</Label>
+                      <Label>{copy.permissionLabel}</Label>
                       <p className="text-sm text-muted-foreground">
                         {notifPermission === 'granted'
                           ? copy.permissionGranted
@@ -322,13 +389,13 @@ export default function SettingsPage() {
                         onClick={async () => {
                           const result = await requestPermission();
                           if (result === 'granted') {
-                            toast.success('通知权限已授权！');
+                            toast.success(copy.permissionGrantedToast);
                           } else {
-                            toast.error('通知权限被拒绝');
+                            toast.error(copy.permissionDeniedToast);
                           }
                         }}
                       >
-                        申请权限
+                        {copy.requestPermission}
                       </Button>
                     )}
                   </div>
@@ -336,13 +403,13 @@ export default function SettingsPage() {
                   <Separator />
 
                   {/* Reminder toggle + time */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <Label>每日学习提醒</Label>
+                      <Label>{copy.dailyReminder}</Label>
                       <p className="text-sm text-muted-foreground">
                         {reminderHour !== null
-                          ? `已开启 · 每天 ${reminderHour}:00`
-                          : '未开启'}
+                          ? copy.reminderEnabled(reminderHour)
+                          : copy.reminderOff}
                       </p>
                     </div>
                     <Switch
@@ -351,29 +418,29 @@ export default function SettingsPage() {
                       onCheckedChange={(v) => {
                         if (v) {
                           saveReminderHour(20); // default to 8 PM
-                          toast.success('提醒已开启，每天 20:00 提醒');
+                          toast.success(copy.reminderOnToast);
                         } else {
                           saveReminderHour(null);
-                          toast.info('已关闭每日提醒');
+                          toast.info(copy.reminderOffToast);
                         }
                       }}
                     />
                   </div>
 
                   {reminderHour !== null && (
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <Label>提醒时间</Label>
-                        <p className="text-sm text-muted-foreground">每天在此时间推送一条提醒</p>
+                        <Label>{copy.reminderTime}</Label>
+                        <p className="text-sm text-muted-foreground">{copy.reminderTimeDesc}</p>
                       </div>
                       <Select
                         value={String(reminderHour)}
                         onValueChange={(v) => {
                           saveReminderHour(Number(v));
-                          toast.success(`提醒时间已更新为 ${v}:00`);
+                          toast.success(copy.reminderTimeUpdated(v));
                         }}
                       >
-                        <SelectTrigger className="liquid-glass-control w-[150px]">
+                        <SelectTrigger className="liquid-glass-control w-full sm:w-[150px]">
                           <Clock className="h-4 w-4 mr-2" />
                           <SelectValue />
                         </SelectTrigger>
@@ -393,23 +460,23 @@ export default function SettingsPage() {
                   <div className="space-y-4 rounded-xl bg-[hsl(var(--paper-muted)/0.20)] px-4 py-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <Label>学习提醒</Label>
+                        <Label>{copy.lifecycleLabel}</Label>
                         <p className="text-sm text-muted-foreground">
-                          根据待复习、连续学习风险、考试周和周报整理提醒内容。
+                          {copy.lifecycleDesc}
                         </p>
                       </div>
                       <Switch
                         checked={localSettings.lifecycleReminders}
                         onCheckedChange={(checked) => {
                           updateLifecycleSettings({ lifecycleReminders: checked });
-                          toast.success(checked ? '学习提醒已开启' : '学习提醒已关闭');
+                          toast.success(checked ? copy.lifecycleEnabledToast : copy.lifecycleDisabledToast);
                         }}
                       />
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="grid gap-2">
-                        <Label htmlFor="quiet-hours-start">安静时间开始</Label>
+                        <Label htmlFor="quiet-hours-start">{copy.quietStart}</Label>
                         <Input
                           id="quiet-hours-start"
                           type="time"
@@ -418,7 +485,7 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label htmlFor="quiet-hours-end">安静时间结束</Label>
+                        <Label htmlFor="quiet-hours-end">{copy.quietEnd}</Label>
                         <Input
                           id="quiet-hours-end"
                           type="time"
@@ -433,18 +500,20 @@ export default function SettingsPage() {
                         <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning" />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-foreground">{lifecycleStatus}</p>
-                          {lifecyclePreview ? (
+                          {actionableLifecyclePreview ? (
                             <>
                               <p className="mt-1 text-sm text-muted-foreground">
-                                {lifecyclePreview.titleZh}：{lifecyclePreview.bodyZh}
+                                {isZh
+                                  ? `${actionableLifecyclePreview.titleZh}：${actionableLifecyclePreview.bodyZh}`
+                                  : `${actionableLifecyclePreview.title}: ${actionableLifecyclePreview.body}`}
                               </p>
                               <Button asChild variant="glass" size="sm" className="mt-3 h-8 rounded-lg">
-                                <Link to={lifecyclePreview.href}>打开对应练习</Link>
+                                <Link to={actionableLifecyclePreview.href}>{copy.lifecycleOpen}</Link>
                               </Button>
                             </>
                           ) : (
                             <p className="mt-1 text-sm text-muted-foreground">
-                              提醒只会在开启通知、避开安静时间、且今日内容未完成时出现。
+                              {copy.lifecycleFallback}
                             </p>
                           )}
                         </div>
@@ -462,16 +531,16 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <SlidersHorizontal className="h-5 w-5" />
-                FSRS 学习强度
+                {copy.learningTitle}
               </CardTitle>
               <CardDescription>
-                控制每天新词、复习上限和考前强度，Today 与 Review 会按这里的设置调整。
+                {copy.learningDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
-                  <Label htmlFor="daily-new-limit">每日新词上限</Label>
+                  <Label htmlFor="daily-new-limit">{copy.dailyNewLimit}</Label>
                   <Input
                     id="daily-new-limit"
                     type="number"
@@ -482,11 +551,11 @@ export default function SettingsPage() {
                       setLocalSettings((s) => ({ ...s, dailyNewWordLimit: Number(event.target.value) }));
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">影响 Today 的新词目标和每日词包大小。</p>
+                  <p className="text-xs text-muted-foreground">{copy.dailyNewLimitDesc}</p>
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="max-review-count">每日复习上限</Label>
+                  <Label htmlFor="max-review-count">{copy.maxReviewCount}</Label>
                   <Input
                     id="max-review-count"
                     type="number"
@@ -497,7 +566,7 @@ export default function SettingsPage() {
                       setLocalSettings((s) => ({ ...s, maxReviewCount: Number(event.target.value) }));
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">Review 页面和 Today 复习不会超过这个上限。</p>
+                  <p className="text-xs text-muted-foreground">{copy.maxReviewCountDesc}</p>
                 </div>
               </div>
 
@@ -505,7 +574,7 @@ export default function SettingsPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
-                  <Label>目标记忆保持率</Label>
+                  <Label>{copy.targetRetention}</Label>
                   <Select
                     value={String(localSettings.targetRetention)}
                     onValueChange={(value) => {
@@ -516,18 +585,18 @@ export default function SettingsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0.85">85% · 轻量</SelectItem>
-                      <SelectItem value="0.9">90% · 标准</SelectItem>
-                      <SelectItem value="0.95">95% · 稳记</SelectItem>
+                      <SelectItem value="0.85">{copy.retentionOptions.light}</SelectItem>
+                      <SelectItem value="0.9">{copy.retentionOptions.standard}</SelectItem>
+                      <SelectItem value="0.95">{copy.retentionOptions.strong}</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">更高保持率会减少新词、增加复习权重。</p>
+                  <p className="text-xs text-muted-foreground">{copy.targetRetentionDesc}</p>
                 </div>
 
                 <div className="flex items-center justify-between rounded-lg bg-[hsl(var(--paper-muted)/0.18)] px-3 py-3">
                   <div>
-                    <Label>考前强化周</Label>
-                    <p className="mt-1 text-sm text-muted-foreground">优先安排考试输出和更多复习。</p>
+                    <Label>{copy.examWeekBoost}</Label>
+                    <p className="mt-1 text-sm text-muted-foreground">{copy.examWeekDesc}</p>
                   </div>
                   <Switch
                     checked={localSettings.examWeekBoost}
@@ -547,15 +616,15 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Volume2 className="h-5 w-5" />
-                音频与发音
+                {copy.audioTitle}
               </CardTitle>
               <CardDescription>{copy.audioDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>文字转语音</Label>
-                  <p className="text-sm text-muted-foreground">文字转语音</p>
+                  <Label>{copy.ttsEnabled}</Label>
+                  <p className="text-sm text-muted-foreground">{copy.ttsEnabledDesc}</p>
                 </div>
                 <Switch
                   checked={localSettings.ttsEnabled}
@@ -565,10 +634,10 @@ export default function SettingsPage() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>自动播放音频</Label>
-                  <p className="text-sm text-muted-foreground">自动播放音档</p>
+                  <Label>{copy.autoPlayAudio}</Label>
+                  <p className="text-sm text-muted-foreground">{copy.autoPlayAudioDesc}</p>
                 </div>
                 <Switch
                   checked={localSettings.autoPlayAudio}
@@ -578,7 +647,7 @@ export default function SettingsPage() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <Label>{copy.ttsVoice}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '选择朗读口音' : 'Choose pronunciation accent'}</p>
@@ -587,7 +656,7 @@ export default function SettingsPage() {
                   value={localSettings.ttsVoice}
                   onValueChange={(v) => setLocalSettings((s) => ({ ...s, ttsVoice: v }))}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -612,7 +681,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                账号信息
+                {copy.accountInfo}
               </CardTitle>
               <CardDescription>{copy.accountDesc}</CardDescription>
             </CardHeader>
@@ -641,19 +710,19 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
-                危险操作
+                {copy.dangerTitle}
               </CardTitle>
               <CardDescription>{copy.dangerDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label className="text-destructive">清除所有数据</Label>
-                  <p className="text-sm text-muted-foreground">{isZh ? '删除所有学习进度和本地设置' : 'Delete all learning progress and settings'}</p>
+                  <Label className="text-destructive">{copy.clearData}</Label>
+                  <p className="text-sm text-muted-foreground">{copy.clearDataDesc}</p>
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">Clear All Data</Button>
+                    <Button variant="destructive">{copy.clearDataButton}</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -664,7 +733,12 @@ export default function SettingsPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>{copy.cancel}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleClearData} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction
+                        onClick={() => {
+                          void handleClearData();
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
                         {copy.confirmDelete}
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -674,9 +748,9 @@ export default function SettingsPage() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label className="text-destructive">退出登录</Label>
+                  <Label className="text-destructive">{copy.signOutLabel}</Label>
                   <p className="text-sm text-muted-foreground">{copy.signOutHint}</p>
                 </div>
                 <Button variant="glass" onClick={handleLogout}>

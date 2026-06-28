@@ -1,0 +1,34 @@
+{
+  "schema_version": "prd-phase-harness/loop-contract/v1",
+  "goal": "Run one bounded English Web module phase and one feature-oracle item until evidence proves pass, block, or fail.",
+  "cycle": [
+    "observe",
+    "select",
+    "execute",
+    "verify",
+    "record",
+    "decide"
+  ],
+  "max_iterations": 3,
+  "state_file": "docs/english-web-optimization-harness/loop-state.json",
+  "oracle_file": "docs/english-web-optimization-harness/feature-oracle.json",
+  "done_when": [
+    "phase report exists with Status line",
+    "validation command outputs are recorded",
+    "browser or runtime evidence is recorded",
+    "feature oracle status and evidence are updated",
+    "independent critic artifact exists with Critic Verdict"
+  ],
+  "continue_when": [
+    "active phase still has failing acceptance gates",
+    "edits remain inside likely_edit_paths",
+    "required commands can run locally or a blocker path is recorded"
+  ],
+  "stop_when": [
+    "production credentials or secret values are required",
+    "Supabase migration or provider dashboard mutation is required without approval",
+    "deployment is required without approval",
+    "edits outside the phase boundary are required",
+    "destructive command is requested without explicit approval"
+  ]
+}

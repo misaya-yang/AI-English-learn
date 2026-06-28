@@ -123,16 +123,24 @@ const userDataState = vi.hoisted(() => ({
   markWordAsMastered: vi.fn(),
 }));
 
+const i18nState = vi.hoisted(() => ({
+  language: 'zh-CN',
+}));
+
+const ttsMocks = vi.hoisted(() => ({
+  speakEnglishText: vi.fn(),
+}));
+
 vi.mock('@/contexts/UserDataContext', () => ({
   useUserData: () => userDataState,
 }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ i18n: { language: 'zh-CN' } }),
+  useTranslation: () => ({ i18n: { language: i18nState.language } }),
 }));
 
 vi.mock('@/services/tts', () => ({
-  speakEnglishText: vi.fn(),
+  speakEnglishText: ttsMocks.speakEnglishText,
 }));
 
 vi.mock('sonner', () => ({
@@ -159,6 +167,7 @@ const openMenu = (name: string | RegExp) => {
 describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    i18nState.language = 'zh-CN';
     userDataState.wordBooks = [activeBook, builtInBook, ieltsAnkiBook];
     userDataState.activeBook = activeBook;
     userDataState.customWords = [mitigateWord, preciseWord];
@@ -247,5 +256,97 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
 
     fireEvent.click(screen.getByRole('menuitem', { name: '设为当前词书' }));
     expect(userDataState.setActiveBook).toHaveBeenCalledWith(BUILT_IN_WORD_BOOK_IDS.IELTS_ANKI_FOUNDATION);
+  });
+
+  it('uses English UI copy for export, stats, empty search, and detail actions in English mode', () => {
+    i18nState.language = 'en-US';
+
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'Lexicon' })).toBeInTheDocument();
+    expect(screen.getAllByText('Total words').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('New').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Mastered').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Needs review').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Learning').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText('总词数')).not.toBeInTheDocument();
+    expect(screen.queryByText('新词')).not.toBeInTheDocument();
+
+    fireEvent.keyDown(screen.getByRole('button', { name: /Open mitigate details/ }), { key: 'Enter' });
+    expect(screen.getByText('Learning status')).toBeInTheDocument();
+    expect(screen.getByText('Source book')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark mastered' })).toBeInTheDocument();
+    expect(screen.queryByText('标记已掌握')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    openMenu('Dictionary tools');
+    fireEvent.click(screen.getByRole('menuitem', { name: /Export current filter/ }));
+    expect(screen.getByRole('heading', { name: 'Export vocabulary' })).toBeInTheDocument();
+    expect(screen.getByText(/Exporting \d+ filtered words/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'CSV (words only)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'CSV (with progress)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Anki import format (TXT)' })).toBeInTheDocument();
+  });
+
+  it('does not open word detail when keyboard activation starts on the nested pronunciation button', () => {
+    i18nState.language = 'en-US';
+
+    renderPage();
+
+    const row = screen.getByRole('button', { name: /Open mitigate details/ });
+    const rowAudioButton = within(row).getByLabelText('Play pronunciation for mitigate');
+
+    fireEvent.keyDown(rowAudioButton, { key: 'Enter' });
+    expect(screen.queryByText('Learning status')).not.toBeInTheDocument();
+
+    fireEvent.click(rowAudioButton);
+    expect(ttsMocks.speakEnglishText).toHaveBeenCalledWith('mitigate');
+    expect(screen.queryByText('Learning status')).not.toBeInTheDocument();
+  });
+
+  it('keeps direct empty-state actions visible in English mode', () => {
+    i18nState.language = 'en-US';
+    userDataState.wordBooks = [builtInBook];
+    userDataState.activeBook = null;
+    userDataState.customWords = [];
+    userDataState.progress = [];
+
+    renderPage();
+
+    expect(screen.getByText('Add your first word')).toBeInTheDocument();
+    expect(screen.getByText('Import a word book or add a custom word to see definitions, examples, and practice actions.')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Add word' }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('button', { name: 'Import word book' }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('button', { name: 'Import Anki' }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('closes the controlled add-word dialog from the empty-state Cancel action', () => {
+    i18nState.language = 'en-US';
+    userDataState.wordBooks = [builtInBook];
+    userDataState.activeBook = null;
+    userDataState.customWords = [];
+    userDataState.progress = [];
+
+    renderPage();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add word' })[0]);
+    expect(screen.getByRole('heading', { name: 'Add New Word' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('heading', { name: 'Add New Word' })).not.toBeInTheDocument();
+  });
+
+  it('shows English empty-search copy when filters remove all words', () => {
+    i18nState.language = 'en-US';
+
+    renderPage();
+
+    fireEvent.change(screen.getByPlaceholderText('Search words, meanings, or notes...'), {
+      target: { value: 'zzzz-not-found' },
+    });
+
+    expect(screen.getByText('No words found')).toBeInTheDocument();
+    expect(screen.getByText('Adjust filters or import a new word book.')).toBeInTheDocument();
+    expect(screen.queryByText('未找到词汇')).not.toBeInTheDocument();
   });
 });

@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Volume2, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -73,6 +74,10 @@ export default function PronunciationPage() {
   const targetText = item ? (mode === 'word' ? item.word : item.exampleSentence) : '';
   const completedCount = session.records.length;
   const progressPercent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
+  const fallbackPrompt = isZh
+    ? '请和我进行一个英语口语文字练习。请扮演考官或对话伙伴，先给我一个简短情境，再根据我的回答追问，并最后总结 2 个发音或表达建议。'
+    : 'Run a text-based English speaking practice with me. Act as an examiner or conversation partner, give me a short scenario, ask follow-up questions, and finish with 2 pronunciation or expression tips.';
+  const fallbackHref = `/dashboard/chat?dailyPlan=speaking-fallback&reason=${encodeURIComponent('speaking fallback')}&focus=${encodeURIComponent(isZh ? '文字口语练习' : 'Text speaking practice')}&prompt=${encodeURIComponent(fallbackPrompt)}`;
 
   const handleNext = () => {
     session.reset();
@@ -137,9 +142,17 @@ export default function PronunciationPage() {
         </h2>
         <p className="text-sm text-muted-foreground text-center max-w-md">
           {isZh
-            ? '请使用 Chrome、Edge 或 Safari 浏览器来使用发音练习功能。'
-            : 'Please use Chrome, Edge, or Safari to use the pronunciation practice feature.'}
+            ? '请使用 Chrome、Edge 或 Safari 浏览器来使用发音练习功能。你也可以先进入文字口语练习，不需要麦克风。'
+            : 'Please use Chrome, Edge, or Safari to use the pronunciation practice feature. You can also continue with text speaking practice without a microphone.'}
         </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button asChild>
+            <Link to={fallbackHref}>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              {isZh ? '进入文字口语练习' : 'Start text speaking practice'}
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -292,7 +305,26 @@ export default function PronunciationPage() {
                 </p>
               )}
               {session.status === 'error' && (
-                <p className="text-sm text-destructive">{session.errorMessage}</p>
+                <div className="rounded-lg border border-destructive/25 bg-destructive/10 p-3 text-left">
+                  <p className="text-sm font-medium text-destructive">{session.errorMessage}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {isZh
+                      ? '如果浏览器没有听到声音或拒绝了权限，可以重试，或先进入不需要麦克风的文字口语练习。'
+                      : 'If the browser did not hear speech or permission was denied, retry here or continue with text speaking practice without a microphone.'}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={session.reset}>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      {t('pronunciation.tryAgain')}
+                    </Button>
+                    <Button asChild size="sm">
+                      <Link to={fallbackHref}>
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        {isZh ? '文字口语练习' : 'Text speaking practice'}
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -348,9 +380,16 @@ export default function PronunciationPage() {
                   )}
 
                   {!session.result.hasAiFeedback && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      {t('pronunciation.localOnly')}
-                    </p>
+                    <div className="rounded-lg border border-border bg-muted/35 p-3 text-sm">
+                      <p className="font-medium">
+                        {isZh ? '本地分析模式' : 'Local analysis mode'}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        {isZh
+                          ? 'AI 音素反馈暂不可用，当前分数仅根据识别文本、语速和置信度本地计算。'
+                          : 'AI phoneme feedback is unavailable. This score uses local transcript, pace, and confidence analysis only.'}
+                      </p>
+                    </div>
                   )}
                 </CardContent>
               </Card>

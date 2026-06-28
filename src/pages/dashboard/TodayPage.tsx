@@ -56,9 +56,10 @@ interface WordWorkbenchProps {
   onMarkStatus: (status: 'learned' | 'hard') => void;
   isLearned: boolean;
   isHard: boolean;
+  isZh: boolean;
 }
 
-function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard }: WordWorkbenchProps) {
+function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHard, isZh }: WordWorkbenchProps) {
   const usesCompactHeadword = word.word.length > 18 || word.word.includes(' ');
 
   const playAudio = (text: string) => {
@@ -72,8 +73,8 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
           <span className="rounded-md bg-muted/45 px-2.5 py-1 text-xs text-muted-foreground">
             {word.level}
           </span>
-          {isLearned ? <span className="rounded-md bg-[hsl(var(--success)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--success))]">已学会</span> : null}
-          {isHard ? <span className="rounded-md bg-[hsl(var(--warning)/0.12)] px-2.5 py-1 text-xs text-[hsl(var(--warning))]">需复习</span> : null}
+          {isLearned ? <span className="rounded-md bg-[hsl(var(--success)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--success))]">{isZh ? '已学会' : 'Learned'}</span> : null}
+          {isHard ? <span className="rounded-md bg-[hsl(var(--warning)/0.12)] px-2.5 py-1 text-xs text-[hsl(var(--warning))]">{isZh ? '较难' : 'Marked hard'}</span> : null}
         </div>
         <Button
           variant="ghost"
@@ -87,7 +88,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       </div>
 
       <div>
-        <p className="study-label">单词</p>
+        <p className="study-label">{isZh ? '单词' : 'Word'}</p>
         <h2 className={cn('word-entry-headword mt-3 text-foreground', usesCompactHeadword && 'word-entry-headword-compact')}>
           {word.word}
         </h2>
@@ -97,22 +98,22 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.45fr)]">
         <div className="space-y-4">
           <div className="pt-2">
-            <p className="study-label">释义</p>
+            <p className="study-label">{isZh ? '释义' : 'Meaning'}</p>
             <p className="mt-2 text-lg leading-8 text-foreground">{word.definition}</p>
-            <p className="mt-2 text-base leading-8 text-muted-foreground">{word.definitionZh}</p>
+            {isZh ? <p className="mt-2 text-base leading-8 text-muted-foreground">{word.definitionZh}</p> : null}
           </div>
 
           {word.examples[0] ? (
             <div className="pt-2">
-              <p className="study-label">例句</p>
+              <p className="study-label">{isZh ? '例句' : 'Example'}</p>
               <p className="mt-2 lexical-type text-xl leading-8 text-foreground">{word.examples[0].en}</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p>
+              {isZh ? <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p> : null}
               {isFlipped ? (
                 <div className="mt-3 space-y-3">
                   {word.examples.slice(1, 3).map((example, index) => (
                     <div key={`${example.en}-${index}`} className="rounded-lg bg-[hsl(var(--paper-muted)/0.34)] px-3 py-2">
                       <p className="text-sm leading-7 text-foreground">{example.en}</p>
-                      <p className="mt-1 text-sm leading-7 text-muted-foreground">{example.zh}</p>
+                      {isZh ? <p className="mt-1 text-sm leading-7 text-muted-foreground">{example.zh}</p> : null}
                     </div>
                   ))}
                 </div>
@@ -124,7 +125,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
         <div className="space-y-4 rounded-xl bg-[hsl(var(--paper-muted)/0.28)] p-4 lg:p-5">
           {word.collocations.length > 0 ? (
             <div>
-              <p className="study-label">搭配</p>
+              <p className="study-label">{isZh ? '搭配' : 'Collocations'}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.collocations.slice(0, isFlipped ? 8 : 4).map((collocation) => (
                   <span key={collocation} className="rounded-md bg-[hsl(var(--accent-practice)/0.08)] px-3 py-1 text-sm text-[hsl(var(--accent-practice))]">
@@ -136,7 +137,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
           ) : null}
 
           {(word.memoryTip || word.etymology) && isFlipped ? (
-            <InlineStudyNote title="助记" tone="practice">
+            <InlineStudyNote title={isZh ? '助记' : 'Memory hint'} tone="practice">
               {word.memoryTip || word.etymology}
             </InlineStudyNote>
           ) : null}
@@ -145,16 +146,16 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
 
       <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted" onClick={onFlip}>
-          {isFlipped ? '收起例句' : '看例句'}
+          {isFlipped ? (isZh ? '收起例句' : 'Hide examples') : (isZh ? '看例句' : 'Show examples')}
         </Button>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted" onClick={() => onMarkStatus('hard')} disabled={isHard}>
             <Brain className="mr-2 h-4 w-4" />
-            {isHard ? '已加入复习' : '需要复习'}
+            {isHard ? (isZh ? '已标较难' : 'Marked hard') : (isZh ? '标为较难' : 'Mark hard')}
           </Button>
           <Button className="rounded-md px-4" onClick={() => onMarkStatus('learned')} disabled={isLearned}>
             <Check className="mr-2 h-4 w-4" />
-            {isLearned ? '已完成' : '完成'}
+            {isLearned ? (isZh ? '已完成' : 'Done') : (isZh ? '完成' : 'Complete')}
           </Button>
         </div>
       </div>
@@ -208,6 +209,9 @@ function ConfettiCelebration({ active }: { active: boolean }) {
 }
 
 const StreakStatus = memo(function StreakStatus({ days }: { days: number }) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
+
   if (days <= 0) return null;
   return (
     <motion.div
@@ -217,7 +221,9 @@ const StreakStatus = memo(function StreakStatus({ days }: { days: number }) {
       transition={{ duration: 0.18 }}
     >
       <CalendarDays className="h-4 w-4" />
-      <span className="text-xs font-medium">连续 {days} 天</span>
+      <span className="text-xs font-medium">
+        {isZh ? `连续 ${days} 天` : `${days}-day streak`}
+      </span>
     </motion.div>
   );
 });
@@ -246,21 +252,24 @@ const XPCounter = memo(function XPCounter({ value }: { value: number }) {
   );
 });
 
-const TOPIC_LABELS: Record<string, string> = {
-  daily: '日常',
-  business: '商务',
-  academic: '学术',
-  science: '科学',
-  technology: '科技',
-  travel: '旅行',
-  nature: '自然',
-  history: '历史',
-  math: '数学',
-  general: '综合',
-  'IELTS general': 'IELTS 综合',
+const TOPIC_LABELS: Record<string, { en: string; zh: string }> = {
+  daily: { en: 'Daily', zh: '日常' },
+  business: { en: 'Business', zh: '商务' },
+  academic: { en: 'Academic', zh: '学术' },
+  science: { en: 'Science', zh: '科学' },
+  technology: { en: 'Technology', zh: '科技' },
+  travel: { en: 'Travel', zh: '旅行' },
+  nature: { en: 'Nature', zh: '自然' },
+  history: { en: 'History', zh: '历史' },
+  math: { en: 'Math', zh: '数学' },
+  general: { en: 'General', zh: '综合' },
+  'IELTS general': { en: 'IELTS General', zh: 'IELTS 综合' },
 };
 
-const formatTopicLabel = (topic: string): string => TOPIC_LABELS[topic] || topic;
+const formatTopicLabel = (topic: string, isZh: boolean): string => {
+  const label = TOPIC_LABELS[topic];
+  return label ? (isZh ? label.zh : label.en) : topic;
+};
 
 export default function TodayPage() {
   const { user } = useAuth();
@@ -398,7 +407,7 @@ export default function TodayPage() {
 
     if (status === 'learned') {
       if (learnedWords.has(currentWord.id)) {
-        toast.info('这个单词已经标记为已学会');
+        toast.info(isZh ? '这个单词已经标记为已学会' : 'This word is already marked as learned.');
         return;
       }
 
@@ -428,12 +437,12 @@ export default function TodayPage() {
         setTimeout(() => setShowConfetti(false), 3000);
       }
 
-      toast.success(`已学会 "${currentWord.word}"`, {
+      toast.success(isZh ? `已学会 "${currentWord.word}"` : `Marked "${currentWord.word}" as learned`, {
         icon: <Check className="h-4 w-4 text-muted-foreground" />,
       });
     } else {
       if (hardWords.has(currentWord.id)) {
-        toast.info('这个单词已经标记为较难');
+        toast.info(isZh ? '这个单词已经标记为较难' : 'This word is already marked as hard for today.');
         return;
       }
 
@@ -456,7 +465,10 @@ export default function TodayPage() {
           bookId: activeBook?.id,
         }),
       );
-      toast.info(`已标记 "${currentWord.word}" 为较难，将加入复习列表`, {
+      toast.info(isZh
+        ? `已标记 "${currentWord.word}" 为较难；复习排程会在 Review 中评分后更新`
+        : `Marked "${currentWord.word}" as hard for today. Review scheduling updates after you rate it in Review.`,
+      {
         icon: <Brain className="h-4 w-4 text-[hsl(var(--warning))]" />,
       });
     }
@@ -475,16 +487,18 @@ export default function TodayPage() {
     const updated = toggleTodayBookmark(dayKey, currentWord.id);
     setBookmarkedWords(new Set(updated.bookmark));
     if (wasBookmarked) {
-      toast.info(`已取消收藏 "${currentWord.word}"`);
+      toast.info(isZh ? `已取消收藏 "${currentWord.word}"` : `Removed bookmark for "${currentWord.word}"`);
     } else {
-      toast.success(`已收藏 "${currentWord.word}"`);
+      toast.success(isZh ? `已收藏 "${currentWord.word}"` : `Bookmarked "${currentWord.word}"`);
     }
   };
 
   const handleShare = async () => {
     if (!currentWord) return;
 
-    const shareText = `我正在学习单词 "${currentWord.word}" - ${currentWord.definitionZh}`;
+    const shareText = isZh
+      ? `我正在学习单词 "${currentWord.word}" - ${currentWord.definitionZh}`
+      : `I am studying "${currentWord.word}" - ${currentWord.definition}`;
 
     if (navigator.share) {
       try {
@@ -499,7 +513,7 @@ export default function TodayPage() {
     }
 
     await navigator.clipboard.writeText(shareText);
-    toast.success('已复制到剪贴板');
+    toast.success(isZh ? '已复制到剪贴板' : 'Copied to clipboard');
   };
 
   const handlePrevious = useCallback(() => {
@@ -686,6 +700,7 @@ export default function TodayPage() {
                         onMarkStatus={handleMarkStatus}
                         isLearned={learnedWords.has(currentWord.id)}
                         isHard={hardWords.has(currentWord.id)}
+                        isZh={isZh}
                       />
                     </motion.div>
                   ) : null}
@@ -714,7 +729,7 @@ export default function TodayPage() {
                       disabled={!currentWord}
                     >
                       <Bookmark className={cn('mr-2 h-4 w-4', bookmarkedWords.has(currentWord?.id || '') && 'fill-current')} />
-                      收藏
+                      {isZh ? '收藏' : 'Bookmark'}
                     </Button>
                     <Button
                       variant="outline"
@@ -723,7 +738,7 @@ export default function TodayPage() {
                       disabled={!currentWord}
                     >
                       <Share2 className="mr-2 h-4 w-4" />
-                      分享
+                      {isZh ? '分享' : 'Share'}
                     </Button>
                   </div>
                 </StudySheet>
@@ -777,8 +792,8 @@ export default function TodayPage() {
                   {buildLexicalSummary(lexicalFocus, language)}
                 </p>
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <span>{formatTopicLabel(dailyCoachPlan.dictionaryFocus.topic)}</span>
-                  <span>IELTS {formatTopicLabel(dailyCoachPlan.dictionaryFocus.ieltsRelevance)}</span>
+                  <span>{formatTopicLabel(dailyCoachPlan.dictionaryFocus.topic, isZh)}</span>
+                  <span>IELTS {formatTopicLabel(dailyCoachPlan.dictionaryFocus.ieltsRelevance, isZh)}</span>
                 </div>
               </div>
             </StudyRailSection>
@@ -832,7 +847,7 @@ export default function TodayPage() {
                         <p className="text-sm font-semibold text-foreground">
                           {isZh ? getExamUnitTitle(recommendedUnit) : recommendedUnit.title}
                         </p>
-                        <p className="mt-1 text-xs text-muted-foreground">{recommendedUnit.estimatedMinutes} 分钟</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{recommendedUnit.estimatedMinutes} {isZh ? '分钟' : 'min'}</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="mt-3 rounded-md bg-transparent" asChild>
@@ -850,8 +865,8 @@ export default function TodayPage() {
                 weaknesses.slice(0, 3).map((weakness) => (
                   <div key={weakness.tag} className="flex items-center justify-between gap-3 rounded-lg bg-[hsl(var(--paper-muted)/0.30)] px-3 py-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">{weakness.titleZh}</p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{weakness.title}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{isZh ? weakness.titleZh : weakness.title}</p>
+                      {isZh ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{weakness.title}</p> : null}
                     </div>
                     <span
                       className={cn(

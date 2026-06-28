@@ -48,7 +48,9 @@ import { ChatWelcome, buildRecommendations } from '@/features/chat/components/Ch
 import { DatabaseStatusBanner } from '@/features/chat/components/DatabaseStatusBanner';
 import { QuizCanvasPanel } from '@/features/chat/components/QuizCanvasPanel';
 import { QuizRunFooter } from '@/features/chat/components/QuizRunFooter';
+import { RoleplayMode } from '@/features/chat/components/RoleplayMode';
 import type { ChatModeOption } from '@/features/chat/types';
+import type { RoleplayScenario } from '@/data/roleplayScenarios';
 import {
   collectQuizRunArtifacts,
   computeQuizDisplayIndex,
@@ -185,6 +187,9 @@ export default function ChatPage() {
   const [chatMode, setChatMode] = useState<ChatMode>('study');
   const [searchMode, setSearchMode] = useState<'auto' | 'off'>('auto');
   const [quizSequence, setQuizSequence] = useState<QuizSequenceState | null>(null);
+  const [roleplayOpen, setRoleplayOpen] = useState(false);
+  const [activeRoleplayScenario, setActiveRoleplayScenario] = useState<RoleplayScenario | null>(null);
+  const [completedRoleplayObjectives, setCompletedRoleplayObjectives] = useState<string[]>([]);
   const [visibleMessageCount, setVisibleMessageCount] = useState(120);
   const [dbStatus, setDbStatus] = useState<Record<string, boolean>>({});
   const [loadingStageIndex, setLoadingStageIndex] = useState(0);
@@ -327,6 +332,49 @@ export default function ChatPage() {
       learningProfile.target?.toLowerCase().includes('toefl') ||
       learningProfile.tracks?.includes('exam_boost'),
   }), [dueWords.length, dailyMission, learningProfile.level, learningProfile.target, learningProfile.tracks, language]);
+
+  const roleplayMessageCount = useMemo(
+    () => messages.filter((message) => message.role === 'user' || message.role === 'assistant').length,
+    [messages],
+  );
+
+  const roleplaySessionScore = useMemo(() => {
+    if (!activeRoleplayScenario) return null;
+    if (completedRoleplayObjectives.length < activeRoleplayScenario.objectives.length) return null;
+    return Math.min(100, 72 + Math.min(roleplayMessageCount, 7) * 4);
+  }, [activeRoleplayScenario, completedRoleplayObjectives.length, roleplayMessageCount]);
+
+  const handleStartRoleplayScenario = useCallback((scenario: RoleplayScenario) => {
+    setActiveRoleplayScenario(scenario);
+    setCompletedRoleplayObjectives([]);
+    setChatMode('chat');
+    const objectives = scenario.objectives
+      .map((objective, index) => `${index + 1}. ${language.startsWith('zh') ? objective.descriptionZh : objective.description}`)
+      .join('\n');
+    const phrases = scenario.keyPhrases.slice(0, 6).join(', ');
+    const prompt = language.startsWith('zh')
+      ? `请和我进行英语角色扮演：${scenario.titleZh}。\n场景设定：${scenario.systemPrompt}\n场景目标：\n${objectives}\n请自然地开始对话，并鼓励我使用这些短语：${phrases}。`
+      : `Run an English roleplay with me: ${scenario.title}.\nScenario setup: ${scenario.systemPrompt}\nScenario objectives:\n${objectives}\nStart naturally and encourage me to use these phrases: ${phrases}.`;
+    setInput(prompt);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, [language]);
+
+  const handleExitRoleplay = useCallback(() => {
+    if (activeRoleplayScenario) {
+      setActiveRoleplayScenario(null);
+      setCompletedRoleplayObjectives([]);
+      return;
+    }
+    setRoleplayOpen(false);
+  }, [activeRoleplayScenario]);
+
+  const handleToggleRoleplayObjective = useCallback((objectiveId: string) => {
+    setCompletedRoleplayObjectives((current) => (
+      current.includes(objectiveId)
+        ? current.filter((id) => id !== objectiveId)
+        : [...current, objectiveId]
+    ));
+  }, []);
 
   const loadingStages = useMemo(
     () =>
@@ -1439,6 +1487,53 @@ export default function ChatPage() {
             </div>
           </section>
         ) : null}
+
+        <section className="bg-[hsl(var(--accent-practice)/0.05)] px-4 py-3 md:px-6 lg:px-8">
+          <div className={cn(contentWidthClass, 'mx-auto space-y-3 rounded-lg bg-background/60 px-3 py-3')}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-[hsl(var(--accent-practice))]">
+                  {language.startsWith('zh') ? '口语角色扮演' : 'Speaking roleplay'}
+                </p>
+                <h3 className="mt-1 text-sm font-semibold text-foreground">
+                  {activeRoleplayScenario
+                    ? (language.startsWith('zh') ? activeRoleplayScenario.titleZh : activeRoleplayScenario.title)
+                    : (language.startsWith('zh') ? '选择场景，再把目标发送给答疑教练。' : 'Choose a scenario, then send the objectives to the coach.')}
+                </h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {language.startsWith('zh')
+                    ? '场景目标、关键短语和进度会保留在这里；聊天仍由你确认发送。'
+                    : 'Objectives, key phrases, and progress stay visible here; you still confirm before sending.'}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant={roleplayOpen ? 'outline' : 'glassPrimary'}
+                className="shrink-0"
+                onClick={() => setRoleplayOpen((current) => !current)}
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                {roleplayOpen
+                  ? (language.startsWith('zh') ? '隐藏场景' : 'Hide scenarios')
+                  : (language.startsWith('zh') ? '选择口语场景' : 'Choose speaking scenario')}
+              </Button>
+            </div>
+
+            {roleplayOpen ? (
+              <div className="rounded-lg border border-border/70 bg-card/70">
+                <RoleplayMode
+                  onStartScenario={handleStartRoleplayScenario}
+                  onExit={handleExitRoleplay}
+                  activeScenario={activeRoleplayScenario}
+                  completedObjectives={completedRoleplayObjectives}
+                  messageCount={roleplayMessageCount}
+                  sessionScore={roleplaySessionScore}
+                  onToggleObjective={handleToggleRoleplayObjective}
+                />
+              </div>
+            ) : null}
+          </div>
+        </section>
 
         {/* Messages Area */}
         <ScrollArea className="flex-1 min-h-0 px-4 md:px-6 lg:px-8" ref={messagesScrollAreaRef}>

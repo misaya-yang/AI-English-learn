@@ -44,10 +44,12 @@ interface ReviewCardProps {
   item: ReviewItem;
   isRevealed: boolean;
   onReveal: () => void;
+  isZh: boolean;
 }
 
-function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
+function ReviewCard({ item, isRevealed, onReveal, isZh }: ReviewCardProps) {
   const { word } = item;
+  const usesCompactHeadword = word.word.length > 18 || word.word.includes(' ');
 
   const playAudio = (text: string) => {
     void speakEnglishText(text);
@@ -75,10 +77,13 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           className="flex h-full w-full cursor-pointer flex-col items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span className="rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.5)] px-2.5 py-1 text-xs text-muted-foreground">
-            {word.level} / 第 {item.reviewCount + 1} 次复习
+            {word.level} / {isZh ? `第 ${item.reviewCount + 1} 次复习` : `review ${item.reviewCount + 1}`}
           </span>
-          <p className="study-label mt-6">回忆</p>
-          <h2 className="lexical-type mt-4 text-[3.2rem] leading-none text-foreground sm:text-[4.4rem]">
+          <p className="study-label mt-6">{isZh ? '回忆' : 'Recall'}</p>
+          <h2 className={cn(
+            'lexical-type mt-4 max-w-full break-words leading-none text-foreground',
+            usesCompactHeadword ? 'text-[2.45rem] sm:text-[3.4rem]' : 'text-[3.2rem] sm:text-[4.4rem]',
+          )}>
             {word.word}
           </h2>
           <p className="mt-4 font-mono text-lg text-muted-foreground">{word.partOfSpeech} / {word.phonetic}</p>
@@ -95,14 +100,14 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
             >
               <Volume2 className="h-5 w-5" />
             </Button>
-            <span className="text-sm text-muted-foreground">回忆后看答案</span>
+            <span className="text-sm text-muted-foreground">{isZh ? '回忆后看答案' : 'Reveal after recall'}</span>
           </div>
         </div>
       ) : (
         <div className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-3">
           <div>
-              <p className="study-label">答案</p>
+              <p className="study-label">{isZh ? '答案' : 'Answer'}</p>
               <h2 className="lexical-type mt-2 text-4xl leading-none text-foreground">{word.word}</h2>
               <p className="mt-2 font-mono text-sm text-muted-foreground">{word.partOfSpeech} / {word.phonetic}</p>
             </div>
@@ -119,22 +124,22 @@ function ReviewCard({ item, isRevealed, onReveal }: ReviewCardProps) {
           <div className="mt-6 grid flex-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_0.8fr]">
             <div className="space-y-4">
               <section className="pt-2">
-                <p className="study-label">释义</p>
+                <p className="study-label">{isZh ? '释义' : 'Meaning'}</p>
                 <p className="mt-3 text-base leading-7 text-foreground">{word.definition}</p>
-                <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p>
+                {isZh ? <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.definitionZh}</p> : null}
               </section>
 
               {word.examples[0] ? (
                 <section className="pt-2">
-                  <p className="study-label">例句</p>
+                  <p className="study-label">{isZh ? '例句' : 'Example'}</p>
                   <p className="mt-3 text-sm leading-7 text-foreground">{word.examples[0].en}</p>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p>
+                  {isZh ? <p className="mt-2 text-sm leading-7 text-muted-foreground">{word.examples[0].zh}</p> : null}
                 </section>
               ) : null}
             </div>
 
             <section className="rounded-xl bg-[hsl(var(--paper-muted)/0.28)] p-4 lg:p-5">
-              <p className="study-label">线索</p>
+              <p className="study-label">{isZh ? '线索' : 'Clues'}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {word.synonyms.slice(0, 5).map((synonym) => (
                   <span key={synonym} className="rounded-md bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -361,8 +366,10 @@ export default function ReviewPage() {
       payload,
     });
 
-    toast.success(outcome === 'helped' ? '已记录：这个练习有帮助' : '已记录：仍然混淆，稍后继续练');
-  }, [currentRecoveryPlan, userId]);
+    toast.success(outcome === 'helped'
+      ? (isZh ? '已记录：这个练习有帮助' : 'Recorded: this drill helped')
+      : (isZh ? '已记录：仍然混淆，稍后继续练' : 'Recorded: still confusing, practice again later'));
+  }, [currentRecoveryPlan, isZh, userId]);
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -491,7 +498,7 @@ export default function ReviewPage() {
             prompt={isRevealed ? (isZh ? '评分后继续。' : 'Rate, then continue.') : (isZh ? '想好后再看答案。' : 'Reveal after you recall.')}
           >
             <div className="space-y-5">
-              {currentItem ? <ReviewCard item={currentItem} isRevealed={isRevealed} onReveal={handleReveal} /> : null}
+              {currentItem ? <ReviewCard item={currentItem} isRevealed={isRevealed} onReveal={handleReveal} isZh={isZh} /> : null}
 
               {currentRecoveryPlan && isRevealed ? (
                 <InlineStudyNote
@@ -575,7 +582,7 @@ export default function ReviewPage() {
               ) : (
                 <InlineStudyNote title={isZh ? '先回忆' : 'Recall first'}>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p>想好后再看答案。</p>
+                  <p>{isZh ? '想好后再看答案。' : 'Think it through before revealing the answer.'}</p>
                   <Button className="rounded-md px-5" onClick={handleReveal}>
                     {isZh ? '看答案' : 'Reveal'}
                     <kbd className="ml-2 rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-primary/75">
@@ -605,18 +612,20 @@ export default function ReviewPage() {
             <StudyRailSection title={isZh ? '当前卡' : 'Current card'}>
               <div className="rounded-md bg-[hsl(var(--paper-muted)/0.34)] p-4 space-y-4">
                 <div className="flex items-center gap-2 text-foreground">
-                  <p className="text-sm font-medium">第 {currentItem.reviewCount + 1} 次复习</p>
+                  <p className="text-sm font-medium">
+                    {isZh ? `第 ${currentItem.reviewCount + 1} 次复习` : `Review ${currentItem.reviewCount + 1}`}
+                  </p>
                 </div>
                 {isCurrentCardStubborn ? (
                   <span className="rounded-md border border-[hsl(var(--warning)/0.28)] bg-[hsl(var(--warning)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--warning))]">
-                    需要多复习
+                    {isZh ? '需要多复习' : 'Needs extra practice'}
                   </span>
                 ) : null}
 
                 {/* Memory strength bar */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-[10px] text-muted-foreground">记忆</p>
+                    <p className="text-[10px] text-muted-foreground">{isZh ? '记忆' : 'Memory'}</p>
                     <p className="text-xs font-semibold text-foreground">
                       {Math.round(currentItem.fsrs.retrievability * 100)}%
                     </p>
@@ -639,8 +648,10 @@ export default function ReviewPage() {
 
                 <p className="text-sm leading-6 text-muted-foreground">
                   {currentItem.fsrs.lastReviewAt
-                    ? `上次复习：${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('zh-CN')}`
-                    : '今日首次接触这张卡'}
+                    ? (isZh
+                      ? `上次复习：${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('zh-CN')}`
+                      : `Last reviewed: ${new Date(currentItem.fsrs.lastReviewAt).toLocaleString('en-US')}`)
+                    : (isZh ? '今日首次接触这张卡' : 'First time seeing this card today')}
                 </p>
               </div>
             </StudyRailSection>

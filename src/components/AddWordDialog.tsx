@@ -230,7 +230,7 @@ export function AddWordDialog({ onAddWord, trigger, open: controlledOpen, onOpen
               id="definitionZh"
               value={wordData.definitionZh || ''}
               onChange={(e) => setWordData({ ...wordData, definitionZh: e.target.value })}
-              placeholder="输入中文释义..."
+              placeholder={isZh ? '输入中文释义...' : 'Enter the Chinese definition...'}
               rows={2}
             />
           </div>
@@ -248,7 +248,7 @@ export function AddWordDialog({ onAddWord, trigger, open: controlledOpen, onOpen
                 }).filter(ex => ex.en);
                 setWordData({ ...wordData, examples });
               }}
-              placeholder="English sentence\n中文翻译\n\nAnother example\n另一个例子"
+              placeholder={isZh ? 'English sentence\n中文翻译\n\nAnother example\n另一个例子' : 'English sentence\nChinese translation\n\nAnother example\nAnother translation'}
               rows={4}
             />
           </div>
@@ -297,7 +297,7 @@ export function AddWordDialog({ onAddWord, trigger, open: controlledOpen, onOpen
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant="outline" onClick={() => setDialogOpen(false)}>
             {isZh ? '取消' : 'Cancel'}
           </Button>
           <Button onClick={handleAdd}>

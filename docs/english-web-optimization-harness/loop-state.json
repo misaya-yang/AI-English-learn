@@ -1,0 +1,9 @@
+{
+  "schema_version": "prd-phase-harness/loop-state/v1",
+  "active_phase": "EN-05",
+  "active_feature": "EN-F005",
+  "iteration": 1,
+  "status": "verified",
+  "last_decision": "EN-05 passed after learning-center English-mode chrome repair, Today hard-word copy alignment, positive-streak localization, Settings notification preview gating, Settings clear-data IndexedDB helper wiring, focused tests, full Vitest, lint, i18n, build, UI regression, contract-path learning-flow regression, manual English browser checks, positive-streak browser evidence, and diff hygiene.",
+  "next_action": "No implementation phase remains. The five-module English Web harness is verified; future windows should run a completion audit only unless a new scoped request is opened."
+}

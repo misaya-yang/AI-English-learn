@@ -3,7 +3,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Features:
  *   • 3 seed passages built-in (no AI call needed to get started)
- *   • AI generates fresh passages on demand via Supabase Edge Function
+ *   • Local built-in passage variations for extra practice
  *   • Question types: True/False/Not Given, Multiple Choice (A-D), Short Answer
  *   • Side-by-side passage + questions layout on desktop
  *   • Score + answer review on submit
@@ -23,7 +23,6 @@ import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { recordLearningEvent } from '@/services/learningEvents';
-import { incrementReviewCount } from '@/services/gamification';
 import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -49,8 +48,86 @@ interface ReadingPassage {
   passage: string;
   questions: ReadingQuestion[];
   source?: string;
+  sourceType?: 'seed' | 'local_fallback';
   estimatedMinutes: number;
 }
+
+const normalizeReadingAnswer = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9%]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const containsWholePhrase = (content: string, phrase: string): boolean =>
+  new RegExp(`(^| )${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( |$)`).test(content);
+
+const stripLeadingArticle = (value: string): string =>
+  value.replace(/^(a|an|the) /, '');
+
+const singularize = (value: string): string =>
+  value
+    .split(' ')
+    .map((word) => (word.length > 3 && word.endsWith('s') ? word.slice(0, -1) : word))
+    .join(' ');
+
+const equivalentShortAnswer = (userAnswer: string, expectedAnswer: string): boolean => {
+  const expectedVariants = new Set([
+    expectedAnswer,
+    stripLeadingArticle(expectedAnswer),
+    singularize(expectedAnswer),
+    singularize(stripLeadingArticle(expectedAnswer)),
+  ].filter(Boolean));
+
+  const userVariants = new Set([
+    userAnswer,
+    stripLeadingArticle(userAnswer),
+    singularize(userAnswer),
+    singularize(stripLeadingArticle(userAnswer)),
+  ].filter(Boolean));
+
+  return [...userVariants].some((variant) => expectedVariants.has(variant));
+};
+
+const isReadingAnswerCorrect = (question: ReadingQuestion, answer: string): boolean => {
+  const userAns = normalizeReadingAnswer(answer);
+  const correctAns = normalizeReadingAnswer(question.answer);
+  if (!userAns || !correctAns) return false;
+
+  if (question.type === 'mcq') {
+    const correctLetter = correctAns.charAt(0);
+    return userAns === correctLetter || userAns.startsWith(`${correctLetter} `);
+  }
+
+  if (question.type === 'tfng') {
+    return userAns === correctAns;
+  }
+
+  const requiredParts = question.answer
+    .split(';')
+    .map((part) => normalizeReadingAnswer(part))
+    .filter(Boolean);
+
+  if (requiredParts.length > 1) {
+    return requiredParts.every((part) => (
+      containsWholePhrase(userAns, part) ||
+      containsWholePhrase(singularize(userAns), singularize(part))
+    ));
+  }
+
+  return equivalentShortAnswer(userAns, correctAns);
+};
+
+const calculateReadingScore = (
+  questions: ReadingQuestion[],
+  answers: Record<number, string>,
+): number =>
+  questions.reduce((correct, question) => (
+    isReadingAnswerCorrect(question, answers[question.id] ?? '')
+      ? correct + 1
+      : correct
+  ), 0);
 
 // ─── Seed passages ────────────────────────────────────────────────────────────
 
@@ -273,6 +350,7 @@ export default function ReadingPage() {
   const [score, setScore] = useState<{ correct: number; total: number } | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [localVariationIndex, setLocalVariationIndex] = useState(0);
 
   // ── Passage selection ────────────────────────────────────────────────────
 
@@ -286,20 +364,27 @@ export default function ReadingPage() {
 
   const handleGenerateNew = useCallback(async () => {
     setIsGenerating(true);
-    toast.info(isZh ? '正在准备新文章，大约需要 10-15 秒' : 'Preparing a new passage. This may take 10-15 seconds.');
+    toast.info(isZh ? '正在准备内置练习变体' : 'Preparing a built-in practice variation.');
     try {
-      // Generated passage via edge function with graceful fallback to a seed article.
       await new Promise((r) => setTimeout(r, 500)); // Simulate latency
-      const randomSeed = SEED_PASSAGES[Math.floor(Math.random() * SEED_PASSAGES.length)];
-      toast.success(isZh ? '文章已准备好' : 'Passage ready!');
-      startPassage({ ...randomSeed, id: `gen-${Date.now()}`, title: randomSeed.title + ' (New)' });
+      const seed = SEED_PASSAGES[localVariationIndex % SEED_PASSAGES.length];
+      const variationNumber = localVariationIndex + 1;
+      setLocalVariationIndex(variationNumber);
+      toast.success(isZh ? '内置练习变体已准备好' : 'Built-in practice variation ready.');
+      startPassage({
+        ...seed,
+        id: `local-${seed.id}-${variationNumber}`,
+        title: `${seed.title} (${isZh ? '练习变体' : 'Practice variation'})`,
+        source: isZh ? '内置文章变体' : 'Built-in passage variation',
+        sourceType: 'local_fallback',
+      });
     } catch {
-      toast.error(isZh ? '新文章暂时不可用，已切换到内置文章' : 'New passage is unavailable. Using a built-in passage');
+      toast.error(isZh ? '练习变体暂时不可用，已切换到内置文章' : 'Practice variation is unavailable. Using a built-in passage.');
       startPassage(SEED_PASSAGES[0]);
     } finally {
       setIsGenerating(false);
     }
-  }, [isZh, startPassage]);
+  }, [isZh, localVariationIndex, startPassage]);
 
   // ── Answering ─────────────────────────────────────────────────────────────
 
@@ -317,32 +402,15 @@ export default function ReadingPage() {
       return;
     }
 
-    let correct = 0;
-    for (const q of current.questions) {
-      const userAns = (answers[q.id] ?? '').trim().toLowerCase();
-      const correctAns = q.answer.trim().toLowerCase();
-      if (q.type === 'mcq') {
-        // MCQ: compare first letter (A/B/C/D)
-        if (userAns === correctAns || userAns.startsWith(correctAns.charAt(0).toLowerCase())) {
-          correct++;
-        }
-      } else if (q.type === 'tfng') {
-        if (userAns === correctAns) correct++;
-      } else {
-        // Short answer: partial match
-        if (correctAns.includes(userAns) || userAns.includes(correctAns.split(' ')[0])) {
-          correct++;
-        }
-      }
-    }
+    const correct = calculateReadingScore(current.questions, answers);
 
     const total     = current.questions.length;
     const pct       = correct / total;
-    const elapsed   = Math.round((Date.now() - startTime) / 60_000);
+    const elapsed   = Math.max(1, Math.round((Date.now() - startTime) / 60_000));
     const xp        = pct >= 0.8 ? 25 : pct >= 0.6 ? 15 : 8;
 
     setScore({ correct, total });
-    addStudySession(0, pct >= 0.8 ? 1 : 0, xp, elapsed);
+    addStudySession(0, 0, xp, elapsed);
     setPhase('review');
 
     if (pct === 1)       toast.success(isZh ? '满分，阅读练习已记录' : 'Perfect score. Reading practice recorded.');
@@ -361,9 +429,12 @@ export default function ReadingPage() {
           accuracy: pct,
           xp,
           durationMinutes: elapsed,
+          answerCount: total,
+          questionTypes: Array.from(new Set(current.questions.map((q) => q.type))),
+          sourceType: current.sourceType || 'seed',
+          generatedFallback: current.sourceType === 'local_fallback',
         },
       });
-      incrementReviewCount(user.id, total);
     }
   }, [current, answers, startTime, addStudySession, user, isZh]);
 
@@ -383,13 +454,19 @@ export default function ReadingPage() {
     isZh ? '带着题型回到原文定位' : 'Locate evidence by question type',
     isZh ? '提交后用解析修正阅读策略' : 'Use explanations to repair strategy',
   ];
+  const answerCount = current
+    ? current.questions.filter((q) => (answers[q.id] ?? '').trim().length > 0).length
+    : 0;
+  const allAnswered = current
+    ? answerCount === current.questions.length
+    : false;
 
   // ────────────────────────────────────────────────────────────────────────
   // RENDER: Passage selection screen
   // ────────────────────────────────────────────────────────────────────────
   if (phase === 'select') {
     return (
-      <div className="mx-auto max-w-5xl space-y-8 px-4 py-6">
+      <div className="learning-open-route mx-auto max-w-5xl space-y-8 px-4 py-6">
         <section className="py-2">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:items-start">
             <div className="space-y-4">
@@ -431,10 +508,15 @@ export default function ReadingPage() {
                   {isGenerating ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {isZh ? '准备中' : 'Preparing'}</>
                   ) : (
-                    <><RefreshCw className="mr-2 h-4 w-4" /> {isZh ? '换一篇新文章' : 'Try a new passage'}</>
+                    <><RefreshCw className="mr-2 h-4 w-4" /> {isZh ? '内置练习变体' : 'Built-in practice variation'}</>
                   )}
                 </Button>
               </div>
+              <p className="text-xs leading-5 text-muted-foreground">
+                {isZh
+                  ? '练习变体来自当前内置文章库，不会调用外部 AI 或内容提供商。'
+                  : 'Practice variations come from the current built-in passage set; no external AI or content provider is called.'}
+              </p>
             </div>
 
             <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.20)] px-4 py-4 lg:px-5">
@@ -519,14 +601,14 @@ export default function ReadingPage() {
   // ────────────────────────────────────────────────────────────────────────
   if (phase === 'reading') {
     return (
-      <div className="mx-auto max-w-6xl py-6 px-4">
+      <div className="learning-open-route mx-auto max-w-6xl py-6 px-4">
         {/* Header */}
-        <div className="mb-5 flex items-center justify-between">
-          <div>
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-muted-foreground">{current.topic}</p>
-            <h1 className="text-xl font-semibold text-foreground">{current.title}</h1>
+            <h1 className="break-words text-xl font-semibold text-foreground">{current.title}</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <Badge variant="outline" className="rounded-md border-border text-muted-foreground text-xs">
               {current.level}
             </Badge>
@@ -543,10 +625,10 @@ export default function ReadingPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left: passage */}
-          <div className="max-h-[72vh] overflow-y-auto lg:pr-6">
+          <div className="lg:max-h-[72vh] lg:overflow-y-auto lg:pr-6">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium text-muted-foreground">文章</span>
+              <span className="text-xs font-medium text-muted-foreground">{isZh ? '文章' : 'Passage'}</span>
             </div>
             <div className="prose prose-sm max-w-none leading-7">
               {current.passage.split('\n\n').map((para, i) => (
@@ -556,11 +638,16 @@ export default function ReadingPage() {
           </div>
 
           {/* Right: questions */}
-          <div className="space-y-4 max-h-[72vh] overflow-y-auto pr-1">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="space-y-4 lg:max-h-[72vh] lg:overflow-y-auto lg:pr-1">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-primary" />
               <span className="text-xs font-semibold text-muted-foreground">
                 {isZh ? `题目（${current.questions.length}）` : `Questions (${current.questions.length})`}
+              </span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {isZh ? `进度 ${answerCount}/${current.questions.length}` : `Progress ${answerCount}/${current.questions.length}`}
               </span>
             </div>
 
@@ -626,6 +713,7 @@ export default function ReadingPage() {
 
             <Button
               onClick={handleSubmit}
+              disabled={!allAnswered}
               className="mt-2 min-h-11 w-full rounded-lg font-medium"
             >
               {isZh ? '提交答案' : 'Submit answers'}
@@ -641,7 +729,7 @@ export default function ReadingPage() {
   // RENDER: Review screen
   // ────────────────────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-3xl space-y-6 py-8 px-4">
+    <div className="learning-open-route mx-auto max-w-3xl space-y-6 py-8 px-4">
       <LearningCompletionState
         icon={CheckCircle2}
         eyebrow={isZh ? '阅读结果' : 'Reading result'}
@@ -682,16 +770,7 @@ export default function ReadingPage() {
       {/* Answer review */}
       <div className="space-y-4">
         {current.questions.map((q) => {
-          const userAns = (answers[q.id] ?? '').trim().toLowerCase();
-          const correctAns = q.answer.trim().toLowerCase();
-          let isCorrect = false;
-          if (q.type === 'mcq') {
-            isCorrect = userAns === correctAns || userAns.startsWith(correctAns.charAt(0).toLowerCase());
-          } else if (q.type === 'tfng') {
-            isCorrect = userAns === correctAns;
-          } else {
-            isCorrect = correctAns.includes(userAns) || userAns.includes(correctAns.split(' ')[0]);
-          }
+          const isCorrect = isReadingAnswerCorrect(q, answers[q.id] ?? '');
 
           return (
             <div
@@ -727,12 +806,18 @@ export default function ReadingPage() {
                 <p className="text-xs leading-5 text-muted-foreground">{q.explanation}</p>
               </div>
 
-              {q.location && (
-                <div className="ml-6 rounded-lg border border-border bg-muted px-3 py-2">
-                  <p className="mb-0.5 text-xs font-medium text-muted-foreground">{isZh ? '原文证据' : 'Evidence in passage'}</p>
-                  <p className="text-xs italic text-foreground">"{q.location}"</p>
-                </div>
-              )}
+              <div className="ml-6 rounded-lg border border-border bg-muted px-3 py-2">
+                <p className="mb-0.5 text-xs font-medium text-muted-foreground">
+                  {q.location ? (isZh ? '原文证据' : 'Evidence in passage') : (isZh ? '证据提示' : 'Evidence note')}
+                </p>
+                <p className="text-xs italic text-foreground">
+                  {q.location
+                    ? `"${q.location}"`
+                    : (isZh
+                      ? '本题依赖整段推理或题干解释；请对照上方解析回到相关段落。'
+                      : 'This item relies on passage-level inference or the explanation above; match it back to the relevant paragraph.')}
+                </p>
+              </div>
             </div>
           );
         })}

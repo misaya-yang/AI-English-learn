@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  clearAllData,
   createProfile,
   getActiveBookSummary,
   getSettings,
@@ -111,5 +112,27 @@ describe('localStorage user settings', () => {
         duration: 8,
       }),
     ]);
+  });
+
+  it('clears learning-center namespaces without removing unrelated app storage', () => {
+    localStorage.setItem('vocabdaily_settings', JSON.stringify({ [USER]: {} }));
+    localStorage.setItem('vocabdaily_today_flags_settings-user_2026-06-13', JSON.stringify({ hard: ['w1'] }));
+    localStorage.setItem('vocabdaily_learning_missions', JSON.stringify({ [USER]: [] }));
+    localStorage.setItem('vocabdaily-user-learning-profile', JSON.stringify({ target: 'ielts' }));
+    localStorage.setItem('language', 'en');
+    localStorage.setItem('supabase.auth.token', 'redacted-token');
+    localStorage.setItem('sb-localhost-auth-token', 'redacted-token');
+    localStorage.setItem('other_app_preference', 'keep-me');
+
+    clearAllData();
+
+    expect(localStorage.getItem('vocabdaily_settings')).toBeNull();
+    expect(localStorage.getItem('vocabdaily_today_flags_settings-user_2026-06-13')).toBeNull();
+    expect(localStorage.getItem('vocabdaily_learning_missions')).toBeNull();
+    expect(localStorage.getItem('vocabdaily-user-learning-profile')).toBeNull();
+    expect(localStorage.getItem('language')).toBeNull();
+    expect(localStorage.getItem('supabase.auth.token')).toBeNull();
+    expect(localStorage.getItem('sb-localhost-auth-token')).toBeNull();
+    expect(localStorage.getItem('other_app_preference')).toBe('keep-me');
   });
 });

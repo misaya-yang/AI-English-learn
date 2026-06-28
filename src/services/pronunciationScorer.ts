@@ -105,32 +105,80 @@ export interface ListenResult {
   durationMs: number;
 }
 
-export function listenOnce(recognition: SpeechRecognitionLike): Promise<ListenResult> {
+export interface ListenOnceOptions {
+  timeoutMs?: number;
+}
+
+export function listenOnce(
+  recognition: SpeechRecognitionLike,
+  options: ListenOnceOptions = {},
+): Promise<ListenResult> {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
+    const timeoutMs = options.timeoutMs ?? 10_000;
+    let settled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const cleanup = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      recognition.onresult = null;
+      recognition.onerror = null;
+      recognition.onend = null;
+    };
+
+    const settle = (complete: () => void) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      complete();
+    };
+
+    const rejectWith = (error: Error) => {
+      settle(() => reject(error));
+    };
 
     recognition.onresult = (event) => {
       const alt = event.results[0]?.[0];
       if (alt) {
-        resolve({
-          transcript: alt.transcript,
-          confidence: alt.confidence,
-          durationMs: Date.now() - startTime,
+        settle(() => {
+          resolve({
+            transcript: alt.transcript,
+            confidence: alt.confidence,
+            durationMs: Date.now() - startTime,
+          });
         });
       } else {
-        reject(new Error('No speech detected'));
+        rejectWith(new Error('No speech detected'));
       }
     };
 
     recognition.onerror = (event) => {
-      reject(new Error(`Speech recognition error: ${event.error}`));
+      rejectWith(new Error(`Speech recognition error: ${event.error}`));
     };
 
     recognition.onend = () => {
-      // If no result was fired, the promise stays pending until timeout
+      rejectWith(new Error('No speech detected'));
     };
 
-    recognition.start();
+    if (timeoutMs > 0) {
+      timeoutId = setTimeout(() => {
+        rejectWith(new Error('Speech recognition timed out'));
+        try {
+          recognition.stop();
+        } catch {
+          // Recognition may already be stopped by the browser.
+        }
+      }, timeoutMs);
+    }
+
+    try {
+      recognition.start();
+    } catch (error) {
+      rejectWith(error instanceof Error ? error : new Error('Speech recognition failed to start'));
+    }
   });
 }
 

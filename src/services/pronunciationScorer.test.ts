@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   normalizeText,
   computeAccuracy,
@@ -6,8 +6,21 @@ import {
   scoreLocally,
   scoreWithAi,
   isSpeechRecognitionSupported,
+  listenOnce,
   type ListenResult,
 } from '@/services/pronunciationScorer';
+
+const createRecognitionMock = () => ({
+  lang: '',
+  continuous: false,
+  interimResults: false,
+  maxAlternatives: 1,
+  onresult: null as ((event: { results: { [index: number]: { [index: number]: { transcript: string; confidence: number } | undefined } | undefined } }) => void) | null,
+  onerror: null as ((event: { error: string }) => void) | null,
+  onend: null as (() => void) | null,
+  start: vi.fn(),
+  stop: vi.fn(),
+});
 
 describe('pronunciationScorer', () => {
   describe('normalizeText', () => {
@@ -127,6 +140,60 @@ describe('pronunciationScorer', () => {
       expect(result.dimensions.accuracy).toBe(92);
 
       delete window.__VOCABDAILY_PRONUNCIATION_ASSESS_MOCK__;
+    });
+  });
+
+  describe('listenOnce', () => {
+    it('resolves with the first recognition result', async () => {
+      const recognition = createRecognitionMock();
+      const promise = listenOnce(recognition);
+
+      recognition.onresult?.({
+        results: {
+          0: {
+            0: { transcript: 'hello world', confidence: 0.84 },
+          },
+        },
+      });
+
+      await expect(promise).resolves.toMatchObject({
+        transcript: 'hello world',
+        confidence: 0.84,
+      });
+      expect(recognition.start).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects when recognition ends without a result', async () => {
+      const recognition = createRecognitionMock();
+      const promise = listenOnce(recognition);
+
+      recognition.onend?.();
+
+      await expect(promise).rejects.toThrow('No speech detected');
+    });
+
+    it('rejects recognition errors', async () => {
+      const recognition = createRecognitionMock();
+      const promise = listenOnce(recognition);
+
+      recognition.onerror?.({ error: 'not-allowed' });
+
+      await expect(promise).rejects.toThrow('Speech recognition error: not-allowed');
+    });
+
+    it('times out and stops recognition when no event settles the session', async () => {
+      vi.useFakeTimers();
+      try {
+        const recognition = createRecognitionMock();
+        const promise = listenOnce(recognition, { timeoutMs: 25 });
+
+        vi.advanceTimersByTime(25);
+
+        await expect(promise).rejects.toThrow('Speech recognition timed out');
+        expect(recognition.stop).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

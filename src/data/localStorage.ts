@@ -1514,6 +1514,27 @@ export const saveSettings = (userId: string, settings: Partial<UserSettings>): U
 
 // Clear all data (for logout/reset)
 export const clearAllData = (): void => {
-  Object.values(KEYS).forEach((key) => localStorage.removeItem(key));
-  localStorage.removeItem(LEGACY_CUSTOM_WORDS_KEY);
+  const exactKeys = new Set([
+    ...Object.values(KEYS),
+    LEGACY_CUSTOM_WORDS_KEY,
+    'language',
+    'supabase_access_token',
+    'supabase_refresh_token',
+    'supabase_user',
+  ]);
+  const keyPrefixes = [
+    'vocabdaily_',
+    'vocabdaily-',
+    'supabase.auth.',
+    'sb-',
+  ];
+  const keysToRemove = new Set<string>();
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (!key) continue;
+    if (exactKeys.has(key) || keyPrefixes.some((prefix) => key.startsWith(prefix))) {
+      keysToRemove.add(key);
+    }
+  }
+  keysToRemove.forEach((key) => localStorage.removeItem(key));
 };

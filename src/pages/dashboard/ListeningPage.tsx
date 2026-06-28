@@ -29,7 +29,6 @@ import { cn } from '@/lib/utils';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { recordLearningEvent } from '@/services/learningEvents';
-import { incrementReviewCount } from '@/services/gamification';
 import { toast } from 'sonner';
 import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
@@ -59,6 +58,68 @@ interface ListeningPassage {
   transcript: string;         // full text for TTS
   questions: ListeningQuestion[];
 }
+
+const normalizeListeningAnswer = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9%]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const extractNumericAnswer = (value: string): string | null => {
+  const match = value.match(/\d+(?:\.\d+)?/);
+  return match ? match[0] : null;
+};
+
+const isListeningAnswerCorrect = (
+  userAnswer: string,
+  correctAnswer: string | string[],
+): boolean => {
+  const normalizedUser = normalizeListeningAnswer(userAnswer);
+  if (!normalizedUser) return false;
+
+  const acceptedAnswers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer];
+  return acceptedAnswers.some((answer) => {
+    const normalizedCorrect = normalizeListeningAnswer(answer);
+    if (normalizedUser === normalizedCorrect) return true;
+
+    const correctNumeric = extractNumericAnswer(normalizedCorrect);
+    if (!correctNumeric || normalizeListeningAnswer(correctNumeric) !== normalizedCorrect) {
+      return false;
+    }
+
+    return extractNumericAnswer(normalizedUser) === correctNumeric;
+  });
+};
+
+const getPrimaryCorrectAnswer = (answer: string | string[]): string =>
+  Array.isArray(answer) ? answer[0] : answer;
+
+const calculateListeningScore = (
+  questions: ListeningQuestion[],
+  answers: Record<number, string>,
+): number =>
+  questions.reduce((correct, question) => (
+    isListeningAnswerCorrect(answers[question.id] ?? '', question.answer)
+      ? correct + 1
+      : correct
+  ), 0);
+
+const estimateListeningDurationMinutes = (durationLabel: string, transcript: string): number => {
+  const minuteMatch = durationLabel.match(/(\d+(?:\.\d+)?)\s*min/i);
+  if (minuteMatch) {
+    return Math.max(1, Math.ceil(Number(minuteMatch[1])));
+  }
+
+  const secondMatch = durationLabel.match(/(\d+(?:\.\d+)?)\s*sec/i);
+  if (secondMatch) {
+    return Math.max(1, Math.ceil(Number(secondMatch[1]) / 60));
+  }
+
+  const estimatedFromWords = transcript.trim().split(/\s+/).filter(Boolean).length / 130;
+  return Math.max(1, Math.ceil(estimatedFromWords));
+};
 
 // ─── Seed Data ───────────────────────────────────────────────────────────────
 
@@ -283,10 +344,15 @@ My position is this: AI should serve as a second opinion, not a replacement for 
 function useTTSPlayer(transcript: string) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [isSupported] = useState(() => typeof window !== 'undefined' && 'speechSynthesis' in window);
+  const [isSupported] = useState(() => (
+    typeof window !== 'undefined' &&
+    Boolean(window.speechSynthesis) &&
+    typeof window.SpeechSynthesisUtterance === 'function'
+  ));
   const [progress, setProgress] = useState(0);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const voiceLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(0);
   const ESTIMATED_DURATION_MS = transcript.length * 55; // ~55ms per char at normal pace
 
@@ -294,6 +360,7 @@ function useTTSPlayer(transcript: string) {
     return () => {
       window.speechSynthesis?.cancel();
       if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      if (voiceLoadTimerRef.current) clearTimeout(voiceLoadTimerRef.current);
     };
   }, []);
 
@@ -354,10 +421,19 @@ function useTTSPlayer(transcript: string) {
       doSpeak(voices);
     } else {
       const onVoicesChanged = () => {
+        if (voiceLoadTimerRef.current) {
+          clearTimeout(voiceLoadTimerRef.current);
+          voiceLoadTimerRef.current = null;
+        }
         window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
         doSpeak(window.speechSynthesis.getVoices());
       };
       window.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
+      voiceLoadTimerRef.current = setTimeout(() => {
+        window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+        voiceLoadTimerRef.current = null;
+        doSpeak(window.speechSynthesis.getVoices());
+      }, 800);
     }
   }, [isSupported, isPaused, transcript, startProgressTimer]);
 
@@ -409,9 +485,9 @@ interface QuestionCardProps {
 function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCardProps) {
   const { i18n } = useTranslation();
   const isZh = i18n.language.startsWith('zh');
-  const correctAnswer = Array.isArray(q.answer) ? q.answer[0] : q.answer;
+  const correctAnswer = getPrimaryCorrectAnswer(q.answer);
   const isCorrect = submitted
-    ? userAnswer.trim().toLowerCase() === correctAnswer.toLowerCase()
+    ? isListeningAnswerCorrect(userAnswer, q.answer)
     : false;
 
   return (
@@ -516,6 +592,8 @@ export default function ListeningPage() {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [showTranscript, setShowTranscript] = useState(false);
+  const [transcriptRevealedBeforeSubmit, setTranscriptRevealedBeforeSubmit] = useState(false);
+  const transcriptRevealLoggedRef = useRef(false);
 
   const tts = useTTSPlayer(selected?.transcript ?? '');
 
@@ -531,6 +609,8 @@ export default function ListeningPage() {
     setSubmitted(false);
     setScore(0);
     setShowTranscript(false);
+    setTranscriptRevealedBeforeSubmit(false);
+    transcriptRevealLoggedRef.current = false;
     setPhase('listening');
   };
 
@@ -541,12 +621,7 @@ export default function ListeningPage() {
 
   const handleSubmit = () => {
     if (!selected) return;
-    let correct = 0;
-    for (const q of selected.questions) {
-      const userAns = (answers[q.id] ?? '').trim().toLowerCase();
-      const correctAns = Array.isArray(q.answer) ? q.answer[0] : q.answer;
-      if (userAns === correctAns.toLowerCase()) correct++;
-    }
+    const correct = calculateListeningScore(selected.questions, answers);
     setScore(correct);
     setSubmitted(true);
     setPhase('review');
@@ -554,7 +629,8 @@ export default function ListeningPage() {
     const total = selected.questions.length;
     const pct = correct / total;
     const xp = pct >= 0.8 ? 30 : pct >= 0.6 ? 18 : 8;
-    addStudySession(0, 0, xp, 0);
+    const durationMinutes = estimateListeningDurationMinutes(selected.durationLabel, selected.transcript);
+    addStudySession(0, 0, xp, durationMinutes);
     toast.success(isZh ? '听力练习已记录' : 'Listening practice recorded', { description: isZh ? `${correct}/${total} 正确` : `${correct}/${total} correct` });
 
     if (user?.id) {
@@ -568,9 +644,12 @@ export default function ListeningPage() {
           total,
           accuracy: pct,
           xp,
+          durationMinutes,
+          answerCount: total,
+          transcriptRevealedBeforeSubmit,
+          ttsSupported: tts.isSupported,
         },
       });
-      incrementReviewCount(user.id, total);
     }
   };
 
@@ -589,6 +668,42 @@ export default function ListeningPage() {
     setSubmitted(false);
     setScore(0);
     setShowTranscript(false);
+    setTranscriptRevealedBeforeSubmit(false);
+    transcriptRevealLoggedRef.current = false;
+  };
+
+  const revealTranscript = (source: 'listening' | 'questions' | 'review') => {
+    if (!selected) return;
+
+    if (!submitted) {
+      setTranscriptRevealedBeforeSubmit(true);
+    }
+
+    setShowTranscript(true);
+
+    if (user?.id && !transcriptRevealLoggedRef.current) {
+      transcriptRevealLoggedRef.current = true;
+      void recordLearningEvent({
+        userId: user.id,
+        eventName: 'listening.transcript_revealed',
+        payload: {
+          passageId: selected.id,
+          level: selected.level,
+          source,
+          beforeSubmit: !submitted,
+          ttsSupported: tts.isSupported,
+        },
+      });
+    }
+  };
+
+  const toggleTranscript = (source: 'listening' | 'questions' | 'review') => {
+    if (showTranscript) {
+      setShowTranscript(false);
+      return;
+    }
+
+    revealTranscript(source);
   };
 
   // ── Select Phase ────────────────────────────────────────────────────────────
@@ -774,6 +889,8 @@ export default function ListeningPage() {
                 variant="glass"
                 size="sm"
                 onClick={tts.stop}
+                aria-label={isZh ? '重置音频' : 'Reset audio'}
+                title={isZh ? '重置音频' : 'Reset audio'}
                 className="rounded-lg"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -794,10 +911,19 @@ export default function ListeningPage() {
                 variant="glass"
                 size="sm"
                 onClick={handleStartQuestions}
+                aria-label={isZh ? '跳到答题' : 'Skip to questions'}
+                title={isZh ? '跳到答题' : 'Skip to questions'}
                 className="rounded-lg"
               >
                 <SkipForward className="h-3.5 w-3.5" />
               </Button>
+            </div>
+          )}
+          {!tts.isSupported && (
+            <div className="rounded-lg border border-warning/25 bg-warning/10 px-3 py-2 text-sm text-warning-foreground">
+              {isZh
+                ? '当前浏览器无法播放 TTS。请把文字稿当作无障碍 fallback，阅读后仍可完成答题。'
+                : 'TTS is unavailable in this browser. Use the transcript as an accessibility fallback, then answer the questions.'}
             </div>
           )}
         </div>
@@ -805,12 +931,21 @@ export default function ListeningPage() {
         {/* Transcript toggle */}
         <div>
           <button
-            onClick={() => setShowTranscript((v) => !v)}
+            onClick={() => toggleTranscript('listening')}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <Volume2 className="h-3.5 w-3.5" />
-            {showTranscript ? (isZh ? '隐藏文字稿' : 'Hide transcript') : (isZh ? '显示文字稿' : 'Show transcript')}
+            {showTranscript
+              ? (isZh ? '隐藏文字稿' : 'Hide transcript')
+              : tts.isSupported
+                ? (isZh ? '查看文字稿 fallback' : 'Use transcript fallback')
+                : (isZh ? '打开文字稿 fallback' : 'Open transcript fallback')}
           </button>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            {isZh
+              ? '建议先听音频；只有在需要无障碍支持、浏览器无声或提交后复盘时再打开文字稿。'
+              : 'Listen first when audio works; open the transcript for accessibility, silent browsers, or post-submit review.'}
+          </p>
           <AnimatePresence>
             {showTranscript && (
               <motion.div
@@ -895,7 +1030,7 @@ export default function ListeningPage() {
                 ]}
                 actions={
                   <>
-                    <Button onClick={() => setShowTranscript(true)} variant="glass" className="rounded-lg">
+                    <Button onClick={() => revealTranscript('review')} variant="glass" className="rounded-lg">
                       <Volume2 className="mr-2 h-4 w-4" />
                       {isZh ? '打开文字稿' : 'Review transcript'}
                     </Button>
@@ -934,7 +1069,7 @@ export default function ListeningPage() {
               <div className="space-y-3">
                 {/* Transcript toggle in review */}
                 <button
-                  onClick={() => setShowTranscript((v) => !v)}
+                  onClick={() => toggleTranscript('review')}
                   className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Volume2 className="h-3.5 w-3.5" />
@@ -1006,7 +1141,7 @@ export default function ListeningPage() {
               </p>
               {submitted && (
                 <Button
-                  onClick={() => setShowTranscript(true)}
+                  onClick={() => revealTranscript('review')}
                   variant="outline"
                   className="mt-4 w-full rounded-md border-border bg-card"
                 >

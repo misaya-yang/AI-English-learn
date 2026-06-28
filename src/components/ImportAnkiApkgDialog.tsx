@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload, Layers, Loader2, BookOpenCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -27,15 +28,15 @@ import { APKG_LIMIT_TEXT } from '@/services/ankiApkgImport';
 
 const AUTO_FIELD = '__auto__';
 
-const MAPPING_FIELDS: Array<{ key: AnkiFieldMappingKey; label: string }> = [
-  { key: 'word', label: '词面' },
-  { key: 'definition', label: '英文释义' },
-  { key: 'definitionZh', label: '中文释义' },
-  { key: 'phonetic', label: '音标' },
-  { key: 'partOfSpeech', label: '词性' },
-  { key: 'examples', label: '例句' },
-  { key: 'topic', label: '主题' },
-  { key: 'tags', label: '标签' },
+const MAPPING_FIELDS: Array<{ key: AnkiFieldMappingKey; label: { en: string; zh: string } }> = [
+  { key: 'word', label: { en: 'Word', zh: '词面' } },
+  { key: 'definition', label: { en: 'English definition', zh: '英文释义' } },
+  { key: 'definitionZh', label: { en: 'Chinese definition', zh: '中文释义' } },
+  { key: 'phonetic', label: { en: 'Phonetic', zh: '音标' } },
+  { key: 'partOfSpeech', label: { en: 'Part of speech', zh: '词性' } },
+  { key: 'examples', label: { en: 'Examples', zh: '例句' } },
+  { key: 'topic', label: { en: 'Topic', zh: '主题' } },
+  { key: 'tags', label: { en: 'Tags', zh: '标签' } },
 ];
 
 interface ImportAnkiApkgDialogProps {
@@ -59,6 +60,8 @@ export function ImportAnkiApkgDialog({
   onOpenChange,
   hideTrigger = false,
 }: ImportAnkiApkgDialogProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const [open, setOpen] = useState(false);
   const dialogOpen = controlledOpen ?? open;
   const setDialogOpen = onOpenChange ?? setOpen;
@@ -184,22 +187,24 @@ export function ImportAnkiApkgDialog({
           {trigger ?? (
             <Button variant="outline">
               <BookOpenCheck className="h-4 w-4 mr-2" />
-              导入 Anki (.apkg)
+              {isZh ? '导入 Anki (.apkg)' : 'Import Anki (.apkg)'}
             </Button>
           )}
         </DialogTrigger>
       ) : null}
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Anki 卡组导入 (.apkg)</DialogTitle>
+          <DialogTitle>{isZh ? 'Anki 卡组导入 (.apkg)' : 'Import Anki deck (.apkg)'}</DialogTitle>
           <DialogDescription>
-            导入你自己下载且有使用权的 .apkg。只读取文本字段，不导入音频和图片。
+            {isZh
+              ? '导入你自己下载且有使用权的 .apkg。只读取文本字段，不导入音频和图片。'
+              : 'Import a .apkg file you have rights to use. Only text fields are read; audio and images are not imported.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="anki-file">Anki 文件 (.apkg)</Label>
+            <Label htmlFor="anki-file">{isZh ? 'Anki 文件 (.apkg)' : 'Anki file (.apkg)'}</Label>
             <Input
               id="anki-file"
               type="file"
@@ -212,17 +217,19 @@ export function ImportAnkiApkgDialog({
               }}
             />
             <p className="text-xs leading-5 text-muted-foreground">
-              可导入 AnkiWeb 下载的个人牌组；请确认牌组允许你使用。文件上限 {APKG_LIMIT_TEXT}。
+              {isZh
+                ? `可导入 AnkiWeb 下载的个人牌组；请确认牌组允许你使用。文件上限 ${APKG_LIMIT_TEXT}。`
+                : `You can import personal decks downloaded from AnkiWeb. Confirm you have permission to use the deck. File limit: ${APKG_LIMIT_TEXT}.`}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="anki-book-name">词书名称</Label>
+            <Label htmlFor="anki-book-name">{isZh ? '词书名称' : 'Book name'}</Label>
             <Input
               id="anki-book-name"
               value={bookName}
               onChange={(e) => setBookName(e.target.value)}
-              placeholder="例如：Anki 高频词"
+              placeholder={isZh ? '例如：Anki 高频词' : 'e.g. Anki high-frequency words'}
             />
           </div>
 
@@ -234,15 +241,17 @@ export function ImportAnkiApkgDialog({
               disabled={!file || isInspecting || isImporting}
             >
               {isInspecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-              1. 解析卡组
+              {isZh ? '1. 解析卡组' : '1. Inspect deck'}
             </Button>
             {decks.length > 0 && (
-              <span className="text-xs text-muted-foreground">已解析 {decks.length} 个 deck</span>
+              <span className="text-xs text-muted-foreground">
+                {isZh ? `已解析 ${decks.length} 个 deck` : `Found ${decks.length} deck(s)`}
+              </span>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="anki-deck-select">选择导入 deck</Label>
+            <Label htmlFor="anki-deck-select">{isZh ? '选择导入 deck' : 'Select deck to import'}</Label>
             <Select
               value={selectedDeckId}
               onValueChange={(value) => {
@@ -253,7 +262,7 @@ export function ImportAnkiApkgDialog({
             >
               <SelectTrigger id="anki-deck-select">
                 <Layers className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="请先解析 .apkg 文件" />
+                <SelectValue placeholder={isZh ? '请先解析 .apkg 文件' : 'Inspect the .apkg file first'} />
               </SelectTrigger>
               <SelectContent>
                 {decks.map((deck) => (
@@ -269,19 +278,21 @@ export function ImportAnkiApkgDialog({
             <div className="rounded-md border border-border bg-muted/35 p-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="font-medium">导入预览</p>
+                  <p className="font-medium">{isZh ? '导入预览' : 'Import preview'}</p>
                   <p className="text-xs text-muted-foreground">
-                    {selectedDeck.noteCount} notes · {selectedDeck.cardCount} cards · 映射信心 {selectedDeck.mappingConfidence || 'low'}
+                    {selectedDeck.noteCount} notes · {selectedDeck.cardCount} cards · {isZh ? '映射信心' : 'mapping confidence'} {selectedDeck.mappingConfidence || 'low'}
                   </p>
                 </div>
                 <span className="rounded-md border border-border bg-background px-2 py-1 text-xs">
-                  {selectedDeck.progressPreview?.coarseMappedCount ?? 0} 条可粗略映射进度
+                  {isZh
+                    ? `${selectedDeck.progressPreview?.coarseMappedCount ?? 0} 条可粗略映射进度`
+                    : `${selectedDeck.progressPreview?.coarseMappedCount ?? 0} progress rows can be coarsely mapped`}
                 </span>
               </div>
 
               {selectedDeckFieldNames.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-xs text-muted-foreground">字段</p>
+                  <p className="text-xs text-muted-foreground">{isZh ? '字段' : 'Fields'}</p>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {selectedDeckFieldNames.slice(0, 8).map((fieldName) => (
                       <span key={fieldName} className="rounded-md bg-background px-2 py-1 text-xs">
@@ -296,18 +307,22 @@ export function ImportAnkiApkgDialog({
                 <div className="mt-3 border-t border-border pt-3">
                   <div className="flex flex-wrap items-end justify-between gap-2">
                     <div>
-                      <p className="text-xs font-medium">字段映射</p>
-                      <p className="text-xs text-muted-foreground">自动识别不准时，手动指定列。</p>
+                      <p className="text-xs font-medium">{isZh ? '字段映射' : 'Field mapping'}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isZh ? '自动识别不准时，手动指定列。' : 'If auto-detection is wrong, choose fields manually.'}
+                      </p>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {Object.keys(fieldMapping).length > 0 ? `已指定 ${Object.keys(fieldMapping).length} 项` : '默认自动识别'}
+                      {Object.keys(fieldMapping).length > 0
+                        ? (isZh ? `已指定 ${Object.keys(fieldMapping).length} 项` : `${Object.keys(fieldMapping).length} fields set`)
+                        : (isZh ? '默认自动识别' : 'Auto-detect by default')}
                     </span>
                   </div>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {MAPPING_FIELDS.map((field) => (
                       <div key={field.key} className="space-y-1">
                         <Label htmlFor={`anki-field-${field.key}`} className="text-xs">
-                          {field.label}
+                          {isZh ? field.label.zh : field.label.en}
                         </Label>
                         <Select
                           value={fieldMapping[field.key] || AUTO_FIELD}
@@ -318,7 +333,7 @@ export function ImportAnkiApkgDialog({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={AUTO_FIELD}>自动识别</SelectItem>
+                            <SelectItem value={AUTO_FIELD}>{isZh ? '自动识别' : 'Auto-detect'}</SelectItem>
                             {selectedDeckFieldNames.map((fieldName) => (
                               <SelectItem key={`${field.key}-${fieldName}`} value={fieldName}>
                                 {fieldName}
@@ -334,11 +349,11 @@ export function ImportAnkiApkgDialog({
 
               {selectedDeck.sampleRows && selectedDeck.sampleRows.length > 0 && (
                 <div className="mt-3 space-y-1">
-                  <p className="text-xs text-muted-foreground">样例</p>
+                  <p className="text-xs text-muted-foreground">{isZh ? '样例' : 'Samples'}</p>
                   {selectedDeck.sampleRows.slice(0, 2).map((row, index) => (
                     <div key={`${row.word}-${index}`} className="rounded-md bg-background p-2 text-xs">
-                      <span className="font-medium">{row.word || '未识别词面'}</span>
-                      <span className="text-muted-foreground"> · {row.definition || '未识别释义'}</span>
+                      <span className="font-medium">{row.word || (isZh ? '未识别词面' : 'Unmapped word')}</span>
+                      <span className="text-muted-foreground"> · {row.definition || (isZh ? '未识别释义' : 'Unmapped definition')}</span>
                       {row.definitionZh ? <span className="text-muted-foreground"> · {row.definitionZh}</span> : null}
                     </div>
                   ))}
@@ -348,7 +363,7 @@ export function ImportAnkiApkgDialog({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="anki-progress-mode">进度映射</Label>
+            <Label htmlFor="anki-progress-mode">{isZh ? '进度映射' : 'Progress mapping'}</Label>
             <Select
               value={progressMode}
               onValueChange={(value) => setProgressMode(value as AnkiProgressMode)}
@@ -358,23 +373,29 @@ export function ImportAnkiApkgDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="coarse">粗略导入：用 Anki 复习次数和间隔估算学习状态</SelectItem>
-                <SelectItem value="none">不导入进度：只导入词条内容</SelectItem>
+                <SelectItem value="coarse">
+                  {isZh ? '粗略导入：用 Anki 复习次数和间隔估算学习状态' : 'Coarse import: estimate learning status from Anki review count and interval'}
+                </SelectItem>
+                <SelectItem value="none">
+                  {isZh ? '不导入进度：只导入词条内容' : 'No progress import: import word content only'}
+                </SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              粗略导入不会覆盖无关词条，只会给本次导入的词建立初始学习状态。
+              {isZh
+                ? '粗略导入不会覆盖无关词条，只会给本次导入的词建立初始学习状态。'
+                : 'Coarse import does not overwrite unrelated words; it only creates initial learning state for this import.'}
             </p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isInspecting || isImporting}>
-            取消
+          <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isInspecting || isImporting}>
+            {isZh ? '取消' : 'Cancel'}
           </Button>
           <Button onClick={handleImport} disabled={!file || !selectedDeckId || isImporting || isInspecting}>
             {isImporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-            2. 导入所选 deck
+            {isZh ? '2. 导入所选 deck' : '2. Import selected deck'}
           </Button>
         </DialogFooter>
       </DialogContent>

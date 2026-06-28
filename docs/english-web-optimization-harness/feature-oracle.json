@@ -1,0 +1,90 @@
+{
+  "schema_version": "prd-phase-harness/feature-oracle/v1",
+  "features": [
+    {
+      "id": "EN-F001",
+      "phase_id": "EN-01",
+      "category": "vocabulary",
+      "description": "A learner can use Vocabulary as a clear lexicon and wordbook center with English-mode copy, source-book context, safe import/export, and direct practice or review actions.",
+      "steps": [
+        "Open /dashboard/vocabulary as a seeded learner in English and light theme.",
+        "Confirm active book, total words, review need, source/license, filters, word detail, drill links, pronunciation action, and empty states are visible without accidental UI mixed-language leaks.",
+        "Verify learner-content Chinese definitions are classified separately from accidental UI chrome and that Vocabulary TTS behavior either honors Settings or records the current boundary.",
+        "Run focused lexicon, wordbook, export, i18n, build, and browser regression commands.",
+        "Record screenshots and command output in EN-01 actor and critic artifacts."
+      ],
+      "status": "passing",
+      "evidence": "docs/english-web-optimization-harness/reports/en-01-vocabulary-report.md; docs/english-web-optimization-harness/reports/en-01-vocabulary-critic.md; product-audit-2026-06-28/en-01-vocabulary/summary.json; product-audit-2026-06-28/en-01-vocabulary/manual-english/result.json; product-audit-2026-06-28/en-01-vocabulary/manual-english/dark-and-dialogs-result.json; product-audit-2026-06-28/en-01-vocabulary/manual-english/post-critic-result.json",
+      "notes": "EN-01 localized accidental English-mode Vocabulary/import/export chrome, added direct empty-state add/import actions, added safe keyboard row dialog activation, fixed controlled AddWordDialog Cancel, and passed focused tests, full Vitest, lint, i18n, build, UI regression, manual English browser checks, independent critic approval, and diff hygiene."
+    },
+    {
+      "id": "EN-F002",
+      "phase_id": "EN-02",
+      "category": "speaking",
+      "description": "A learner can practice pronunciation and roleplay with clear microphone, AI fallback, local scoring, objective progress, and no dead-end unsupported-browser state.",
+      "steps": [
+        "Open /dashboard/pronunciation and /dashboard/chat candidate speaking entry as a seeded learner.",
+        "Verify word mode, sentence mode, record lifecycle, score dimensions, local-only feedback, no-result recognizer handling, and voice-input fallback.",
+        "Verify roleplay is either wired as a visible Chat speaking flow with objectives/progress or recorded as a blocker; do not claim current roleplay completion unless the route proves it.",
+        "Record whether speaking evidence is intentionally session-only or persisted into learner events/progress.",
+        "Run pronunciation scorer, roleplay data, chat runtime, i18n, build, and browser regression commands.",
+        "Record microphone-denial or unsupported-browser evidence when browser APIs are unavailable."
+      ],
+      "status": "passing",
+      "evidence": "docs/english-web-optimization-harness/reports/en-02-speaking-report.md; docs/english-web-optimization-harness/reports/en-02-speaking-critic.md; product-audit-2026-06-28/en-02-speaking/summary.json; product-audit-2026-06-28/en-02-speaking/manual-english/result.json",
+      "notes": "EN-02 fixed speech-recognition no-result/timeout settlement, added Pronunciation text-speaking fallback into Chat, made local-only scoring explicit, exposed Chat roleplay scenarios/objectives/progress/completion score without changing chat runtime payloads, fixed English quick prompts, and passed focused tests, full Vitest, lint, i18n, build, UI regression, manual English browser checks, and diff hygiene."
+    },
+    {
+      "id": "EN-F003",
+      "phase_id": "EN-03",
+      "category": "listening",
+      "description": "A learner can complete a listening clip with reliable audio/TTS state, transcript discipline, answer progress, scoring, review feedback, and learning-event evidence.",
+      "steps": [
+        "Open /dashboard/listening as a seeded learner.",
+        "Verify clip selection, inline seed content, TTS supported and unsupported states, transcript reveal behavior, all-answer gate, scoring, and review transcript actions.",
+        "Verify Settings TTS controls are honored or documented as not connected to Listening's inline TTS hook.",
+        "Verify study-session time, XP, review count, and learning-event payloads are honest and do not silently inflate word-review achievements.",
+        "Run listening data, learning-event, i18n, build, and browser regression commands.",
+        "Record whether time, XP, gamification, and learning-event payloads match the acceptance gates."
+      ],
+      "status": "passing",
+      "evidence": "docs/english-web-optimization-harness/reports/en-03-listening-report.md; docs/english-web-optimization-harness/reports/en-03-listening-critic.md; product-audit-2026-06-28/en-03-listening/summary.json; product-audit-2026-06-28/en-03-listening/manual-english/result.json; product-audit-2026-06-28/en-03-listening/manual-unsupported-tts/result.json",
+      "notes": "EN-03 made transcript reveal deliberate and event-backed, added accessible audio-control labels, normalized fill/short-answer scoring, recorded non-zero estimated listening minutes, stopped treating listening questions as vocabulary reviews, added no-voice TTS startup timeout, and passed focused tests, full Vitest, lint, i18n, build, UI regression, supported and unsupported English browser checks, and diff hygiene."
+    },
+    {
+      "id": "EN-F004",
+      "phase_id": "EN-04",
+      "category": "reading",
+      "description": "A learner can complete a reading passage with passage selection, answer gating, evidence-line review, honest generated-passage fallback, scoring, and learning-event evidence.",
+      "steps": [
+        "Open /dashboard/reading as a seeded learner.",
+        "Verify select, inline seed content, reading, submit, review, evidence location, retry, generated-passage fallback, and mobile stacked layout.",
+        "Verify the page does not claim live AI generation unless an approved provider path is actually used.",
+        "Verify study-session time, XP, review count, and learning-event payloads are honest and do not silently inflate word-review achievements.",
+        "Run reading data, learning-event, i18n, build, and browser regression commands.",
+        "Record answer-scoring behavior and generated-passage fallback in actor and critic artifacts."
+      ],
+      "status": "passing",
+      "evidence": "docs/english-web-optimization-harness/reports/en-04-reading-report.md; docs/english-web-optimization-harness/reports/en-04-reading-critic.md; product-audit-2026-06-28/en-04-reading/summary.json; product-audit-2026-06-28/en-04-reading/manual-english/result.json; product-audit-2026-06-28/en-04-reading/mcp-browser-state.json",
+      "notes": "EN-04 renamed the simulated generation path to honest built-in practice variations, added all-answer progress gating, normalized short-answer scoring while rejecting partial false positives, added evidence-note fallback for review, recorded non-zero reading duration, stopped treating reading questions as vocabulary reviews, fixed accidental English-mode Reading chrome, and passed focused tests, full Vitest, lint, i18n, build, UI regression, manual English browser checks, MCP browser check, and diff hygiene."
+    },
+    {
+      "id": "EN-F005",
+      "phase_id": "EN-05",
+      "category": "learning-center",
+      "description": "A learner can rely on Today, Review, Analytics, Settings, Profile, and Learning Path as a coherent progress, reflection, and control center across all completed module work.",
+      "steps": [
+        "Open /dashboard/today, /dashboard/review, /dashboard/analytics, /dashboard/settings, /dashboard/profile, and /dashboard/learning-path as seeded learners.",
+        "Verify mission priority, review debt, analytics honesty, settings controls, profile state, reminders, and whole-demand regression across EN-F001 through EN-F005.",
+        "Verify Settings clear-data behavior is guarded and either clears IndexedDB artifacts or documents the current localStorage-only boundary.",
+        "Verify Today hard-word behavior either enters review debt or the UI copy no longer implies due-queue mutation.",
+        "Verify English-mode Settings tab labels and Profile material labels no longer leak accidental Chinese or are documented as intentional learner content.",
+        "Run focused learning-center tests, full test/build checks, UI regression, learning-flow regression, and diff hygiene.",
+        "Record terminal whole-demand regression evidence plus independent critic approval."
+      ],
+      "status": "passing",
+      "evidence": "docs/english-web-optimization-harness/reports/en-05-learning-center-report.md; docs/english-web-optimization-harness/reports/en-05-learning-center-critic.md; product-audit-2026-06-28/en-05-learning-center/ui-regression/summary.json; product-audit-2026-06-28/en-05-learning-flow/summary.json; product-audit-2026-06-28/en-05-learning-center/manual-english/result.json; product-audit-2026-06-28/en-05-learning-center/manual-english-positive-streak/result.json; product-audit-2026-06-28/en-05-learning-center/mcp-browser-today-state.json",
+      "notes": "EN-05 localized accidental English-mode learning-center chrome across Today, Review, Analytics, Settings, and Profile; aligned Today hard-word and positive-streak copy with actual behavior; gated lifecycle reminder previews by notification permission; expanded clear-data coverage across localStorage namespaces and IndexedDB after destructive confirmation; and passed focused tests, full Vitest, lint, i18n, build, UI regression, contract-path learning-flow regression, manual English browser checks, positive-streak browser evidence, and diff hygiene. Local/demo evidence does not claim production Supabase sync; real IndexedDB delete execution is a controlled residual risk outside non-destructive browser validation."
+    }
+  ]
+}

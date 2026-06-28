@@ -1252,7 +1252,9 @@ export default function AnalyticsPage() {
                       <div className="analytics-muted-panel rounded-lg border p-4">
                         <p className="text-xs text-muted-foreground">{isZh ? '观察到的学习日' : 'Days observed'}</p>
                         <p className="mt-2 text-2xl font-semibold">{reviewWindowInsight.activeDays}</p>
-                        <p className="text-sm text-muted-foreground">最近 30 天里有学习行为的天数</p>
+                        <p className="text-sm text-muted-foreground">
+                          {isZh ? '最近 30 天里有学习行为的天数' : 'Days with learning activity in the last 30 days'}
+                        </p>
                       </div>
                       <div className="analytics-muted-panel rounded-lg border p-4">
                         <p className="text-xs text-muted-foreground">{isZh ? '备用时段' : 'Backup window'}</p>
@@ -1312,7 +1314,7 @@ export default function AnalyticsPage() {
                           ) : null}
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          R {item.retrievabilityPct}% · 难度 {item.difficulty} · 遗忘 {item.lapses} 次 · {formatRiskDueLabel(item.hoursUntilDue)}
+                          R {item.retrievabilityPct}% · {isZh ? '难度' : 'difficulty'} {item.difficulty} · {isZh ? '遗忘' : 'lapses'} {item.lapses}{isZh ? ' 次' : ''} · {formatRiskDueLabel(item.hoursUntilDue)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

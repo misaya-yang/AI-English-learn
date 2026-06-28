@@ -22,6 +22,11 @@ const reminderState = vi.hoisted(() => ({
   saveReminderHour: vi.fn(),
 }));
 
+const storageResetState = vi.hoisted(() => ({
+  clearAllData: vi.fn(),
+  clearLocalDbData: vi.fn().mockResolvedValue(undefined),
+}));
+
 const userDataState = vi.hoisted(() => ({
   updateSettings: vi.fn(),
   settings: {
@@ -99,10 +104,16 @@ vi.mock('sonner', () => ({
 }));
 
 vi.mock('@/data/localStorage', () => ({
-  clearAllData: vi.fn(),
+  clearAllData: storageResetState.clearAllData,
+}));
+
+vi.mock('@/lib/localDb', () => ({
+  clearLocalDbData: storageResetState.clearLocalDbData,
 }));
 
 import SettingsPage from './SettingsPage';
+import { clearAllData } from '@/data/localStorage';
+import { clearLocalDbData } from '@/lib/localDb';
 
 const renderPage = () =>
   render(
@@ -139,11 +150,14 @@ describe('SettingsPage notifications', () => {
   it('degrades gracefully when browser notification permission is denied', () => {
     renderPage();
 
-    expect(screen.getByText(/已拒绝/)).toBeInTheDocument();
+    expect(screen.getAllByText(/已拒绝/).length).toBeGreaterThan(0);
+    expect(screen.queryByText('当前会发送这条提醒')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '申请权限' })).not.toBeInTheDocument();
   });
 
   it('previews a real review-debt lifecycle nudge and lets users edit quiet hours', () => {
+    reminderState.permission = 'granted';
+
     renderPage();
 
     expect(screen.getByText('当前会发送这条提醒')).toBeInTheDocument();
@@ -155,6 +169,7 @@ describe('SettingsPage notifications', () => {
   });
 
   it('does not preview a nudge after today is complete', () => {
+    reminderState.permission = 'granted';
     userDataState.dailyMission.status = 'completed';
     userDataState.dailyMission.tasks = [{ id: 't1', type: 'review', title: 'Review', titleZh: '复习', done: true }];
 
@@ -183,5 +198,24 @@ describe('SettingsPage notifications', () => {
     expect(i18nState.changeLanguage).toHaveBeenCalledWith('en');
     expect(localStorage.getItem('language')).toBe('en');
     expect(localStorage.getItem('vocabdaily_language')).toBeNull();
+  });
+
+  it('clears localStorage and IndexedDB only after destructive confirmation', async () => {
+    vi.useRealTimers();
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/settings?tab=account']}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+
+    expect(clearAllData).not.toHaveBeenCalled();
+    expect(clearLocalDbData).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: '清除所有数据' }));
+    fireEvent.click(await screen.findByRole('button', { name: '确认删除' }));
+
+    expect(clearAllData).toHaveBeenCalledTimes(1);
+    expect(clearLocalDbData).toHaveBeenCalledTimes(1);
   });
 });

@@ -25,6 +25,8 @@ interface RoleplayModeProps {
   messageCount: number;
   /** Session score (null if not yet scored) */
   sessionScore: number | null;
+  /** Optional local progress toggle for self-guided roleplay objectives */
+  onToggleObjective?: (objectiveId: string) => void;
 }
 
 export function RoleplayMode({
@@ -32,7 +34,9 @@ export function RoleplayMode({
   onExit,
   activeScenario,
   completedObjectives,
+  messageCount,
   sessionScore,
+  onToggleObjective,
 }: RoleplayModeProps) {
   const { i18n } = useTranslation();
   const isZh = i18n.language === 'zh';
@@ -100,9 +104,13 @@ export function RoleplayMode({
             {activeScenario.objectives.map((obj) => {
               const done = completedObjectives.includes(obj.id);
               return (
-                <div
+                <button
+                  type="button"
                   key={obj.id}
-                  className="flex items-center gap-2 text-xs"
+                  onClick={() => onToggleObjective?.(obj.id)}
+                  aria-pressed={done}
+                  disabled={!onToggleObjective}
+                  className="flex w-full items-center gap-2 rounded-md text-left text-xs transition-colors enabled:px-1 enabled:py-1 enabled:hover:bg-muted/55 disabled:cursor-default"
                 >
                   {done ? (
                     <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))] shrink-0" />
@@ -112,7 +120,7 @@ export function RoleplayMode({
                   <span className={done ? 'line-through text-muted-foreground' : ''}>
                     {isZh ? obj.descriptionZh : obj.description}
                   </span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -122,6 +130,9 @@ export function RoleplayMode({
             <Progress value={progressPercent} className="h-1.5" />
             <p className="text-[10px] text-muted-foreground mt-1">
               {objectivesDone}/{objectivesTotal} {isZh ? '已完成' : 'completed'}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {isZh ? `消息 ${messageCount} 条` : `${messageCount} messages`}
             </p>
           </div>
 

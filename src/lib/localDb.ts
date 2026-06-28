@@ -12,7 +12,7 @@
  *   events         — learning events (analytics)
  */
 
-import { openDB, type IDBPDatabase, type DBSchema } from 'idb';
+import { deleteDB, openDB, type IDBPDatabase, type DBSchema } from 'idb';
 import type { FSRSState, ReviewLog, SyncQueueEntry } from '@/types/core';
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
@@ -789,5 +789,20 @@ export async function isLocalDbAvailable(): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+export async function clearLocalDbData(): Promise<void> {
+  try {
+    const db = _dbPromise ? await _dbPromise.catch(() => null) : null;
+    db?.close();
+    _dbPromise = null;
+    await deleteDB(DB_NAME, {
+      blocked() {
+        console.warn('[localDb] clear blocked: close other tabs');
+      },
+    });
+  } catch (err) {
+    console.warn('[localDb] clearLocalDbData failed:', err);
   }
 }

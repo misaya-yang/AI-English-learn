@@ -34,6 +34,7 @@ describe('chat visual shell contract', () => {
     expect(source).toContain('<DatabaseStatusBanner');
     expect(source).toContain('<QuizCanvasPanel');
     expect(source).toContain('<QuizRunFooter');
+    expect(source).toContain('<RoleplayMode');
     expect(source).not.toContain('QuizArtifactCard');
     expect(source).not.toContain('showDbSetup');
   });
@@ -49,5 +50,11 @@ describe('chat visual shell contract', () => {
     expect(coach).toContain('hsl(var(--success)');
     expect(quiz).toContain('border-primary/50 bg-primary/10');
     expect(quiz).toContain('hsl(var(--success)');
+  });
+
+  it('keeps chat quick prompts localized in English mode', () => {
+    const composer = readSource('src/features/chat/components/ChatComposer.tsx');
+
+    expect(composer).toContain("language.startsWith('zh') ? prompt.textZh : prompt.text");
   });
 });

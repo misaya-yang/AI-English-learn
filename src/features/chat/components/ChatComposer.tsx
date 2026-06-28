@@ -238,7 +238,7 @@ export function ChatComposer({
                 onClick={() => onQuickPrompt(prompt.text)}
                 className="liquid-glass-control liquid-glass-interactive w-full min-w-0 rounded-lg border border-transparent px-4 py-2 text-left text-sm transition-all hover:border-primary/35 sm:w-auto sm:flex-shrink-0 sm:whitespace-nowrap sm:text-center"
               >
-                {prompt.textZh}
+                {language.startsWith('zh') ? prompt.textZh : prompt.text}
               </button>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,8 @@ export function ImportWordBookDialog({
   onOpenChange,
   hideTrigger = false,
 }: ImportWordBookDialogProps) {
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const [open, setOpen] = useState(false);
   const dialogOpen = controlledOpen ?? open;
   const setDialogOpen = onOpenChange ?? setOpen;
@@ -64,7 +67,7 @@ export function ImportWordBookDialog({
         delimiter: nextFile.name.toLowerCase().endsWith('.tsv') ? '\t' : undefined,
       }));
     } catch (error) {
-      setPreviewError(error instanceof Error ? error.message : '无法预览文件');
+      setPreviewError(error instanceof Error ? error.message : (isZh ? '无法预览文件' : 'Unable to preview file'));
     }
   };
 
@@ -113,32 +116,34 @@ export function ImportWordBookDialog({
           {trigger ?? (
             <Button variant="outline">
               <Upload className="h-4 w-4 mr-2" />
-              导入词书
+              {isZh ? '导入词书' : 'Import word book'}
             </Button>
           )}
         </DialogTrigger>
       ) : null}
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>导入词书 (CSV/TSV)</DialogTitle>
+          <DialogTitle>{isZh ? '导入词书 (CSV/TSV)' : 'Import word book (CSV/TSV)'}</DialogTitle>
           <DialogDescription>
-            必填列：word, definition。可选列支持 definitionZh/level/topic/examples 等。
+            {isZh
+              ? '必填列：word, definition。可选列支持 definitionZh/level/topic/examples 等。'
+              : 'Required columns: word and definition. Optional columns include definitionZh, level, topic, examples, and more.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="book-name">词书名称</Label>
+            <Label htmlFor="book-name">{isZh ? '词书名称' : 'Book name'}</Label>
             <Input
               id="book-name"
               value={bookName}
               onChange={(e) => setBookName(e.target.value)}
-              placeholder="例如：考研核心词"
+              placeholder={isZh ? '例如：考研核心词' : 'e.g. IELTS Core Vocabulary'}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="book-file">文件</Label>
+            <Label htmlFor="book-file">{isZh ? '文件' : 'File'}</Label>
             <Input
               id="book-file"
               type="file"
@@ -163,28 +168,28 @@ export function ImportWordBookDialog({
             <div className="rounded-md border border-border bg-muted/35 p-3 text-xs">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <div>
-                  <p className="text-muted-foreground">总行数</p>
+                  <p className="text-muted-foreground">{isZh ? '总行数' : 'Total rows'}</p>
                   <p className="text-sm font-semibold">{preview.totalRows}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">可导入</p>
+                  <p className="text-muted-foreground">{isZh ? '可导入' : 'Importable'}</p>
                   <p className="text-sm font-semibold">{preview.successRows.length}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">重复</p>
+                  <p className="text-muted-foreground">{isZh ? '重复' : 'Duplicates'}</p>
                   <p className="text-sm font-semibold">{preview.duplicateCount}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">错误</p>
+                  <p className="text-muted-foreground">{isZh ? '错误' : 'Errors'}</p>
                   <p className="text-sm font-semibold">{preview.errorRows.length}</p>
                 </div>
               </div>
               <p className="mt-2 text-muted-foreground">
-                检测分隔符：{preview.delimiter === '\t' ? 'Tab' : 'Comma'}
+                {isZh ? '检测分隔符' : 'Detected delimiter'}: {preview.delimiter === '\t' ? 'Tab' : 'Comma'}
               </p>
               {preview.successRows.length > 0 && (
                 <div className="mt-2 space-y-1">
-                  <p className="text-muted-foreground">样例</p>
+                  <p className="text-muted-foreground">{isZh ? '样例' : 'Samples'}</p>
                   {preview.successRows.slice(0, 2).map((row) => (
                     <div key={`${row.row}-${row.key}`} className="rounded-md bg-background p-2">
                       <span className="font-medium">{row.word.word}</span>
@@ -195,25 +200,27 @@ export function ImportWordBookDialog({
               )}
               {preview.errorRows.length > 0 && (
                 <p className="mt-2 text-muted-foreground">
-                  导入后会自动导出错误报告，方便你修正缺失字段。
+                  {isZh
+                    ? '导入后会自动导出错误报告，方便你修正缺失字段。'
+                    : 'After import, an error report will be exported so you can fix missing fields.'}
                 </p>
               )}
             </div>
           )}
 
           <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground space-y-1">
-            <p>多值字段请使用 | 分隔（例如 synonyms）。</p>
-            <p>examples 格式：en::zh|en2::zh2</p>
+            <p>{isZh ? '多值字段请使用 | 分隔（例如 synonyms）。' : 'Use | to separate multi-value fields such as synonyms.'}</p>
+            <p>{isZh ? 'examples 格式：en::zh|en2::zh2' : 'Examples format: en::zh|en2::zh2'}</p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isImporting}>
-            取消
+          <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isImporting}>
+            {isZh ? '取消' : 'Cancel'}
           </Button>
           <Button onClick={handleImport} disabled={!file || isImporting}>
             {isImporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-            开始导入
+            {isZh ? '开始导入' : 'Start import'}
           </Button>
         </DialogFooter>
       </DialogContent>
