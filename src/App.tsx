@@ -33,9 +33,11 @@ const PracticePage = lazyWithRetry(() => import('@/pages/dashboard/PracticePage'
 const ExamPrepPage = lazyWithRetry(() => import('@/pages/dashboard/ExamPrepPage'), 'exam');
 const VocabularyBankPage = lazyWithRetry(() => import('@/pages/dashboard/VocabularyBankPage'), 'vocabulary');
 const AnalyticsPage = lazyWithRetry(() => import('@/pages/dashboard/AnalyticsPage'), 'analytics');
+const EvidencePage = lazyWithRetry(() => import('@/pages/dashboard/EvidencePage'), 'evidence');
 const ChatPage = lazyWithRetry(() => import('@/pages/dashboard/ChatPage'), 'chat');
 const MemoryCenterPage = lazyWithRetry(() => import('@/pages/dashboard/MemoryCenterPage'), 'memory');
 const SettingsPage = lazyWithRetry(() => import('@/pages/dashboard/SettingsPage'), 'settings');
+const OrganizationPage = lazyWithRetry(() => import('@/pages/dashboard/OrganizationPage'), 'organization');
 const ProfilePage = lazyWithRetry(() => import('@/pages/dashboard/ProfilePage'), 'profile');
 const ReadingPage = lazyWithRetry(() => import('@/pages/dashboard/ReadingPage'), 'reading');
 const ListeningPage = lazyWithRetry(() => import('@/pages/dashboard/ListeningPage'), 'listening');
@@ -88,6 +90,7 @@ function App() {
                     <Route path="exam" element={withRouteFallback(<ExamPrepPage />)} />
                     <Route path="vocabulary" element={withRouteFallback(<VocabularyBankPage />)} />
                     <Route path="analytics" element={withRouteFallback(<AnalyticsPage />)} />
+                    <Route path="evidence" element={withRouteFallback(<EvidencePage />)} />
                     <Route path="chat" element={withRouteFallback(<ChatPage />)} />
                     <Route path="memory" element={withRouteFallback(<MemoryCenterPage />)} />
                     <Route path="reading" element={withRouteFallback(<ReadingPage />)} />
@@ -97,6 +100,7 @@ function App() {
                     <Route path="pronunciation" element={withRouteFallback(<PronunciationPage />)} />
                     <Route path="writing" element={withRouteFallback(<WritingPage />)} />
                     <Route path="learning-path" element={withRouteFallback(<LearningPathPage />)} />
+                    <Route path="organization" element={withRouteFallback(<OrganizationPage />)} />
                     <Route path="settings" element={withRouteFallback(<SettingsPage />)} />
                     <Route path="profile" element={withRouteFallback(<ProfilePage />)} />
                   </Route>

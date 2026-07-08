@@ -13,8 +13,10 @@
 import type { ComponentType, SVGProps } from 'react';
 import {
   AudioLines,
+  BarChart3,
   BookOpen,
   Brain,
+  Building2,
   CalendarDays,
   GraduationCap,
   Headphones,
@@ -40,9 +42,11 @@ export type DashboardRouteId =
   | 'chat'
   | 'learning-path'
   | 'vocabulary'
+  | 'evidence'
   | 'analytics'
   | 'memory'
   | 'leaderboard'
+  | 'organization'
   | 'settings'
   | 'profile';
 
@@ -66,7 +70,21 @@ export interface DashboardRouteMeta {
   pageTitle: { en: string; zh: string };
   /** Free-form aliases the search palette can match on. Always lowercase. */
   searchAliases: string[];
+  /** Hidden from nav when enterprise preview is disabled. Direct routes can still render a gated shell. */
+  enterpriseOnly?: boolean;
 }
+
+export interface DashboardRouteVisibilityOptions {
+  enterpriseEnabled?: boolean;
+}
+
+const isRouteVisible = (
+  route: DashboardRouteMeta,
+  options: DashboardRouteVisibilityOptions = {},
+): boolean => {
+  if (!route.enterpriseOnly) return true;
+  return options.enterpriseEnabled ?? true;
+};
 
 const ROUTES: DashboardRouteMeta[] = [
   {
@@ -213,6 +231,18 @@ const ROUTES: DashboardRouteMeta[] = [
     searchAliases: ['analytics', 'stats', '数据', '统计'],
   },
   {
+    id: 'evidence',
+    path: '/dashboard/evidence',
+    label: { en: 'Evidence', zh: '证据' },
+    description: { en: 'Attempts, weak signals, and recovery queue.', zh: '学习记录、薄弱信号和补救队列。' },
+    icon: BarChart3,
+    group: 'tools',
+    mobilePriority: 18,
+    pageTitle: { en: 'Evidence · VocabDaily', zh: '证据 · VocabDaily' },
+    searchAliases: ['evidence', 'attempts', 'mistakes', 'remediation', '证据', '错题', '补救'],
+    enterpriseOnly: true,
+  },
+  {
     id: 'memory',
     path: '/dashboard/memory',
     label: { en: 'Memory', zh: '记忆' },
@@ -233,6 +263,18 @@ const ROUTES: DashboardRouteMeta[] = [
     mobilePriority: 15,
     pageTitle: { en: 'Leaderboard · VocabDaily', zh: '排行 · VocabDaily' },
     searchAliases: ['leaderboard', '排行', 'rank', '社区'],
+  },
+  {
+    id: 'organization',
+    path: '/dashboard/organization',
+    label: { en: 'Organization', zh: '组织' },
+    description: { en: 'Members, cohorts, assignments, and audit.', zh: '成员、班级、作业和审计。' },
+    icon: Building2,
+    group: 'admin',
+    mobilePriority: 19,
+    pageTitle: { en: 'Organization · VocabDaily', zh: '组织 · VocabDaily' },
+    searchAliases: ['organization', 'org', 'cohort', 'assignments', 'audit', '组织', '班级', '作业', '审计'],
+    enterpriseOnly: true,
   },
   {
     id: 'settings',
@@ -280,16 +322,24 @@ export function getDashboardRouteByPath(path: string): DashboardRouteMeta | unde
   return ROUTES.find((route) => path === route.path || path.startsWith(`${route.path}/`));
 }
 
-export function getMobileNavRoutes(limit = 4): DashboardRouteMeta[] {
+export function getMobileNavRoutes(
+  limit = 4,
+  options: DashboardRouteVisibilityOptions = {},
+): DashboardRouteMeta[] {
   return ROUTES
     .slice()
+    .filter((route) => isRouteVisible(route, options))
     .sort((a, b) => a.mobilePriority - b.mobilePriority)
     .slice(0, limit);
 }
 
-export function getRoutesByGroup(group: DashboardRouteGroup): DashboardRouteMeta[] {
+export function getRoutesByGroup(
+  group: DashboardRouteGroup,
+  options: DashboardRouteVisibilityOptions = {},
+): DashboardRouteMeta[] {
   return ROUTES
     .filter((route) => route.group === group)
+    .filter((route) => isRouteVisible(route, options))
     .sort((a, b) => a.mobilePriority - b.mobilePriority);
 }
 

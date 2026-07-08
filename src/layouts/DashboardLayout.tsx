@@ -25,6 +25,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useTranslation } from 'react-i18next';
 import { buildLifecycleNotification } from '@/features/learning/lifecycleNotifications';
+import { isEnterpriseUiEnabled } from '@/features/enterprise/enterpriseUi';
 import {
   getDashboardRouteByPath,
   getRoutesByGroup,
@@ -143,6 +144,7 @@ export default function DashboardLayout() {
   const isZh = i18n.language?.startsWith('zh') ?? false;
   const currentLang = isZh ? 'zh' : 'en';
   const copy = dashboardLayoutCopy[currentLang];
+  const enterpriseEnabled = isEnterpriseUiEnabled();
   const lifecycleReminder = (() => {
     const now = new Date();
     const today = localDateKey(now);
@@ -187,16 +189,20 @@ export default function DashboardLayout() {
   }), [dueWords.length, isZh]);
 
   const primaryNav = useMemo<NavItem[]>(
-    () => [...getRoutesByGroup('learning'), ...getRoutesByGroup('practice')].map(routeToNavItem),
-    [routeToNavItem],
+    () => [
+      ...getRoutesByGroup('learning', { enterpriseEnabled }),
+      ...getRoutesByGroup('practice', { enterpriseEnabled }),
+    ].map(routeToNavItem),
+    [enterpriseEnabled, routeToNavItem],
   );
 
   const toolNav = useMemo<NavItem[]>(
     () => [
-      ...getRoutesByGroup('tools'),
-      getRoutesByGroup('admin').find((route) => route.id === 'settings'),
-    ].filter((route): route is DashboardRouteMeta => Boolean(route)).map(routeToNavItem),
-    [routeToNavItem],
+      ...getRoutesByGroup('tools', { enterpriseEnabled }),
+      ...getRoutesByGroup('admin', { enterpriseEnabled })
+        .filter((route) => route.id === 'settings' || route.id === 'organization'),
+    ].map(routeToNavItem),
+    [enterpriseEnabled, routeToNavItem],
   );
 
   const learningNav = useMemo(() => primaryNav.filter((item) => LEARNING_ROUTE_PREFIXES.includes(item.path as (typeof LEARNING_ROUTE_PREFIXES)[number])), [primaryNav]);

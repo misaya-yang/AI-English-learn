@@ -96,4 +96,15 @@ describe('routeRegistry', () => {
     expect(getDashboardRoute('today').path).toBe('/dashboard/today');
     expect(getDashboardRoute('chat').label.en).toBe('Help');
   });
+
+  it('registers enterprise Evidence and Organization routes behind visible nav filtering', () => {
+    expect(getDashboardRoute('evidence').path).toBe('/dashboard/evidence');
+    expect(getDashboardRoute('organization').path).toBe('/dashboard/organization');
+
+    expect(getRoutesByGroup('tools', { enterpriseEnabled: false }).map((route) => route.id)).not.toContain('evidence');
+    expect(getRoutesByGroup('admin', { enterpriseEnabled: false }).map((route) => route.id)).not.toContain('organization');
+
+    expect(getRoutesByGroup('tools', { enterpriseEnabled: true }).map((route) => route.id)).toContain('evidence');
+    expect(getRoutesByGroup('admin', { enterpriseEnabled: true }).map((route) => route.id)).toContain('organization');
+  });
 });
