@@ -9,6 +9,7 @@
 
 import { recordLearningEvent } from './learningEvents';
 import type { LearningEventRecord } from './learningEvents';
+import { evidenceEventToSkillAttempt, type SkillAttemptContext } from './skillAttempts';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -96,6 +97,7 @@ export function createEvidenceEvent<T extends EvidenceInput>(input: T): Evidence
 
 interface RecordEvidenceOptions {
   sessionId?: string;
+  skillAttemptContext?: SkillAttemptContext;
   /** Skip writing — useful for unit tests or dry runs. */
   skipPersist?: boolean;
 }
@@ -113,10 +115,15 @@ export async function recordEvidence(
   if (opts.skipPersist) return event;
 
   const { type, userId, createdAt, ...rest } = event;
+  const skillAttempt = evidenceEventToSkillAttempt(event, opts.skillAttemptContext);
   await recordLearningEvent({
     userId,
     eventName: `evidence.${type}`,
-    payload: { ...(rest as Record<string, unknown>), evidenceCreatedAt: createdAt },
+    payload: {
+      ...(rest as Record<string, unknown>),
+      evidenceCreatedAt: createdAt,
+      skillAttempt,
+    },
     sessionId: opts.sessionId,
   });
   return event;
