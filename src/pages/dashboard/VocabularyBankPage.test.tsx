@@ -272,7 +272,7 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
     expect(screen.queryByText('总词数')).not.toBeInTheDocument();
     expect(screen.queryByText('新词')).not.toBeInTheDocument();
 
-    fireEvent.keyDown(screen.getByRole('button', { name: /Open mitigate details/ }), { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: /Open mitigate details/ }));
     expect(screen.getByText('Learning status')).toBeInTheDocument();
     expect(screen.getByText('Source book')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark mastered' })).toBeInTheDocument();
@@ -288,14 +288,15 @@ describe('VocabularyBankPage — lexicon and word book ecosystem', () => {
     expect(screen.getByRole('button', { name: 'Anki import format (TXT)' })).toBeInTheDocument();
   });
 
-  it('does not open word detail when keyboard activation starts on the nested pronunciation button', () => {
+  it('keeps pronunciation as a separate control that does not open word detail', () => {
     i18nState.language = 'en-US';
 
     renderPage();
 
     const row = screen.getByRole('button', { name: /Open mitigate details/ });
-    const rowAudioButton = within(row).getByLabelText('Play pronunciation for mitigate');
+    const rowAudioButton = screen.getAllByLabelText('Play pronunciation for mitigate')[0];
 
+    expect(within(row).queryByLabelText('Play pronunciation for mitigate')).not.toBeInTheDocument();
     fireEvent.keyDown(rowAudioButton, { key: 'Enter' });
     expect(screen.queryByText('Learning status')).not.toBeInTheDocument();
 

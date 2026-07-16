@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ISSUE_LABELS } from '@/features/exam/constants';
 import { ErrorGraph } from '@/features/exam/components/ErrorGraph';
@@ -142,10 +141,10 @@ export function ExamWorkspaceTabs({
           onValueChange={(value) => onWorkspaceViewChange(value as WorkspaceView)}
           className="gap-0"
         >
-          <div className="border-b border-transparent px-5 py-4">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="border-b border-transparent px-4 py-3 sm:px-5">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
               <WorkspaceLead eyebrow={workspaceCopy.eyebrow} title={workspaceCopy.title} body={workspaceCopy.body} />
-              <TabsList className="liquid-glass-control grid h-auto w-full max-w-[420px] grid-cols-4 rounded-lg p-1">
+              <TabsList className="liquid-glass-control grid h-auto w-full max-w-[380px] grid-cols-4 rounded-lg p-1">
                 <TabsTrigger value="brief" className="rounded-md">概览</TabsTrigger>
                 <TabsTrigger value="draft" className="rounded-md">写作</TabsTrigger>
                 <TabsTrigger value="review" className="rounded-md">结果</TabsTrigger>
@@ -154,10 +153,10 @@ export function ExamWorkspaceTabs({
             </div>
           </div>
 
-          <div className="px-5 py-5">
+          <div className="px-4 py-4 sm:px-5">
             <LoadingPipeline stage={loadingStage} />
 
-            <TabsContent value="brief" className="mt-0 space-y-5">
+            <TabsContent value="brief" className="mt-0 space-y-4">
               <ExamBriefPanel
                 promptTopic={promptTopic}
                 onPromptTopicChange={onPromptTopicChange}
@@ -180,7 +179,7 @@ export function ExamWorkspaceTabs({
               />
             </TabsContent>
 
-            <TabsContent value="draft" className="mt-0 space-y-5">
+            <TabsContent value="draft" className="mt-0 space-y-4">
               <ExamDraftPanel
                 taskType={taskType}
                 activeWordCount={activeWordCount}
@@ -205,7 +204,7 @@ export function ExamWorkspaceTabs({
               />
             </TabsContent>
 
-            <TabsContent value="review" className="mt-0 space-y-5">
+            <TabsContent value="review" className="mt-0 space-y-4">
               {feedback ? (
                 <ExamReviewPanel
                   feedback={feedback}
@@ -222,7 +221,7 @@ export function ExamWorkspaceTabs({
               )}
             </TabsContent>
 
-            <TabsContent value="insight" className="mt-0 space-y-5">
+            <TabsContent value="insight" className="mt-0 space-y-4">
               <InsightPanel
                 errorAnalytics={errorAnalytics}
                 activeErrorTag={activeErrorTag}
@@ -298,7 +297,7 @@ function InsightPanel({
         <TabsTrigger value="history" className="rounded-md">历史</TabsTrigger>
       </TabsList>
 
-      <div className="mt-4">
+      <div className="mt-3">
         <TabsContent value="weakness" className="mt-0 space-y-4">
           {errorAnalytics.length === 0 ? (
             <EmptyKickoffCard onQuickStart={() => void onQuickStart()} />
@@ -377,62 +376,60 @@ function InsightPanel({
           {recentHistory.length === 0 ? (
             <p className="text-sm text-muted-foreground">暂无反馈记录，先完成一次写作评分。</p>
           ) : (
-            <ScrollArea className="h-[560px] pr-2">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {recentHistory.map((item) => {
-                  const tags = item.issues.slice(0, 3).map((issue) => ISSUE_LABELS[issue.tag] || issue.tag);
-                  return (
-                    <div key={item.attemptId} className="rounded-lg border border-border/70 bg-background/35 p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</p>
-                          <p className="mt-1 text-lg font-semibold">Band {item.scores.overallBand.toFixed(1)}</p>
-                        </div>
-                        <Badge variant="outline" className="rounded-md">{item.provider}</Badge>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {recentHistory.map((item) => {
+                const tags = item.issues.slice(0, 3).map((issue) => ISSUE_LABELS[issue.tag] || issue.tag);
+                return (
+                  <div key={item.attemptId} className="rounded-lg border border-border/70 bg-background/35 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</p>
+                        <p className="mt-1 text-lg font-semibold">Band {item.scores.overallBand.toFixed(1)}</p>
                       </div>
-
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                        <span className="rounded-md bg-muted/40 px-2 py-1">题目 {item.scores.taskResponse.toFixed(1)}</span>
-                        <span className="rounded-md bg-muted/40 px-2 py-1">连贯 {item.scores.coherenceCohesion.toFixed(1)}</span>
-                        <span className="rounded-md bg-muted/40 px-2 py-1">词汇 {item.scores.lexicalResource.toFixed(1)}</span>
-                        <span className="rounded-md bg-muted/40 px-2 py-1">语法 {item.scores.grammaticalRangeAccuracy.toFixed(1)}</span>
-                      </div>
-
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {tags.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">暂无明显问题</span>
-                        ) : (
-                          tags.map((tag) => (
-                            <span key={`${item.attemptId}-${tag}`} className="rounded-md border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
-                              {tag}
-                            </span>
-                          ))
-                        )}
-                      </div>
-
-                      <div className="mt-4 flex gap-2">
-                        <Button size="sm" variant="glass" className="rounded-lg" onClick={() => onRetryFeedback(item)}>
-                          再练一次
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-primary"
-                          onClick={() => {
-                            const firstTag = item.issues[0]?.tag;
-                            if (firstTag) {
-                              onViewError(firstTag);
-                            }
-                          }}
-                        >
-                          查看错因
-                        </Button>
-                      </div>
+                      <Badge variant="outline" className="rounded-md">{item.provider}</Badge>
                     </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                      <span className="rounded-md bg-muted/40 px-2 py-1">题目 {item.scores.taskResponse.toFixed(1)}</span>
+                      <span className="rounded-md bg-muted/40 px-2 py-1">连贯 {item.scores.coherenceCohesion.toFixed(1)}</span>
+                      <span className="rounded-md bg-muted/40 px-2 py-1">词汇 {item.scores.lexicalResource.toFixed(1)}</span>
+                      <span className="rounded-md bg-muted/40 px-2 py-1">语法 {item.scores.grammaticalRangeAccuracy.toFixed(1)}</span>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {tags.length === 0 ? (
+                        <span className="text-xs text-muted-foreground">暂无明显问题</span>
+                      ) : (
+                        tags.map((tag) => (
+                          <span key={`${item.attemptId}-${tag}`} className="rounded-md border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
+                            {tag}
+                          </span>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                      <Button size="sm" variant="glass" className="rounded-lg" onClick={() => onRetryFeedback(item)}>
+                        再练一次
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-primary"
+                        onClick={() => {
+                          const firstTag = item.issues[0]?.tag;
+                          if (firstTag) {
+                            onViewError(firstTag);
+                          }
+                        }}
+                      >
+                        查看错因
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </TabsContent>
       </div>

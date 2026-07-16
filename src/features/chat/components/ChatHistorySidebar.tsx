@@ -55,6 +55,7 @@ function EditableTitle({
           type="button"
           onClick={handleSave}
           className="rounded p-1 text-primary hover:bg-primary/10"
+          aria-label="Save conversation title"
         >
           <Check className="h-3.5 w-3.5" />
         </button>
@@ -70,7 +71,8 @@ function EditableTitle({
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="rounded p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted group-hover/title:opacity-100"
+        className="rounded p-1 text-muted-foreground opacity-70 transition-all hover:bg-muted group-hover/title:opacity-100 focus-visible:opacity-100"
+        aria-label="Edit conversation title"
       >
         <Edit2 className="h-3 w-3" />
       </button>
@@ -116,6 +118,7 @@ export function ChatHistorySidebar({
           className="h-8 w-8"
           onClick={onCreateSession}
           title={t('chat.newConversation')}
+          aria-label={t('chat.newConversation')}
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -134,27 +137,35 @@ export function ChatHistorySidebar({
               <div
                 key={session.id}
                 className={cn(
-                  'group flex cursor-pointer items-center gap-2.5 rounded-lg border p-3 pr-2 transition-all',
+                  'group flex items-center gap-2 rounded-lg border p-2 transition-colors',
                   currentSessionId === session.id
                     ? 'border-primary/20 bg-primary/10'
                     : 'border-transparent hover:bg-muted',
                 )}
-                onClick={() => onSelectSession(session.id)}
               >
-                <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1 overflow-hidden">
-                  {currentSessionId === session.id ? (
+                {currentSessionId === session.id ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-2.5 px-1 py-1">
+                    <MessageSquare className="h-4 w-4 flex-shrink-0 text-primary" />
                     <EditableTitle
                       title={session.title}
                       onSave={(newTitle) => onUpdateSessionTitle(session.id, newTitle)}
                     />
-                  ) : (
-                    <p className="truncate text-sm font-medium" title={session.title}>{session.title}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {session.messages.length} {t('common.messages')} · {formatDate(session.updatedAt)}
-                  </p>
-                </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onSelectSession(session.id)}
+                    className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-1 py-1 text-left"
+                  >
+                    <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 overflow-hidden">
+                      <span className="block truncate text-sm font-medium" title={session.title}>{session.title}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {session.messages.length} {t('common.messages')} · {formatDate(session.updatedAt)}
+                      </span>
+                    </span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={(e) => {

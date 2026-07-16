@@ -10,8 +10,8 @@ describe('Apple-style workbook UI contract', () => {
   it('keeps light and dark tokens in the workbook palette', () => {
     const css = read('src/index.css');
 
-    expect(css).toContain('--background: 211 48% 93%');
-    expect(css).toContain('--paper: 210 40% 94%');
+    expect(css).toContain('--background: 211 38% 92%');
+    expect(css).toContain('--paper: 210 28% 94%');
     expect(css).toContain('--background: 220 12% 13%');
     expect(css).toContain('--paper: 220 9% 16%');
     expect(css).toContain('--paper-line: 220 7% 50%');

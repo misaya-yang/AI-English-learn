@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,
@@ -91,7 +90,8 @@ export default function WordOfTheDayPage() {
   const [wordOfTheDay] = useState<WordData>(getWordOfTheDay());
   const [selectedWord, setSelectedWord] = useState<WordData | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('definition');
+  const [todayActiveTab, setTodayActiveTab] = useState('definition');
+  const [archiveActiveTab, setArchiveActiveTab] = useState('definition');
   const [currentPage, setCurrentPage] = useState(0);
   const wordsPerPage = 10;
   const copy = isZh
@@ -137,6 +137,9 @@ export default function WordOfTheDayPage() {
         shareCopiedToast: '分享文案已复制',
         shareDownloadedToast: '单词卡已下载',
         shareErrorToast: '暂时无法分享，请稍后再试',
+        listenToWord: '朗读',
+        previousPage: '上一页公开词库',
+        nextPage: '下一页公开词库',
       }
     : {
         startLearning: 'Start Learning',
@@ -180,6 +183,9 @@ export default function WordOfTheDayPage() {
         shareCopiedToast: 'Share text copied',
         shareDownloadedToast: 'Word card downloaded',
         shareErrorToast: 'Unable to share right now. Please try again later.',
+        listenToWord: 'Listen to',
+        previousPage: 'Previous archive page',
+        nextPage: 'Next archive page',
       };
   const savedWord = customWords.some(
     (item) => normalizeWordKey(item.word) === normalizeWordKey(wordOfTheDay.word) || item.id === wordOfTheDay.id,
@@ -263,6 +269,7 @@ export default function WordOfTheDayPage() {
   const handlePreviousWordClick = (date: string, word: WordData) => {
     setSelectedDate(date);
     setSelectedWord(word);
+    setArchiveActiveTab('definition');
   };
 
   const closeDialog = () => {
@@ -298,7 +305,17 @@ export default function WordOfTheDayPage() {
     (currentPage + 1) * wordsPerPage
   );
 
-  const renderWordCard = (word: WordData, date?: string) => (
+  const renderWordCard = ({
+    word,
+    date,
+    tabValue,
+    onTabValueChange,
+  }: {
+    word: WordData;
+    date?: string;
+    tabValue: string;
+    onTabValueChange: (value: string) => void;
+  }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -322,8 +339,15 @@ export default function WordOfTheDayPage() {
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="glass" size="icon" className="h-11 w-11 rounded-lg" onClick={() => playAudio(word.word)}>
-                <Volume2 className="h-4 w-4" />
+              <Button
+                variant="glass"
+                size="icon"
+                className="h-11 w-11 rounded-lg"
+                aria-label={`${copy.listenToWord} ${word.word}`}
+                title={`${copy.listenToWord} ${word.word}`}
+                onClick={() => playAudio(word.word)}
+              >
+                <Volume2 className="h-4 w-4" aria-hidden="true" />
               </Button>
               <Button
 	                variant="glass"
@@ -342,7 +366,7 @@ export default function WordOfTheDayPage() {
           <div className="my-4 h-px bg-border/20" aria-hidden="true" />
 
           {/* Tabs Content */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={tabValue} onValueChange={onTabValueChange} className="w-full">
             <TabsList className="w-full grid grid-cols-4">
               <TabsTrigger value="definition">{copy.definition}</TabsTrigger>
               <TabsTrigger value="examples">{copy.examples}</TabsTrigger>
@@ -350,7 +374,7 @@ export default function WordOfTheDayPage() {
               <TabsTrigger value="more">{copy.more}</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="mt-4 h-[180px] sm:h-[220px]">
+            <div className="mt-4">
               <TabsContent value="definition" className="mt-0">
                 <div className="space-y-4">
                   <div>
@@ -443,7 +467,7 @@ export default function WordOfTheDayPage() {
                   </div>
                 </div>
               </TabsContent>
-            </ScrollArea>
+            </div>
           </Tabs>
 	      </section>
     </motion.div>
@@ -453,13 +477,13 @@ export default function WordOfTheDayPage() {
     <div className="study-premium-bg min-h-screen bg-background text-foreground">
       <header className="sticky top-3 z-30 px-3 sm:px-4">
         <GlassSurface variant="bar" className="mx-auto flex h-14 max-w-5xl items-center justify-between px-3 sm:h-16 sm:px-5">
-          <BrandMark />
+          <BrandMark variant="compact" className="shrink-0" />
           <div className="flex items-center gap-1.5">
-            <div className="hidden items-center gap-1 sm:flex">
+            <div className="flex items-center gap-1">
               <ThemeToggle />
               <LanguageSwitcher />
             </div>
-            <Button asChild variant="glassPrimary" className="h-9 px-4 text-sm font-medium">
+            <Button asChild variant="glassPrimary" className="hidden h-9 px-4 text-sm font-medium sm:inline-flex">
               <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
                 {isAuthenticated ? copy.dashboard : copy.startLearning}
               </Link>
@@ -468,7 +492,7 @@ export default function WordOfTheDayPage() {
         </GlassSurface>
       </header>
 
-      <main className="container mx-auto max-w-5xl px-4 py-8">
+      <main id="main-content" className="container mx-auto max-w-5xl px-4 py-8">
         {/* Date Header */}
         <div className="mb-6 flex flex-col gap-3 pb-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -483,7 +507,11 @@ export default function WordOfTheDayPage() {
         </div>
 
         {/* Main Word Card */}
-        {renderWordCard(wordOfTheDay)}
+        {renderWordCard({
+          word: wordOfTheDay,
+          tabValue: todayActiveTab,
+          onTabValueChange: setTodayActiveTab,
+        })}
 
         {/* CTA */}
         <div className="mt-6 flex flex-col items-center gap-4">
@@ -548,6 +576,7 @@ export default function WordOfTheDayPage() {
 	              <button
 	                type="button"
 	                key={item.date}
+                aria-label={`${copy.dialogTitle}: ${item.word.word}, ${item.date}`}
                 className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-3 text-left transition-colors hover:bg-muted/35"
 	                onClick={() => handlePreviousWordClick(item.date, item.word)}
 	              >
@@ -567,10 +596,12 @@ export default function WordOfTheDayPage() {
             <Button
               variant="outline"
               size="sm"
+              aria-label={copy.previousPage}
+              title={copy.previousPage}
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             </Button>
             <span className="text-sm text-muted-foreground">
               {copy.page} {currentPage + 1} {copy.pageOf} {totalPages}
@@ -578,10 +609,12 @@ export default function WordOfTheDayPage() {
             <Button
               variant="outline"
               size="sm"
+              aria-label={copy.nextPage}
+              title={copy.nextPage}
               onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage === totalPages - 1}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -596,7 +629,12 @@ export default function WordOfTheDayPage() {
               {copy.dialogTitle} {selectedDate}
             </DialogTitle>
           </DialogHeader>
-          {selectedWord && renderWordCard(selectedWord, selectedDate || undefined)}
+          {selectedWord && renderWordCard({
+            word: selectedWord,
+            date: selectedDate || undefined,
+            tabValue: archiveActiveTab,
+            onTabValueChange: setArchiveActiveTab,
+          })}
         </DialogContent>
       </Dialog>
 

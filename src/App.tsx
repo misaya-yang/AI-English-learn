@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardSkeleton, PageSkeleton } from '@/components/DashboardSkeleton';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { queryClient } from '@/lib/queryClient';
+import { RouteDocumentMeta } from '@/components/routing/RouteDocumentMeta';
 
 const HomePage = lazyWithRetry(() => import('@/pages/Home'), 'home');
 const LoginPage = lazyWithRetry(() => import('@/pages/auth/LoginPage'), 'login');
@@ -22,6 +23,7 @@ const WordOfTheDayPage = lazyWithRetry(() => import('@/pages/WordOfTheDayPage'),
 const PricingPage = lazyWithRetry(() => import('@/pages/PricingPage'), 'pricing');
 const LegalPage = lazyWithRetry(() => import('@/pages/LegalPage'), 'legal');
 const SampleLessonPage = lazyWithRetry(() => import('@/pages/SampleLessonPage'), 'sample-lesson');
+const NotFoundPage = lazyWithRetry(() => import('@/pages/NotFoundPage'), 'not-found');
 const UserDataRouteProvider = lazyWithRetry(
   () => import('@/components/routing/UserDataRouteProvider'),
   'user-data-provider',
@@ -64,6 +66,7 @@ function App() {
         <AuthProvider>
           <MotionConfig reducedMotion="user">
             <Router>
+              <RouteDocumentMeta />
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={withRouteFallback(<HomePage />, <PageSkeleton />)} />
@@ -105,6 +108,7 @@ function App() {
                     <Route path="profile" element={withRouteFallback(<ProfilePage />)} />
                   </Route>
                 </Route>
+                <Route path="*" element={withRouteFallback(<NotFoundPage />, <PageSkeleton />)} />
               </Routes>
             </Router>
           </MotionConfig>

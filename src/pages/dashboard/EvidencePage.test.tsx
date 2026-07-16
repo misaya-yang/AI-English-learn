@@ -68,8 +68,11 @@ describe('EvidencePage', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('企业证据预览已关闭')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '返回今日' })).toHaveAttribute('href', '/dashboard/today');
+    expect(screen.getByText('当前工作区暂未开放学习证据')).toBeInTheDocument();
+    expect(screen.getByText(/联系组织管理员了解访问权限/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '继续个人学习' })).toHaveAttribute('href', '/dashboard/today');
+    expect(screen.queryByText(/VITE_/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/staging/i)).not.toBeInTheDocument();
     expect(getLearningEventsMock).not.toHaveBeenCalled();
   });
 

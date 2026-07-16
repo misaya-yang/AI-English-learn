@@ -49,9 +49,14 @@ function sortEntries(entries: LeaderEntry[], tab: LeaderboardTab): LeaderEntry[]
   }));
 }
 
+function getEntryMetric(entry: LeaderEntry, tab: LeaderboardTab): { value: number; unit: string } {
+  if (tab === 'streak') return { value: entry.streak, unit: '天' };
+  if (tab === 'total') return { value: entry.totalWords, unit: '词' };
+  return { value: entry.weeklyXp, unit: '记录' };
+}
+
 function LeaderRow({ entry, tab }: { entry: LeaderEntry; tab: LeaderboardTab }) {
-  const value = tab === 'weekly' ? entry.weeklyXp : tab === 'streak' ? entry.streak : entry.totalWords;
-  const unit = tab === 'weekly' ? '记录' : tab === 'streak' ? '天' : '词';
+  const { value, unit } = getEntryMetric(entry, tab);
   const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
     ? '演示账号'
     : entry.displayName;
@@ -160,21 +165,40 @@ export default function LeaderboardPage() {
       : snapshot.promotionCutoffRank
         ? `距离前 ${snapshot.promotionCutoffRank} 还差 ${Math.max(currentUserEntry ? currentUserEntry.rank - snapshot.promotionCutoffRank : 0, 0)} 名。`
         : '你本周记录已经在前列。';
+  const activeTabMeta = tabs.find((tab) => tab.id === activeTab) || tabs[0];
+  const currentMetric = currentUserEntry ? getEntryMetric(currentUserEntry, activeTab) : null;
+  const activeInsightCopy = activeTab === 'weekly'
+    ? movementCopy
+    : activeTab === 'streak'
+      ? `当前连续 ${currentUserEntry?.streak || 0} 天，按连续学习天数重新排序。`
+      : `当前累计 ${currentUserEntry?.totalWords.toLocaleString() || 0} 词，按累计词量重新排序。`;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">排行</h1>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">排行</h1>
+            <BadgeLike text="示例数据 · Demo" />
+          </div>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Users className="h-3.5 w-3.5" />
             本周 {entries.length} 名学习者
           </p>
+          <p className="mt-1 max-w-xl text-xs leading-5 text-muted-foreground">
+            当前成员由本地示例快照生成，不代表真实用户或实时排名。
+          </p>
         </div>
 
-        <div className="liquid-glass-control rounded-lg border border-border bg-card/80 px-4 py-3 text-right">
+        <div className="liquid-glass-control hidden shrink-0 rounded-lg border border-border bg-card/80 px-4 py-3 text-right sm:block">
           <p className="text-xs text-muted-foreground">当前视图</p>
-          <p className="mt-1 text-lg font-semibold text-foreground">本周记录</p>
+          <p
+            className="mt-1 text-lg font-semibold text-foreground"
+            aria-live="polite"
+            data-testid="leaderboard-view-label"
+          >
+            {activeTabMeta.labelZh}
+          </p>
         </div>
       </div>
 
@@ -188,7 +212,7 @@ export default function LeaderboardPage() {
               {currentUserEntry.displayName === 'Demo Learner' ? '演示账号' : currentUserEntry.displayName}
             </p>
             <p className="text-xs text-muted-foreground">
-              第 {currentUserEntry.rank} 名 · 本周 {currentUserEntry.weeklyXp} 条记录
+              第 {currentUserEntry.rank} 名 · {activeTabMeta.labelZh} {currentMetric?.value.toLocaleString()} {currentMetric?.unit}
             </p>
           </div>
           <RankIcon rank={currentUserEntry.rank} />
@@ -199,16 +223,27 @@ export default function LeaderboardPage() {
         <div className="rounded-xl border border-transparent bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs text-muted-foreground">本周状态</p>
-              <p className="mt-1 text-sm font-medium text-foreground">{movementCopy}</p>
+              <p className="text-xs text-muted-foreground">{activeTabMeta.labelZh}状态</p>
+              <p className="mt-1 text-sm font-medium text-foreground">{activeInsightCopy}</p>
             </div>
-            <BadgeLike text={snapshot.promoted ? '前段' : snapshot.demoted ? '需补练' : '稳定'} />
+            <BadgeLike
+              text={activeTab === 'weekly'
+                ? snapshot.promoted
+                  ? '前段'
+                  : snapshot.demoted
+                    ? '需补练'
+                    : '稳定'
+                : '当前排序'}
+            />
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            <MetricCard label="名次" value={`#${snapshot.currentUserRank}`} />
-            <MetricCard label="前段线" value={snapshot.promotionCutoffRank ? `前 ${snapshot.promotionCutoffRank}` : '前列'} />
-            <MetricCard label="参考线" value={snapshot.demotionCutoffRank ? `#${snapshot.demotionCutoffRank - 1}` : '稳定'} />
+            <MetricCard label="名次" value={`#${currentUserEntry?.rank || snapshot.currentUserRank}`} />
+            <MetricCard
+              label="当前值"
+              value={currentMetric ? `${currentMetric.value.toLocaleString()} ${currentMetric.unit}` : '-'}
+            />
+            <MetricCard label="示例成员" value={`${entries.length}`} />
           </div>
         </div>
 
@@ -230,11 +265,18 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="liquid-glass-control flex gap-1 rounded-lg border border-border p-1">
+      <div
+        className="liquid-glass-control flex gap-1 rounded-lg border border-border p-1"
+        role="tablist"
+        aria-label="排行榜排序方式"
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            aria-controls="leaderboard-results"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors',
@@ -249,10 +291,13 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div
+        id="leaderboard-results"
+        data-testid="leaderboard-top-three"
+        className="grid gap-2 sm:grid-cols-3 sm:gap-3"
+      >
         {entries.slice(0, 3).map((entry) => {
-          const value = activeTab === 'weekly' ? entry.weeklyXp : activeTab === 'streak' ? entry.streak : entry.totalWords;
-          const unit = activeTab === 'weekly' ? '记录' : activeTab === 'streak' ? '天' : '词';
+          const { value, unit } = getEntryMetric(entry, activeTab);
           const displayName = entry.isCurrentUser && entry.displayName === 'Demo Learner'
             ? '演示账号'
             : entry.displayName;
@@ -293,7 +338,7 @@ export default function LeaderboardPage() {
       <div className="flex items-center gap-2.5 rounded-xl border border-transparent bg-card px-4 py-3">
         <Users className="h-4 w-4 shrink-0 text-primary" />
         <p className="text-sm text-muted-foreground">
-          本页按周重置。当前先展示本地快照，接入后端同步后会切换到实时记录。
+          这是演示排行榜：成员和排名来自本地示例快照，不会公开或代表其他学习者的真实数据。
         </p>
       </div>
     </div>

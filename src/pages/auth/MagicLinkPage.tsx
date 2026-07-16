@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,14 +7,38 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Mail, CheckCircle2 } from 'lucide-react';
 import { AuthShell } from '@/features/marketing/AuthShell';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/lib/supabase';
+import { resolveAuthRedirect } from '@/lib/authRedirect';
+
+const MAGIC_LINK_TIMEOUT_MS = 12_000;
+
+const sendWithTimeout = async <T,>(request: Promise<T>): Promise<T> => {
+  let timeoutId: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      reject(new Error('magic_link_timeout'));
+    }, MAGIC_LINK_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([request, timeout]);
+  } finally {
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+};
 
 export default function MagicLinkPage() {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
   const { i18n } = useTranslation();
   const isZh = i18n.language?.startsWith('zh');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
   const copy = isZh
     ? {
         sentTitle: '请查收邮件',
@@ -31,6 +55,8 @@ export default function MagicLinkPage() {
         email: '邮箱',
         sending: '发送中...',
         sendLink: '发送登录链接',
+        sendFailed: '暂时无法发送登录链接，请检查网络或改用密码登录。',
+        sendTimeout: '发送请求超时，请检查网络后重试。',
       }
     : {
         sentTitle: 'Check your email',
@@ -47,6 +73,8 @@ export default function MagicLinkPage() {
         email: 'Email',
         sending: 'Sending...',
         sendLink: 'Send login link',
+        sendFailed: 'We could not send a sign-in link. Check your connection or use password sign in.',
+        sendTimeout: 'The request timed out. Check your connection and try again.',
       };
 
   if (isAuthenticated) {
@@ -55,14 +83,41 @@ export default function MagicLinkPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) return;
 
     setIsLoading(true);
-    // Simulate sending magic link (not supported in local storage mode)
-    setTimeout(() => {
+    setErrorMessage(null);
+
+    try {
+      const callbackUrl = new URL('/auth/callback', window.location.origin);
+      callbackUrl.searchParams.set('redirect', redirectTarget);
+      const { error } = await sendWithTimeout(
+        supabase.auth.signInWithOtp({
+          email: normalizedEmail,
+          options: {
+            emailRedirectTo: callbackUrl.toString(),
+            shouldCreateUser: false,
+          },
+        }),
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      setEmail(normalizedEmail);
       setIsSent(true);
+    } catch (error) {
+      console.error('Magic link request failed:', error);
+      setErrorMessage(
+        error instanceof Error && error.message === 'magic_link_timeout'
+          ? copy.sendTimeout
+          : copy.sendFailed,
+      );
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   if (isSent) {
@@ -88,7 +143,7 @@ export default function MagicLinkPage() {
           </>
         }
       >
-        <div className="flex flex-col items-center text-center">
+        <div className="flex flex-col items-center text-center" role="status" aria-live="polite">
           <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
@@ -100,7 +155,7 @@ export default function MagicLinkPage() {
 
           <div className="mt-6 w-full">
             <Button asChild variant="outline" className="h-11 w-full rounded-md">
-              <Link to="/login">
+              <Link to={`/login${location.search}`}>
                 {copy.backToLogin}
               </Link>
             </Button>
@@ -120,7 +175,7 @@ export default function MagicLinkPage() {
         <>
           <span className="opacity-80">{copy.preferPassword}</span>{' '}
           <Link
-            to="/login"
+            to={`/login${location.search}`}
             className="font-medium text-primary transition-colors hover:text-primary/80"
           >
             {copy.passwordLogin}
@@ -147,18 +202,28 @@ export default function MagicLinkPage() {
               autoComplete="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errorMessage) setErrorMessage(null);
+              }}
               disabled={isLoading}
               required
+              aria-invalid={Boolean(errorMessage)}
+              aria-describedby={errorMessage ? 'magic-link-error' : undefined}
               className="h-11 rounded-md pl-11"
             />
           </div>
+          {errorMessage && (
+            <p id="magic-link-error" className="text-sm leading-6 text-destructive" role="alert">
+              {errorMessage}
+            </p>
+          )}
         </div>
 
         <Button
           type="submit"
           className="h-11 w-full rounded-md text-sm font-medium shadow-none transition-colors disabled:opacity-60"
-          disabled={isLoading || !email}
+          disabled={isLoading || !email.trim()}
         >
           {isLoading ? (
             <>

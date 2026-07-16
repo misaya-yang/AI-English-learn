@@ -1,24 +1,64 @@
-import { describe, it, expect } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, it, vi } from 'vitest';
 
-// Note: BottomNavBar is a navigation component that requires Router context.
-// These tests validate the data model / structural expectations.
+import { BottomNavBar } from './BottomNavBar';
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    i18n: { language: 'en' },
+  }),
+}));
+
+const renderNav = (isLearningMode: boolean, path = '/dashboard/today', moreOpen = false) => {
+  const onMoreClick = vi.fn();
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <BottomNavBar
+        isLearningMode={isLearningMode}
+        moreOpen={moreOpen}
+        onMoreClick={onMoreClick}
+      />
+    </MemoryRouter>,
+  );
+  return { onMoreClick };
+};
 
 describe('BottomNavBar', () => {
-  it('has correct nav item count (4 + More button = 5 entries)', () => {
-    // The BottomNavBar renders 4 nav items + 1 "More" button = 5 total entries
-    // This is validated by code review; component test would need Router context
-    expect(4 + 1).toBe(5);
+  it('uses the core learning loop in learning mode', () => {
+    renderNav(true, '/dashboard/practice');
+
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/dashboard/today',
+      '/dashboard/review',
+      '/dashboard/practice',
+      '/dashboard/chat',
+    ]);
+    expect(screen.getByRole('link', { current: 'page' })).toHaveAttribute('href', '/dashboard/practice');
   });
 
-  it('safe area inset is applied via CSS env()', () => {
-    // BottomNavBar uses pb-[env(safe-area-inset-bottom)] for iPhone safe area
-    // This is a CSS-level concern validated by visual testing
-    expect(true).toBe(true);
+  it('uses the standard app destinations outside the learning shell', () => {
+    renderNav(false, '/dashboard/exam');
+
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/dashboard/today',
+      '/dashboard/chat',
+      '/dashboard/exam',
+      '/dashboard/review',
+    ]);
+    expect(screen.getByRole('link', { current: 'page' })).toHaveAttribute('href', '/dashboard/exam');
   });
 
-  it('mobile breakpoint is 768px', () => {
-    // useIsMobile uses MOBILE_BREAKPOINT = 768
-    const MOBILE_BREAKPOINT = 768;
-    expect(MOBILE_BREAKPOINT).toBe(768);
+  it('exposes and activates the More sheet control', () => {
+    const { onMoreClick } = renderNav(true, '/dashboard/grammar', true);
+    const moreButton = screen.getByRole('button', { name: /more|更多/i });
+
+    expect(moreButton).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(moreButton).toHaveAttribute('aria-expanded', 'true');
+    expect(moreButton).not.toHaveAttribute('aria-current');
+    expect(moreButton).toHaveAttribute('data-active', 'true');
+
+    fireEvent.click(moreButton);
+    expect(onMoreClick).toHaveBeenCalledTimes(1);
   });
 });

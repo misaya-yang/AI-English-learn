@@ -40,7 +40,8 @@ describe('OrganizationPage', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getAllByText('missing_entitlement').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('需要组织授权').length).toBeGreaterThan(0);
+    expect(screen.queryByText('missing_entitlement')).not.toBeInTheDocument();
     expect(screen.getAllByText('Assignments').length).toBeGreaterThan(0);
     expect(screen.getAllByText('SSO').length).toBeGreaterThan(0);
   });
@@ -67,8 +68,24 @@ describe('OrganizationPage', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('企业工作台预览已关闭')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '返回今日' })).toHaveAttribute('href', '/dashboard/today');
+    expect(screen.getByText('当前账号暂未开放组织工作台')).toBeInTheDocument();
+    expect(screen.getByText(/联系组织管理员申请访问权限/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '继续个人学习' })).toHaveAttribute('href', '/dashboard/today');
+    expect(screen.queryByText(/VITE_/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/staging/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps implementation notes and raw entitlement reasons out of the product UI', () => {
+    render(
+      <MemoryRouter>
+        <OrganizationPage />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('下一步实现')).not.toBeInTheDocument();
+    expect(screen.queryByText(/P0 migration/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/missing_entitlement/i)).not.toBeInTheDocument();
+    expect(screen.getByText('管理负责人、管理员、教师与学习者。')).toBeInTheDocument();
   });
 
   it('renders English copy', () => {

@@ -3,20 +3,26 @@ import { useTranslation } from 'react-i18next';
 import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { getMobileNavRoutes } from '@/features/learning/routeRegistry';
+import {
+  getDashboardRoute,
+  type DashboardRouteId,
+} from '@/features/learning/routeRegistry';
 
 interface BottomNavBarProps {
   isLearningMode: boolean;
   onMoreClick: () => void;
+  moreOpen?: boolean;
 }
 
-const NAV_ITEMS = getMobileNavRoutes(4);
+const LEARNING_NAV_IDS: DashboardRouteId[] = ['today', 'review', 'practice', 'chat'];
+const STANDARD_NAV_IDS: DashboardRouteId[] = ['today', 'chat', 'exam', 'review'];
 
-export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps) {
+export function BottomNavBar({ isLearningMode, onMoreClick, moreOpen = false }: BottomNavBarProps) {
   const location = useLocation();
   const { i18n } = useTranslation();
-  const isZh = i18n.language.startsWith('zh');
-  const hasVisibleActiveItem = NAV_ITEMS.some((item) => location.pathname.startsWith(item.path));
+  const isZh = i18n.language?.startsWith('zh') ?? false;
+  const navItems = (isLearningMode ? LEARNING_NAV_IDS : STANDARD_NAV_IDS).map(getDashboardRoute);
+  const hasVisibleActiveItem = navItems.some((item) => location.pathname.startsWith(item.path));
   const moreActive = !hasVisibleActiveItem;
 
   return (
@@ -29,7 +35,7 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
           : 'premium-bottom-nav',
       )}
     >
-      {NAV_ITEMS.map((item) => {
+      {navItems.map((item) => {
         const active = location.pathname.startsWith(item.path);
         const Icon = item.icon;
         const label = isZh ? item.label.zh : item.label.en;
@@ -74,7 +80,9 @@ export function BottomNavBar({ isLearningMode, onMoreClick }: BottomNavBarProps)
       <button
         type="button"
         onClick={onMoreClick}
-        aria-current={moreActive ? 'page' : undefined}
+        aria-haspopup="dialog"
+        aria-expanded={moreOpen}
+        data-active={moreActive ? 'true' : 'false'}
         className={cn(
           'liquid-glass-interactive relative flex h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl px-2.5 py-1.5 transition-colors',
           moreActive ? 'text-primary' : 'text-muted-foreground active:text-foreground',

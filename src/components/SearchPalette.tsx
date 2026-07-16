@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -12,15 +12,20 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { wordsDatabase } from '@/data/words';
-import { BookOpen, CalendarDays, Brain, BarChart2, Target, Settings } from 'lucide-react';
+import {
+  getAllDashboardRoutes,
+  getDashboardRoute,
+  type DashboardRouteId,
+} from '@/features/learning/routeRegistry';
+import { isEnterpriseUiEnabled } from '@/features/enterprise/enterpriseUi';
 
-const QUICK_LINKS = [
-  { label: 'Today', labelZh: '今日', href: '/dashboard/today', icon: CalendarDays },
-  { label: 'Review', labelZh: '复习', href: '/dashboard/review', icon: Brain },
-  { label: 'Analytics', labelZh: '统计', href: '/dashboard/analytics', icon: BarChart2 },
-  { label: 'Vocabulary', labelZh: '词书', href: '/dashboard/vocabulary', icon: BookOpen },
-  { label: 'Exam', labelZh: '考试练习', href: '/dashboard/exam', icon: Target },
-  { label: 'Settings', labelZh: '设置', href: '/dashboard/settings', icon: Settings },
+const QUICK_ROUTE_IDS: DashboardRouteId[] = [
+  'today',
+  'review',
+  'practice',
+  'chat',
+  'vocabulary',
+  'settings',
 ];
 
 interface SearchPaletteProps {
@@ -32,8 +37,17 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
   const navigate = useNavigate();
   const { progress } = useUserData();
   const { i18n } = useTranslation();
-  const isZh = i18n.language.startsWith('zh');
+  const isZh = i18n.language?.startsWith('zh') ?? false;
   const [query, setQuery] = useState('');
+  const enterpriseEnabled = isEnterpriseUiEnabled();
+  const visibleRoutes = useMemo(
+    () => getAllDashboardRoutes().filter((route) => enterpriseEnabled || !route.enterpriseOnly),
+    [enterpriseEnabled],
+  );
+  const quickRoutes = useMemo(
+    () => QUICK_ROUTE_IDS.map(getDashboardRoute),
+    [],
+  );
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -62,6 +76,19 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
 
   const learnedResults = results.filter((w) => progressIds.has(w.id));
   const newResults = results.filter((w) => !progressIds.has(w.id));
+  const normalizedQuery = query.trim().toLowerCase();
+  const routeResults = normalizedQuery.length >= 1
+    ? visibleRoutes.filter((route) => {
+        const searchText = [
+          route.label.en,
+          route.label.zh,
+          route.description.en,
+          route.description.zh,
+          ...route.searchAliases,
+        ].join(' ').toLowerCase();
+        return searchText.includes(normalizedQuery);
+      }).slice(0, 10)
+    : [];
 
   const handleSelect = useCallback(
     (href: string) => {
@@ -74,30 +101,53 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
   return (
     <CommandDialog open={open} onOpenChange={handleOpenChange}>
       <CommandInput
-        placeholder="搜索单词或跳转页面… (Cmd+K)"
+        placeholder={isZh ? '搜索单词或跳转页面… (Cmd+K)' : 'Search words or pages… (Cmd+K)'}
         value={query}
         onValueChange={setQuery}
         className="border-0 text-foreground placeholder:text-muted-foreground focus-visible:ring-0"
       />
       <CommandList className="max-h-[420px]">
         <CommandEmpty className="py-8 text-center text-sm text-muted-foreground">
-          没有找到匹配的单词或页面
+          {isZh ? '没有找到匹配的单词或页面' : 'No matching words or pages'}
         </CommandEmpty>
 
         {/* Quick navigation — shown only when no query */}
         {query.trim().length === 0 && (
-          <CommandGroup heading="快速导航">
-            {QUICK_LINKS.map((link) => (
+          <CommandGroup heading={isZh ? '快速导航' : 'Quick navigation'}>
+            {quickRoutes.map((route) => (
               <CommandItem
-                key={link.href}
-                value={`${link.label} ${link.labelZh}`}
-                onSelect={() => handleSelect(link.href)}
+                key={route.path}
+                value={`${route.label.en} ${route.label.zh}`}
+                onSelect={() => handleSelect(route.path)}
                 className="flex items-center gap-3 px-3 py-2.5"
               >
-                <link.icon className="h-4 w-4 shrink-0 text-[hsl(var(--accent-practice))]" />
+                <route.icon className="h-4 w-4 shrink-0 text-[hsl(var(--accent-practice))]" />
                 <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="font-medium text-foreground">{isZh ? link.labelZh : link.label}</span>
-                  <span className="text-xs text-muted-foreground">{isZh ? link.label : link.labelZh}</span>
+                  <span className="font-medium text-foreground">{isZh ? route.label.zh : route.label.en}</span>
+                  <span className="text-xs text-muted-foreground">{isZh ? route.label.en : route.label.zh}</span>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {routeResults.length > 0 && (
+          <CommandGroup heading={isZh ? '页面' : 'Pages'}>
+            {routeResults.map((route) => (
+              <CommandItem
+                key={route.path}
+                value={`${route.label.en} ${route.label.zh} ${route.searchAliases.join(' ')}`}
+                onSelect={() => handleSelect(route.path)}
+                className="flex items-center gap-3 px-3 py-2.5"
+              >
+                <route.icon className="h-4 w-4 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground">
+                    {isZh ? route.label.zh : route.label.en}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {isZh ? route.description.zh : route.description.en}
+                  </p>
                 </div>
               </CommandItem>
             ))}
@@ -108,7 +158,7 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
         {learnedResults.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="已学词汇">
+            <CommandGroup heading={isZh ? '已学词汇' : 'Learned words'}>
               {learnedResults.map((word) => (
                 <CommandItem
                   key={word.id}
@@ -134,7 +184,7 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
         {newResults.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="词库">
+            <CommandGroup heading={isZh ? '词库' : 'Lexicon'}>
               {newResults.map((word) => (
                 <CommandItem
                   key={word.id}

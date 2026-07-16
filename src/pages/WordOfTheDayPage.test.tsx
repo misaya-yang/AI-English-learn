@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -84,6 +84,54 @@ describe('WordOfTheDayPage', () => {
       container.querySelector('header [data-slot="glass-surface"][data-variant="bar"]'),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: "Today's word" }).closest('[data-slot="glass-surface"]')).toBeNull();
+  });
+
+  it('keeps theme and language controls available in the mobile header', () => {
+    renderPage();
+
+    const themeToggle = screen.getByRole('button', { name: 'Toggle appearance' });
+    const languageSwitcher = screen.getByRole('button', { name: 'Switch language' });
+    const mobileControls = themeToggle.parentElement;
+
+    expect(themeToggle).toBeInTheDocument();
+    expect(languageSwitcher).toBeInTheDocument();
+    expect(mobileControls).toHaveClass('flex');
+    expect(mobileControls).not.toHaveClass('hidden');
+  });
+
+  it('uses natural-height tab content without a nested fixed-height scroll viewport', () => {
+    const { container } = renderPage();
+
+    expect(container.querySelector('[data-radix-scroll-area-viewport]')).toBeNull();
+    expect(container.querySelector('[class*="h-[180px]"]')).toBeNull();
+  });
+
+  it('keeps today and archive tab state independent', async () => {
+    renderPage();
+
+    const todayExamplesTab = screen.getByRole('tab', { name: 'Examples' });
+    fireEvent.pointerDown(todayExamplesTab, { button: 0, ctrlKey: false });
+    fireEvent.mouseDown(todayExamplesTab, { button: 0, ctrlKey: false });
+    await waitFor(() => {
+      expect(todayExamplesTab).toHaveAttribute('aria-selected', 'true');
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Public archive word:/i })[0]);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('tab', { name: 'Definition' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(todayExamplesTab).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('labels icon-only audio and archive pagination controls', () => {
+    renderPage();
+
+    expect(screen.getByRole('button', { name: /^Listen to / })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous archive page' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next archive page' })).toBeEnabled();
   });
 
   it('lets authenticated users save the daily word without routing to registration', () => {

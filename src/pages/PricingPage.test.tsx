@@ -13,6 +13,13 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 const createBillingCheckoutMock = vi.fn();
 const getEntitlementMock = vi.fn();
 const getSubscriptionEntitlementMock = vi.fn();
+const authState = vi.hoisted(() => ({
+  isAuthenticated: false,
+  user: null as { id: string } | null,
+}));
+const checkoutState = vi.hoisted(() => ({
+  kind: 'coming_soon' as 'coming_soon' | 'available',
+}));
 const i18nState = vi.hoisted(() => ({
   language: 'en',
   changeLanguage: vi.fn((code: string) => {
@@ -45,16 +52,12 @@ vi.mock('@/data/examContent', () => ({
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    isAuthenticated: false,
-    user: null,
-  }),
+  useAuth: () => authState,
 }));
 
 vi.mock('@/features/marketing/pricingAvailability', () => ({
-  // Force fail-closed for these tests — this is the production env today.
-  getCheckoutStatus: () => ({ kind: 'coming_soon' }),
-  isCheckoutAvailable: () => false,
+  getCheckoutStatus: () => ({ kind: checkoutState.kind }),
+  isCheckoutAvailable: () => checkoutState.kind === 'available',
 }));
 
 // sonner toast is rendered through a portal which needs a Toaster mounted; we
@@ -68,8 +71,8 @@ vi.mock('sonner', () => ({
 }));
 
 import PricingPage from './PricingPage';
-import { PRO_WAITLIST_STORAGE_KEY } from '@/features/marketing/proWaitlist';
 import { FREE_JOB, PRO_JOB } from '@/features/marketing/proPackaging';
+import { PRO_WAITLIST_STORAGE_KEY } from '@/features/marketing/proWaitlist';
 import { toast } from 'sonner';
 
 const renderPricingPage = () =>
@@ -87,9 +90,16 @@ describe('PricingPage — fail-closed pro checkout', () => {
     localStorage.clear();
     document.documentElement.className = '';
     i18nState.language = 'en';
+    authState.isAuthenticated = false;
+    authState.user = null;
+    checkoutState.kind = 'coming_soon';
     getEntitlementMock.mockResolvedValue({ plan: 'free' });
     getSubscriptionEntitlementMock.mockResolvedValue({
       subscription: { status: 'inactive', provider: 'manual' },
+    });
+    createBillingCheckoutMock.mockResolvedValue({
+      provider: 'stripe',
+      expiresAt: '2026-07-16T12:00:00.000Z',
     });
   });
 
@@ -133,34 +143,17 @@ describe('PricingPage — fail-closed pro checkout', () => {
     expect(screen.queryByRole('button', { name: /^Upgrade to Pro$/ })).not.toBeInTheDocument();
   });
 
-  it('captures Pro waitlist intent locally without exposing mailto or checkout', async () => {
+  it('does not offer a fake waitlist, notification request, or checkout while Pro is unavailable', async () => {
     renderPricingPage();
 
     const proCard = await screen.findByTestId('pricing-pro-coming-soon');
     expect(proCard.querySelector('a[href^="mailto:"]')).toBeNull();
-
-    fireEvent.click(screen.getByTestId('pricing-pro-waitlist-button'));
-
-    const stored = JSON.parse(localStorage.getItem(PRO_WAITLIST_STORAGE_KEY) ?? '[]');
-    expect(stored).toEqual([
-      expect.objectContaining({
-        planId: 'pro',
-        billingCycle: 'monthly',
-        source: 'pricing',
-        goal: 'upgrade_from_free',
-        language: 'en',
-      }),
-    ]);
-    expect(screen.getByRole('button', { name: /You're on the list/i })).toBeInTheDocument();
-    expect(toast.success).toHaveBeenCalledWith('Saved. We will use this signal for the Pro launch.');
-    expect(createBillingCheckoutMock).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByTestId('pricing-pro-waitlist-button'));
-
-    expect(JSON.parse(localStorage.getItem(PRO_WAITLIST_STORAGE_KEY) ?? '[]')).toHaveLength(1);
-    expect(toast.info).toHaveBeenCalledWith(
-      'You are already on the Pro interest list for this billing option.',
+    expect(screen.queryByTestId('pricing-pro-waitlist-button')).not.toBeInTheDocument();
+    expect(screen.queryByText(/interest list|you're on the list|notify me/i)).not.toBeInTheDocument();
+    expect(proCard).toHaveTextContent(
+      'This page cannot create an order, charge, or notification request.',
     );
+    expect(localStorage.getItem(PRO_WAITLIST_STORAGE_KEY)).toBeNull();
     expect(createBillingCheckoutMock).not.toHaveBeenCalled();
   });
 
@@ -173,23 +166,42 @@ describe('PricingPage — fail-closed pro checkout', () => {
     expect(screen.getByText(/Advanced analytics: pending reviews, skill trends, mistake patterns/i)).toBeInTheDocument();
     expect(screen.getByText(/Custom wordbook imports plus Anki \/ CSV export/i)).toBeInTheDocument();
     expect(screen.queryByText(/Priority support/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Join the Pro interest list/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Join the Pro interest list/i)).not.toBeInTheDocument();
   });
 
-  it('records yearly Pro interest when the yearly billing toggle is selected', async () => {
+  it('starts a real yearly checkout only when checkout is live and the user is authenticated', async () => {
+    checkoutState.kind = 'available';
+    authState.isAuthenticated = true;
+    authState.user = { id: 'user-1' };
+
     renderPricingPage();
 
     fireEvent.click(screen.getByRole('switch', { name: 'Toggle yearly pricing' }));
-    fireEvent.click(await screen.findByTestId('pricing-pro-waitlist-button'));
+    fireEvent.click(screen.getByRole('button', { name: /Subscribe to Pro/i }));
 
-    const stored = JSON.parse(localStorage.getItem(PRO_WAITLIST_STORAGE_KEY) ?? '[]');
-    expect(stored).toEqual([
-      expect.objectContaining({
-        planId: 'pro',
-        billingCycle: 'yearly',
-        source: 'pricing',
-      }),
-    ]);
+    await waitFor(() => {
+      expect(createBillingCheckoutMock).toHaveBeenCalledWith({
+        planId: 'pro_yearly',
+        provider: 'stripe',
+        successUrl: `${window.location.origin}/pricing?checkout=success`,
+        cancelUrl: `${window.location.origin}/pricing?checkout=canceled`,
+      });
+    });
+    expect(toast.error).toHaveBeenCalledWith(
+      'Checkout could not start. No order or charge was created. Please try again later.',
+    );
+  });
+
+  it('requires a guest to sign in before entering a live checkout flow', () => {
+    checkoutState.kind = 'available';
+
+    renderPricingPage();
+
+    expect(screen.getByRole('link', { name: /Sign in to subscribe/i })).toHaveAttribute(
+      'href',
+      '/login?redirect=%2Fpricing',
+    );
+    expect(createBillingCheckoutMock).not.toHaveBeenCalled();
   });
 
   it('keeps the Free plan CTA interactive (sends users to /register when logged out)', async () => {
@@ -217,11 +229,21 @@ describe('PricingPage — fail-closed pro checkout', () => {
     });
   });
 
-  it('still surfaces the entitlement-derived "Current plan" tile', async () => {
+  it('does not label an unauthenticated guest as having a current plan', () => {
+    renderPricingPage();
+
+    expect(screen.queryByText(/Current plan/i)).not.toBeInTheDocument();
+  });
+
+  it('surfaces the entitlement-derived "Current plan" tile for an authenticated user', async () => {
+    authState.isAuthenticated = true;
+    authState.user = { id: 'user-1' };
+
     renderPricingPage();
 
     expect(await screen.findByText(/Current plan/i)).toBeInTheDocument();
     expect(screen.queryByText('当前方案')).not.toBeInTheDocument();
+    expect(getEntitlementMock).toHaveBeenCalledWith('user-1');
   });
 
   it('does not query entitlement APIs for an unauthenticated guest', async () => {

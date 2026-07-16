@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, RotateCcw } from 'lucide-react';
+import { Check, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 
 interface SampleLessonProps {
   isZh: boolean;
-  saveProgressHref: string;
+  continueHref: string;
+  requiresSignIn: boolean;
 }
 
 const sampleWord = {
@@ -28,7 +29,7 @@ const sampleWord = {
 
 const normalizeAnswer = (value: string): string => value.trim().toLowerCase();
 
-export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
+export function SampleLesson({ isZh, continueHref, requiresSignIn }: SampleLessonProps) {
   const [answer, setAnswer] = useState('');
   const [submittedAnswer, setSubmittedAnswer] = useState<string | null>(null);
   const isCorrect = submittedAnswer !== null && normalizeAnswer(submittedAnswer) === sampleWord.word;
@@ -40,30 +41,39 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
     eyebrow: isZh ? '60 秒样课' : '60-second sample lesson',
     title: isZh ? '先试一次单词练习' : 'Try one word exercise',
     intro: isZh
-      ? '先看词义，再填一次空。答完后可以保存到今日学习。'
-      : 'Read the word, fill the blank, then save it to today if you want.',
+      ? '先理解这个词，再用它补全一句话。完成后可以继续进入今日学习。'
+      : 'Understand the word, then use it to complete one sentence before continuing to Today.',
     wordLabel: isZh ? '今日样词' : 'Sample word',
-    promptLabel: isZh ? '回想练习' : 'Recall prompt',
+    promptLabel: isZh ? '应用练习' : 'Use the word',
     answerLabel: isZh ? '输入缺失的单词' : 'Type the missing word',
     answerPlaceholder: isZh ? '例如：mitigate' : 'e.g. mitigate',
     submit: hasFeedback ? (isZh ? '再次检查' : 'Check again') : (isZh ? '检查答案' : 'Check answer'),
     tryAgain: isZh ? '再试一次' : 'Try again',
-    save: isZh ? '保存这次进度' : 'Save this progress',
+    continue: requiresSignIn
+      ? (isZh ? '免费开始并继续' : 'Start free and continue')
+      : (isZh ? '继续到今日' : 'Continue to Today'),
     correctTitle: isZh ? '答对了' : 'Correct.',
-    correctBody: isZh
-      ? '登录后，这个词可以加入你的复习队列。'
-      : 'After sign-in, this word can be added to your review queue.',
+    correctBody: requiresSignIn
+      ? (isZh
+        ? '这次公开样课已完成。创建账号后可以继续进入今日学习；本页不会保存学习进度。'
+        : 'This public sample is complete. Create an account to continue to Today; this page does not save learning progress.')
+      : (isZh
+        ? '这次公开样课已完成，可以继续进入今日学习；本页不会修改已保存的进度。'
+        : 'This public sample is complete. Continue to Today when ready; this page does not change saved progress.'),
     wrongTitle: isZh ? '还差一点' : 'Close, not quite.',
     wrongBody: isZh
       ? 'mitigate 表示“减轻”。先把例句读一遍，再重新输入这个词。'
       : 'Mitigate means “make less severe.” Read the example once, then type the word again.',
     loop: isZh
-      ? ['回想 1 次', '查看反馈', '准备复习卡']
-      : ['1 recall', 'Feedback checked', 'Review card prepared'],
+      ? ['完成 1 句', '查看反馈', '准备继续']
+      : ['1 sentence completed', 'Feedback checked', 'Ready to continue'],
+    sampleOnly: isZh
+      ? '这是公开样课，不会写入账号或本地学习进度。'
+      : 'This public sample does not write to account or local learning progress.',
   };
   const feedbackTone = isCorrect
     ? 'border-[hsl(var(--accent-practice)/0.34)] bg-[hsl(var(--accent-practice)/0.08)]'
-    : 'border-amber-500/35 bg-amber-500/10';
+    : 'border-[hsl(var(--danger)/0.42)] bg-[hsl(var(--danger)/0.08)]';
 
   const loopItems = copy.loop;
 
@@ -78,10 +88,9 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
   };
 
   return (
-    <section className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
-      <div className="space-y-5">
-        <span className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-          <Check className="h-3.5 w-3.5" />
+    <section className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
+      <div className="space-y-4">
+        <span className="inline-flex rounded-md bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
           {copy.eyebrow}
         </span>
         <div className="space-y-3">
@@ -92,7 +101,7 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
             {copy.intro}
           </p>
         </div>
-        <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-4 py-5">
+        <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-4 py-4 sm:px-5">
           <p className="text-xs font-medium text-muted-foreground">{copy.wordLabel}</p>
           <div className="mt-3 flex flex-wrap items-baseline gap-2">
             <h2 className="text-4xl font-semibold text-foreground">{sampleWord.word}</h2>
@@ -109,8 +118,8 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
         </div>
       </div>
 
-      <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.22)] px-4 py-5 sm:px-5 sm:py-6">
-        <form className="space-y-5" onSubmit={handleSubmit}>
+      <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.22)] px-4 py-4 sm:px-5 sm:py-5">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <p className="text-xs font-medium text-muted-foreground">{copy.promptLabel}</p>
             <p className="mt-2 text-xl font-semibold leading-8 text-foreground">{promptSentence}</p>
@@ -124,11 +133,13 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
               onChange={(event) => setAnswer(event.target.value)}
               placeholder={copy.answerPlaceholder}
               autoComplete="off"
+              aria-invalid={hasFeedback && !isCorrect}
+              aria-describedby={hasFeedback ? 'sample-feedback' : 'sample-progress-note'}
             />
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="submit" className="rounded-lg">
+            <Button type="submit" className="rounded-lg" disabled={!answer.trim()}>
               {copy.submit}
             </Button>
             {hasFeedback ? (
@@ -142,16 +153,25 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
 
         {hasFeedback ? (
           <div
+            id="sample-feedback"
             data-testid="sample-feedback"
+            data-feedback-kind={isCorrect ? 'correct' : 'incorrect'}
             className={cn('mt-5 rounded-lg px-4 py-3', feedbackTone)}
             role="status"
+            aria-live="polite"
           >
             <div className="flex items-start gap-3">
               <span className={cn(
                 'flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
-                isCorrect ? 'bg-[hsl(var(--accent-practice)/0.14)] text-[hsl(var(--accent-practice))]' : 'bg-[hsl(var(--warning)/0.14)] text-[hsl(var(--warning))]',
+                isCorrect
+                  ? 'bg-[hsl(var(--accent-practice)/0.14)] text-[hsl(var(--accent-practice))]'
+                  : 'bg-[hsl(var(--danger)/0.14)] text-[hsl(var(--danger))]',
               )}>
-                <Check className="h-4 w-4" />
+                {isCorrect ? (
+                  <Check data-testid="sample-feedback-icon-correct" className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <X data-testid="sample-feedback-icon-incorrect" className="h-4 w-4" aria-hidden="true" />
+                )}
               </span>
               <div className="min-w-0">
                 <p className="font-semibold text-foreground">
@@ -170,9 +190,8 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
                       ))}
                     </div>
                     <Button asChild className="mt-4 rounded-lg">
-                      <Link to={saveProgressHref}>
-                        {copy.save}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                      <Link to={continueHref}>
+                        {copy.continue}
                       </Link>
                     </Button>
                   </>
@@ -180,7 +199,14 @@ export function SampleLesson({ isZh, saveProgressHref }: SampleLessonProps) {
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <p
+            id="sample-progress-note"
+            className="mt-5 border-t border-border/20 pt-4 text-xs leading-5 text-muted-foreground"
+          >
+            {copy.sampleOnly}
+          </p>
+        )}
       </div>
     </section>
   );

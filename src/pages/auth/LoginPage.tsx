@@ -5,12 +5,50 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Loader2, Mail } from 'lucide-react';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Eye, EyeOff, Loader2, Mail, MonitorPlay } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveAuthRedirect } from '@/lib/authRedirect';
 import { resetPassword } from '@/lib/supabase-auth';
 import { AuthShell } from '@/features/marketing/AuthShell';
 import { useTranslation } from 'react-i18next';
+
+const LOGIN_TIMEOUT_MS = 15_000;
+
+class LoginTimeoutError extends Error {
+  constructor() {
+    super('login_timeout');
+    this.name = 'LoginTimeoutError';
+  }
+}
+
+const withLoginTimeout = async <T,>(request: Promise<T>): Promise<T> => {
+  let timeoutId: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new LoginTimeoutError()), LOGIN_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([request, timeout]);
+  } finally {
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+};
+
+interface InlineMessage {
+  tone: 'error' | 'status';
+  text: string;
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -25,6 +63,8 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isResetting, setIsResetting] = useState(false);
+  const [formMessage, setFormMessage] = useState<InlineMessage | null>(null);
+  const [resetMessage, setResetMessage] = useState<InlineMessage | null>(null);
 
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
   const copy = isZh
@@ -41,8 +81,8 @@ export default function LoginPage() {
         signingIn: '登录中...',
         signIn: '登录',
         divider: '或',
-        demo: '体验本地演示',
-        demoHint: '不会创建真实账号，演示数据仅保存在当前浏览器。',
+        demo: '进入本地演示',
+        demoHint: '直接打开浏览器内的演示学习空间，不会创建或登录真实账号。',
         resetTitle: '重置密码',
         resetBody: '我们会向你的邮箱发送重置链接。',
         sending: '发送中...',
@@ -74,8 +114,8 @@ export default function LoginPage() {
         signingIn: 'Signing in...',
         signIn: 'Sign in',
         divider: 'or',
-        demo: 'Try local demo',
-        demoHint: 'No real account will be created. Demo data stays in this browser.',
+        demo: 'Open local demo',
+        demoHint: 'Open a browser-only learning workspace without creating or signing in to a real account.',
         resetTitle: 'Reset password',
         resetBody: "We'll send a reset link to your email.",
         sending: 'Sending...',
@@ -103,56 +143,62 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    if (!email.trim() || !password) {
+      setFormMessage({ tone: 'error', text: copy.missingCredentials });
       toast.error(copy.missingCredentials);
       return;
     }
 
     setIsLoading(true);
-
-    // Add timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      setIsLoading(false);
-      toast.error(copy.loginTimeout);
-    }, 15000); // 15 second timeout
+    setFormMessage(null);
 
     try {
-      const { success, error } = await login(email, password);
-      clearTimeout(timeoutId);
+      const { success, error } = await withLoginTimeout(login(email.trim(), password));
 
       if (success) {
+        setFormMessage({ tone: 'status', text: copy.loginSuccess });
         toast.success(copy.loginSuccess);
         navigate(redirectTarget, { replace: true });
       } else {
         console.error('Login failed:', error);
-        toast.error(error || copy.invalidCredentials);
+        const message = error || copy.invalidCredentials;
+        setFormMessage({ tone: 'error', text: message });
+        toast.error(message);
       }
     } catch (error: unknown) {
-      clearTimeout(timeoutId);
       console.error('Login exception:', error);
-      toast.error(error instanceof TypeError
-        ? copy.networkError
-        : copy.loginFailed);
+      const message = error instanceof LoginTimeoutError
+        ? copy.loginTimeout
+        : error instanceof TypeError
+          ? copy.networkError
+          : copy.loginFailed;
+      setFormMessage({ tone: 'error', text: message });
+      toast.error(message);
     } finally {
-      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
 
   const handleDemoLogin = async () => {
     setIsLoading(true);
+    setFormMessage(null);
 
     try {
       const result = await startDemoSession();
       if (result.success) {
+        setFormMessage({ tone: 'status', text: copy.demoSuccess });
         toast.success(copy.demoSuccess);
         navigate(redirectTarget, { replace: true });
         return;
       }
 
-      toast.error(result.error || copy.demoUnavailable);
+      const message = result.error || copy.demoUnavailable;
+      setFormMessage({ tone: 'error', text: message });
+      toast.error(message);
     } catch (err) {
-      toast.error(err instanceof TypeError ? copy.networkError : copy.demoUnavailable);
+      const message = err instanceof TypeError ? copy.networkError : copy.demoUnavailable;
+      setFormMessage({ tone: 'error', text: message });
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -160,20 +206,26 @@ export default function LoginPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!resetEmail) {
+    if (!resetEmail.trim()) {
+      setResetMessage({ tone: 'error', text: copy.missingEmail });
       toast.error(copy.missingEmail);
       return;
     }
     setIsResetting(true);
+    setResetMessage(null);
     try {
-      const { success, error } = await resetPassword(resetEmail);
+      const { success, error } = await resetPassword(resetEmail.trim());
       if (success) {
+        setResetMessage({ tone: 'status', text: copy.resetSuccess });
         toast.success(copy.resetSuccess);
         setShowForgotPassword(false);
       } else {
-        toast.error(error || copy.sendFailed);
+        const message = error || copy.sendFailed;
+        setResetMessage({ tone: 'error', text: message });
+        toast.error(message);
       }
     } catch {
+      setResetMessage({ tone: 'error', text: copy.genericNetworkError });
       toast.error(copy.genericNetworkError);
     } finally {
       setIsResetting(false);
@@ -181,7 +233,13 @@ export default function LoginPage() {
   };
 
   return (
-    <>
+    <Dialog
+      open={showForgotPassword}
+      onOpenChange={(open) => {
+        setShowForgotPassword(open);
+        if (!open) setResetMessage(null);
+      }}
+    >
       <AuthShell
         title="Welcome back"
         titleZh="欢迎回来"
@@ -199,7 +257,7 @@ export default function LoginPage() {
           </>
         }
       >
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate aria-busy={isLoading}>
           <div className="space-y-2">
             <Label
               htmlFor="email"
@@ -213,7 +271,10 @@ export default function LoginPage() {
               autoComplete="email"
               placeholder="your@email.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (formMessage) setFormMessage(null);
+              }}
               disabled={isLoading}
               required
               className="h-11 rounded-md"
@@ -228,13 +289,19 @@ export default function LoginPage() {
               >
                 {copy.password}
               </Label>
-              <button
-                type="button"
-                onClick={() => { setResetEmail(email); setShowForgotPassword(true); }}
-                className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
-              >
-                {copy.forgotPassword}
-              </button>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => {
+                    setResetEmail(email);
+                    setResetMessage(null);
+                  }}
+                  className="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {copy.forgotPassword}
+                </button>
+              </DialogTrigger>
             </div>
             <div className="relative">
               <Input
@@ -243,7 +310,10 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (formMessage) setFormMessage(null);
+                }}
                 disabled={isLoading}
                 required
                 className="h-11 rounded-md pr-12"
@@ -256,10 +326,29 @@ export default function LoginPage() {
                 className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                )}
               </Button>
             </div>
           </div>
+
+          {formMessage && (
+            <p
+              className={formMessage.tone === 'error' ? 'text-sm text-destructive' : 'text-sm text-primary'}
+              role={formMessage.tone === 'error' ? 'alert' : 'status'}
+              aria-live={formMessage.tone === 'error' ? 'assertive' : 'polite'}
+            >
+              {formMessage.text}
+            </p>
+          )}
+          {isLoading && (
+            <p className="sr-only" role="status" aria-live="polite">
+              {copy.signingIn}
+            </p>
+          )}
 
           <Button
             type="submit"
@@ -268,7 +357,7 @@ export default function LoginPage() {
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 {copy.signingIn}
               </>
             ) : (
@@ -277,7 +366,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="relative my-6">
+        <div className="relative my-5">
           <div className="absolute inset-0 flex items-center">
             <Separator />
           </div>
@@ -293,7 +382,7 @@ export default function LoginPage() {
           onClick={handleDemoLogin}
           disabled={isLoading}
         >
-          <Mail className="mr-2 h-4 w-4 text-primary" />
+          <MonitorPlay data-testid="local-demo-icon" className="mr-2 h-4 w-4 text-primary" aria-hidden="true" />
           {copy.demo}
         </Button>
         <p className="mt-2 text-center text-xs leading-relaxed text-muted-foreground">
@@ -301,74 +390,86 @@ export default function LoginPage() {
         </p>
       </AuthShell>
 
-      {/* Forgot Password Overlay — kept lightweight; reuses same focus model. */}
-      {showForgotPassword && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="reset-password-title"
-        >
-          <div className="w-full max-w-[400px] rounded-xl bg-card p-7 shadow-none">
-            <h3
-              id="reset-password-title"
-              className="text-center text-lg font-semibold text-foreground"
+      <DialogContent className="max-w-[400px] gap-5 p-5 sm:p-6">
+        <DialogHeader>
+          <DialogTitle>{copy.resetTitle}</DialogTitle>
+          <DialogDescription>{copy.resetBody}</DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleResetPassword} className="space-y-4" noValidate aria-busy={isResetting}>
+          <div className="space-y-2">
+            <Label
+              htmlFor="reset-email"
+              className="text-sm font-medium text-muted-foreground"
             >
-              {copy.resetTitle}
-            </h3>
-            <p className="mt-3 text-center text-sm text-muted-foreground">
-              {copy.resetBody}
+              {copy.email}
+            </Label>
+            <Input
+              id="reset-email"
+              type="email"
+              autoComplete="email"
+              placeholder="your@email.com"
+              value={resetEmail}
+              onChange={(e) => {
+                setResetEmail(e.target.value);
+                if (resetMessage) setResetMessage(null);
+              }}
+              disabled={isResetting}
+              required
+              autoFocus
+              aria-invalid={resetMessage?.tone === 'error'}
+              aria-describedby={resetMessage ? 'reset-password-message' : undefined}
+              className="h-11 rounded-md"
+            />
+          </div>
+
+          {resetMessage && (
+            <p
+              id="reset-password-message"
+              className={resetMessage.tone === 'error' ? 'text-sm text-destructive' : 'text-sm text-primary'}
+              role={resetMessage.tone === 'error' ? 'alert' : 'status'}
+              aria-live={resetMessage.tone === 'error' ? 'assertive' : 'polite'}
+            >
+              {resetMessage.text}
             </p>
-            <form onSubmit={handleResetPassword} className="mt-6 space-y-4" noValidate>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="reset-email"
-                  className="text-sm font-medium text-muted-foreground"
-                >
-                  {copy.email}
-                </Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="your@email.com"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  disabled={isResetting}
-                  required
-                  autoFocus
-                  className="h-11 rounded-md"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="h-11 w-full rounded-md text-sm font-medium"
-                disabled={isResetting}
-              >
-                {isResetting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {copy.sending}
-                  </>
-                ) : (
-                  <>
-                    <Mail className="mr-2 h-4 w-4" />
-                    {copy.sendReset}
-                  </>
-                )}
-              </Button>
+          )}
+          {isResetting && (
+            <p className="sr-only" role="status" aria-live="polite">
+              {copy.sending}
+            </p>
+          )}
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <DialogClose asChild>
               <Button
                 type="button"
-                variant="ghost"
-                className="h-10 w-full rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                onClick={() => setShowForgotPassword(false)}
+                variant="outline"
+                className="h-11 rounded-md"
+                disabled={isResetting}
               >
                 {copy.backToLogin}
               </Button>
-            </form>
+            </DialogClose>
+            <Button
+              type="submit"
+              className="h-11 rounded-md text-sm font-medium"
+              disabled={isResetting || !resetEmail.trim()}
+            >
+              {isResetting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                  {copy.sending}
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {copy.sendReset}
+                </>
+              )}
+            </Button>
           </div>
-        </div>
-      )}
-    </>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

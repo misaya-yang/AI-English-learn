@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import {
   BookOpen,
   ChevronLeft,
-  ChevronRight,
   CheckCircle2,
   Circle,
   Clock,
@@ -20,20 +19,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { motionPresets, motionStagger } from '@/lib/motion';
+import { motionStagger } from '@/lib/motion';
+import { cn } from '@/lib/utils';
 import { learningPaths, type LearningPath, type LessonItem } from '@/data/learningPaths';
 import {
-  completeLearningPathLesson,
   getLearningPathProgress,
   getPathCompletionPercent,
   setLearningPathActivePath,
 } from '@/services/learningPathProgress';
 import { LearningCockpitShell } from '@/features/learning/components/LearningCockpitShell';
 import { resolveLearningPathLessonTarget } from '@/features/learning/learningPathRouting';
-import { createEvidenceEvent, recordEvidence } from '@/services/evidenceEvents';
-import { recordEvent } from '@/services/learningEvents';
-import { toast } from 'sonner';
 
 const DIFFICULTY_LABELS = {
   beginner: { zh: '入门', en: 'Beginner' },
@@ -56,6 +51,9 @@ const lessonTypeMeta: Record<LessonItem['type'], {
 const getLessonIds = (path: LearningPath): string[] =>
   path.stages.flatMap((stage) => stage.units.flatMap((unit) => unit.lessons.map((lesson) => lesson.id)));
 
+const cockpitActionClassName =
+  '[&_[data-session-action]]:h-auto [&_[data-session-action]]:min-h-11 [&_[data-session-action]]:whitespace-normal [&_[data-session-action]]:py-2.5 [&_[data-session-action]]:text-center [&_[data-session-action]]:leading-5';
+
 const getInitialProgressState = (userId: string) => {
   const progress = getLearningPathProgress(userId);
   const activePathId = progress.activePathId && learningPaths.some((path) => path.id === progress.activePathId)
@@ -73,13 +71,13 @@ export default function LearningPathPage() {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const { user } = useAuth();
-  const isZh = i18n.language === 'zh';
+  const isZh = i18n.language.startsWith('zh');
   const userId = user?.id || 'guest';
-  const initialProgress = getInitialProgressState(userId);
+  const initialProgress = useMemo(() => getInitialProgressState(userId), [userId]);
 
   const [selectedPathId, setSelectedPathId] = useState<string | null>(initialProgress.activePathId);
-  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(initialProgress.completedLessonIds);
-  const [lessonEvidence, setLessonEvidence] = useState(initialProgress.lessonEvidence);
+  const [completedLessonIds] = useState<string[]>(initialProgress.completedLessonIds);
+  const [lessonEvidence] = useState(initialProgress.lessonEvidence);
 
   const completedLessonSet = useMemo(() => new Set(completedLessonIds), [completedLessonIds]);
 
@@ -102,40 +100,6 @@ export default function LearningPathPage() {
     setLearningPathActivePath(userId, pathId);
   };
 
-  const handleCompleteLesson = (path: LearningPath, lesson: LessonItem) => {
-    if (completedLessonSet.has(lesson.id)) return;
-
-    const target = resolveLearningPathLessonTarget(path, lesson);
-    const completedAt = new Date().toISOString();
-
-    void recordEvidence(
-      createEvidenceEvent({
-        type: 'lesson.completed',
-        userId,
-        lessonId: lesson.id,
-        pathId: path.id,
-      }),
-    );
-    void recordEvent(userId, {
-      kind: 'session_ended',
-      payload: {
-        source: 'learning_path_lesson',
-        pathId: path.id,
-        lessonId: lesson.id,
-        targetHref: target.href,
-      },
-    });
-
-    const next = completeLearningPathLesson(userId, lesson.id, {
-      pathId: path.id,
-      targetHref: target.href,
-      completedAt,
-    });
-    setCompletedLessonIds(next.completedLessonIds);
-    setLessonEvidence(next.lessonEvidence);
-    toast.success(isZh ? '已记录课程完成' : 'Lesson completion recorded');
-  };
-
   const handleOpenLesson = (path: LearningPath, lesson: LessonItem) => {
     navigate(resolveLearningPathLessonTarget(path, lesson).href);
   };
@@ -154,23 +118,23 @@ export default function LearningPathPage() {
   );
 
   if (!selectedPath) {
-    // Pick the path with the highest existing progress (first non-zero).
-    // Falls back to the first path so the primary CTA always lands somewhere.
-    const recommendedPath =
-      learningPaths.find((path) => (pathProgressMap.get(path.id) || 0) > 0) ||
-      learningPaths[0];
+    const recommendedPath = learningPaths.reduce<LearningPath | undefined>((best, path) => {
+      if (!best) return path;
+      return (pathProgressMap.get(path.id) || 0) > (pathProgressMap.get(best.id) || 0) ? path : best;
+    }, undefined);
     const recommendedTitle = isZh ? recommendedPath?.titleZh : recommendedPath?.title;
 
     return (
-      <div className="learning-open-route mx-auto max-w-5xl p-4 sm:p-6">
+      <div className="learning-open-route mx-auto w-full max-w-6xl">
         <LearningCockpitShell
+          className={cockpitActionClassName}
           language={i18n.language}
           eyebrow={isZh ? '学习路径' : 'Learning Paths'}
           mission={{
             title: isZh ? '选择一条学习路径' : 'Choose a learning path',
             description: isZh
-              ? '每条路径按词汇、语法和练习推进，完成后会记录到进度里。'
-              : 'Each path moves through vocabulary, grammar, and practice with progress recorded as you go.',
+              ? '选择后会打开已映射的学习入口；完成状态在这里保持只读，直到具体任务回传证据。'
+              : 'Choose a path to open its mapped learning entries. Completion stays read-only here until the task reports evidence.',
             primaryAction: recommendedPath
               ? {
                   label: isZh ? `继续${recommendedTitle}` : `Continue ${recommendedTitle}`,
@@ -201,38 +165,47 @@ export default function LearningPathPage() {
             const difficultyLabel = DIFFICULTY_LABELS[path.difficulty];
 
             return (
-              <motion.div key={path.id} {...motionStagger(index)}>
-                <Card
-                  className="h-full cursor-pointer rounded-xl transition-colors hover:border-primary/45"
-                  onClick={() => handleSelectPath(path.id)}
-                >
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-sm font-semibold text-muted-foreground">
-                      {index + 1}
+              <motion.button
+                key={path.id}
+                type="button"
+                {...motionStagger(index)}
+                onClick={() => handleSelectPath(path.id)}
+                aria-label={isZh ? `选择学习路径：${path.titleZh}` : `Choose learning path: ${path.title}`}
+                className="h-full min-h-11 w-full rounded-xl border border-border bg-card p-4 text-left transition-[border-color,background-color,box-shadow] hover:border-primary/40 hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2"
+              >
+                <span className="flex items-center gap-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-sm font-semibold text-muted-foreground">
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-foreground">
+                        {isZh ? path.titleZh : path.title}
+                      </span>
+                      <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                        {isZh ? difficultyLabel.zh : difficultyLabel.en}
+                      </span>
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold">
-                          {isZh ? path.titleZh : path.title}
-                        </h3>
-                        <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                          {isZh ? difficultyLabel.zh : difficultyLabel.en}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {isZh ? path.descriptionZh : path.description}
-                      </p>
-                      <div className="mt-3 flex items-center gap-3">
-                        <Progress value={percent} className="h-2 flex-1" />
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {completedCount}/{path.totalLessons}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </CardContent>
-                </Card>
-              </motion.div>
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      {isZh ? path.descriptionZh : path.description}
+                    </span>
+                    <span className="mt-3 flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
+                      >
+                        <span
+                          className="block h-full rounded-full bg-primary transition-[width] duration-300"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </span>
+                      <span className="whitespace-nowrap text-xs text-muted-foreground">
+                        {completedCount}/{path.totalLessons}
+                      </span>
+                    </span>
+                  </span>
+                </span>
+              </motion.button>
             );
           })}
           </div>
@@ -248,8 +221,9 @@ export default function LearningPathPage() {
   const pathTitle = isZh ? selectedPath.titleZh : selectedPath.title;
 
   return (
-    <div className="learning-open-route mx-auto max-w-5xl p-4 sm:p-6">
+    <div className="learning-open-route mx-auto w-full max-w-6xl">
       <LearningCockpitShell
+        className={cockpitActionClassName}
         language={i18n.language}
         eyebrow={isZh ? '学习路径' : 'Learning Paths'}
         mission={{
@@ -257,7 +231,7 @@ export default function LearningPathPage() {
           description: isZh ? selectedPath.descriptionZh : selectedPath.description,
           primaryAction: nextLesson && nextLessonTarget
             ? {
-                label: isZh ? `下一课：${nextLesson.titleZh}` : `Next lesson: ${nextLesson.title}`,
+                label: isZh ? '打开下一课入口' : 'Open next lesson entry',
                 onClick: () => navigate(nextLessonTarget.href),
               }
             : undefined,
@@ -278,21 +252,14 @@ export default function LearningPathPage() {
         ]}
       >
         <div className="space-y-6">
-          <motion.div {...motionPresets.fadeIn}>
-            <Button variant="ghost" size="sm" onClick={() => handleSelectPath(null)}>
+          <div>
+            <Button variant="ghost" size="sm" className="min-h-11" onClick={() => handleSelectPath(null)}>
               <ChevronLeft className="h-4 w-4" />
               {isZh ? '返回路径列表' : 'Back to paths'}
             </Button>
+          </div>
 
-            <div className="mt-3 flex items-center gap-3">
-              <Progress value={progressPercent} className="flex-1" />
-              <span className="text-xs text-muted-foreground">
-                {doneCount}/{totalLessons}
-              </span>
-            </div>
-          </motion.div>
-
-          <Card className="border-primary/15 bg-transparent">
+          <Card className="border-[hsl(var(--primary)/0.15)] bg-transparent">
             <CardContent className="flex items-start gap-3 p-4">
               <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
               <div className="space-y-1">
@@ -301,7 +268,9 @@ export default function LearningPathPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {nextLesson
-                    ? `${isZh ? nextLesson.titleZh : nextLesson.title} · ${isZh ? nextLessonTarget?.labelZh : nextLessonTarget?.label} · ${isZh ? `${nextLesson.estimatedMinutes} 分钟` : `${nextLesson.estimatedMinutes} min`}`
+                    ? (isZh
+                      ? `${nextLesson.titleZh} · ${nextLesson.estimatedMinutes} 分钟。将打开映射入口“${nextLessonTarget?.labelZh}”；完成证据尚未在本页自动接通。`
+                      : `${nextLesson.title} · ${nextLesson.estimatedMinutes} min. Opens the mapped entry “${nextLessonTarget?.label}”; completion evidence is not connected here yet.`)
                     : isZh
                       ? '这条路径已经完成，可以切换到下一条更高阶路径。'
                       : 'This path is complete. You can switch to a more advanced path next.'}
@@ -335,27 +304,34 @@ export default function LearningPathPage() {
                       return (
                         <div
                           key={lesson.id}
-                          className="flex w-full items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                          className="flex w-full items-start gap-2 rounded-lg px-1 py-1 sm:gap-3 sm:px-2"
                         >
-                          <button
-                            type="button"
-                            aria-label={done ? (isZh ? '已完成' : 'Completion recorded') : (isZh ? '记录完成' : 'Record completion')}
-                            onClick={() => handleCompleteLesson(selectedPath, lesson)}
-                            disabled={done}
-                            className="mt-1 shrink-0 disabled:cursor-default"
+                          <span
+                            role="img"
+                            data-testid={`lesson-status-${lesson.id}`}
+                            aria-label={done
+                              ? (isZh ? '已有完成记录' : 'Completion recorded')
+                              : (isZh ? '尚无完成证据' : 'No completion evidence yet')}
+                            className={cn(
+                              'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border',
+                              done
+                                ? 'border-[hsl(var(--success)/0.24)] bg-[hsl(var(--success)/0.08)] text-[hsl(var(--success))]'
+                                : 'border-border bg-muted/40 text-muted-foreground',
+                            )}
                           >
                             {done ? (
                               <CheckCircle2 className="h-4 w-4 text-success" />
                             ) : (
                               <Circle className="h-4 w-4 text-muted-foreground" />
                             )}
-                          </button>
+                          </span>
                           <button
                             type="button"
                             onClick={() => handleOpenLesson(selectedPath, lesson)}
-                            className="min-w-0 flex-1 text-left"
+                            aria-label={isZh ? `打开课程入口：${lesson.titleZh}` : `Open lesson entry: ${lesson.title}`}
+                            className="min-h-11 min-w-0 flex-1 rounded-lg px-2 py-1 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                           >
-                            <div className="flex items-center gap-3">
+                            <span className="flex items-center gap-3">
                               {(() => {
                                 const meta = lessonTypeMeta[lesson.type];
                                 const LessonIcon = meta.icon;
@@ -375,8 +351,8 @@ export default function LearningPathPage() {
                                 <Clock className="h-3 w-3" />
                                 {isZh ? `${lesson.estimatedMinutes} 分钟` : `${lesson.estimatedMinutes} min`}
                               </span>
-                            </div>
-                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                            </span>
+                            <span className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                               <Badge variant="secondary" className="rounded-md px-2 py-0.5">
                                 {isZh ? target.labelZh : target.label}
                               </Badge>
@@ -385,9 +361,13 @@ export default function LearningPathPage() {
                                   ? (isZh
                                     ? `记录：${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('zh-CN')}`
                                     : `Record: ${evidence.source} · ${new Date(evidence.completedAt).toLocaleDateString('en-US')}`)
-                                  : (isZh ? '完成后会记录进度' : 'Completion records progress')}
+                                  : done
+                                    ? (isZh ? '已有完成记录；来源详情不可用' : 'Completion exists; source details are unavailable')
+                                    : (isZh
+                                      ? '打开映射入口；自动完成记录尚未接通'
+                                      : 'Opens the mapped entry; automatic completion tracking is not connected yet')}
                               </span>
-                            </div>
+                            </span>
                           </button>
                         </div>
                       );
@@ -398,9 +378,10 @@ export default function LearningPathPage() {
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-lg bg-[hsl(var(--paper-muted)/0.20)] px-3 py-3 text-sm text-muted-foreground">
-            <span>{isZh ? '点击课程名称打开具体任务；勾选后会记录课程完成。' : 'Click a lesson to open the exact task; checking it records completion.'}</span>
-            <Badge variant="secondary">{progressPercent}%</Badge>
+          <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.20)] px-3 py-3 text-sm leading-6 text-muted-foreground">
+            {isZh
+              ? '课程会打开当前映射的学习入口。本页不再允许手动标记完成；自动完成将在任务证据接通后启用。'
+              : 'Lessons open the currently mapped learning entry. Manual completion is disabled here; automatic completion will return when task evidence is connected.'}
           </div>
         </div>
       </LearningCockpitShell>

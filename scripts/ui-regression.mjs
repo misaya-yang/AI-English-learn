@@ -7,8 +7,11 @@ const OUT_DIR = process.env.UI_REGRESSION_OUT_DIR || 'product-ui-audit-2026-06-1
 const USER_ID = '00000000-0000-4000-8000-111111111111';
 
 const viewports = [
-  { name: 'desktop', width: 1440, height: 960 },
+  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'compact-desktop', width: 1280, height: 800 },
+  { name: 'tablet', width: 768, height: 1024 },
   { name: 'mobile', width: 390, height: 844 },
+  { name: 'short-mobile', width: 390, height: 667 },
 ];
 
 const routes = [
@@ -21,6 +24,7 @@ const routes = [
   { name: 'login', path: '/login', auth: false, authState: 'guest' },
   { name: 'register', path: '/register', auth: false, authState: 'guest' },
   { name: 'magic-link', path: '/magic-link', auth: false, authState: 'guest' },
+  { name: 'auth-callback', path: '/auth/callback', auth: false, authState: 'guest' },
   { name: 'onboarding', path: '/onboarding', auth: false, authState: 'user' },
   { name: 'today', path: '/dashboard/today', auth: true, authState: 'user' },
   { name: 'review', path: '/dashboard/review', auth: true, authState: 'user' },
@@ -34,11 +38,14 @@ const routes = [
   { name: 'leaderboard', path: '/dashboard/leaderboard', auth: true, authState: 'user' },
   { name: 'chat', path: '/dashboard/chat', auth: true, authState: 'user' },
   { name: 'analytics', path: '/dashboard/analytics', auth: true, authState: 'user' },
+  { name: 'evidence', path: '/dashboard/evidence', auth: true, authState: 'user' },
   { name: 'memory', path: '/dashboard/memory', auth: true, authState: 'user' },
   { name: 'vocabulary', path: '/dashboard/vocabulary', auth: true, authState: 'user' },
   { name: 'exam', path: '/dashboard/exam', auth: true, authState: 'user' },
   { name: 'settings', path: '/dashboard/settings', auth: true, authState: 'user' },
   { name: 'profile', path: '/dashboard/profile', auth: true, authState: 'user' },
+  { name: 'organization', path: '/dashboard/organization', auth: true, authState: 'user' },
+  { name: 'not-found', path: '/not-a-real-page', auth: false, authState: 'guest' },
 ];
 
 const localUser = {
@@ -145,6 +152,12 @@ async function seedContext(context, authState) {
 
 async function inspectPage(page, route, viewport) {
   const url = `${BASE_URL}${route.path}`;
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
   const response = await gotoPage(page, url);
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await page.waitForTimeout(900);
@@ -159,13 +172,43 @@ async function inspectPage(page, route, viewport) {
     const horizontalOverflowPx = Math.max(0, doc.scrollWidth - doc.clientWidth);
     const visibleTextLength = bodyText.replace(/\s+/g, '').length;
     const errorBoundary = /Something went wrong|出现错误|Unexpected error|错误边界/i.test(bodyText);
+    const mainTargetExists = Boolean(document.getElementById('main-content'));
+    const elementCount = document.querySelectorAll('*').length;
+    const interactiveCount = document.querySelectorAll('a, button, input, textarea, select, [role="button"], [role="link"], [role="radio"]').length;
+    const h1Count = document.querySelectorAll('h1').length;
+    const visibleChevronRightCount = Array.from(document.querySelectorAll('.lucide-chevron-right'))
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      }).length;
+    const contentRoot = document.getElementById('main-content') || document.body;
+    const contentRects = Array.from(contentRoot.querySelectorAll('h1, h2, h3, p, li, button, a, input, textarea, select, table, [role="img"]'))
+      .map((element) => element.getBoundingClientRect())
+      .filter((rect) => (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        rect.bottom > 0 &&
+        rect.top < window.innerHeight
+      ));
+    const occupiedVerticalRatio = contentRects.length > 0
+      ? Math.max(0, Math.min(window.innerHeight, Math.max(...contentRects.map((rect) => rect.bottom))) - Math.max(0, Math.min(...contentRects.map((rect) => rect.top)))) / window.innerHeight
+      : 0;
 
     return {
       h1,
+      h1Count,
       bodySample: bodyText.replace(/\s+/g, ' ').trim().slice(0, 220),
       horizontalOverflowPx,
       visibleTextLength,
       errorBoundary,
+      title: document.title,
+      htmlLang: document.documentElement.lang,
+      mainTargetExists,
+      elementCount,
+      interactiveCount,
+      visibleChevronRightCount,
+      occupiedVerticalRatio: Number(occupiedVerticalRatio.toFixed(3)),
       scrollWidth: doc.scrollWidth,
       clientWidth: doc.clientWidth,
     };
@@ -180,13 +223,21 @@ async function inspectPage(page, route, viewport) {
     finalUrl: page.url(),
     httpStatus: response?.status() ?? null,
     screenshotPath,
+    pageErrors,
+    consoleErrors,
     ...result,
     redirectedToLogin,
     passed:
       !redirectedToLogin &&
       !result.errorBoundary &&
+      pageErrors.length === 0 &&
+      consoleErrors.length === 0 &&
       result.visibleTextLength >= 40 &&
-      result.horizontalOverflowPx <= 2,
+      result.horizontalOverflowPx <= 2 &&
+      result.mainTargetExists &&
+      result.title !== 'VocabDaily' &&
+      result.htmlLang.startsWith('zh') &&
+      result.elementCount < 3500,
   };
 }
 
@@ -203,6 +254,14 @@ async function captureRouteFailure(page, route, viewport, error) {
       horizontalOverflowPx: Math.max(0, doc.scrollWidth - doc.clientWidth),
       visibleTextLength: bodyText.replace(/\s+/g, '').length,
       errorBoundary: /Something went wrong|出现错误|Unexpected error|错误边界/i.test(bodyText),
+      title: document.title,
+      htmlLang: document.documentElement.lang,
+      mainTargetExists: Boolean(document.getElementById('main-content')),
+      elementCount: document.querySelectorAll('*').length,
+      interactiveCount: document.querySelectorAll('a, button, input, textarea, select, [role="button"], [role="link"], [role="radio"]').length,
+      h1Count: document.querySelectorAll('h1').length,
+      visibleChevronRightCount: 0,
+      occupiedVerticalRatio: 0,
       scrollWidth: doc.scrollWidth,
       clientWidth: doc.clientWidth,
     };
@@ -212,6 +271,14 @@ async function captureRouteFailure(page, route, viewport, error) {
     horizontalOverflowPx: 0,
     visibleTextLength: 0,
     errorBoundary: false,
+    title: '',
+    htmlLang: '',
+    mainTargetExists: false,
+    elementCount: 0,
+    interactiveCount: 0,
+    h1Count: 0,
+    visibleChevronRightCount: 0,
+    occupiedVerticalRatio: 0,
     scrollWidth: 0,
     clientWidth: 0,
   }));
@@ -225,6 +292,8 @@ async function captureRouteFailure(page, route, viewport, error) {
     screenshotPath,
     ...result,
     redirectedToLogin: false,
+    pageErrors: [],
+    consoleErrors: [],
     error: error instanceof Error ? error.message : String(error),
     passed: false,
   };

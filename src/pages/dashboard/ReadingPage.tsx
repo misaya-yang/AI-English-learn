@@ -525,7 +525,7 @@ export default function ReadingPage() {
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {featuredQuestionMix.map((item) => (
-                  <div key={item.label} className="rounded-lg bg-muted/35 p-3 text-center dark:bg-muted/22">
+                  <div key={item.label} className="rounded-lg bg-muted/35 p-3 text-center dark:bg-muted/[0.22]">
                     <p className="text-xl font-semibold text-foreground">{item.value}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">{item.label}</p>
                   </div>
@@ -625,7 +625,7 @@ export default function ReadingPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left: passage */}
-          <div className="lg:max-h-[72vh] lg:overflow-y-auto lg:pr-6">
+          <div className="lg:pr-6">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4 text-primary" />
               <span className="text-xs font-medium text-muted-foreground">{isZh ? '文章' : 'Passage'}</span>
@@ -638,7 +638,7 @@ export default function ReadingPage() {
           </div>
 
           {/* Right: questions */}
-          <div className="space-y-4 lg:max-h-[72vh] lg:overflow-y-auto lg:pr-1">
+          <div className="space-y-4 lg:pr-1">
             <div className="flex items-center justify-between gap-3 mb-2">
               <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-primary" />

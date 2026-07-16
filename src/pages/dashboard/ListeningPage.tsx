@@ -12,10 +12,10 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import {
+  ArrowLeft,
   Play,
   Pause,
   RotateCcw,
-  ChevronRight,
   CheckCircle2,
   XCircle,
   Headphones,
@@ -23,7 +23,6 @@ import {
   Volume2,
   VolumeX,
   BookOpen,
-  SkipForward,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -341,78 +340,123 @@ My position is this: AI should serve as a second opinion, not a replacement for 
 
 // ─── TTS Player Hook ──────────────────────────────────────────────────────────
 
+type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
+
 function useTTSPlayer(transcript: string) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [status, setStatus] = useState<PlaybackStatus>('idle');
   const [isSupported] = useState(() => (
     typeof window !== 'undefined' &&
     Boolean(window.speechSynthesis) &&
     typeof window.SpeechSynthesisUtterance === 'function'
   ));
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const voiceLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const voiceChangeHandlerRef = useRef<(() => void) | null>(null);
+  const playbackRequestRef = useRef(0);
+  const segmentStartedAtRef = useRef(0);
+  const elapsedBeforePauseRef = useRef(0);
   const ESTIMATED_DURATION_MS = transcript.length * 55; // ~55ms per char at normal pace
 
-  useEffect(() => {
-    return () => {
-      window.speechSynthesis?.cancel();
-      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
-      if (voiceLoadTimerRef.current) clearTimeout(voiceLoadTimerRef.current);
-    };
+  const clearProgressTimer = useCallback(() => {
+    if (!progressTimerRef.current) return;
+    clearInterval(progressTimerRef.current);
+    progressTimerRef.current = null;
   }, []);
 
-  const startProgressTimer = useCallback(() => {
-    startTimeRef.current = Date.now();
+  const clearVoiceLoading = useCallback(() => {
+    if (voiceLoadTimerRef.current) {
+      clearTimeout(voiceLoadTimerRef.current);
+      voiceLoadTimerRef.current = null;
+    }
+    if (voiceChangeHandlerRef.current) {
+      window.speechSynthesis?.removeEventListener('voiceschanged', voiceChangeHandlerRef.current);
+      voiceChangeHandlerRef.current = null;
+    }
+  }, []);
+
+  const detachUtterance = useCallback(() => {
+    if (!utteranceRef.current) return;
+    utteranceRef.current.onend = null;
+    utteranceRef.current.onerror = null;
+    utteranceRef.current = null;
+  }, []);
+
+  const startProgressTimer = useCallback((resetElapsed: boolean) => {
+    clearProgressTimer();
+    if (resetElapsed) {
+      elapsedBeforePauseRef.current = 0;
+    }
+    segmentStartedAtRef.current = Date.now();
     progressTimerRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
+      const elapsed = elapsedBeforePauseRef.current + (Date.now() - segmentStartedAtRef.current);
       const pct = Math.min(100, (elapsed / ESTIMATED_DURATION_MS) * 100);
       setProgress(pct);
-      if (pct >= 100 && progressTimerRef.current) {
-        clearInterval(progressTimerRef.current);
+      if (pct >= 100) {
+        clearProgressTimer();
       }
     }, 200);
-  }, [ESTIMATED_DURATION_MS]);
+  }, [ESTIMATED_DURATION_MS, clearProgressTimer]);
 
   const play = useCallback(() => {
     if (!isSupported) return;
-    if (isPaused) {
+    if (status === 'paused') {
       window.speechSynthesis.resume();
-      setIsPaused(false);
-      setIsPlaying(true);
-      startProgressTimer();
+      setStatus('playing');
+      setError(null);
+      startProgressTimer(false);
       return;
     }
+
+    const requestId = playbackRequestRef.current + 1;
+    playbackRequestRef.current = requestId;
+    clearVoiceLoading();
+    clearProgressTimer();
+    detachUtterance();
     window.speechSynthesis.cancel();
+    elapsedBeforePauseRef.current = 0;
+    setProgress(0);
+    setError(null);
+    setStatus('loading');
+
     const utterance = new SpeechSynthesisUtterance(transcript);
     utterance.rate = 0.95;
     utterance.pitch = 1;
     utterance.lang = 'en-GB';
 
     utterance.onend = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
+      if (playbackRequestRef.current !== requestId) return;
+      clearProgressTimer();
+      clearVoiceLoading();
+      elapsedBeforePauseRef.current = ESTIMATED_DURATION_MS;
       setProgress(100);
-      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      setStatus('ended');
+      detachUtterance();
     };
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
-      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    utterance.onerror = (event) => {
+      if (playbackRequestRef.current !== requestId) return;
+      clearProgressTimer();
+      clearVoiceLoading();
+      setStatus('error');
+      setError(event.error || 'playback_error');
+      detachUtterance();
     };
 
+    let hasStarted = false;
     const doSpeak = (voices: SpeechSynthesisVoice[]) => {
+      if (hasStarted || playbackRequestRef.current !== requestId) return;
+      hasStarted = true;
+      clearVoiceLoading();
       // Prefer a British English voice if available
       const britishVoice = voices.find(v => v.lang === 'en-GB') || voices.find(v => v.lang.startsWith('en'));
       if (britishVoice) utterance.voice = britishVoice;
       utteranceRef.current = utterance;
       window.speechSynthesis.speak(utterance);
-      setIsPlaying(true);
-      setIsPaused(false);
+      setStatus('playing');
       setProgress(0);
-      startProgressTimer();
+      startProgressTimer(true);
     };
 
     // Chrome loads voices asynchronously — getVoices() may return [] on first call
@@ -421,40 +465,179 @@ function useTTSPlayer(transcript: string) {
       doSpeak(voices);
     } else {
       const onVoicesChanged = () => {
-        if (voiceLoadTimerRef.current) {
-          clearTimeout(voiceLoadTimerRef.current);
-          voiceLoadTimerRef.current = null;
-        }
-        window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
         doSpeak(window.speechSynthesis.getVoices());
       };
+      voiceChangeHandlerRef.current = onVoicesChanged;
       window.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
       voiceLoadTimerRef.current = setTimeout(() => {
-        window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
-        voiceLoadTimerRef.current = null;
         doSpeak(window.speechSynthesis.getVoices());
       }, 800);
     }
-  }, [isSupported, isPaused, transcript, startProgressTimer]);
+  }, [
+    ESTIMATED_DURATION_MS,
+    clearProgressTimer,
+    clearVoiceLoading,
+    detachUtterance,
+    isSupported,
+    startProgressTimer,
+    status,
+    transcript,
+  ]);
 
   const pause = useCallback(() => {
-    if (!isSupported || !isPlaying) return;
+    if (!isSupported || status !== 'playing') return;
     window.speechSynthesis.pause();
-    setIsPlaying(false);
-    setIsPaused(true);
-    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
-  }, [isSupported, isPlaying]);
+    elapsedBeforePauseRef.current = Math.min(
+      ESTIMATED_DURATION_MS,
+      elapsedBeforePauseRef.current + (Date.now() - segmentStartedAtRef.current),
+    );
+    clearProgressTimer();
+    setStatus('paused');
+  }, [ESTIMATED_DURATION_MS, clearProgressTimer, isSupported, status]);
 
   const stop = useCallback(() => {
-    if (!isSupported) return;
-    window.speechSynthesis.cancel();
-    setIsPlaying(false);
-    setIsPaused(false);
+    playbackRequestRef.current += 1;
+    clearVoiceLoading();
+    clearProgressTimer();
+    detachUtterance();
+    window.speechSynthesis?.cancel();
+    elapsedBeforePauseRef.current = 0;
+    segmentStartedAtRef.current = 0;
     setProgress(0);
-    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
-  }, [isSupported]);
+    setError(null);
+    setStatus('idle');
+  }, [clearProgressTimer, clearVoiceLoading, detachUtterance]);
 
-  return { isPlaying, isPaused, isSupported, progress, play, pause, stop };
+  useEffect(() => () => {
+    playbackRequestRef.current += 1;
+    clearVoiceLoading();
+    clearProgressTimer();
+    detachUtterance();
+    window.speechSynthesis?.cancel();
+  }, [clearProgressTimer, clearVoiceLoading, detachUtterance]);
+
+  return {
+    status,
+    isPlaying: status === 'playing',
+    isPaused: status === 'paused',
+    isLoading: status === 'loading',
+    isSupported,
+    progress,
+    error,
+    play,
+    pause,
+    stop,
+  };
+}
+
+function ListeningPlaybackControls({
+  tts,
+  isZh,
+  compact = false,
+}: {
+  tts: ReturnType<typeof useTTSPlayer>;
+  isZh: boolean;
+  compact?: boolean;
+}) {
+  const statusText = {
+    idle: compact
+      ? (isZh ? '可随时重播音频' : 'Audio is ready to replay')
+      : (isZh ? '音频已就绪' : 'Audio ready'),
+    loading: isZh ? '正在准备语音...' : 'Preparing speech...',
+    playing: isZh ? '正在播放' : 'Playing',
+    paused: isZh ? '已暂停' : 'Paused',
+    ended: isZh ? '播放完成，可重新播放' : 'Finished. Replay when needed.',
+    error: isZh ? '播放失败，请重试' : 'Playback failed. Try again.',
+  }[tts.status];
+  const primaryLabel = tts.isPlaying
+    ? (isZh ? '暂停' : 'Pause')
+    : tts.isPaused
+      ? (isZh ? '继续' : 'Resume')
+      : compact
+        ? (isZh ? '重播音频' : 'Replay audio')
+        : tts.status === 'ended'
+          ? (isZh ? '重新播放' : 'Replay')
+          : (isZh ? '播放' : 'Play');
+  const primaryAriaLabel = tts.isPlaying
+    ? (isZh ? '暂停音频' : 'Pause audio')
+    : tts.isPaused
+      ? (isZh ? '继续播放音频' : 'Resume audio')
+      : compact || tts.status === 'ended'
+        ? (isZh ? '从头重播音频' : 'Replay audio from the beginning')
+        : (isZh ? '播放音频' : 'Play audio');
+
+  return (
+    <div
+      className={cn(
+        compact
+          ? 'rounded-lg border border-border/60 bg-muted/20 px-3 py-3'
+          : 'space-y-4',
+      )}
+      role="region"
+      aria-label={isZh ? '听力音频控制' : 'Listening audio controls'}
+      aria-busy={tts.isLoading}
+    >
+      <div
+        className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-label={isZh ? '播放进度' : 'Playback progress'}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(tts.progress)}
+      >
+        <motion.div
+          className="h-full rounded-full bg-primary"
+          initial={false}
+          animate={{ width: `${tts.progress}%` }}
+          transition={{ duration: 0.2 }}
+        />
+      </div>
+
+      <div className={cn('flex items-center gap-3', compact ? 'mt-3 justify-between' : 'justify-center')}>
+        {compact ? (
+          <p className="text-xs text-muted-foreground" role="status" aria-live="polite">
+            {statusText}
+          </p>
+        ) : null}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="glass"
+            size="sm"
+            onClick={tts.stop}
+            aria-label={isZh ? '重置音频' : 'Reset audio'}
+            title={isZh ? '重置音频' : 'Reset audio'}
+            className="rounded-lg"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            size="sm"
+            onClick={tts.isPlaying ? tts.pause : tts.play}
+            variant="glassPrimary"
+            className="rounded-lg px-5"
+            aria-label={primaryAriaLabel}
+            aria-pressed={tts.isPlaying || tts.isPaused}
+          >
+            {tts.isPlaying
+              ? <Pause className="mr-1.5 h-4 w-4" />
+              : <Play className="mr-1.5 h-4 w-4" />}
+            {primaryLabel}
+          </Button>
+        </div>
+      </div>
+
+      {!compact ? (
+        <p className="text-center text-xs text-muted-foreground" role="status" aria-live="polite">
+          {statusText}
+        </p>
+      ) : null}
+      {tts.error ? (
+        <p className="text-xs text-destructive" role="alert">
+          {isZh ? '浏览器未能完成本次播放，请重置后重试。' : 'The browser could not finish playback. Reset and try again.'}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 // ─── Level Badge ──────────────────────────────────────────────────────────────
@@ -524,8 +707,10 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
             return (
               <button
                 key={opt}
+                type="button"
                 disabled={submitted}
                 onClick={() => onChange(optLetter)}
+                aria-pressed={isSelected}
                 className={cn(
                   'w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200',
                   !submitted && !isSelected && 'border-border bg-transparent hover:bg-muted text-foreground',
@@ -547,6 +732,7 @@ function QuestionCard({ q, index, userAnswer, onChange, submitted }: QuestionCar
             disabled={submitted}
             value={userAnswer}
             onChange={(e) => onChange(e.target.value)}
+            aria-label={q.question}
             placeholder={q.type === 'fill_blank'
               ? (isZh ? '填入答案...' : 'Fill in the blank…')
               : (isZh ? '你的答案...' : 'Your answer…')}
@@ -596,12 +782,6 @@ export default function ListeningPage() {
   const transcriptRevealLoggedRef = useRef(false);
 
   const tts = useTTSPlayer(selected?.transcript ?? '');
-
-  // Cleanup TTS on unmount / passage change
-  useEffect(() => {
-    return () => { tts.stop(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
 
   const handleSelect = (passage: ListeningPassage) => {
     setSelected(passage);
@@ -738,7 +918,6 @@ export default function ListeningPage() {
 
               <Button onClick={() => handleSelect(featuredListening)} variant="glassPrimary" className="rounded-lg">
                 {isZh ? '开始这段' : 'Start this clip'}
-                <ChevronRight className="ml-1.5 h-4 w-4" />
               </Button>
             </div>
 
@@ -791,6 +970,7 @@ export default function ListeningPage() {
           {SEED_PASSAGES.map((passage) => (
             <motion.button
               key={passage.id}
+              type="button"
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleSelect(passage)}
@@ -813,9 +993,6 @@ export default function ListeningPage() {
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <BookOpen className="h-3 w-3" />
                     {passage.questions.length} {isZh ? '题' : 'questions'}
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted p-1.5">
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
                 </div>
               </div>
@@ -842,10 +1019,12 @@ export default function ListeningPage() {
       <div className="learning-open-route mx-auto max-w-2xl space-y-6 px-4 py-6">
         {/* Back button */}
         <button
+          type="button"
           onClick={handleReset}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          {isZh ? '← 返回段落列表' : '← Back to passages'}
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          {isZh ? '返回段落列表' : 'Back to passages'}
         </button>
 
         {/* Passage info */}
@@ -872,52 +1051,9 @@ export default function ListeningPage() {
             <span className="text-xs text-muted-foreground">{selected.durationLabel}</span>
           </div>
 
-          {/* Progress bar */}
-          <div className="mb-4 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-primary"
-              initial={{ width: 0 }}
-              animate={{ width: `${tts.progress}%` }}
-              transition={{ duration: 0.2 }}
-            />
-          </div>
-
           {/* Controls */}
           {tts.isSupported && (
-            <div className="flex items-center justify-center gap-3">
-              <Button
-                variant="glass"
-                size="sm"
-                onClick={tts.stop}
-                aria-label={isZh ? '重置音频' : 'Reset audio'}
-                title={isZh ? '重置音频' : 'Reset audio'}
-                className="rounded-lg"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                size="sm"
-                onClick={tts.isPlaying ? tts.pause : tts.play}
-                variant="glassPrimary"
-                className="rounded-lg px-6"
-              >
-                {tts.isPlaying
-                  ? <><Pause className="h-4 w-4 mr-1.5" />{isZh ? '暂停' : 'Pause'}</>
-                  : tts.isPaused
-                    ? <><Play className="h-4 w-4 mr-1.5" />{isZh ? '继续' : 'Resume'}</>
-                    : <><Play className="h-4 w-4 mr-1.5" />{isZh ? '播放' : 'Play'}</>}
-              </Button>
-              <Button
-                variant="glass"
-                size="sm"
-                onClick={handleStartQuestions}
-                aria-label={isZh ? '跳到答题' : 'Skip to questions'}
-                title={isZh ? '跳到答题' : 'Skip to questions'}
-                className="rounded-lg"
-              >
-                <SkipForward className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+            <ListeningPlaybackControls tts={tts} isZh={isZh} />
           )}
           {!tts.isSupported && (
             <div className="rounded-lg border border-warning/25 bg-warning/10 px-3 py-2 text-sm text-warning-foreground">
@@ -931,6 +1067,7 @@ export default function ListeningPage() {
         {/* Transcript toggle */}
         <div>
           <button
+            type="button"
             onClick={() => toggleTranscript('listening')}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
@@ -969,7 +1106,7 @@ export default function ListeningPage() {
           onClick={handleStartQuestions}
           className="w-full rounded-lg font-semibold"
         >
-          {isZh ? '开始答题' : 'Start Questions'} <ChevronRight className="ml-1.5 h-4 w-4" />
+          {isZh ? '开始答题' : 'Start Questions'}
         </Button>
       </div>
     );
@@ -1010,6 +1147,10 @@ export default function ListeningPage() {
                 </div>
               )}
             </div>
+
+            {tts.isSupported ? (
+              <ListeningPlaybackControls tts={tts} isZh={isZh} compact />
+            ) : null}
 
             {submitted && (
               <LearningCompletionState
@@ -1069,6 +1210,7 @@ export default function ListeningPage() {
               <div className="space-y-3">
                 {/* Transcript toggle in review */}
                 <button
+                  type="button"
                   onClick={() => toggleTranscript('review')}
                   className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >

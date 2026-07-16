@@ -8,19 +8,19 @@ const EASE_DECELERATE = [0, 0, 0, 1] as const;
 
 export const motionPresets = {
   fadeIn: {
-    initial: { opacity: 0, y: 8 },
+    initial: { opacity: 0, y: 6 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.28, ease: EASE_STANDARD } satisfies Transition,
+    transition: { duration: 0.24, ease: EASE_STANDARD } satisfies Transition,
   },
 
   fadeInUp: {
-    initial: { opacity: 0, y: 16 },
+    initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.28, ease: EASE_STANDARD } satisfies Transition,
+    transition: { duration: 0.26, ease: EASE_STANDARD } satisfies Transition,
   },
 
   scaleIn: {
-    initial: { opacity: 0, scale: 0.95 },
+    initial: { opacity: 0, scale: 0.985 },
     animate: { opacity: 1, scale: 1 },
     transition: { duration: 0.18, ease: EASE_DECELERATE } satisfies Transition,
   },
@@ -56,11 +56,11 @@ export const motionPresets = {
 
 /** Staggered entrance for list items. Usage: `{...motionStagger(index)}` */
 export const motionStagger = (i: number) => ({
-  initial: { opacity: 0, y: 8 },
+  initial: { opacity: 0, y: 6 },
   animate: { opacity: 1, y: 0 },
   transition: {
-    delay: i * 0.06,
-    duration: 0.28,
+    delay: Math.min(i, 6) * 0.045,
+    duration: 0.24,
     ease: EASE_STANDARD,
   } satisfies Transition,
 });
@@ -69,15 +69,15 @@ export const motionStagger = (i: number) => ({
 export const staggerContainerVariants = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.06 },
+    transition: { staggerChildren: 0.045 },
   },
 };
 
 export const staggerItemVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.28, ease: EASE_STANDARD },
+    transition: { duration: 0.24, ease: EASE_STANDARD },
   },
 };

@@ -479,7 +479,10 @@ export default function ChatPage() {
     if (!shouldAutoScrollRef.current) return;
 
     const raf = requestAnimationFrame(() => {
-      viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
+        behavior: streamingContent ? 'auto' : 'smooth',
+      });
     });
 
     return () => cancelAnimationFrame(raf);
@@ -770,6 +773,7 @@ export default function ChatPage() {
 
   // Handle key press
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.nativeEvent.isComposing) return;
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -1279,7 +1283,14 @@ export default function ChatPage() {
       }}
       onUpdateSessionTitle={updateSessionTitle}
       onDeleteSession={deleteSession}
-      onDeleteAllSessions={() => deleteAllSessions()}
+      onDeleteAllSessions={() => {
+        const confirmed = window.confirm(
+          language.startsWith('zh')
+            ? '删除全部历史对话？此操作无法撤销。'
+            : 'Delete all chat history? This cannot be undone.',
+        );
+        if (confirmed) deleteAllSessions();
+      }}
     />
   );
 
@@ -1294,8 +1305,8 @@ export default function ChatPage() {
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="liquid-glass-panel hidden min-h-0 flex-shrink-0 overflow-hidden rounded-none border-y-0 border-l-0 border-r border-transparent bg-card/80 md:block"
+            transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+            className="liquid-glass-panel hidden min-h-0 flex-shrink-0 overflow-hidden rounded-none border-y-0 border-l-0 border-r border-transparent bg-card/80 2xl:block"
           >
             {renderHistorySidebar()}
           </motion.div>
@@ -1324,7 +1335,7 @@ export default function ChatPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="2xl:hidden"
               onClick={() => setMobileHistoryOpen(true)}
               title={language.startsWith('zh') ? '打开历史对话' : 'Open chat history'}
               aria-label={language.startsWith('zh') ? '打开历史对话' : 'Open chat history'}
@@ -1334,7 +1345,7 @@ export default function ChatPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="hidden md:inline-flex"
+              className="hidden 2xl:inline-flex"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               title={sidebarOpen 
                 ? (language.startsWith('zh') ? '收起侧边栏' : 'Collapse sidebar')
@@ -1367,6 +1378,17 @@ export default function ChatPage() {
 
           <div className="flex items-center gap-2">
             <Button
+              variant={roleplayOpen ? 'outline' : 'ghost'}
+              size="sm"
+              onClick={() => setRoleplayOpen((current) => !current)}
+              aria-expanded={roleplayOpen}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">
+                {language.startsWith('zh') ? '口语场景' : 'Roleplay'}
+              </span>
+            </Button>
+            <Button
               variant="glass"
               size="sm"
               onClick={() => {
@@ -1388,12 +1410,25 @@ export default function ChatPage() {
             {messages.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="glass" size="icon">
+                  <Button
+                    variant="glass"
+                    size="icon"
+                    aria-label={language.startsWith('zh') ? '更多对话操作' : 'More chat actions'}
+                  >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={clearMessages}>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const confirmed = window.confirm(
+                        language.startsWith('zh')
+                          ? '清空当前对话？此操作无法撤销。'
+                          : 'Clear this conversation? This cannot be undone.',
+                      );
+                      if (confirmed) clearMessages();
+                    }}
+                  >
                     <RotateCcw className="h-4 w-4 mr-2" />
                     {t('chat.clearConversation')}
                   </DropdownMenuItem>
@@ -1439,7 +1474,7 @@ export default function ChatPage() {
               </div>
             </div>
 
-	            <div className="grid grid-cols-3 gap-2 text-xs">
+	            <div className="hidden grid-cols-3 gap-2 text-xs 2xl:grid">
               <div className="rounded-lg bg-[hsl(var(--paper-muted)/0.22)] px-3 py-1.5">
 	                <p className="text-muted-foreground">{isZh ? '到期' : 'Due'}</p>
 	                <p className="mt-1 font-semibold">{coachEvidence.dueReviewCount}</p>
@@ -1488,7 +1523,7 @@ export default function ChatPage() {
           </section>
         ) : null}
 
-        <section className="bg-[hsl(var(--accent-practice)/0.05)] px-4 py-3 md:px-6 lg:px-8">
+        {roleplayOpen ? <section className="bg-[hsl(var(--accent-practice)/0.05)] px-4 py-3 md:px-6 lg:px-8">
           <div className={cn(contentWidthClass, 'mx-auto space-y-3 rounded-lg bg-background/60 px-3 py-3')}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
@@ -1508,35 +1543,35 @@ export default function ChatPage() {
               </div>
               <Button
                 size="sm"
-                variant={roleplayOpen ? 'outline' : 'glassPrimary'}
+                variant="outline"
                 className="shrink-0"
                 onClick={() => setRoleplayOpen((current) => !current)}
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
-                {roleplayOpen
-                  ? (language.startsWith('zh') ? '隐藏场景' : 'Hide scenarios')
-                  : (language.startsWith('zh') ? '选择口语场景' : 'Choose speaking scenario')}
+                {language.startsWith('zh') ? '收起场景' : 'Hide scenarios'}
               </Button>
             </div>
 
-            {roleplayOpen ? (
-              <div className="rounded-lg border border-border/70 bg-card/70">
-                <RoleplayMode
-                  onStartScenario={handleStartRoleplayScenario}
-                  onExit={handleExitRoleplay}
-                  activeScenario={activeRoleplayScenario}
-                  completedObjectives={completedRoleplayObjectives}
-                  messageCount={roleplayMessageCount}
-                  sessionScore={roleplaySessionScore}
-                  onToggleObjective={handleToggleRoleplayObjective}
-                />
-              </div>
-            ) : null}
+            <div className="rounded-lg border border-border/70 bg-card/70">
+              <RoleplayMode
+                onStartScenario={handleStartRoleplayScenario}
+                onExit={handleExitRoleplay}
+                activeScenario={activeRoleplayScenario}
+                completedObjectives={completedRoleplayObjectives}
+                messageCount={roleplayMessageCount}
+                sessionScore={roleplaySessionScore}
+                onToggleObjective={handleToggleRoleplayObjective}
+              />
+            </div>
           </div>
-        </section>
+        </section> : null}
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 min-h-0 px-4 md:px-6 lg:px-8" ref={messagesScrollAreaRef}>
+        <ScrollArea
+          className="flex-1 min-h-0 px-4 md:px-6 lg:px-8"
+          ref={messagesScrollAreaRef}
+          aria-live="polite"
+        >
           <div className={cn(contentWidthClass, 'mx-auto')}>
             {messages.length === 0 ? (
               <div className="space-y-4 py-4">

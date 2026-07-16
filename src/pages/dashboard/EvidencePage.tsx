@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, ArrowRight, CheckCircle2, ClipboardList, RotateCcw } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ClipboardList, RotateCcw, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,10 @@ const copy = {
     noRecovery: 'No recovery items right now.',
     loading: 'Loading evidence...',
     failed: 'Evidence could not be loaded.',
-    disabledTitle: 'Enterprise evidence preview is disabled',
-    disabledBody: 'Set VITE_ENTERPRISE_UI_ENABLED=true to expose this shell in local or staging navigation.',
-    backToday: 'Back to Today',
+    disabledLabel: 'Organization feature',
+    disabledTitle: 'Learning evidence is not available for this workspace',
+    disabledBody: 'This workspace does not currently include organization evidence reports. You can keep learning individually or ask your organization administrator about access.',
+    backToday: 'Continue individual learning',
   },
   zh: {
     title: '学习证据',
@@ -51,9 +52,10 @@ const copy = {
     noRecovery: '现在没有补救项。',
     loading: '正在加载学习证据...',
     failed: '学习证据加载失败。',
-    disabledTitle: '企业证据预览已关闭',
-    disabledBody: '设置 VITE_ENTERPRISE_UI_ENABLED=true 后，可在本地或 staging 导航中展示这个壳。',
-    backToday: '返回今日',
+    disabledLabel: '组织功能',
+    disabledTitle: '当前工作区暂未开放学习证据',
+    disabledBody: '当前工作区尚未包含组织级证据报告。你仍可继续个人学习，或联系组织管理员了解访问权限。',
+    backToday: '继续个人学习',
   },
 } as const;
 
@@ -161,10 +163,18 @@ export default function EvidencePage() {
 
   if (!enabled) {
     return (
-      <section className="max-w-2xl rounded-md border border-border/70 bg-card px-5 py-6">
-        <Badge variant="outline">VocabDaily Enterprise</Badge>
-        <h1 className="mt-4 text-2xl font-semibold tracking-normal text-foreground">{t.disabledTitle}</h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.disabledBody}</p>
+      <section
+        className="max-w-2xl rounded-xl border border-border/70 bg-card px-5 py-6 sm:px-6 sm:py-7"
+        aria-labelledby="evidence-unavailable-title"
+      >
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <Badge variant="outline" className="mt-4 rounded-md">{t.disabledLabel}</Badge>
+        <h1 id="evidence-unavailable-title" className="mt-3 text-2xl font-semibold tracking-normal text-foreground">
+          {t.disabledTitle}
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">{t.disabledBody}</p>
         <Button asChild className="mt-5">
           <Link to="/dashboard/today">{t.backToday}</Link>
         </Button>
@@ -209,10 +219,7 @@ export default function EvidencePage() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t.noEvidenceBody}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button asChild>
-              <Link to="/dashboard/today">
-                {t.openToday}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              <Link to="/dashboard/today">{t.openToday}</Link>
             </Button>
             <Button asChild variant="outline">
               <Link to="/dashboard/review">{t.openReview}</Link>

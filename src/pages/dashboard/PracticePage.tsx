@@ -26,7 +26,6 @@ import {
   RotateCcw,
   PenTool,
   Headphones,
-  ChevronRight,
   AlertTriangle,
   ThumbsUp,
   Quote,
@@ -153,6 +152,7 @@ export default function PracticePage() {
   // Gamification state
   const [timedMode, setTimedMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [queueProgressSnapshot, setQueueProgressSnapshot] = useState<typeof progress | null>(null);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [errorNotebook, setErrorNotebook] = useState<Array<{ word: string; question: string; correctAnswer: string }>>([]);
@@ -198,24 +198,25 @@ export default function PracticePage() {
 
     return out;
   }, [dailyWords, focusedPracticeWord, practiceWordCatalog]);
+  const effectiveQueueProgress = queueProgressSnapshot ?? progress;
   const quizQuestions = useMemo(
     () =>
       selectedMode === 'quiz' || selectedMode === 'fill_blank'
         ? buildPracticeQuestions(practiceWords, selectedMode, `${userId}:${selectedMode}`, {
-          progress,
+          progress: effectiveQueueProgress,
           focusWordId: focusedPracticeWord?.id,
         })
         : [],
-    [focusedPracticeWord?.id, practiceWords, progress, selectedMode, userId],
+    [effectiveQueueProgress, focusedPracticeWord?.id, practiceWords, selectedMode, userId],
   );
   const listeningWords = useMemo(
     () => (selectedMode === 'listening'
       ? buildListeningQueue(practiceWords, `${userId}:listening`, {
-        progress,
+        progress: effectiveQueueProgress,
         focusWordId: focusedPracticeWord?.id,
       })
       : []),
-    [focusedPracticeWord?.id, practiceWords, progress, selectedMode, userId],
+    [effectiveQueueProgress, focusedPracticeWord?.id, practiceWords, selectedMode, userId],
   );
 
   const resetPracticeRuntime = () => {
@@ -239,7 +240,9 @@ export default function PracticePage() {
     setPreviousFeedback(null);
     setCombo(0);
     setMaxCombo(0);
+    setTimedMode(false);
     setTimeLeft(60);
+    setQueueProgressSnapshot(null);
     setErrorNotebook([]);
   };
 
@@ -289,20 +292,21 @@ export default function PracticePage() {
   }, [selectedMode, userId]);
 
   useEffect(() => {
-    if (selectedMode !== 'listening' || !hasStarted || !listeningWords[0]?.word) return;
+    const currentListeningWord = listeningWords[currentQuestionIndex];
+    if (selectedMode !== 'listening' || !hasStarted || !currentListeningWord?.word) return;
 
     requestAnimationFrame(() => {
       listeningInputRef.current?.focus();
     });
 
     const timer = window.setTimeout(() => {
-      playAudio(listeningWords[0].word);
+      playAudio(currentListeningWord.word);
     }, 120);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [hasStarted, listeningWords, selectedMode]);
+  }, [currentQuestionIndex, hasStarted, listeningWords, selectedMode]);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = selectedMode === 'listening' ? listeningWords.length : quizQuestions.length;
@@ -313,7 +317,8 @@ export default function PracticePage() {
 
   // Timer for timed challenge mode
   useEffect(() => {
-    if (!timedMode || !hasStarted || isComplete) return;
+    const supportsTimer = selectedMode === 'quiz' || selectedMode === 'fill_blank';
+    if (!supportsTimer || !timedMode || !hasStarted || isComplete) return;
     if (timeLeft <= 0) {
       setIsComplete(true);
       addStudySession(totalQuestions, completedCorrectCount, firstTryCorrect * 10 + recoveredCount * 6, 1);
@@ -322,7 +327,7 @@ export default function PracticePage() {
     }
     const interval = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [timedMode, hasStarted, isComplete, timeLeft, totalQuestions, completedCorrectCount, firstTryCorrect, recoveredCount, addStudySession, completeMissionTask]);
+  }, [timedMode, hasStarted, isComplete, timeLeft, totalQuestions, completedCorrectCount, firstTryCorrect, recoveredCount, addStudySession, completeMissionTask, selectedMode]);
 
   // LEARN-05: emit session_ended + load coach review count once when the
   // practice session finishes. Must stay above any conditional return so the
@@ -435,6 +440,7 @@ export default function PracticePage() {
   };
 
   const startFocusedMode = () => {
+    setQueueProgressSnapshot(progress);
     if (!selectedMode) {
       setSelectedMode(focusedModeId);
       if (focusedModeId === 'writing') {
@@ -526,9 +532,11 @@ export default function PracticePage() {
     });
     if (mistakeRecord) {
       try {
-        void addMistake(userId, mistakeRecord);
+        void Promise.resolve(addMistake(userId, mistakeRecord)).catch(() => {
+          // Persistence failure must never block the active drill.
+        });
       } catch {
-        // localStorage failure is silent. Never block the user's drill.
+        // Synchronous storage adapters are allowed and must not block the drill.
       }
     }
   };
@@ -693,7 +701,7 @@ export default function PracticePage() {
 
       const earnedXp = feedback.scores.overallBand >= 6 ? 20 : 12;
       addStudySession(1, feedback.scores.overallBand >= 6 ? 1 : 0, earnedXp, 8);
-      completeMissionTask('task_review_today');
+      completeMissionTask('task_quiz_today');
 
       void recordLearningEvent({
         userId,
@@ -706,6 +714,9 @@ export default function PracticePage() {
         },
       });
       toast.success(`Feedback ready. Overall band ${feedback.scores.overallBand}`);
+    } catch (error) {
+      console.error('Failed to score writing practice:', error);
+      toast.error(isZh ? '评分失败，请重试。已用额度会在下次读取时同步。' : 'Scoring failed. Please retry; quota status will resync on the next check.');
     } finally {
       setIsWritingSubmitting(false);
     }
@@ -853,10 +864,6 @@ export default function PracticePage() {
       requestAnimationFrame(() => {
         listeningInputRef.current?.focus();
       });
-      const nextWord = listeningWords[nextIndex];
-      if (nextWord?.word) {
-        playAudio(nextWord.word);
-      }
       return;
     }
 
@@ -902,9 +909,6 @@ export default function PracticePage() {
                       <span className={practiceBadgeClass}>
                         {isZh ? '开始' : 'Start'}
                       </span>
-                    ) : null}
-                    {active ? (
-                      <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent-practice))]" aria-hidden="true" />
                     ) : null}
                   </span>
                   <span className="mt-0.5 hidden text-xs leading-5 text-muted-foreground sm:block">
@@ -980,13 +984,24 @@ export default function PracticePage() {
     const showHeaderSheet = hasStarted || isComplete;
     const showModePicker = !hasStarted;
     const showInsightRail = showHeaderSheet;
-    const headerActions = selectedMode
-      ? (
-          <Button variant="outline" className={workbookOutlineButtonClass} onClick={exitToPicker}>
-            {isZh ? '换一项' : 'Change mode'}
-          </Button>
-        )
-      : null;
+    const headerActions = selectedMode ? (
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {timedMode && hasStarted && !isComplete && (selectedMode === 'quiz' || selectedMode === 'fill_blank') ? (
+          <span
+            role="timer"
+            className={cn(
+              practiceBadgeClass,
+              timeLeft <= 10 && 'bg-destructive/10 text-destructive',
+            )}
+          >
+            {isZh ? `剩余 ${timeLeft} 秒` : `${timeLeft}s left`}
+          </span>
+        ) : null}
+        <Button variant="outline" className={workbookOutlineButtonClass} onClick={exitToPicker}>
+          {isZh ? '换一项' : 'Change mode'}
+        </Button>
+      </div>
+    ) : null;
 
     return (
       <StudyShell>
@@ -1017,10 +1032,19 @@ export default function PracticePage() {
 
         <div className={cn(
           'grid gap-5 xl:items-start',
-          showInsightRail ? 'xl:grid-cols-[minmax(0,1fr)_260px]' : 'xl:grid-cols-[220px_minmax(0,1fr)]',
+          showInsightRail ? 'xl:grid-cols-[minmax(0,1fr)_260px]' : 'xl:grid-cols-[minmax(0,1fr)_320px]',
         )}>
-          {showModePicker ? <div className="order-2 min-w-0 xl:order-none">{renderModeSelector()}</div> : null}
-          <div className={cn('min-w-0', showModePicker && 'order-1 xl:order-none')}>{mainContent}</div>
+          {showModePicker ? (
+            <div className="order-2 min-w-0 xl:col-start-2 xl:row-start-1">
+              {renderModeSelector()}
+            </div>
+          ) : null}
+          <div className={cn(
+            'min-w-0',
+            showModePicker && 'order-1 xl:col-start-1 xl:row-start-1',
+          )}>
+            {mainContent}
+          </div>
           {showInsightRail ? <div className="min-w-0">{renderInsightRail()}</div> : null}
         </div>
       </StudyShell>
@@ -1035,7 +1059,6 @@ export default function PracticePage() {
         actions={
           <Button className={workbookButtonClass} onClick={() => pickMode(focusedModeId)}>
             {isZh ? '开始' : 'Start'}
-            <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         }
       >
@@ -1059,6 +1082,33 @@ export default function PracticePage() {
               },
             ]}
           />
+
+          <div className="border-t border-border/24 pt-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="study-label">{isZh ? '今日练习词' : 'Today practice words'}</p>
+              <span className="text-xs text-muted-foreground">
+                {isZh ? `${dailyWords.length} 个` : `${dailyWords.length} words`}
+              </span>
+            </div>
+            {dailyWords.length > 0 ? (
+              <div className="mt-3 grid gap-x-5 sm:grid-cols-2">
+                {dailyWords.slice(0, 6).map((word, index) => (
+                  <div
+                    key={word.id}
+                    className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-baseline gap-2 border-b border-border/18 py-2.5"
+                  >
+                    <span className="study-number text-sm text-primary">{index + 1}</span>
+                    <span className="truncate text-sm font-medium text-foreground">{word.word}</span>
+                    <span className="text-xs text-muted-foreground">{word.level}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                {isZh ? '完成一组新词后，这里会显示今天的练习来源。' : 'Finish a new-word set to populate today’s practice source.'}
+              </p>
+            )}
+          </div>
         </div>
       </StudySheet>,
     );
@@ -1099,7 +1149,6 @@ export default function PracticePage() {
               ) : null}
               <Button className={workbookButtonClass} onClick={startFocusedMode}>
                 {isZh ? '开始练习' : 'Start practice'}
-                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
@@ -1137,7 +1186,13 @@ export default function PracticePage() {
           <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
             <div className="space-y-3">
               <Label className="text-foreground">{isZh ? '题型' : 'Essay type'}</Label>
-              <Select value={writingTaskType} onValueChange={(value: 'task1' | 'task2') => setWritingTaskType(value)}>
+              <Select
+                value={writingTaskType}
+                onValueChange={(value: 'task1' | 'task2') => {
+                  setWritingTaskType(value);
+                  setWritingItemId('practice_ielts_manual');
+                }}
+              >
                 <SelectTrigger className={cn('rounded-md', lightInputClass)}>
                   <SelectValue />
                 </SelectTrigger>
@@ -1156,7 +1211,10 @@ export default function PracticePage() {
               <Label className="text-foreground">{isZh ? '题目' : 'Prompt'}</Label>
               <Textarea
                 value={writingPrompt}
-                onChange={(event) => setWritingPrompt(event.target.value)}
+                onChange={(event) => {
+                  setWritingPrompt(event.target.value);
+                  setWritingItemId('practice_ielts_manual');
+                }}
                 className={cn('min-h-[140px] rounded-md p-4', lightInputClass)}
               />
             </div>
@@ -1541,7 +1599,6 @@ export default function PracticePage() {
                 ) : (
                   <Button onClick={handleListeningNext} className={workbookButtonClass}>
                     {currentQuestionIndex < listeningWords.length - 1 ? (isZh ? '下一题' : 'Next question') : (isZh ? '完成听力练习' : 'Finish listening quiz')}
-                    <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -1767,7 +1824,6 @@ export default function PracticePage() {
           ) : (
             <Button onClick={handleNext} className={cn(workbookButtonClass, 'lg:min-w-[180px]')}>
               {isZh ? '下一题' : 'Next question'}
-              <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           )}
 
