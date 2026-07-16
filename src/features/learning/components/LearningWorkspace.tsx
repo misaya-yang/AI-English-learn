@@ -107,12 +107,17 @@ export function LearningHeroPanel({
   actions,
   className,
 }: LearningHeroPanelProps) {
+  const metricCount = Math.min(5, metrics.length + (typeof progress === 'number' ? 1 : 0));
+  const metricGridClass = ({
+    1: 'lg:grid-cols-1',
+    2: 'lg:grid-cols-2',
+    3: 'lg:grid-cols-3',
+    4: 'lg:grid-cols-4',
+    5: 'lg:grid-cols-5',
+  } as Record<number, string>)[metricCount] || 'lg:grid-cols-1';
+
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn('border-b border-border/22 pb-5', className)}
-    >
+    <section className={cn('border-b border-border/[0.22] pb-5', className)}>
       <div className="relative z-10 space-y-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl space-y-3">
@@ -132,9 +137,12 @@ export function LearningHeroPanel({
         </div>
 
         {(typeof progress === 'number' || metrics.length > 0) ? (
-          <div className="grid gap-2 rounded-xl bg-[hsl(var(--surface-sunken)/0.34)] p-2 sm:grid-cols-2 lg:grid-cols-5">
+          <div className={cn(
+            'grid gap-y-2 border-y border-border/[0.22] py-2 sm:grid-cols-2',
+            metricGridClass,
+          )}>
           {typeof progress === 'number' ? (
-            <div className="rounded-lg bg-background/55 px-3 py-2">
+            <div className="border-l border-border/24 px-3 py-2">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] text-muted-foreground">{progressLabel || '进度'}</p>
@@ -151,7 +159,7 @@ export function LearningHeroPanel({
           ) : null}
 
           {metrics.map((item) => (
-            <div key={`${item.label}-${String(item.value)}`} className="rounded-lg bg-background/45 px-3 py-2">
+            <div key={`${item.label}-${String(item.value)}`} className="border-l border-border/24 px-3 py-2">
               <p className="text-[11px] font-medium text-muted-foreground">{item.label}</p>
               <div className={cn('mt-1 text-base font-medium', metricToneClass[item.accent || 'default'])}>
                 {item.value}
@@ -161,13 +169,13 @@ export function LearningHeroPanel({
           </div>
         ) : null}
       </div>
-    </motion.section>
+    </section>
   );
 }
 
 export function LearningRailSection({ title, description, children, className }: LearningRailSectionProps) {
   return (
-    <section className={cn('space-y-3 border-l border-border/28 pl-4', className)}>
+    <section className={cn('space-y-3 border-l border-border/[0.28] pl-4', className)}>
       <div className="space-y-1.5">
         <p className="focus-kicker">{title}</p>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
@@ -222,7 +230,16 @@ export function LearningMetricStrip({ items, className }: LearningMetricStripPro
 }
 
 export function LearningActionCluster({ children, className }: LearningActionClusterProps) {
-  return <div className={cn('flex flex-col gap-2 sm:flex-row sm:flex-wrap', className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        'flex flex-col gap-2 sm:flex-row sm:flex-wrap [&_[data-slot=button]]:whitespace-normal',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function LearningEmptyState({
@@ -236,9 +253,9 @@ export function LearningEmptyState({
 }: LearningStatePanelProps) {
   return (
     <motion.section
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={cn('border-y border-border/28 px-5 py-8 text-center sm:px-8', className)}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn('border-y border-border/[0.28] px-5 py-8 text-center sm:px-8', className)}
     >
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
         <Icon className="h-6 w-6" />
@@ -263,8 +280,8 @@ export function LearningCompletionState({
 }: LearningStatePanelProps) {
   return (
     <motion.section
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
       className={cn('border-y border-border/24 px-1 py-5 sm:py-7', className)}
     >
       <div className="relative text-center z-10">

@@ -1,5 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { BrandMark } from '@/features/marketing/BrandMark';
 import { GlassSurface } from '@/components/ui/glass-surface';
+import { cn } from '@/lib/utils';
 
 interface LegalSection {
   title: string;
@@ -124,6 +125,7 @@ const PRIVACY_SECTIONS: LegalSection[] = [
 
 export default function LegalPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { i18n } = useTranslation();
   const isZh = i18n.language?.startsWith('zh');
   const isTerms = location.pathname !== '/privacy';
@@ -131,14 +133,47 @@ export default function LegalPage() {
   const title = isTerms
     ? isZh ? '服务条款' : 'Terms of Service'
     : isZh ? '隐私政策' : 'Privacy Policy';
-  const subtitle = isZh
-    ? '请在使用 VocabDaily 前阅读本页面。继续使用即表示你理解这些条款。'
-    : 'Please read this page before using VocabDaily. Continued use means you understand these terms.';
+  const subtitle = isTerms
+    ? isZh
+      ? '本条款说明账号、学习内容、AI 反馈和未来订阅功能的使用边界。'
+      : 'These terms explain the boundaries for accounts, learning content, AI feedback, and future subscriptions.'
+    : isZh
+      ? '本政策说明学习数据的用途、存储方式，以及你可以提出的访问或删除请求。'
+      : 'This policy explains how learning data is used and stored, and how to request access or deletion.';
+  const otherDocument = isTerms
+    ? { href: '/privacy', label: isZh ? '阅读隐私政策' : 'Read the Privacy Policy' }
+    : { href: '/terms', label: isZh ? '阅读服务条款' : 'Read the Terms of Service' };
+
+  const handleBack = () => {
+    if (location.key !== 'default' || window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate('/', { replace: true });
+  };
+
+  const renderParagraph = (paragraph: string) => {
+    const emailIndex = paragraph.indexOf(SUPPORT_EMAIL);
+    if (emailIndex < 0) return paragraph;
+
+    return (
+      <>
+        {paragraph.slice(0, emailIndex)}
+        <a
+          href={`mailto:${SUPPORT_EMAIL}`}
+          className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary"
+        >
+          {SUPPORT_EMAIL}
+        </a>
+        {paragraph.slice(emailIndex + SUPPORT_EMAIL.length)}
+      </>
+    );
+  };
 
   return (
     <div className="study-premium-bg min-h-screen bg-background text-foreground">
       <header className="sticky top-3 z-30 px-3 sm:px-4">
-        <GlassSurface variant="bar" className="mx-auto flex h-14 max-w-5xl items-center justify-between px-3 sm:h-16 sm:px-5">
+        <GlassSurface variant="bar" className="mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:h-16 sm:px-5">
           <BrandMark />
           <div className="flex items-center gap-1">
             <ThemeToggle />
@@ -147,56 +182,130 @@ export default function LegalPage() {
         </GlassSurface>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
-        <Button asChild variant="ghost" className="-ml-3 mb-6 h-9 rounded-lg px-3">
-          <Link to="/register">
-            <ArrowLeft className="h-4 w-4" />
-            {isZh ? '返回注册' : 'Back to register'}
-          </Link>
+      <main id="main-content" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <Button
+          type="button"
+          variant="ghost"
+          className="-ml-3 mb-7 h-9 rounded-lg px-3"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          {isZh ? '返回' : 'Back'}
         </Button>
 
-        <Badge variant="secondary" className="mb-4 rounded-md">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          {isZh ? '当前版本' : 'Current version'}
-        </Badge>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
+          <div className="min-w-0">
+            <div className="max-w-3xl border-b border-border/25 pb-8">
+              <Badge variant="secondary" className="mb-4 rounded-md">
+                <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                {isZh ? '当前版本' : 'Current version'}
+              </Badge>
 
-        <h1 className="text-3xl font-semibold sm:text-4xl">{title}</h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">{title}</h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{subtitle}</p>
+            </div>
 
-        <dl className="mt-6 grid gap-3 rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-4 py-4 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="font-medium text-foreground">{isZh ? '产品' : 'Product'}</dt>
-            <dd className="mt-1 text-muted-foreground">VocabDaily</dd>
+            <article className="mt-9 space-y-10">
+              {sections.map((section, index) => (
+                <section
+                  key={section.title}
+                  className="grid gap-3 border-b border-border/20 pb-9 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-5"
+                >
+                  <p className="study-number pt-0.5 text-sm text-primary" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </p>
+                  <div>
+                    <h2 className="text-xl font-semibold sm:text-2xl">
+                      {isZh ? section.titleZh : section.title}
+                    </h2>
+                    <div className="mt-4 space-y-4 text-[15px] leading-7 text-muted-foreground">
+                      {(isZh ? section.bodyZh : section.body).map((paragraph) => (
+                        <p key={paragraph}>{renderParagraph(paragraph)}</p>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ))}
+            </article>
+
+            <div className="mt-9 rounded-lg bg-[hsl(var(--surface-raised))]/35 px-4 py-4 text-sm leading-6 text-muted-foreground">
+              {isZh
+                ? '如本页面与应用内功能说明不一致，请以本页面和结账前显示的具体说明为准。'
+                : 'If this page differs from in-app feature descriptions, this page and the specific pre-checkout disclosures control.'}
+            </div>
+
+            <Link
+              to={otherDocument.href}
+              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-primary"
+            >
+              {otherDocument.label}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
-          <div>
-            <dt className="font-medium text-foreground">{isZh ? '生效日期' : 'Effective date'}</dt>
-            <dd className="mt-1 text-muted-foreground">{EFFECTIVE_DATE}</dd>
-          </div>
-          <div className="sm:col-span-2">
-            <dt className="font-medium text-foreground">{isZh ? '联系邮箱' : 'Contact email'}</dt>
-            <dd className="mt-1 break-words text-muted-foreground">{SUPPORT_EMAIL}</dd>
-          </div>
-        </dl>
 
-        <article className="mt-8 space-y-8">
-          {sections.map((section) => (
-            <section key={section.title}>
-              <h2 className="text-xl font-semibold">
-                {isZh ? section.titleZh : section.title}
-              </h2>
-              <div className="mt-3 space-y-3 text-sm leading-7 text-muted-foreground">
-                {(isZh ? section.bodyZh : section.body).map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            </section>
-          ))}
-        </article>
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-5 py-5">
+              <dl className="space-y-5 text-sm">
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    {isZh ? '产品' : 'Product'}
+                  </dt>
+                  <dd className="mt-1.5 font-medium text-foreground">VocabDaily</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    {isZh ? '生效日期' : 'Effective date'}
+                  </dt>
+                  <dd className="mt-1.5 text-foreground">{EFFECTIVE_DATE}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    {isZh ? '联系邮箱' : 'Contact email'}
+                  </dt>
+                  <dd className="mt-1.5 break-words">
+                    <a
+                      href={`mailto:${SUPPORT_EMAIL}`}
+                      className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary"
+                    >
+                      {SUPPORT_EMAIL}
+                    </a>
+                  </dd>
+                </div>
+              </dl>
 
-        <div className="mt-10 rounded-lg bg-[hsl(var(--surface-raised))]/35 px-4 py-3 text-sm text-muted-foreground">
-          {isZh
-            ? '如本页面与应用内功能说明不一致，请以本页面和结账前显示的具体说明为准。'
-            : 'If this page differs from in-app feature descriptions, this page and the specific pre-checkout disclosures control.'}
+              <nav
+                className="mt-6 border-t border-border/25 pt-5"
+                aria-label={isZh ? '法律文档' : 'Legal documents'}
+              >
+                <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {isZh ? '文档' : 'Documents'}
+                </p>
+                <div className="grid gap-1">
+                  {[
+                    { href: '/terms', label: isZh ? '服务条款' : 'Terms of Service' },
+                    { href: '/privacy', label: isZh ? '隐私政策' : 'Privacy Policy' },
+                  ].map((item) => {
+                    const isCurrent = location.pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        aria-current={isCurrent ? 'page' : undefined}
+                        className={cn(
+                          'rounded-md px-3 py-2 text-sm transition-colors',
+                          isCurrent
+                            ? 'bg-primary/10 font-semibold text-primary'
+                            : 'text-muted-foreground hover:bg-muted/35 hover:text-foreground',
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </nav>
+            </div>
+          </aside>
         </div>
       </main>
     </div>

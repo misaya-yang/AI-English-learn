@@ -14,7 +14,7 @@ export default function SampleLessonPage() {
   const { i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const isZh = i18n.language?.startsWith('zh');
-  const saveProgressHref = isAuthenticated ? '/dashboard/today' : buildAuthRedirect('/dashboard/today', '/register');
+  const continueHref = isAuthenticated ? '/dashboard/today' : buildAuthRedirect('/dashboard/today', '/register');
 
   return (
     <div className="study-premium-bg min-h-screen bg-background text-foreground">
@@ -34,8 +34,12 @@ export default function SampleLessonPage() {
         </GlassSurface>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-        <SampleLesson isZh={Boolean(isZh)} saveProgressHref={saveProgressHref} />
+      <main id="main-content" className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <SampleLesson
+          isZh={Boolean(isZh)}
+          continueHref={continueHref}
+          requiresSignIn={!isAuthenticated}
+        />
       </main>
     </div>
   );

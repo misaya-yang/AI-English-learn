@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Building2, Lock, ShieldCheck } from 'lucide-react';
+import { Building2, Lock, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,11 +14,41 @@ import {
 import { isEnterpriseUiEnabled } from '@/features/enterprise/enterpriseUi';
 
 const sections = [
-  { id: 'members', label: 'Members', labelZh: '成员', body: 'Owners, admins, teachers, and learners.' },
-  { id: 'cohorts', label: 'Cohorts', labelZh: '班级', body: 'Teacher-led groups and roster boundaries.' },
-  { id: 'assignments', label: 'Assignments', labelZh: '作业', body: 'Assigned packs, due dates, and evidence collection.' },
-  { id: 'content', label: 'Content Packs', labelZh: '内容包', body: 'Licensed word books and future reading/listening packs.' },
-  { id: 'audit', label: 'Audit', labelZh: '审计', body: 'Sensitive admin actions and entitlement changes.' },
+  {
+    id: 'members',
+    label: 'Members',
+    labelZh: '成员',
+    body: 'Owners, admins, teachers, and learners.',
+    bodyZh: '管理负责人、管理员、教师与学习者。',
+  },
+  {
+    id: 'cohorts',
+    label: 'Cohorts',
+    labelZh: '班级',
+    body: 'Teacher-led groups and roster boundaries.',
+    bodyZh: '查看教师负责的学习组与成员范围。',
+  },
+  {
+    id: 'assignments',
+    label: 'Assignments',
+    labelZh: '作业',
+    body: 'Assigned packs, due dates, and evidence collection.',
+    bodyZh: '管理已分配内容、截止时间与学习证据。',
+  },
+  {
+    id: 'content',
+    label: 'Content Packs',
+    labelZh: '内容包',
+    body: 'Licensed word books and future reading/listening packs.',
+    bodyZh: '查看已授权词书及阅读、听力内容包。',
+  },
+  {
+    id: 'audit',
+    label: 'Audit',
+    labelZh: '审计',
+    body: 'Sensitive admin actions and entitlement changes.',
+    bodyZh: '追踪敏感管理操作和权限变更。',
+  },
 ] as const;
 
 const lockedFeatures: Array<{ feature: EnterpriseFeature; label: string; labelZh: string }> = [
@@ -34,30 +64,34 @@ const copy = {
   en: {
     title: 'Organization Workbench',
     summary: 'Enterprise operations start here: members, cohorts, assignments, licensed content, and audit readiness.',
-    preview: 'Enterprise UI preview',
-    disabledTitle: 'Enterprise workspace preview is disabled',
-    disabledBody: 'Set VITE_ENTERPRISE_UI_ENABLED=true to expose this shell in local or staging navigation.',
-    backToday: 'Back to Today',
-    locked: 'Locked by server entitlement',
+    preview: 'Enterprise workspace',
+    disabledTitle: 'Organization workspace is not available',
+    disabledBody: 'This account is not connected to an organization workspace. You can continue individual learning or ask an organization administrator for access.',
+    backToday: 'Continue individual learning',
+    available: 'Available',
+    requiresAccess: 'Requires organization access',
     featureState: 'Feature state',
     contentProvenance: 'Content provenance',
     commercialSafe: 'Commercial-safe packs',
-    next: 'Next implementation cut',
-    nextBody: 'Connect this shell to organization membership, assignment APIs, and evidence reports after the P0 migration is deployed.',
+    evidenceTitle: 'Learning evidence',
+    evidenceBody: 'Review attempts, weak signals, and recovery work when evidence reporting is included for this workspace.',
+    openEvidence: 'Open evidence',
   },
   zh: {
     title: '组织工作台',
     summary: '企业运营入口：成员、班级、作业、授权内容和审计准备。',
-    preview: '企业 UI 预览',
-    disabledTitle: '企业工作台预览已关闭',
-    disabledBody: '设置 VITE_ENTERPRISE_UI_ENABLED=true 后，可在本地或 staging 导航中展示这个壳。',
-    backToday: '返回今日',
-    locked: '由服务端授权锁定',
+    preview: '企业工作区',
+    disabledTitle: '当前账号暂未开放组织工作台',
+    disabledBody: '当前账号尚未加入组织工作区。你仍可继续个人学习，或联系组织管理员申请访问权限。',
+    backToday: '继续个人学习',
+    available: '可用',
+    requiresAccess: '需要组织授权',
     featureState: '功能状态',
     contentProvenance: '内容来源',
     commercialSafe: '可商用内容包',
-    next: '下一步实现',
-    nextBody: 'P0 migration 部署后，把这个壳接到组织成员、作业 API 和证据报告。',
+    evidenceTitle: '学习证据',
+    evidenceBody: '工作区包含证据报告权限时，可查看尝试记录、薄弱信号和补救任务。',
+    openEvidence: '查看学习证据',
   },
 } as const;
 
@@ -71,10 +105,18 @@ export default function OrganizationPage() {
 
   if (!enabled) {
     return (
-      <section className="max-w-2xl rounded-md border border-border/70 bg-card px-5 py-6">
-        <Badge variant="outline">{t.preview}</Badge>
-        <h1 className="mt-4 text-2xl font-semibold tracking-normal text-foreground">{t.disabledTitle}</h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.disabledBody}</p>
+      <section
+        className="max-w-2xl rounded-xl border border-border/70 bg-card px-5 py-6 sm:px-6 sm:py-7"
+        aria-labelledby="organization-unavailable-title"
+      >
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+          <Building2 className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <Badge variant="outline" className="mt-4 rounded-md">{t.preview}</Badge>
+        <h1 id="organization-unavailable-title" className="mt-3 text-2xl font-semibold tracking-normal text-foreground">
+          {t.disabledTitle}
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">{t.disabledBody}</p>
         <Button asChild className="mt-5">
           <Link to="/dashboard/today">{t.backToday}</Link>
         </Button>
@@ -108,7 +150,9 @@ export default function OrganizationPage() {
               </div>
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="mt-3 text-sm leading-5 text-muted-foreground">{section.body}</p>
+            <p className="mt-3 text-sm leading-5 text-muted-foreground">
+              {isZh ? section.bodyZh : section.body}
+            </p>
           </article>
         ))}
       </section>
@@ -126,10 +170,12 @@ export default function OrganizationPage() {
                   <div className="min-w-0">
                     <p className="font-medium text-foreground">{isZh ? item.labelZh : item.label}</p>
                     {isZh ? <p className="mt-0.5 text-xs text-muted-foreground">{item.label}</p> : null}
-                    <p className="mt-1 text-sm text-muted-foreground">{t.locked}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {decision.allowed ? t.available : t.requiresAccess}
+                    </p>
                   </div>
                   <Badge variant="outline" className="w-fit">
-                    {decision.allowed ? 'available' : decision.reason}
+                    {decision.allowed ? t.available : t.requiresAccess}
                   </Badge>
                 </div>
               );
@@ -161,14 +207,11 @@ export default function OrganizationPage() {
           <section className="rounded-md border border-border/70 bg-muted/25 px-4 py-4">
             <div className="flex items-center gap-2">
               <Lock className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-base font-semibold text-foreground">{t.next}</h2>
+              <h2 className="text-base font-semibold text-foreground">{t.evidenceTitle}</h2>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.nextBody}</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.evidenceBody}</p>
             <Button asChild variant="outline" className="mt-4">
-              <Link to="/dashboard/evidence">
-                {isZh ? '查看证据' : 'Open Evidence'}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              <Link to="/dashboard/evidence">{t.openEvidence}</Link>
             </Button>
           </section>
         </aside>

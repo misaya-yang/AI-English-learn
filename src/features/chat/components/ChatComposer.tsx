@@ -16,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { AgentMeta, ChatPerfSnapshot, ContextMeta, MemoryUsedTrace, MemoryWriteTrace, ToolRun } from '@/types/chatAgent';
 import type { ChatModeOption, QuickPromptOption } from '@/features/chat/types';
-import { ChatAgentSignals } from '@/features/chat/components/ChatAgentSignals';
 
 interface ChatComposerProps {
   language: string;
@@ -95,14 +94,8 @@ export function ChatComposer({
   poweredByLabel,
   markdownSupportLabel,
   streamingLabel,
-  lastAgentMeta,
-  lastContextMeta,
-  lastMemoryUsed,
-  lastMemoryWrites,
-  lastMemoryTraceId,
   lastSources,
   lastToolRuns,
-  chatPerf,
   voiceSupported,
   voiceListening,
   onToggleVoice,
@@ -115,11 +108,11 @@ export function ChatComposer({
         <AnimatePresence initial={false}>
           {toolsExpanded && (
             <motion.div
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
               transition={{ duration: 0.18 }}
-              className="liquid-glass-panel absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden rounded-lg border border-transparent bg-popover/85 px-3 py-3 text-popover-foreground shadow-none"
+              className="liquid-glass-panel absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 max-h-[min(60dvh,480px)] overflow-y-auto rounded-lg border border-transparent bg-popover/90 px-3 py-3 text-popover-foreground shadow-none"
             >
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">
@@ -130,6 +123,7 @@ export function ChatComposer({
                   size="icon"
                   className="h-7 w-7"
                   onClick={onCloseTools}
+                  aria-label={language.startsWith('zh') ? '关闭工具面板' : 'Close tools panel'}
                 >
                   <ChevronUp className="h-4 w-4" />
                 </Button>
@@ -216,15 +210,6 @@ export function ChatComposer({
                     {language.startsWith('zh') ? '别记这条输入' : 'Forget matching memory'}
                   </Button>
                 </div>
-
-                <ChatAgentSignals
-                  language={language}
-                  agentMeta={lastAgentMeta}
-                  contextMeta={lastContextMeta}
-                  memoryUsed={lastMemoryUsed}
-                  memoryWrites={lastMemoryWrites}
-                  memoryTraceId={lastMemoryTraceId}
-                />
               </div>
             </motion.div>
           )}
@@ -284,7 +269,7 @@ export function ChatComposer({
                 className={cn(
                   'h-10 w-10 rounded-md transition-colors',
                   voiceListening
-                    ? 'bg-destructive/10 text-destructive hover:bg-destructive/15 animate-pulse'
+                    ? 'bg-destructive/10 text-destructive hover:bg-destructive/15'
                     : 'hover:bg-muted text-muted-foreground',
                 )}
                 title={voiceListening ? 'Stop listening' : 'Voice input'}
@@ -346,16 +331,6 @@ export function ChatComposer({
                 {language.startsWith('zh')
                   ? `来源 ${lastSources.length} / 工具 ${lastToolRuns.length}`
                   : `Sources ${lastSources.length} / Tools ${lastToolRuns.length}`}
-              </span>
-            </>
-          )}
-          {!language.startsWith('zh') && (chatPerf.ttftMs !== null || chatPerf.nextQuestionMs !== null) && (
-            <>
-              <span>·</span>
-              <span>
-                {language.startsWith('zh') ? '性能' : 'Perf'}:
-                {chatPerf.ttftMs !== null ? ` TTFT ${chatPerf.ttftMs}ms` : ''}
-                {chatPerf.nextQuestionMs !== null ? ` / Next ${chatPerf.nextQuestionMs}ms` : ''}
               </span>
             </>
           )}

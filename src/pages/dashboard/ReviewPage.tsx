@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, type KeyboardEvent } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -55,52 +55,47 @@ function ReviewCard({ item, isRevealed, onReveal, isZh }: ReviewCardProps) {
     void speakEnglishText(text);
   };
 
-  const handleRevealKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    onReveal();
-  };
-
   return (
     <motion.section
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="min-h-[360px] overflow-hidden"
+      className="min-h-[280px] overflow-hidden sm:min-h-[360px]"
     >
       {!isRevealed ? (
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={onReveal}
-          onKeyDown={handleRevealKeyDown}
-          className="flex h-full w-full cursor-pointer flex-col items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          <span className="rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.5)] px-2.5 py-1 text-xs text-muted-foreground">
-            {word.level} / {isZh ? `第 ${item.reviewCount + 1} 次复习` : `review ${item.reviewCount + 1}`}
-          </span>
-          <p className="study-label mt-6">{isZh ? '回忆' : 'Recall'}</p>
-          <h2 className={cn(
-            'lexical-type mt-4 max-w-full break-words leading-none text-foreground',
-            usesCompactHeadword ? 'text-[2.45rem] sm:text-[3.4rem]' : 'text-[3.2rem] sm:text-[4.4rem]',
-          )}>
-            {word.word}
-          </h2>
-          <p className="mt-4 font-mono text-lg text-muted-foreground">{word.partOfSpeech} / {word.phonetic}</p>
+        <div className="flex h-full w-full flex-col items-center justify-center text-center">
+          <button
+            type="button"
+            data-testid="review-recall-surface"
+            onClick={onReveal}
+            aria-label={isZh ? `回忆 ${word.word}，然后查看答案` : `Recall ${word.word}, then reveal the answer`}
+            className="flex min-h-[210px] w-full flex-1 flex-col items-center justify-center rounded-lg px-3 text-center transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-[280px]"
+          >
+            <span className="rounded-md border border-[hsl(var(--paper-line)/0.8)] bg-[hsl(var(--paper-muted)/0.5)] px-2.5 py-1 text-xs text-muted-foreground">
+              {word.level} / {isZh ? `第 ${item.reviewCount + 1} 次复习` : `review ${item.reviewCount + 1}`}
+            </span>
+            <span className="study-label mt-5 sm:mt-6">{isZh ? '回忆' : 'Recall'}</span>
+            <span className={cn(
+              'lexical-type mt-3 max-w-full break-words leading-none text-foreground sm:mt-4',
+              usesCompactHeadword ? 'text-[2.35rem] sm:text-[3.4rem]' : 'text-[2.8rem] sm:text-[4.4rem]',
+            )}>
+              {word.word}
+            </span>
+            <span className="mt-3 font-mono text-base text-muted-foreground sm:mt-4 sm:text-lg">{word.partOfSpeech} / {word.phonetic}</span>
+            <span className="mt-5 text-sm text-muted-foreground sm:mt-7">{isZh ? '回忆后看答案' : 'Reveal after recall'}</span>
+          </button>
 
-          <div className="mt-8 flex items-center gap-3">
+          <div className="mt-3 flex items-center gap-3">
             <Button
               variant="glass"
               size="icon"
-              className="glass-icon-button h-12 w-12 rounded-md text-foreground hover:text-foreground"
-              onClick={(event) => {
-                event.stopPropagation();
-                playAudio(word.word);
-              }}
+              className="glass-icon-button h-11 w-11 rounded-md text-foreground hover:text-foreground"
+              onClick={() => playAudio(word.word)}
+              aria-label={isZh ? '播放发音' : 'Play pronunciation'}
             >
-              <Volume2 className="h-5 w-5" />
+              <Volume2 className="h-5 w-5" aria-hidden="true" />
             </Button>
-            <span className="text-sm text-muted-foreground">{isZh ? '回忆后看答案' : 'Reveal after recall'}</span>
+            <span className="text-sm text-muted-foreground">{isZh ? '播放发音' : 'Play pronunciation'}</span>
           </div>
         </div>
       ) : (
@@ -116,8 +111,9 @@ function ReviewCard({ item, isRevealed, onReveal, isZh }: ReviewCardProps) {
               size="icon"
               className="glass-icon-button rounded-md text-foreground hover:text-foreground"
               onClick={() => playAudio(word.word)}
+              aria-label={isZh ? '播放发音' : 'Play pronunciation'}
             >
-              <Volume2 className="h-5 w-5" />
+              <Volume2 className="h-5 w-5" aria-hidden="true" />
             </Button>
           </div>
 
@@ -211,6 +207,7 @@ export default function ReviewPage() {
   const [sessionQueue, setSessionQueue] = useState<ReviewItem[] | null>(null);
   const [dueCoachReviewCount, setDueCoachReviewCount] = useState(0);
   const [recoveryOutcomes, setRecoveryOutcomes] = useState<Record<string, StubbornRecoveryOutcome>>({});
+  const ratedWordIdRef = useRef<string | null>(null);
 
   const totalReviewed = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
   const reviewWordCatalog = useMemo(() => {
@@ -287,45 +284,52 @@ export default function ReviewPage() {
     setIsRevealed(true);
   }, []);
 
-  const handleRate = useCallback(async (rating: 'again' | 'hard' | 'good' | 'easy') => {
-    if (!currentItem) return;
-    if (!sessionQueue) {
-      setSessionQueue(reviewItems);
+  const handleRate = useCallback((rating: 'again' | 'hard' | 'good' | 'easy') => {
+    if (!currentItem || ratedWordIdRef.current === currentItem.wordId) return;
+    ratedWordIdRef.current = currentItem.wordId;
+
+    try {
+      if (!sessionQueue) {
+        setSessionQueue(reviewItems);
+      }
+
+      reviewWord(currentItem.wordId, rating);
+      setSessionStats((prev) => ({
+        ...prev,
+        [rating]: prev[rating] + 1,
+      }));
+
+      void recordEvidence(
+        createEvidenceEvent({
+          type: 'review.rated',
+          userId,
+          wordId: currentItem.wordId,
+          rating,
+        }),
+      );
+      // LEARN-02: strict review_completed event for path-progress derivation.
+      void recordEvent(userId, {
+        kind: 'review_completed',
+        payload: { wordId: currentItem.wordId, rating },
+      });
+      if (totalReviewed + 1 >= reviewTaskTarget) {
+        completeMissionTask('task_review_today');
+      }
+
+      const interval = isZh ? ratingMeta[rating].delayZh : ratingMeta[rating].delayEn;
+      toast.success(`${isZh ? '已记录' : 'Saved'}. ${isZh ? '下次' : 'Next'}: ${interval}`);
+
+      if (currentIndex < reviewItems.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setIsRevealed(false);
+        return;
+      }
+
+      setCurrentIndex(reviewItems.length);
+    } catch {
+      ratedWordIdRef.current = null;
+      toast.error(isZh ? '评分未保存，请重试' : 'Rating was not saved. Please try again.');
     }
-
-    setSessionStats((prev) => ({
-      ...prev,
-      [rating]: prev[rating] + 1,
-    }));
-
-    reviewWord(currentItem.wordId, rating);
-    void recordEvidence(
-      createEvidenceEvent({
-        type: 'review.rated',
-        userId,
-        wordId: currentItem.wordId,
-        rating,
-      }),
-    );
-    // LEARN-02: strict review_completed event for path-progress derivation.
-    void recordEvent(userId, {
-      kind: 'review_completed',
-      payload: { wordId: currentItem.wordId, rating },
-    });
-    if (totalReviewed + 1 >= reviewTaskTarget) {
-      completeMissionTask('task_review_today');
-    }
-
-    const interval = isZh ? ratingMeta[rating].delayZh : ratingMeta[rating].delayEn;
-    toast.success(`${isZh ? '已记录' : 'Saved'}. ${isZh ? '下次' : 'Next'}: ${interval}`);
-
-    if (currentIndex < reviewItems.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      setIsRevealed(false);
-      return;
-    }
-
-    setCurrentIndex(reviewItems.length);
   }, [currentIndex, currentItem, reviewItems, reviewWord, sessionQueue, totalReviewed, reviewTaskTarget, completeMissionTask, userId, isZh]);
 
   const handleRecoveryOutcome = useCallback((outcome: StubbornRecoveryOutcome) => {
@@ -374,9 +378,18 @@ export default function ReviewPage() {
   // Global keyboard shortcuts
   useEffect(() => {
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
-      // Ignore when focus is inside an input/textarea
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      const isInteractiveTarget = target?.isContentEditable || Boolean(target?.closest(
+        'input, textarea, select, button, a, [contenteditable], [role="button"], [role="link"]',
+      ));
+      if (
+        e.defaultPrevented ||
+        e.isComposing ||
+        e.altKey ||
+        e.ctrlKey ||
+        e.metaKey ||
+        isInteractiveTarget
+      ) return;
       if (isComplete || reviewItems.length === 0 || !currentItem) return;
 
       if (!isRevealed) {
@@ -393,6 +406,7 @@ export default function ReviewPage() {
   }, [isRevealed, isComplete, currentItem, reviewItems.length, handleReveal, handleRate]);
 
   const handleRestart = () => {
+    ratedWordIdRef.current = null;
     setSessionQueue(null);
     setCurrentIndex(0);
     setIsRevealed(false);
@@ -401,12 +415,36 @@ export default function ReviewPage() {
   };
 
   if (reviewItems.length === 0) {
+    const previewWords = dailyWords.slice(0, 5);
+    const nextSteps = [
+      {
+        label: isZh ? '先浏览今日词表' : 'Scan today’s word set',
+        note: isZh
+          ? `今天有 ${dailyWords.length} 个新词，先建立一遍熟悉感。`
+          : `${dailyWords.length} new words are ready for a first pass.`,
+      },
+      {
+        label: isZh ? '完成一轮主动练习' : 'Complete one active practice',
+        note: isZh
+          ? '用拼写、听力或选择题先形成记忆线索。'
+          : 'Build memory cues with spelling, listening, or a short quiz.',
+      },
+      {
+        label: isZh ? '到期后再回到复习' : 'Return when cards become due',
+        note: isZh
+          ? '系统会按学习记录安排下一次真正需要回忆的词。'
+          : 'The schedule will surface words when active recall is useful.',
+      },
+    ];
+
     return (
       <StudyShell>
         <StudySheet
           eyebrow={isZh ? '复习' : 'Review'}
           title={isZh ? '没有到期词' : 'No cards due'}
-          description={isZh ? '今天先去练习。' : 'Practice first today.'}
+          description={isZh
+            ? '复习队列已经清空。下面直接接着今天的新词与主动练习，不需要停在空页面。'
+            : 'Your review queue is clear. Continue with today’s words and active practice below.'}
           actions={
             <>
               <Button variant="outline" className="rounded-md bg-transparent text-foreground hover:bg-muted" asChild>
@@ -425,6 +463,77 @@ export default function ReviewPage() {
               { label: isZh ? '目标' : 'Target', value: reviewTaskTarget },
             ]}
           />
+
+          <div className="mt-5 grid gap-4 border-t border-[hsl(var(--paper-line)/0.72)] pt-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+            <section className="rounded-xl bg-[hsl(var(--paper-muted)/0.34)] p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="study-label">{isZh ? '今日词表' : 'Today’s words'}</p>
+                  <h2 className="mt-2 text-lg font-semibold text-foreground">
+                    {isZh ? '先认识，再进入练习' : 'Preview before practice'}
+                  </h2>
+                </div>
+                <span className="study-number text-2xl text-[hsl(var(--accent-practice))]">
+                  {dailyWords.length}
+                </span>
+              </div>
+
+              {previewWords.length > 0 ? (
+                <div className="mt-4 divide-y divide-[hsl(var(--paper-line)/0.62)]">
+                  {previewWords.map((word) => (
+                    <div key={word.id} className="grid gap-1 py-3 first:pt-0 sm:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] sm:items-baseline sm:gap-4">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-foreground">{word.word}</p>
+                        <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                          {word.partOfSpeech} / {word.phonetic}
+                        </p>
+                      </div>
+                      <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+                        {isZh ? word.definitionZh : word.definition}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <InlineStudyNote
+                  className="mt-4"
+                  title={isZh ? '今日词表正在准备' : 'Today’s set is being prepared'}
+                >
+                  {isZh
+                    ? '可以先进入练习页，系统会在词表准备好后自动同步。'
+                    : 'You can start in Practice while the daily set finishes preparing.'}
+                </InlineStudyNote>
+              )}
+            </section>
+
+            <section className="rounded-xl border border-[hsl(var(--paper-line)/0.72)] p-4 sm:p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Lightbulb className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="study-label">{isZh ? '建议顺序' : 'Suggested route'}</p>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground">
+                    {isZh ? '接下来约 8–12 分钟' : 'Your next 8–12 minutes'}
+                  </h2>
+                </div>
+              </div>
+
+              <ol className="mt-5 space-y-4">
+                {nextSteps.map((step, index) => (
+                  <li key={step.label} className="grid grid-cols-[28px_minmax(0,1fr)] gap-3">
+                    <span className="study-number flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-sm text-primary">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{step.label}</p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{step.note}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </div>
         </StudySheet>
       </StudyShell>
     );
@@ -477,17 +586,27 @@ export default function ReviewPage() {
         title={isZh ? '先回忆，再评分' : 'Recall, then rate'}
         description={isZh ? '看答案前先想一遍。' : 'Recall before revealing.'}
       >
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <StudyStatRows
-            items={[
-              { label: isZh ? '剩余' : 'Left', value: remainingCount },
-              { label: isZh ? '目标' : 'Target', value: reviewTaskTarget },
-              { label: isZh ? '进度' : 'Progress', value: `${Math.round(reviewedProgress)}%`, tone: 'practice' },
-            ]}
-            className="min-w-[260px]"
-          />
+        <div data-testid="review-session-summary-mobile" className="grid grid-cols-3 gap-2 sm:hidden">
+          {[
+            { label: isZh ? '剩余' : 'Left', value: remainingCount },
+            { label: isZh ? '目标' : 'Target', value: reviewTaskTarget },
+            { label: isZh ? '进度' : 'Progress', value: `${Math.round(reviewedProgress)}%` },
+          ].map((item) => (
+            <div key={item.label} className="flex min-h-16 flex-col items-center justify-center rounded-lg bg-[hsl(var(--paper-muted)/0.34)] px-2 text-center">
+              <span className="text-[11px] text-muted-foreground">{item.label}</span>
+              <span className="study-number mt-1 text-xl text-foreground">{item.value}</span>
+            </div>
+          ))}
         </div>
-        <Progress value={Math.round(reviewedProgress)} className="mt-5 h-1.5 bg-muted [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]" />
+        <StudyStatRows
+          items={[
+            { label: isZh ? '剩余' : 'Left', value: remainingCount },
+            { label: isZh ? '目标' : 'Target', value: reviewTaskTarget },
+            { label: isZh ? '进度' : 'Progress', value: `${Math.round(reviewedProgress)}%`, tone: 'practice' },
+          ]}
+          className="hidden min-w-[260px] sm:block"
+        />
+        <Progress value={Math.round(reviewedProgress)} className="mt-3 h-1.5 bg-muted sm:mt-5 [&_[data-slot=progress-indicator]]:bg-[hsl(var(--accent-practice))]" />
       </StudySheet>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_260px]">

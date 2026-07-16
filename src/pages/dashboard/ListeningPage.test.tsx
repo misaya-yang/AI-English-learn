@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const listeningMocks = vi.hoisted(() => ({
   addStudySession: vi.fn(),
@@ -104,7 +104,7 @@ const startFirstClip = () => {
 };
 
 const skipToQuestions = () => {
-  fireEvent.click(screen.getByRole('button', { name: /Skip to questions/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Start Questions/i }));
 };
 
 const answerFirstClipPerfectly = () => {
@@ -121,11 +121,16 @@ describe('ListeningPage', () => {
     installSpeechSynthesis();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('labels audio controls and transcript fallback before questions', () => {
     startFirstClip();
 
     expect(screen.getByRole('button', { name: /Reset audio/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Skip to questions/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Play audio/i })).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: /Playback progress/i })).toHaveAttribute('aria-valuenow', '0');
     expect(screen.getByRole('button', { name: /Use transcript fallback/i })).toBeInTheDocument();
     expect(screen.getByText(/Listen first when audio works/i)).toBeInTheDocument();
   });
@@ -145,7 +150,7 @@ describe('ListeningPage', () => {
     const speechSynthesisMock = installSpeechSynthesis([]);
 
     startFirstClip();
-    fireEvent.click(screen.getByRole('button', { name: /Play/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Play audio/i }));
 
     expect(speechSynthesisMock.speak).not.toHaveBeenCalled();
 
@@ -155,7 +160,66 @@ describe('ListeningPage', () => {
 
     expect(speechSynthesisMock.removeEventListener).toHaveBeenCalledWith('voiceschanged', expect.any(Function));
     expect(speechSynthesisMock.speak).toHaveBeenCalledTimes(1);
-    vi.useRealTimers();
+  });
+
+  it('cancels pending voice loading when playback is reset', () => {
+    vi.useFakeTimers();
+    const speechSynthesisMock = installSpeechSynthesis([]);
+
+    startFirstClip();
+    fireEvent.click(screen.getByRole('button', { name: /Play audio/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Reset audio/i }));
+
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+
+    expect(speechSynthesisMock.removeEventListener).toHaveBeenCalledWith('voiceschanged', expect.any(Function));
+    expect(speechSynthesisMock.speak).not.toHaveBeenCalled();
+  });
+
+  it('continues playback progress from the paused position', () => {
+    vi.useFakeTimers();
+
+    startFirstClip();
+    fireEvent.click(screen.getByRole('button', { name: /Play audio/i }));
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    const progressBeforePause = Number(
+      screen.getByRole('progressbar', { name: /Playback progress/i }).getAttribute('aria-valuenow'),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Pause audio/i }));
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(
+      Number(screen.getByRole('progressbar', { name: /Playback progress/i }).getAttribute('aria-valuenow')),
+    ).toBe(progressBeforePause);
+
+    fireEvent.click(screen.getByRole('button', { name: /Resume audio/i }));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(
+      Number(screen.getByRole('progressbar', { name: /Playback progress/i }).getAttribute('aria-valuenow')),
+    ).toBeGreaterThan(progressBeforePause);
+  });
+
+  it('keeps audio replay available while answering questions', () => {
+    const speechSynthesisMock = installSpeechSynthesis();
+
+    startFirstClip();
+    skipToQuestions();
+
+    const replayButton = screen.getByRole('button', { name: /Replay audio from the beginning/i });
+    expect(replayButton).toBeInTheDocument();
+
+    fireEvent.click(replayButton);
+    expect(speechSynthesisMock.speak).toHaveBeenCalledTimes(1);
   });
 
   it('records transcript reveal as a deliberate pre-submit fallback event', () => {

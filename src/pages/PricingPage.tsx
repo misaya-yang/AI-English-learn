@@ -9,37 +9,31 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import {
-  ArrowRight,
-  Bell,
   BookOpen,
   Check,
   HelpCircle,
+  Loader2,
   ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { getEntitlement } from '@/data/examContent';
-import { getSubscriptionEntitlement } from '@/services/billingGateway';
+import { createBillingCheckout, getSubscriptionEntitlement } from '@/services/billingGateway';
 import { toast } from 'sonner';
 import { BrandMark } from '@/features/marketing/BrandMark';
 import { getCheckoutStatus } from '@/features/marketing/pricingAvailability';
-import {
-  hasProWaitlistIntent,
-  saveProWaitlistIntent,
-  type ProBillingCycle,
-} from '@/features/marketing/proWaitlist';
 import {
   FREE_JOB,
   FREE_PLAN_FEATURES,
   FREE_PLAN_LIMITATIONS,
   PRO_JOB,
   PRO_PLAN_FEATURES,
-  PRO_WAITLIST_PROMISE,
   pickLocalized,
   type LocalizedLine,
 } from '@/features/marketing/proPackaging';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { buildAuthRedirect } from '@/lib/authRedirect';
 
 type PaidPlanId = 'pro';
 
@@ -82,8 +76,8 @@ const plans: Plan[] = [
     monthlyPrice: 9.99,
     yearlyPrice: 7.99,
     features: PRO_PLAN_FEATURES,
-    cta: 'Join Pro notice',
-    ctaZh: '加入专业版通知',
+    cta: 'Subscribe to Pro',
+    ctaZh: '订阅专业版',
     highlighted: true,
   },
 ];
@@ -117,9 +111,9 @@ const faqs = [
     question: 'Which payment methods will you support?',
     questionZh: '将支持哪些支付方式？',
     answer:
-      'Stripe will be the primary international gateway. Alipay is on the roadmap. We\'ll only enable a method here once it can actually complete a real charge end-to-end.',
+      'No payment method is available on this deployment. If paid checkout launches, the supported provider will be shown before payment.',
     answerZh:
-      'Stripe 将作为主要的国际支付通道，支付宝已在路线图上。我们只会在某种方式能完整完成真实扣款后才启用。',
+      '当前部署没有可用的支付方式。如果未来开放付费结账，付款前会明确显示实际支持的支付服务。',
   },
 ];
 
@@ -132,10 +126,7 @@ export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
   const [subscriptionStatus, setSubscriptionStatus] = useState<'inactive' | 'active' | 'unknown'>('unknown');
-  const [waitlistedCycles, setWaitlistedCycles] = useState<Record<ProBillingCycle, boolean>>(() => ({
-    monthly: hasProWaitlistIntent('monthly'),
-    yearly: hasProWaitlistIntent('yearly'),
-  }));
+  const [isCheckoutStarting, setIsCheckoutStarting] = useState(false);
 
   // Hardcoded against the env. Today this returns `coming_soon` because no
   // real Stripe/Alipay secret is wired into the deploy. The PricingPage MUST
@@ -144,7 +135,6 @@ export default function PricingPage() {
   // honest "not yet available" notice.
   const checkoutStatus = getCheckoutStatus();
   const isCheckoutLive = checkoutStatus.kind === 'available';
-  const billingCycle: ProBillingCycle = isYearly ? 'yearly' : 'monthly';
 
   useEffect(() => {
     let cancelled = false;
@@ -194,42 +184,33 @@ export default function PricingPage() {
     }
   }, [isZh, location.search]);
 
-  const handleProWaitlist = () => {
-    const result = saveProWaitlistIntent({
-      billingCycle,
-      goal: currentPlan === 'pro' ? 'pro_plan_interest_review' : 'upgrade_from_free',
-      userId: user?.id,
-      language: isZh ? 'zh' : 'en',
-    });
+  const handleProCheckout = async () => {
+    if (!isCheckoutLive || !isAuthenticated || isCheckoutStarting) return;
 
-    if (result.status === 'failed') {
+    setIsCheckoutStarting(true);
+    try {
+      const result = await createBillingCheckout({
+        planId: isYearly ? 'pro_yearly' : 'pro_monthly',
+        provider: 'stripe',
+        successUrl: `${window.location.origin}/pricing?checkout=success`,
+        cancelUrl: `${window.location.origin}/pricing?checkout=canceled`,
+      });
+
+      if (!result.checkoutUrl) {
+        throw new Error('checkout_url_missing');
+      }
+
+      window.location.assign(result.checkoutUrl);
+    } catch (error) {
+      console.error('Unable to start checkout:', error);
       toast.error(
         isZh
-          ? '暂时无法保存你的意向，请稍后再试。'
-          : 'We could not save your interest yet. Please try again.',
+          ? '暂时无法开始结账，没有创建订单或扣款。请稍后重试。'
+          : 'Checkout could not start. No order or charge was created. Please try again later.',
       );
-      return;
+    } finally {
+      setIsCheckoutStarting(false);
     }
-
-    setWaitlistedCycles((previous) => ({
-      ...previous,
-      [result.intent.billingCycle]: true,
-    }));
-
-    if (result.status === 'duplicate') {
-      toast.info(
-        isZh
-          ? '已经记录过这个专业版意向了。'
-          : 'You are already on the Pro interest list for this billing option.',
-      );
-      return;
-    }
-
-    toast.success(
-      isZh
-        ? '已记录：专业版开放时会提醒你。'
-        : 'Saved. We will use this signal for the Pro launch.',
-    );
   };
 
   return (
@@ -268,7 +249,7 @@ export default function PricingPage() {
         </GlassSurface>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+      <main id="main-content" className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="max-w-3xl">
           <Badge
             variant="secondary"
@@ -306,35 +287,37 @@ export default function PricingPage() {
           </div>
         </section>
 
-        <Card className="mt-8 max-w-4xl border-transparent [padding-block:0]">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {isZh ? '当前方案' : 'Current plan'}
-                </p>
-                <p className="mt-1 text-base font-semibold">
-                  {currentPlan === 'pro' ? (isZh ? '专业版' : 'Pro') : (isZh ? '免费版' : 'Free')}
-                </p>
+        {isAuthenticated && (
+          <Card className="mt-8 max-w-4xl border-transparent [padding-block:0]">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {isZh ? '当前方案' : 'Current plan'}
+                  </p>
+                  <p className="mt-1 text-base font-semibold">
+                    {currentPlan === 'pro' ? (isZh ? '专业版' : 'Pro') : (isZh ? '免费版' : 'Free')}
+                  </p>
+                </div>
+                <Badge
+                  variant={currentPlan === 'pro' ? 'default' : 'outline'}
+                  className={cn(
+                    'px-3 py-1 text-xs',
+                    currentPlan === 'pro'
+                      ? 'bg-primary/10 text-primary'
+                      : 'border-transparent bg-muted/55 text-muted-foreground',
+                  )}
+                >
+                  {currentPlan === 'pro'
+                    ? subscriptionStatus === 'active'
+                      ? (isZh ? '已激活' : 'Active')
+                      : (isZh ? '已授权' : 'Granted')
+                    : (isZh ? '免费版' : 'Free tier')}
+                </Badge>
               </div>
-              <Badge
-                variant={currentPlan === 'pro' ? 'default' : 'outline'}
-                className={cn(
-                  'px-3 py-1 text-xs',
-                  currentPlan === 'pro'
-                    ? 'bg-primary/10 text-primary'
-                    : 'border-transparent bg-muted/55 text-muted-foreground',
-                )}
-              >
-                {currentPlan === 'pro'
-                  ? subscriptionStatus === 'active'
-                    ? (isZh ? '已激活' : 'Active')
-                    : (isZh ? '已授权' : 'Granted')
-                  : (isZh ? '免费版' : 'Free tier')}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <GlassSurface variant="control" className="mt-6 inline-flex items-center justify-start gap-4 px-4 py-2.5">
           <span className={cn('text-sm', !isYearly && 'font-semibold')}>{isZh ? '按月' : 'Monthly'}</span>
@@ -360,7 +343,6 @@ export default function PricingPage() {
             const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
             const isPaid = plan.id !== 'free';
             const showFailClosedNotice = isPaid && !isCheckoutLive;
-            const isWaitlistedForCycle = isPaid && waitlistedCycles[billingCycle];
 
             return (
               <motion.div
@@ -455,13 +437,9 @@ export default function PricingPage() {
                         >
                           <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
                             {isZh ? plan.ctaZh : plan.cta}
-                            <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
                         </Button>
                       ) : showFailClosedNotice ? (
-                        // Fail-closed UI: do NOT mount any onClick that
-                        // attempts to start a real checkout. This only stores
-                        // local product intent so we can measure Pro demand.
                         <div
                           data-testid="pricing-pro-coming-soon"
                           className="rounded-lg bg-[hsl(var(--warning)/0.1)] px-4 py-3 text-left"
@@ -475,47 +453,38 @@ export default function PricingPage() {
                               : "Pro will focus on IELTS scoring, advanced analytics, custom wordbooks, and weekly planning. Free stays available."}
                           </p>
                           <p className="mt-3 text-xs font-medium text-[hsl(var(--warning))]">
-                            {isZh ? '结账入口会在真实支付服务接好后出现。' : 'Checkout appears here once a real provider is connected.'}
-                          </p>
-                          <Button
-                            type="button"
-                            data-testid="pricing-pro-waitlist-button"
-                            variant={isWaitlistedForCycle ? 'secondary' : 'default'}
-                            className="mt-4 h-11 w-full rounded-lg"
-                            onClick={handleProWaitlist}
-                          >
-                            {isWaitlistedForCycle ? (
-                              <>
-                                <Check className="mr-2 h-4 w-4" />
-                                {isZh ? '已记录意向' : "You're on the list"}
-                              </>
-                            ) : (
-                              <>
-                                <Bell className="mr-2 h-4 w-4" />
-                                {isZh ? '专业版开放时通知我' : 'Notify me when Pro opens'}
-                              </>
-                            )}
-                          </Button>
-                          <p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--warning))]/80">
-                            {isWaitlistedForCycle
-                              ? (isZh
-                                ? `已保存${billingCycle === 'yearly' ? '按年' : '按月'}方案意向；不会创建支付会话。`
-                                : `${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} Pro interest saved. No checkout session was created.`)
-                              : pickLocalized(PRO_WAITLIST_PROMISE, i18n.language || 'en')}
+                            {isZh
+                              ? '当前页面不能创建订单、扣款或通知请求。'
+                              : 'This page cannot create an order, charge, or notification request.'}
                           </p>
                         </div>
+                      ) : !isAuthenticated ? (
+                        <Button asChild className="h-11 w-full rounded-lg shadow-none">
+                          <Link to={buildAuthRedirect('/pricing')}>
+                            {isZh ? '登录后订阅' : 'Sign in to subscribe'}
+                          </Link>
+                        </Button>
+                      ) : currentPlan === 'pro' ? (
+                        <Button type="button" variant="secondary" className="h-11 w-full rounded-lg" disabled>
+                          <Check className="mr-2 h-4 w-4" />
+                          {isZh ? '当前方案' : 'Current plan'}
+                        </Button>
                       ) : (
-                        // Real provider is wired. The actual checkout call lives
-                        // behind this branch so we can lift it back in once
-                        // VITE_BILLING_ENABLED=true is set on the deploy.
                         <Button
                           className="h-11 w-full rounded-lg shadow-none"
-                          onClick={() =>
-                            toast.info(isZh ? '支付服务配置完成后即可开始结账。' : 'Checkout will start when payment provider is configured.')
-                          }
+                          onClick={handleProCheckout}
+                          disabled={isCheckoutStarting}
                         >
-                          {isZh ? plan.ctaZh : plan.cta}
-                          <ArrowRight className="ml-2 h-4 w-4" />
+                          {isCheckoutStarting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              {isZh ? '正在打开安全结账...' : 'Opening secure checkout...'}
+                            </>
+                          ) : (
+                            <>
+                              {isZh ? plan.ctaZh : plan.cta}
+                            </>
+                          )}
                         </Button>
                       )}
                     </div>
@@ -541,12 +510,12 @@ export default function PricingPage() {
                 {isZh ? (
                   <>
                     我们暂未接入真实支付服务，因此不会让你点进一个无效的支付流程。免费版完全可用，
-                    支付服务真实可用后，本页会显示明确的专业版入口。
+                    当前页面不会创建订单、扣款或通知请求。免费版仍可正常使用。
                   </>
                 ) : (
                   <>
                     We haven't wired a real payment provider on this deployment yet, so we won't pretend Pro is purchasable.
-                    The free plan stays fully functional, and this page will switch to checkout only after a real provider is ready.
+                    This page cannot create an order, charge, or notification request. The free plan remains fully functional.
                   </>
                 )}
               </p>
@@ -589,9 +558,8 @@ export default function PricingPage() {
             size="lg"
             className="mt-5 rounded-lg shadow-none"
           >
-            <Link to="/register">
-              {isZh ? '免费开始' : 'Start free'}
-              <ArrowRight className="ml-2 h-5 w-5" />
+            <Link to={isAuthenticated ? '/dashboard/today' : '/register'}>
+              {isAuthenticated ? (isZh ? '进入今日' : 'Go to Today') : (isZh ? '免费开始' : 'Start free')}
             </Link>
           </Button>
         </div>

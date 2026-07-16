@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Copy, ThumbsDown, ThumbsUp, User } from 'lucide-react';
+import { Bot, Copy, User } from 'lucide-react';
 import { toast } from 'sonner';
 import type { TFunction } from 'i18next';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
@@ -57,10 +57,14 @@ export function ChatMessageBubble({
     ? message.content
     : message.content.replace(/\*\*coaching_actions\*\*[\s\S]*?```[\s\S]*?```/g, '').trimEnd();
 
-  const copyToClipboard = useCallback(() => {
-    navigator.clipboard.writeText(message.content);
-    toast.success(t('chat.copySuccess'));
-  }, [message.content, t]);
+  const copyToClipboard = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      toast.success(t('chat.copySuccess'));
+    } catch {
+      toast.error(language.startsWith('zh') ? '复制失败，请手动选择文本。' : 'Copy failed. Select the text manually.');
+    }
+  }, [language, message.content, t]);
 
   return (
     <motion.div
@@ -73,14 +77,14 @@ export function ChatMessageBubble({
           'h-8 w-8 flex-shrink-0',
           isUser
             ? 'bg-primary/10'
-            : 'bg-primary/10',
+            : 'bg-[hsl(var(--accent-coach)/0.12)]',
         )}
       >
         <AvatarFallback className="text-xs">
           {isUser ? (
             <User className="h-4 w-4 text-primary" />
           ) : (
-            <Bot className="h-4 w-4 text-primary" />
+            <Bot className="h-4 w-4 text-[hsl(var(--accent-coach))]" />
           )}
         </AvatarFallback>
       </Avatar>
@@ -149,28 +153,15 @@ export function ChatMessageBubble({
         )}
 
         {!isUser && !isStreaming && (
-          <div className="mt-1.5 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="mt-1.5 flex items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
             <button
               type="button"
-              onClick={copyToClipboard}
+              onClick={() => void copyToClipboard()}
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               title={language.startsWith('zh') ? '复制' : 'Copy'}
+              aria-label={language.startsWith('zh') ? '复制回复' : 'Copy response'}
             >
               <Copy className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              title={language.startsWith('zh') ? '有用' : 'Helpful'}
-            >
-              <ThumbsUp className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              title={language.startsWith('zh') ? '无用' : 'Not helpful'}
-            >
-              <ThumbsDown className="h-3.5 w-3.5" />
             </button>
           </div>
         )}

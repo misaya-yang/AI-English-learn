@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useMemo, useCallback } from 'react';
+import { useEffect, useState, memo, useMemo, useCallback, useRef } from 'react';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -70,7 +70,7 @@ function WordWorkbench({ word, isFlipped, onFlip, onMarkStatus, isLearned, isHar
     <section className="study-sheet word-entry">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-md bg-muted/45 px-2.5 py-1 text-xs text-muted-foreground">
+          <span className="rounded-md bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
             {word.level}
           </span>
           {isLearned ? <span className="rounded-md bg-[hsl(var(--success)/0.1)] px-2.5 py-1 text-xs text-[hsl(var(--success))]">{isZh ? '已学会' : 'Learned'}</span> : null}
@@ -304,8 +304,14 @@ export default function TodayPage() {
   const [bookmarkedWords, setBookmarkedWords] = useState<Set<string>>(initialFlags.bookmark);
   const currentStreak = streak.current;
   const [showConfetti, setShowConfetti] = useState(false);
+  const advanceTimerRef = useRef<number | null>(null);
+  const confettiTimerRef = useRef<number | null>(null);
 
   const words = useMemo(() => (dailyWords.length > 0 ? dailyWords : []), [dailyWords]);
+  const maxWordIndex = Math.max(words.length - 1, 0);
+  if (currentWordIndex > maxWordIndex) {
+    setCurrentWordIndex(maxWordIndex);
+  }
   const currentWord = words[currentWordIndex];
   const lexicalFocus = useMemo(() => currentWord ? toLexicalEntry(currentWord) : null, [currentWord]);
   const durableLearnedWords = useMemo(() => {
@@ -336,6 +342,27 @@ export default function TodayPage() {
     refreshDailyWords();
     refreshDailyMission();
   }, [refreshDailyMission, refreshDailyWords]);
+
+  const clearAdvanceTimer = useCallback(() => {
+    if (advanceTimerRef.current === null) return;
+    window.clearTimeout(advanceTimerRef.current);
+    advanceTimerRef.current = null;
+  }, []);
+
+  const clearConfettiTimer = useCallback(() => {
+    if (confettiTimerRef.current === null) return;
+    window.clearTimeout(confettiTimerRef.current);
+    confettiTimerRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    clearAdvanceTimer();
+  }, [clearAdvanceTimer, words.length]);
+
+  useEffect(() => () => {
+    clearAdvanceTimer();
+    clearConfettiTimer();
+  }, [clearAdvanceTimer, clearConfettiTimer]);
 
   // ── FSRS-5 Learner Model ──────────────────────────────────────────────────
   const learnerModel = useMemo(() => {
@@ -434,7 +461,11 @@ export default function TodayPage() {
       if (learnedWords.size + 1 >= words.length) {
         completeMissionTask('task_vocab_today');
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+        clearConfettiTimer();
+        confettiTimerRef.current = window.setTimeout(() => {
+          setShowConfetti(false);
+          confettiTimerRef.current = null;
+        }, 3000);
       }
 
       toast.success(isZh ? `已学会 "${currentWord.word}"` : `Marked "${currentWord.word}" as learned`, {
@@ -473,12 +504,14 @@ export default function TodayPage() {
       });
     }
 
-    window.setTimeout(() => {
-      if (currentWordIndex < words.length - 1) {
-        setCurrentWordIndex((prev) => prev + 1);
+    clearAdvanceTimer();
+    if (currentWordIndex < words.length - 1) {
+      advanceTimerRef.current = window.setTimeout(() => {
+        setCurrentWordIndex((prev) => Math.min(prev + 1, words.length - 1));
         setFlippedCards(new Set());
-      }
-    }, 700);
+        advanceTimerRef.current = null;
+      }, 700);
+    }
   };
 
   const handleBookmark = () => {
@@ -517,18 +550,20 @@ export default function TodayPage() {
   };
 
   const handlePrevious = useCallback(() => {
+    clearAdvanceTimer();
     if (currentWordIndex > 0) {
       setCurrentWordIndex((prev) => prev - 1);
       setFlippedCards(new Set());
     }
-  }, [currentWordIndex]);
+  }, [clearAdvanceTimer, currentWordIndex]);
 
   const handleNext = useCallback(() => {
+    clearAdvanceTimer();
     if (currentWordIndex < words.length - 1) {
       setCurrentWordIndex((prev) => prev + 1);
       setFlippedCards(new Set());
     }
-  }, [currentWordIndex, words.length]);
+  }, [clearAdvanceTimer, currentWordIndex, words.length]);
 
   const scrollToVocabularyWorkspace = useCallback(() => {
     document.getElementById('today-vocabulary-workspace')?.scrollIntoView({
@@ -542,7 +577,18 @@ export default function TodayPage() {
   // so we wrap it with the current word's id here.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      const isInteractiveTarget = target?.isContentEditable || Boolean(target?.closest(
+        'input, textarea, select, button, a, [contenteditable], [role="button"], [role="link"]',
+      ));
+      if (
+        e.defaultPrevented ||
+        e.isComposing ||
+        e.altKey ||
+        e.ctrlKey ||
+        e.metaKey ||
+        isInteractiveTarget
+      ) return;
       if (e.code === 'Space') {
         e.preventDefault();
         if (currentWord) handleFlip(currentWord.id);
@@ -656,7 +702,40 @@ export default function TodayPage() {
           </Button>
         )}
       >
+        <div data-testid="today-mobile-mission-summary" className="grid grid-cols-3 gap-2 sm:hidden">
+          {todayPlanRows.map((row) => {
+            const summary = (
+              <>
+                <span className="text-xs font-medium text-muted-foreground">{row.label}</span>
+                <span className="mt-1 flex items-baseline justify-center gap-1">
+                  <span className="study-number text-2xl text-foreground">{row.value}</span>
+                  <span className="text-[10px] text-muted-foreground">{row.unit}</span>
+                </span>
+              </>
+            );
+            const className = 'flex min-h-20 flex-col items-center justify-center rounded-lg border border-border bg-[hsl(var(--paper-muted)/0.28)] px-2 text-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40';
+            const accessibleLabel = `${row.label}: ${row.value} ${row.unit}`;
+
+            return row.href ? (
+              <Link key={row.label} to={row.href} className={className} aria-label={accessibleLabel}>
+                {summary}
+              </Link>
+            ) : (
+              <button
+                key={row.label}
+                type="button"
+                className={className}
+                aria-label={accessibleLabel}
+                onClick={row.onClick}
+              >
+                {summary}
+              </button>
+            );
+          })}
+        </div>
+
         <StudyTaskList
+          className="hidden sm:block"
           items={todayPlanRows.map((row) => ({
             label: row.label,
             value: row.value,
@@ -716,6 +795,7 @@ export default function TodayPage() {
                     onPrevious={handlePrevious}
                     onNext={handleNext}
                     onSelectWord={(index) => {
+                      clearAdvanceTimer();
                       setCurrentWordIndex(index);
                       setFlippedCards(new Set());
                     }}

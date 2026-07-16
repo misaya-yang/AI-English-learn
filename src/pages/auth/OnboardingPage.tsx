@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,13 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import {
-  BookOpen,
-  Calendar,
-  ChevronRight,
-  ChevronLeft,
-  Clock,
   GraduationCap,
-  Target,
   Check,
   Loader2,
   Briefcase,
@@ -105,6 +99,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showPlacementTest, setShowPlacementTest] = useState(false);
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const redirectTarget = resolveAuthRedirect(location.search, '/dashboard/today');
 
   const [preferences, setPreferences] = useState<OnboardingPlacementInput>({
@@ -118,6 +113,12 @@ export default function OnboardingPage() {
     learningStyle: 'visual' as LearningStyle,
   });
   const placement = useMemo(() => buildOnboardingPlacement(preferences), [preferences]);
+
+  useEffect(() => {
+    if (!isAuthLoading && isAuthenticated && !showPlacementTest) {
+      stepHeadingRef.current?.focus();
+    }
+  }, [isAuthLoading, isAuthenticated, showPlacementTest, step]);
 
   if (isAuthLoading) {
     return (
@@ -150,6 +151,7 @@ export default function OnboardingPage() {
   const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
   const currentCopy = stepCopy[step];
+  const stepHeadingId = `onboarding-step-${step}-heading`;
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -248,12 +250,14 @@ export default function OnboardingPage() {
         }
 
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <GraduationCap className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4">
+            <div className="text-left sm:text-center">
+              <h2
+                ref={stepHeadingRef}
+                id={stepHeadingId}
+                tabIndex={-1}
+                className="text-lg font-semibold text-foreground outline-none"
+              >
                 {isZh ? '选择英语水平' : 'Choose your level'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -264,7 +268,7 @@ export default function OnboardingPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-auto w-full rounded-lg bg-primary/10 py-4 text-foreground hover:bg-primary/15"
+              className="h-auto w-full rounded-lg bg-primary/10 py-3 text-foreground hover:bg-primary/15"
               onClick={() => setShowPlacementTest(true)}
             >
               <div className="text-center">
@@ -286,23 +290,28 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <div className="grid gap-3">
+            <div
+              className="grid gap-2"
+              role="radiogroup"
+              aria-label={isZh ? '手动选择英语水平' : 'Choose an English level manually'}
+            >
               {cefrLevels.map((level) => (
                 <button
                   key={level.level}
                   type="button"
+                  role="radio"
                   onClick={() => setPreferences((prev) => ({ ...prev, cefrLevel: level.level }))}
                   className={cn(
-                    'flex min-h-11 items-center gap-4 rounded-lg px-4 py-3 text-left transition-colors',
+                    'flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
                     preferences.cefrLevel === level.level
                       ? 'bg-primary/10'
                       : 'bg-[hsl(var(--paper-muted)/0.22)] hover:bg-muted/40',
                   )}
-                  aria-pressed={preferences.cefrLevel === level.level}
+                  aria-checked={preferences.cefrLevel === level.level}
                 >
                   <div
                     className={cn(
-                      'flex h-12 w-12 items-center justify-center rounded-md text-base font-bold',
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-sm font-bold',
                       preferences.cefrLevel === level.level
                         ? 'bg-primary/10 text-primary'
                         : 'bg-muted text-muted-foreground',
@@ -312,7 +321,7 @@ export default function OnboardingPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">{isZh ? level.labelZh : level.label}</p>
-                    <p className="text-sm text-muted-foreground">{isZh ? level.descriptionZh : level.description}</p>
+                    <p className="text-xs leading-5 text-muted-foreground sm:text-sm">{isZh ? level.descriptionZh : level.description}</p>
                   </div>
                   {preferences.cefrLevel === level.level && (
                     <Check className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -325,12 +334,14 @@ export default function OnboardingPage() {
 
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <Target className="h-7 w-7" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4">
+            <div className="text-left sm:text-center">
+              <h2
+                ref={stepHeadingRef}
+                id={stepHeadingId}
+                tabIndex={-1}
+                className="text-lg font-semibold text-foreground outline-none"
+              >
                 {isZh ? '你这次学习的主要目标是？' : 'What are you learning for?'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -338,40 +349,34 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div className="grid gap-3">
+            <div
+              className="grid gap-2"
+              role="radiogroup"
+              aria-labelledby={stepHeadingId}
+            >
               {examTargets.map((target) => (
                 <button
                   key={target.id}
                   type="button"
+                  role="radio"
                   onClick={() => updateExamTarget(target.id)}
                   className={cn(
-                    'flex min-h-11 items-start gap-4 rounded-lg px-4 py-3 text-left transition-colors',
+                    'flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
                     preferences.examTarget === target.id
                       ? 'bg-primary/10'
                       : 'bg-[hsl(var(--paper-muted)/0.22)] hover:bg-muted/40',
                   )}
-                  aria-pressed={preferences.examTarget === target.id}
+                  aria-checked={preferences.examTarget === target.id}
                 >
-                  <div
-                    className={cn(
-                      'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-                      preferences.examTarget === target.id
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted text-muted-foreground',
-                    )}
-                  >
-                    {preferences.examTarget === target.id ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Target className="h-4 w-4" />
-                    )}
-                  </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-foreground">{isZh ? target.labelZh : target.label}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-0.5 text-xs leading-5 text-muted-foreground sm:text-sm">
                       {isZh ? target.descriptionZh : target.description}
                     </p>
                   </div>
+                  {preferences.examTarget === target.id && (
+                    <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  )}
                 </button>
               ))}
             </div>
@@ -382,11 +387,17 @@ export default function OnboardingPage() {
                   <p className="text-sm font-medium text-foreground">
                     {isZh ? '目标分数' : 'Target score'}
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div
+                    className="mt-3 flex flex-wrap gap-2"
+                    role="radiogroup"
+                    aria-label={isZh ? '目标分数' : 'Target score'}
+                  >
                     {(preferences.examTarget === 'ielts' ? ieltsBands : toeflTargets).map((band) => (
                       <Button
                         key={band}
                         type="button"
+                        role="radio"
+                        aria-checked={preferences.targetBand === band}
                         variant={preferences.targetBand === band ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setPreferences((prev) => ({ ...prev, targetBand: band }))}
@@ -402,19 +413,24 @@ export default function OnboardingPage() {
                   <p className="text-sm font-medium text-foreground">
                     {isZh ? '考试时间' : 'Exam date'}
                   </p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-5">
+                  <div
+                    className="mt-3 grid gap-2 sm:grid-cols-5"
+                    role="radiogroup"
+                    aria-label={isZh ? '考试时间' : 'Exam date'}
+                  >
                     {deadlines.map((deadline) => (
                       <button
                         key={deadline.id}
                         type="button"
+                        role="radio"
                         onClick={() => setPreferences((prev) => ({ ...prev, deadline: deadline.id }))}
                         className={cn(
                           'rounded-lg border px-3 py-2 text-sm transition-colors',
-	                          preferences.deadline === deadline.id
-	                            ? 'border-primary/30 bg-primary/10 text-primary'
-	                            : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
+                          preferences.deadline === deadline.id
+                            ? 'border-primary/30 bg-primary/10 text-primary'
+                            : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
                         )}
-                        aria-pressed={preferences.deadline === deadline.id}
+                        aria-checked={preferences.deadline === deadline.id}
                       >
                         {isZh ? deadline.labelZh : deadline.label}
                       </button>
@@ -434,12 +450,14 @@ export default function OnboardingPage() {
 
       case 3:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <Clock className="h-7 w-7" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4">
+            <div className="text-left sm:text-center">
+              <h2
+                ref={stepHeadingRef}
+                id={stepHeadingId}
+                tabIndex={-1}
+                className="text-lg font-semibold text-foreground outline-none"
+              >
                 {isZh ? '设置每日练习' : 'Set daily practice'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -447,7 +465,7 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="text-center">
                 <span className="text-3xl font-semibold text-primary">
                   {preferences.dailyGoal}
@@ -490,19 +508,24 @@ export default function OnboardingPage() {
                 <p className="text-sm font-medium text-foreground">
                   {isZh ? '每天可投入时间' : 'Daily study time'}
                 </p>
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div
+                  className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4"
+                  role="radiogroup"
+                  aria-label={isZh ? '每天可投入时间' : 'Daily study time'}
+                >
                   {dailyMinuteOptions.map((minutes) => (
                     <button
                       key={minutes}
                       type="button"
+                      role="radio"
                       onClick={() => setPreferences((prev) => ({ ...prev, dailyMinutes: minutes }))}
                       className={cn(
                         'rounded-lg border px-3 py-3 text-sm font-medium transition-colors',
-	                        preferences.dailyMinutes === minutes
-	                          ? 'border-primary/30 bg-primary/10 text-primary'
-	                          : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
+                        preferences.dailyMinutes === minutes
+                          ? 'border-primary/30 bg-primary/10 text-primary'
+                          : 'border-transparent bg-muted/35 text-foreground hover:bg-muted',
                       )}
-                      aria-pressed={preferences.dailyMinutes === minutes}
+                      aria-checked={preferences.dailyMinutes === minutes}
                     >
                       {minutes} {isZh ? '分钟' : 'min'}
                     </button>
@@ -515,12 +538,14 @@ export default function OnboardingPage() {
 
       case 4:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <Target className="h-7 w-7" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4">
+            <div className="text-left sm:text-center">
+              <h2
+                ref={stepHeadingRef}
+                id={stepHeadingId}
+                tabIndex={-1}
+                className="text-lg font-semibold text-foreground outline-none"
+              >
                 {isZh ? '选择练习主题' : 'Choose practice topics'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -528,7 +553,11 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div
+              className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+              role="group"
+              aria-labelledby={stepHeadingId}
+            >
               {topics.map((topic) => {
                 const TopicIcon = topic.icon;
                 return (
@@ -537,7 +566,7 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => toggleTopic(topic.id)}
                     className={cn(
-                      'min-h-11 rounded-lg px-4 py-3 text-left transition-colors',
+                      'min-h-11 rounded-lg px-3 py-2.5 text-left transition-colors',
                       preferences.preferredTopics.includes(topic.id)
                         ? 'bg-primary/10'
                         : 'bg-[hsl(var(--paper-muted)/0.22)] hover:bg-muted/40',
@@ -545,7 +574,7 @@ export default function OnboardingPage() {
                     aria-pressed={preferences.preferredTopics.includes(topic.id)}
                   >
                     <TopicIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-                    <p className="mt-3 text-sm font-medium text-foreground">
+                    <p className="mt-2 text-sm font-medium text-foreground">
                       {isZh ? topic.labelZh : topic.label}
                     </p>
                   </button>
@@ -561,12 +590,14 @@ export default function OnboardingPage() {
 
       case 5:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <BookOpen className="h-7 w-7" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">
+          <div className="space-y-4">
+            <div className="text-left sm:text-center">
+              <h2
+                ref={stepHeadingRef}
+                id={stepHeadingId}
+                tabIndex={-1}
+                className="text-lg font-semibold text-foreground outline-none"
+              >
                 {isZh ? '选择练习方式' : 'Choose a practice format'}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -574,75 +605,68 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div
+              className="space-y-2"
+              role="radiogroup"
+              aria-labelledby={stepHeadingId}
+            >
               {learningStyles.map((style) => (
                 <button
                   key={style.id}
                   type="button"
+                  role="radio"
                   onClick={() => setPreferences((prev) => ({ ...prev, learningStyle: style.id }))}
                   className={cn(
-                    'flex min-h-11 w-full items-center gap-4 rounded-lg px-4 py-3 text-left transition-colors',
+                    'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
                     preferences.learningStyle === style.id
                       ? 'bg-primary/10'
                       : 'bg-[hsl(var(--paper-muted)/0.22)] hover:bg-muted/40',
                   )}
-                  aria-pressed={preferences.learningStyle === style.id}
+                  aria-checked={preferences.learningStyle === style.id}
                 >
-                  <div
-                    className={cn(
-                      'flex h-10 w-10 items-center justify-center rounded-md',
-                      preferences.learningStyle === style.id
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted text-muted-foreground',
-                    )}
-                  >
-                    {preferences.learningStyle === style.id && <Check className="h-5 w-5" />}
-                  </div>
+                  <span className="flex w-4 shrink-0 justify-center text-primary" aria-hidden="true">
+                    {preferences.learningStyle === style.id && <Check className="h-4 w-4" />}
+                  </span>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">
                       {isZh ? style.labelZh : style.label}
                     </p>
-                    <p className="text-sm text-muted-foreground">{isZh ? style.descriptionZh : style.description}</p>
+                    <p className="text-xs leading-5 text-muted-foreground sm:text-sm">{isZh ? style.descriptionZh : style.description}</p>
                   </div>
                 </button>
               ))}
             </div>
 
             <div className="rounded-lg bg-muted/25 px-4 py-3" aria-live="polite">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Calendar className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    {isZh ? '起始设置' : 'Starting setup'}
-                  </p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{isZh ? '词书' : 'Book'}</p>
-                      <p className="mt-1 text-sm font-medium text-foreground">{placement.starterBookName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{isZh ? '重点' : 'Focus'}</p>
-                      <p className="mt-1 text-sm font-medium text-foreground">{placement.learningPathName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{isZh ? '先练这个' : 'Start here'}</p>
-                      <p className="mt-1 text-sm font-medium text-foreground">
-                        {isZh ? placement.firstMission.titleZh : placement.firstMission.title}
-                      </p>
-                    </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {isZh ? '起始设置' : 'Starting setup'}
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{isZh ? '词书' : 'Book'}</p>
+                    <p className="mt-1 text-sm font-medium text-foreground">{placement.starterBookName}</p>
                   </div>
-
-                  <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                    {placement.reasons.map((reason) => (
-                      <li key={reason.en} className="flex gap-2">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                        <span>{isZh ? reason.zh : reason.en}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{isZh ? '重点' : 'Focus'}</p>
+                    <p className="mt-1 text-sm font-medium text-foreground">{placement.learningPathName}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{isZh ? '先练这个' : 'Start here'}</p>
+                    <p className="mt-1 text-sm font-medium text-foreground">
+                      {isZh ? placement.firstMission.titleZh : placement.firstMission.title}
+                    </p>
+                  </div>
                 </div>
+
+                <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  {placement.reasons.map((reason) => (
+                    <li key={reason.en} className="flex gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                      <span>{isZh ? reason.zh : reason.en}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
@@ -659,7 +683,7 @@ export default function OnboardingPage() {
       titleZh={currentCopy.zh}
       size="wide"
     >
-      <div className="space-y-6">
+      <div className="space-y-4 pb-20 sm:pb-0">
         <div>
           <div className="mb-2 flex items-center justify-between text-xs">
             <span className="text-muted-foreground">
@@ -674,45 +698,46 @@ export default function OnboardingPage() {
 
         {renderStep()}
 
-        <div className="-mx-1 flex flex-col-reverse gap-3 rounded-xl bg-muted/35 p-1.5 sm:mx-0 sm:flex-row sm:justify-between sm:rounded-none sm:bg-transparent sm:p-0">
-          <Button
-            type="button"
-            variant="glass"
-            onClick={handleBack}
-            disabled={step === 1 || isLoading}
-            className="rounded-lg"
+        {!showPlacementTest && (
+          <div
+            data-testid="onboarding-sticky-actions"
+            className="fixed inset-x-4 bottom-3 z-40 mx-auto grid max-w-xl grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-2 rounded-xl border border-border/30 bg-background/95 p-2 shadow-sm backdrop-blur sm:sticky sm:inset-x-auto sm:bottom-2 sm:max-w-none"
           >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            {isZh ? '上一步' : 'Back'}
-          </Button>
+            <Button
+              type="button"
+              variant="glass"
+              onClick={handleBack}
+              disabled={step === 1 || isLoading}
+              className="h-11 rounded-lg"
+            >
+              {isZh ? '上一步' : 'Back'}
+            </Button>
 
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={
-              isLoading ||
-              (step === 4 && preferences.preferredTopics.length < 2)
-            }
-            className="rounded-lg shadow-none transition-colors"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isZh ? '保存中...' : 'Saving...'}
-              </>
-            ) : step === totalSteps ? (
-              <>
-                {isZh ? '开始今天' : 'Start today'}
-                <Check className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              <>
-                {isZh ? '下一步' : 'Next'}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={
+                isLoading ||
+                (step === 4 && preferences.preferredTopics.length < 2)
+              }
+              className="h-11 rounded-lg shadow-none transition-colors"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                  {isZh ? '保存中...' : 'Saving...'}
+                </>
+              ) : step === totalSteps ? (
+                <>
+                  {isZh ? '开始今天' : 'Start today'}
+                  <Check className="ml-2 h-4 w-4" aria-hidden="true" />
+                </>
+              ) : (
+                isZh ? '下一步' : 'Next'
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </AuthShell>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -80,6 +80,53 @@ export function useExamPrepRuntime({
   const [workspaceView, setWorkspaceView] = useState<WorkspaceView>('brief');
   const [insightView, setInsightView] = useState<InsightView>('weakness');
   const [toolPanel, setToolPanel] = useState<ToolPanel | undefined>(undefined);
+  const activeRequestIdRef = useRef(0);
+  const activeRequestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearActiveRequestTimeout = useCallback(() => {
+    if (!activeRequestTimeoutRef.current) return;
+    clearTimeout(activeRequestTimeoutRef.current);
+    activeRequestTimeoutRef.current = null;
+  }, []);
+
+  const beginAsyncRequest = useCallback(() => {
+    clearActiveRequestTimeout();
+    activeRequestIdRef.current += 1;
+    return activeRequestIdRef.current;
+  }, [clearActiveRequestTimeout]);
+
+  const isActiveRequest = useCallback(
+    (requestId: number) => activeRequestIdRef.current === requestId,
+    [],
+  );
+
+  const settleAsyncRequest = useCallback((requestId: number) => {
+    if (activeRequestIdRef.current !== requestId) return false;
+    clearActiveRequestTimeout();
+    activeRequestIdRef.current += 1;
+    return true;
+  }, [clearActiveRequestTimeout]);
+
+  const cancelActiveRequest = useCallback(() => {
+    clearActiveRequestTimeout();
+    activeRequestIdRef.current += 1;
+  }, [clearActiveRequestTimeout]);
+
+  const armRequestTimeout = useCallback((requestId: number, message: string) => {
+    clearActiveRequestTimeout();
+    activeRequestTimeoutRef.current = setTimeout(() => {
+      if (activeRequestIdRef.current !== requestId) return;
+      activeRequestTimeoutRef.current = null;
+      activeRequestIdRef.current += 1;
+      setLoadingStage('idle');
+      toast.error(message);
+    }, 30000);
+  }, [clearActiveRequestTimeout]);
+
+  useEffect(() => () => {
+    clearActiveRequestTimeout();
+    activeRequestIdRef.current += 1;
+  }, [clearActiveRequestTimeout]);
 
   const resetCoachPanels = useCallback(() => {
     setOutline(null);
@@ -94,19 +141,33 @@ export function useExamPrepRuntime({
   }, [userId]);
 
   useEffect(() => {
+    // Route/user changes require refreshing the local persisted feedback snapshot.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshFeedbackState();
   }, [refreshFeedbackState]);
 
   useEffect(() => {
     if (!selectedItem) return;
 
+    cancelActiveRequest();
+    // The selected catalog item is the source of truth for the active editor session.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoadingStage('idle');
     setWritingPrompt(selectedItem.prompt);
+    setWritingAnswer('');
     setTaskType(selectedItem.itemType === 'writing_task_1' ? 'task1' : 'task2');
+    setSimItem(null);
+    setIsSimulationMode(false);
+    setSimulationTotalSec(0);
+    setSimulationRemainingSec(0);
+    setFeedback(null);
+    setFeedbackLatencyMs(null);
     resetCoachPanels();
-  }, [resetCoachPanels, selectedItem]);
+    setToolPanel(undefined);
+  }, [cancelActiveRequest, resetCoachPanels, selectedItem]);
 
   useEffect(() => {
-    if (!isSimulationMode || simulationRemainingSec <= 0) return;
+    if (!isSimulationMode) return;
 
     const intervalId = window.setInterval(() => {
       setSimulationRemainingSec((prev) => {
@@ -121,7 +182,7 @@ export function useExamPrepRuntime({
     }, 1000);
 
     return () => window.clearInterval(intervalId);
-  }, [isSimulationMode, simulationRemainingSec]);
+  }, [isSimulationMode]);
 
   useEffect(() => {
     if (!showCelebrate) return;
@@ -137,6 +198,7 @@ export function useExamPrepRuntime({
   }, []);
 
   const handleGeneratePrompt = useCallback(() => {
+    cancelActiveRequest();
     const generated = generateRandomIeltsPrompt({
       taskType,
       difficulty: promptDifficulty,
@@ -144,12 +206,19 @@ export function useExamPrepRuntime({
     });
 
     setWritingPrompt(generated.prompt);
+    setWritingAnswer('');
     setSimItem(null);
+    setIsSimulationMode(false);
+    setSimulationTotalSec(0);
+    setSimulationRemainingSec(0);
+    setFeedback(null);
+    setFeedbackLatencyMs(null);
+    setLoadingStage('idle');
     resetCoachPanels();
     setWorkspaceView('draft');
     setToolPanel(undefined);
     toast.success('已准备新的 IELTS 题目');
-  }, [promptDifficulty, promptTopic, resetCoachPanels, taskType]);
+  }, [cancelActiveRequest, promptDifficulty, promptTopic, resetCoachPanels, taskType]);
 
   const handleBuildOutline = useCallback(() => {
     if (!writingPrompt.trim()) {
@@ -198,6 +267,7 @@ export function useExamPrepRuntime({
       return;
     }
 
+    const requestId = beginAsyncRequest();
     setLoadingStage('tutoring');
     setWorkspaceView('draft');
     setToolPanel('coach');
@@ -210,25 +280,37 @@ export function useExamPrepRuntime({
         draft: writingAnswer,
         question: responseStyle === 'concise' ? `${question}\n请只回答 1-2 句，避免长模板。` : question,
       });
+      if (!settleAsyncRequest(requestId)) return;
       setTutorReply(reply);
-    } finally {
+      setLoadingStage('idle');
+    } catch (error) {
+      if (!settleAsyncRequest(requestId)) return;
+      console.error(error);
+      toast.error('问答请求失败，请稍后重试。');
       setLoadingStage('idle');
     }
-  }, [taskType, tutorQuestion, userId, writingAnswer, writingPrompt]);
+  }, [
+    beginAsyncRequest,
+    settleAsyncRequest,
+    taskType,
+    tutorQuestion,
+    userId,
+    writingAnswer,
+    writingPrompt,
+  ]);
 
   const handleGenerateSimItem = useCallback(async () => {
+    const requestId = beginAsyncRequest();
     const quotaResult = await consumeExamFeatureQuota(userId, 'simItemsPerDay');
+    if (!isActiveRequest(requestId)) return;
     if (!quotaResult.allowed) {
+      settleAsyncRequest(requestId);
       toast.error('今日仿真题次数已用完，请明天再试。Pro 开放后会提供更多次数。');
       return;
     }
 
     setLoadingStage('simulating');
-
-    const timeoutId = setTimeout(() => {
-      setLoadingStage('idle');
-      toast.error('准备超时，请检查网络后重试。');
-    }, 30000);
+    armRequestTimeout(requestId, '准备超时，请检查网络后重试。');
 
     try {
       const generated = await generateSimulationItem({
@@ -238,19 +320,23 @@ export function useExamPrepRuntime({
         topic: promptTopic,
       });
 
-      clearTimeout(timeoutId);
+      if (!isActiveRequest(requestId)) return;
+      clearActiveRequestTimeout();
 
       const nextTaskType: TaskType = generated.itemType === 'writing_task_1' ? 'task1' : 'task2';
       setTaskType(nextTaskType);
       setSimItem(generated);
       setWritingPrompt(generated.prompt);
       setWritingAnswer('');
+      setFeedback(null);
+      setFeedbackLatencyMs(null);
       resetCoachPanels();
       setWorkspaceView('draft');
       setToolPanel(undefined);
       startSimulationClock(nextTaskType);
 
       await refreshQuota();
+      if (!isActiveRequest(requestId)) return;
       await recordLearningEvent({
         userId,
         eventName: 'practice.writing_submitted',
@@ -260,21 +346,27 @@ export function useExamPrepRuntime({
           trackId: selectedTrackId,
         },
       });
+      if (!settleAsyncRequest(requestId)) return;
 
       toast.success('仿真题已就绪，计时已启动。');
       setLoadingStage('idle');
     } catch (error) {
-      clearTimeout(timeoutId);
+      if (!settleAsyncRequest(requestId)) return;
       console.error(error);
       toast.error('仿真题准备失败，请稍后重试。');
       setLoadingStage('idle');
     }
   }, [
+    armRequestTimeout,
+    beginAsyncRequest,
+    clearActiveRequestTimeout,
+    isActiveRequest,
     promptTopic,
     refreshQuota,
     resetCoachPanels,
     selectedTrackBandTarget,
     selectedTrackId,
+    settleAsyncRequest,
     startSimulationClock,
     userId,
   ]);
@@ -290,19 +382,18 @@ export function useExamPrepRuntime({
       return;
     }
 
+    const requestId = beginAsyncRequest();
     const quotaResult = await consumeExamFeatureQuota(userId, 'aiAdvancedFeedbackPerDay');
+    if (!isActiveRequest(requestId)) return;
     if (!quotaResult.allowed) {
+      settleAsyncRequest(requestId);
       toast.error('今日高级反馈次数已用完，请明天再试。Pro 开放后会提供更多次数。');
       return;
     }
 
     setLoadingStage('grading');
     const priorBand = feedbackHistory[0]?.scores.overallBand || 0;
-
-    const gradeTimeoutId = setTimeout(() => {
-      setLoadingStage('idle');
-      toast.error('评分超时，请检查网络后重试。');
-    }, 30000);
+    armRequestTimeout(requestId, '评分超时，请检查网络后重试。');
 
     try {
       const attempt = createAttempt({
@@ -323,7 +414,8 @@ export function useExamPrepRuntime({
         taskType,
       });
 
-      clearTimeout(gradeTimeoutId);
+      if (!isActiveRequest(requestId)) return;
+      clearActiveRequestTimeout();
 
       const latencyMs = Math.max(0, Math.round(performance.now() - startedAt));
       setFeedbackLatencyMs(latencyMs);
@@ -347,6 +439,7 @@ export function useExamPrepRuntime({
       setInsightView('history');
       setToolPanel(undefined);
       await refreshQuota();
+      if (!isActiveRequest(requestId)) return;
 
       await recordLearningEvent({
         userId,
@@ -359,6 +452,7 @@ export function useExamPrepRuntime({
           trackId: selectedTrackId,
         },
       });
+      if (!isActiveRequest(requestId)) return;
 
       await recordLearningEvent({
         userId,
@@ -368,6 +462,7 @@ export function useExamPrepRuntime({
           latencyMs,
         },
       });
+      if (!isActiveRequest(requestId)) return;
 
       if (enrichedResult.scores.overallBand - priorBand >= 0.5) {
         setShowCelebrate(true);
@@ -377,16 +472,21 @@ export function useExamPrepRuntime({
         setIsSimulationMode(false);
       }
 
+      if (!settleAsyncRequest(requestId)) return;
       toast.success(`评分完成：Overall Band ${enrichedResult.scores.overallBand.toFixed(1)}`);
       setLoadingStage('idle');
     } catch (error) {
-      clearTimeout(gradeTimeoutId);
+      if (!settleAsyncRequest(requestId)) return;
       console.error(error);
       toast.error('评分失败，请稍后重试。');
       setLoadingStage('idle');
     }
   }, [
+    armRequestTimeout,
+    beginAsyncRequest,
+    clearActiveRequestTimeout,
     feedbackHistory,
+    isActiveRequest,
     isSimulationMode,
     refreshFeedbackState,
     refreshQuota,
@@ -394,6 +494,7 @@ export function useExamPrepRuntime({
     selectedTrackId,
     selectedUnitId,
     simItem,
+    settleAsyncRequest,
     taskType,
     userId,
     writingAnswer,
@@ -407,18 +508,17 @@ export function useExamPrepRuntime({
       return;
     }
 
+    const requestId = beginAsyncRequest();
     const quotaResult = await consumeExamFeatureQuota(userId, 'microLessonsPerDay');
+    if (!isActiveRequest(requestId)) return;
     if (!quotaResult.allowed) {
+      settleAsyncRequest(requestId);
       toast.error('今日专项讲解次数已用完。');
       return;
     }
 
     setLoadingStage('micro');
-
-    const microTimeoutId = setTimeout(() => {
-      setLoadingStage('idle');
-      toast.error('微课整理超时，请检查网络后重试。');
-    }, 30000);
+    armRequestTimeout(requestId, '微课整理超时，请检查网络后重试。');
 
     try {
       const lesson = await generateMicroLessonFromErrors({
@@ -427,35 +527,50 @@ export function useExamPrepRuntime({
         targetLevel: 'B1',
       });
 
-      clearTimeout(microTimeoutId);
+      if (!isActiveRequest(requestId)) return;
+      clearActiveRequestTimeout();
 
       setMicroUnit(lesson.unit);
       setDataVersion((prev) => prev + 1);
-      onCatalogChange?.();
+      await refreshQuota();
+      if (!settleAsyncRequest(requestId)) return;
 
+      setLoadingStage('idle');
+      onCatalogChange?.();
       if (lesson.unit.trackId) {
         onSwitchTrack(lesson.unit.trackId);
       }
-
       onSwitchUnit(lesson.unit.id);
       setInsightView('weakness');
-      await refreshQuota();
 
       toast.success('已整理错因专项讲解，并切换到对应单元。');
-      setLoadingStage('idle');
     } catch (error) {
-      clearTimeout(microTimeoutId);
+      if (!settleAsyncRequest(requestId)) return;
       console.error(error);
       toast.error('专项讲解整理失败，请稍后重试。');
       setLoadingStage('idle');
     }
-  }, [feedback, onCatalogChange, onSwitchTrack, onSwitchUnit, refreshQuota, userId]);
+  }, [
+    armRequestTimeout,
+    beginAsyncRequest,
+    clearActiveRequestTimeout,
+    feedback,
+    isActiveRequest,
+    onCatalogChange,
+    onSwitchTrack,
+    onSwitchUnit,
+    refreshQuota,
+    settleAsyncRequest,
+    userId,
+  ]);
 
   const handleJumpToVocabulary = useCallback((tag: FeedbackIssue['tag']) => {
     navigate(`/dashboard/vocabulary?q=${encodeURIComponent(ISSUE_VOCAB_QUERY[tag])}`);
   }, [navigate]);
 
   const handleRetryFeedback = useCallback((item: AiFeedback) => {
+    cancelActiveRequest();
+    setLoadingStage('idle');
     if (item.prompt) {
       setWritingPrompt(item.prompt);
     }
@@ -470,7 +585,7 @@ export function useExamPrepRuntime({
     setInsightView('history');
     setToolPanel(undefined);
     toast.success('已将历史反馈内容载入到编辑器。');
-  }, []);
+  }, [cancelActiveRequest]);
 
   const hydrateRuntimeDraft = useCallback((snapshot: ExamDraftSnapshot) => {
     if (snapshot.taskType) setTaskType(snapshot.taskType);

@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const authState = vi.hoisted(() => ({
   authenticated: false,
@@ -35,6 +35,12 @@ const i18nState = vi.hoisted(() => ({
   language: 'en',
 }));
 
+const supabaseMocks = vi.hoisted(() => ({
+  signInWithOtp: vi.fn(),
+  getSession: vi.fn(),
+  from: vi.fn(),
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? '',
@@ -57,9 +63,10 @@ vi.mock('@/lib/supabase-auth', () => ({
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      getSession: vi.fn(() => new Promise(() => undefined)),
+      signInWithOtp: supabaseMocks.signInWithOtp,
+      getSession: supabaseMocks.getSession,
     },
-    from: vi.fn(),
+    from: supabaseMocks.from,
   },
 }));
 
@@ -92,6 +99,13 @@ describe('auth pages i18n surfaces', () => {
     authState.setLoading(false);
     authState.startDemoSession.mockResolvedValue({ success: true });
     authState.updateUserProfile.mockResolvedValue(true);
+    supabaseMocks.signInWithOtp.mockResolvedValue({ data: {}, error: null });
+    supabaseMocks.getSession.mockImplementation(() => new Promise(() => undefined));
+    supabaseMocks.from.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('renders the login form in English without Chinese form copy', () => {
@@ -108,7 +122,7 @@ describe('auth pages i18n surfaces', () => {
   it('starts a local demo session without remote login or registration', async () => {
     renderPage(<LoginPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Try local demo' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open local demo' }));
 
     await waitFor(() => {
       expect(authState.startDemoSession).toHaveBeenCalledTimes(1);
@@ -174,6 +188,47 @@ describe('auth pages i18n surfaces', () => {
     expect(screen.queryByText('邮箱链接登录')).not.toBeInTheDocument();
   });
 
+  it('shows the sent state only after the real OTP API succeeds', async () => {
+    render(
+      <MemoryRouter initialEntries={['/magic-link?redirect=%2Fdashboard%2Fpractice']}>
+        <MagicLinkPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'learner@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send login link' }));
+
+    await waitFor(() => {
+      expect(supabaseMocks.signInWithOtp).toHaveBeenCalledWith({
+        email: 'learner@example.com',
+        options: {
+          emailRedirectTo:
+            'http://localhost:3000/auth/callback?redirect=%2Fdashboard%2Fpractice',
+          shouldCreateUser: false,
+        },
+      });
+    });
+    expect(await screen.findByRole('heading', { name: 'Check your email' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('learner@example.com');
+  });
+
+  it('keeps the magic-link form visible when the OTP API fails', async () => {
+    supabaseMocks.signInWithOtp.mockResolvedValue({
+      data: {},
+      error: new Error('provider unavailable'),
+    });
+    renderPage(<MagicLinkPage />);
+
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'learner@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send login link' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'We could not send a sign-in link.',
+    );
+    expect(screen.getByRole('heading', { name: 'Sign in with email link' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Check your email' })).not.toBeInTheDocument();
+  });
+
   it('renders onboarding step one in English without bilingual helper text', () => {
     authState.setAuthenticated(true);
 
@@ -214,9 +269,9 @@ describe('auth pages i18n surfaces', () => {
     authState.setAuthenticated(true);
 
     renderPage(<OnboardingPage />);
-    fireEvent.click(screen.getByRole('button', { name: /Advanced/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^C1 Advanced/i }));
     fireEvent.click(screen.getByRole('button', { name: /Next/i }));
-    fireEvent.click(screen.getByRole('button', { name: /IELTS target/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /IELTS target/i }));
     fireEvent.click(screen.getByRole('button', { name: /Next/i }));
     fireEvent.click(screen.getByRole('button', { name: /Next/i }));
     fireEvent.click(screen.getByRole('button', { name: /Next/i }));
@@ -250,7 +305,70 @@ describe('auth pages i18n surfaces', () => {
     renderPage(<AuthCallbackPage />);
 
     expect(screen.getByRole('heading', { name: 'Completing sign in' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Almost there. Verifying your session.');
     expect(screen.getByText('Almost there. Verifying your session.')).toBeInTheDocument();
     expect(screen.queryByText('正在验证你的登录信息……')).not.toBeInTheDocument();
+  });
+
+  it('renders a recoverable callback success state and preserves the redirect target', async () => {
+    supabaseMocks.getSession.mockResolvedValue({
+      data: {
+        session: {
+          user: {
+            id: 'user-1',
+            email: 'learner@example.com',
+            user_metadata: {},
+          },
+        },
+      },
+      error: null,
+    });
+    supabaseMocks.from.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: { id: 'user-1' }, error: null }),
+        }),
+      }),
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/auth/callback?redirect=%2Fdashboard%2Freading']}>
+        <AuthCallbackPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Sign-in complete' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Your sign-in has been verified.');
+    expect(screen.getByRole('link', { name: 'Continue' })).toHaveAttribute(
+      'href',
+      '/dashboard/reading',
+    );
+  });
+
+  it('shows an actionable callback error when no session can be verified', async () => {
+    supabaseMocks.getSession.mockResolvedValue({
+      data: { session: null },
+      error: null,
+    });
+
+    renderPage(<AuthCallbackPage />);
+
+    expect(await screen.findByRole('heading', { name: 'Unable to complete sign in' })).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('invalid, expired, or has already been used');
+    expect(screen.getByRole('button', { name: 'Retry verification' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to sign in' })).toHaveAttribute('href', '/login');
+  });
+
+  it('settles a hanging callback request into a timeout error', async () => {
+    vi.useFakeTimers();
+    supabaseMocks.getSession.mockImplementation(() => new Promise(() => undefined));
+
+    renderPage(<AuthCallbackPage />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(12_000);
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Verification timed out');
+    expect(screen.getByRole('button', { name: 'Retry verification' })).toBeInTheDocument();
   });
 });

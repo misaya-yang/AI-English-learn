@@ -131,7 +131,7 @@ export function TodayWordNavigation({
                       ? 'w-2.5 bg-green-600'
                       : isHard
                         ? 'w-2.5 bg-amber-500'
-                        : 'w-2.5 bg-muted-foreground/22',
+                        : 'w-2.5 bg-muted-foreground/[0.22]',
                 )}
               />
             </button>

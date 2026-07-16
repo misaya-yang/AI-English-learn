@@ -17,6 +17,7 @@ import {
   Lightbulb,
   RotateCcw,
   Play,
+  ArrowLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -25,6 +26,11 @@ import { recordLearningEvent } from '@/services/learningEvents';
 import { incrementReviewCount } from '@/services/gamification';
 import { toast } from 'sonner';
 import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
+import {
+  GRAMMAR_ANSWER_SEPARATOR,
+  isPracticeAnswerCorrect,
+  splitUserAnswers,
+} from '@/features/grammar/answerGrading';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -494,12 +500,21 @@ interface PracticeCardProps {
 function PracticeCard({ item, index, userAnswer, onChange, submitted }: PracticeCardProps) {
   const { i18n } = useTranslation();
   const isZh = i18n.language.startsWith('zh');
-  const isCorrect = submitted
-    ? userAnswer.trim().toLowerCase() === item.answer.toLowerCase()
-    : false;
+  const isCorrect = submitted ? isPracticeAnswerCorrect(item, userAnswer) : false;
 
   // Split sentence around ___
   const parts = item.sentence.split('___');
+  const blankCount = Math.max(1, parts.length - 1);
+  const userAnswers = splitUserAnswers(item, userAnswer);
+  const updateAnswer = (blankIndex: number, value: string) => {
+    if (blankCount === 1) {
+      onChange(value);
+      return;
+    }
+    const next = [...userAnswers];
+    next[blankIndex] = value;
+    onChange(next.join(GRAMMAR_ANSWER_SEPARATOR));
+  };
 
   return (
     <div className={cn(
@@ -516,19 +531,38 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
           {index + 1}
         </span>
         <div className="flex-1">
-          {/* Sentence with blank */}
-          <p className="text-sm leading-7 text-foreground">
-            {parts[0]}
-            <span className={cn(
-              'inline-block min-w-[80px] rounded-lg border-b-2 px-2 mx-1 text-center',
-              !submitted ? 'border-primary/50 bg-primary/10 text-primary' :
-              isCorrect ? 'border-success/30 bg-success/10 text-success' :
-              'border-destructive/30 bg-destructive/5 text-destructive',
-            )}>
-              {userAnswer || (submitted ? '-' : '___')}
-            </span>
-            {parts[1]}
-          </p>
+          <div className="flex flex-wrap items-baseline gap-y-2 text-sm leading-8 text-foreground">
+            {parts.map((part, blankIndex) => (
+              <span key={`${item.id}-${blankIndex}`} className="inline">
+                {part}
+                {blankIndex < blankCount ? (
+                  submitted ? (
+                    <span className={cn(
+                      'mx-1 inline-block min-w-[80px] rounded-md border-b-2 px-2 text-center',
+                      isCorrect
+                        ? 'border-success/30 bg-success/10 text-success'
+                        : 'border-destructive/30 bg-destructive/5 text-destructive',
+                    )}>
+                      {userAnswers[blankIndex] || '-'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      value={userAnswers[blankIndex]}
+                      onChange={(event) => updateAnswer(blankIndex, event.target.value)}
+                      aria-label={
+                        isZh
+                          ? `第 ${index + 1} 题第 ${blankIndex + 1} 个空`
+                          : `Question ${index + 1}, blank ${blankIndex + 1}`
+                      }
+                      placeholder={isZh ? `空 ${blankIndex + 1}` : `Blank ${blankIndex + 1}`}
+                      className="mx-1 inline-block w-32 rounded-md border border-border bg-background px-2 py-1 text-center text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                    />
+                  )
+                ) : null}
+              </span>
+            ))}
+          </div>
         </div>
         {submitted && (
           isCorrect
@@ -542,19 +576,6 @@ function PracticeCard({ item, index, userAnswer, onChange, submitted }: Practice
         <div className="ml-8 flex items-center gap-1.5">
           <Lightbulb className="h-3 w-3 text-warning" />
           <p className="text-xs text-warning">{item.hint}</p>
-        </div>
-      )}
-
-      {/* Input */}
-      {!submitted && (
-        <div className="ml-8">
-          <input
-            type="text"
-            value={userAnswer}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={isZh ? '填入答案...' : 'Fill in the blank…'}
-            className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
-          />
         </div>
       )}
 
@@ -614,8 +635,7 @@ export default function GrammarPage() {
     if (!activeRule) return;
     let correct = 0;
     for (const item of activeRule.practice) {
-      const ua = (answers[item.id] ?? '').trim().toLowerCase();
-      if (ua === item.answer.toLowerCase()) correct++;
+      if (isPracticeAnswerCorrect(item, answers[item.id] ?? '')) correct++;
     }
     setScore(correct);
     setSubmitted(true);
@@ -698,12 +718,17 @@ export default function GrammarPage() {
                 {isZh ? '当前题型' : 'Current exercise'}
               </p>
               <div className="learning-open-muted mt-4 py-3">
-                <p className="text-sm leading-7 text-foreground">
-                  {featuredSentenceParts[0]}
-                  <span className="mx-1 inline-block min-w-[86px] rounded-lg border-b-2 border-primary/50 bg-primary/10 px-2 text-center text-primary">
-                    {isZh ? '填空' : 'blank'}
-                  </span>
-                  {featuredSentenceParts[1]}
+                <p className="flex flex-wrap items-baseline text-sm leading-8 text-foreground">
+                  {featuredSentenceParts.map((part, index) => (
+                    <span key={`${featuredPractice.id}-${index}`}>
+                      {part}
+                      {index < featuredSentenceParts.length - 1 ? (
+                        <span className="mx-1 inline-block min-w-[86px] rounded-lg border-b-2 border-primary/50 bg-primary/10 px-2 text-center text-primary">
+                          {isZh ? `填空 ${index + 1}` : `blank ${index + 1}`}
+                        </span>
+                      ) : null}
+                    </span>
+                  ))}
                 </p>
                 <p className="mt-3 text-xs text-muted-foreground">
                   {isZh ? featuredPractice.explanationZh : featuredPractice.explanation}
@@ -768,7 +793,9 @@ export default function GrammarPage() {
 
   if ((phase === 'practice' || phase === 'review') && activeRule) {
     const totalQ = activeRule.practice.length;
-    const allAnswered = activeRule.practice.every((item) => (answers[item.id] ?? '').trim().length > 0);
+    const allAnswered = activeRule.practice.every((item) =>
+      splitUserAnswers(item, answers[item.id] ?? '').every((answer) => answer.trim().length > 0),
+    );
     const catMeta = CATEGORY_META[activeRule.category];
 
     return (
@@ -778,7 +805,8 @@ export default function GrammarPage() {
           onClick={handleBack}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          {isZh ? '← 返回规则列表' : '← Back to rules'}
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          {isZh ? '返回规则列表' : 'Back to rules'}
         </button>
 
         {/* Header */}

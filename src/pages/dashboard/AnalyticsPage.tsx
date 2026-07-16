@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, type ComponentType } from 'react';
+import { useState, useEffect, useMemo, useRef, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUserData } from '@/contexts/UserDataContext';
@@ -48,7 +48,6 @@ import {
   BookOpen,
   Target,
   Calendar,
-  ChevronUp,
   CircleGauge,
   AlertTriangle,
   Clock3,
@@ -421,7 +420,7 @@ function AnalyticsEmptyCard({
   className,
 }: AnalyticsEmptyCardProps) {
   return (
-    <Empty className={cn('min-h-[220px] border-0 bg-transparent', className)}>
+    <Empty className={cn('min-h-[156px] border-0 bg-transparent py-5', className)}>
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Icon className="h-5 w-5" />
@@ -484,6 +483,10 @@ export default function AnalyticsPage() {
   const [weeklyData, setWeeklyData] = useState<WeeklyActivityPoint[]>([]);
   const [heatmapData, setHeatmapData] = useState<Array<{ week: number; day: number; value: number }>>([]);
   const [eventHistory, setEventHistory] = useState<LearningEventRecord[]>([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const analyticsRequestIdRef = useRef(0);
 
   // Cutoff date derived from the selected time range
   const cutoffDate = useMemo(() => getAnalyticsCutoffDate(timeRange), [timeRange]);
@@ -510,73 +513,92 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const userId = user?.id || 'guest';
+    const requestId = analyticsRequestIdRef.current + 1;
+    analyticsRequestIdRef.current = requestId;
 
     const loadAnalytics = async () => {
-      // Map timeRange to how many days of event history to fetch
-      const eventDays = getAnalyticsEventWindowDays(timeRange);
+      try {
+        await Promise.resolve();
+        if (analyticsRequestIdRef.current !== requestId) return;
+        setAnalyticsLoading(true);
+        setAnalyticsError(null);
 
-      const [weekly, heatmap, events] = await Promise.all([
-        // getWeeklyActivity always returns last-7-day buckets; only include for week view
-        timeRange === 'week' ? getWeeklyActivity(userId) : Promise.resolve([] as WeeklyActivityPoint[]),
-        getHeatmapData(userId),
-        getLearningEvents(userId, eventDays),
-      ]);
+        // Map timeRange to how many days of event history to fetch
+        const eventDays = getAnalyticsEventWindowDays(timeRange);
 
-      // For month/year/all views build activity buckets from study sessions
-      let displayData = weekly;
-      if (timeRange !== 'week') {
-        const sessions = filterStudySessionsByRange(getStudySessions(userId), timeRange);
+        const [weekly, heatmap, events] = await Promise.all([
+          // getWeeklyActivity always returns last-7-day buckets; only include for week view
+          timeRange === 'week' ? getWeeklyActivity(userId) : Promise.resolve([] as WeeklyActivityPoint[]),
+          getHeatmapData(userId),
+          getLearningEvents(userId, eventDays),
+        ]);
 
-        if (timeRange === 'month') {
-          // Group by individual day for the last 30 days
-          const dayMap = new Map<string, WeeklyActivityPoint>();
-          for (let i = 29; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            d.setHours(0, 0, 0, 0);
-            const iso = d.toISOString().slice(0, 10);
-            const label = d.toLocaleDateString(isZh ? 'zh-CN' : 'en-US', { month: 'numeric', day: 'numeric' });
-            dayMap.set(iso, { day: label, date: iso, words: 0, xp: 0, minutes: 0, events: 0 });
-          }
-          sessions.forEach((s) => {
-            if (dayMap.has(s.date)) {
-              const pt = dayMap.get(s.date)!;
+        // For month/year/all views build activity buckets from study sessions
+        let displayData = weekly;
+        if (timeRange !== 'week') {
+          const sessions = filterStudySessionsByRange(getStudySessions(userId), timeRange);
+
+          if (timeRange === 'month') {
+            // Group by individual day for the last 30 days using the local calendar date.
+            const dayMap = new Map<string, WeeklyActivityPoint>();
+            for (let i = 29; i >= 0; i--) {
+              const d = new Date();
+              d.setDate(d.getDate() - i);
+              d.setHours(0, 0, 0, 0);
+              const localDate = [
+                d.getFullYear(),
+                String(d.getMonth() + 1).padStart(2, '0'),
+                String(d.getDate()).padStart(2, '0'),
+              ].join('-');
+              const label = d.toLocaleDateString(isZh ? 'zh-CN' : 'en-US', { month: 'numeric', day: 'numeric' });
+              dayMap.set(localDate, { day: label, date: localDate, words: 0, xp: 0, minutes: 0, events: 0 });
+            }
+            sessions.forEach((s) => {
+              if (dayMap.has(s.date)) {
+                const pt = dayMap.get(s.date)!;
+                pt.words += s.wordsLearned;
+                pt.xp += s.xpEarned;
+                pt.minutes += s.duration;
+                pt.events += s.wordsStudied;
+              }
+            });
+            displayData = Array.from(dayMap.values());
+          } else {
+            // year or all: group by calendar month (YYYY-MM label)
+            const monthMap = new Map<string, WeeklyActivityPoint>();
+            sessions.forEach((s) => {
+              const monthKey = s.date.slice(0, 7); // YYYY-MM
+              if (!monthMap.has(monthKey)) {
+                const [y, m] = monthKey.split('-');
+                const label = isZh
+                  ? `${y}年${parseInt(m)}月`
+                  : new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                monthMap.set(monthKey, { day: label, date: monthKey, words: 0, xp: 0, minutes: 0, events: 0 });
+              }
+              const pt = monthMap.get(monthKey)!;
               pt.words += s.wordsLearned;
               pt.xp += s.xpEarned;
               pt.minutes += s.duration;
               pt.events += s.wordsStudied;
-            }
-          });
-          displayData = Array.from(dayMap.values());
-        } else {
-          // year or all: group by calendar month (YYYY-MM label)
-          const monthMap = new Map<string, WeeklyActivityPoint>();
-          sessions.forEach((s) => {
-            const monthKey = s.date.slice(0, 7); // YYYY-MM
-            if (!monthMap.has(monthKey)) {
-              const [y, m] = monthKey.split('-');
-              const label = isZh
-                ? `${y}年${parseInt(m)}月`
-                : new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-              monthMap.set(monthKey, { day: label, date: monthKey, words: 0, xp: 0, minutes: 0, events: 0 });
-            }
-            const pt = monthMap.get(monthKey)!;
-            pt.words += s.wordsLearned;
-            pt.xp += s.xpEarned;
-            pt.minutes += s.duration;
-            pt.events += s.wordsStudied;
-          });
-          displayData = Array.from(monthMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+            });
+            displayData = Array.from(monthMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+          }
         }
-      }
 
-      setWeeklyData(displayData);
-      setHeatmapData(heatmap);
-      setEventHistory(events);
+        if (analyticsRequestIdRef.current !== requestId) return;
+        setWeeklyData(displayData);
+        setHeatmapData(heatmap);
+        setEventHistory(events);
+        setAnalyticsLoading(false);
+      } catch (error) {
+        if (analyticsRequestIdRef.current !== requestId) return;
+        setAnalyticsLoading(false);
+        setAnalyticsError(error instanceof Error ? error.message : (isZh ? '数据加载失败' : 'Failed to load analytics'));
+      }
     };
 
     void loadAnalytics();
-  }, [isZh, stats.totalWords, user?.id, timeRange]);
+  }, [isZh, reloadKey, stats.totalWords, user?.id, timeRange]);
 
   // Calculate level based on XP using the canonical helpers from gamification.ts
   const level = computeLevel(xp.total);
@@ -813,7 +835,27 @@ export default function AnalyticsPage() {
         </Select>
       </div>
 
-      {!hasAnyLearningEvidence && (
+      {analyticsLoading ? (
+        <div role="status" className="mb-5 border-y border-border/[0.24] py-3 text-sm text-muted-foreground">
+          {isZh ? '正在更新学习数据…' : 'Updating learning data…'}
+        </div>
+      ) : null}
+
+      {analyticsError ? (
+        <div role="alert" className="mb-5 flex flex-col gap-3 border-y border-destructive/25 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              {isZh ? '这次没有加载到数据' : 'Learning data did not load'}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{analyticsError}</p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setReloadKey((value) => value + 1)}>
+            {isZh ? '重试' : 'Retry'}
+          </Button>
+        </div>
+      ) : null}
+
+      {!analyticsLoading && !analyticsError && !hasAnyLearningEvidence && (
         <div className="analytics-solid-panel mb-6 rounded-xl bg-[hsl(var(--paper-muted)/0.22)] px-4 py-3">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-3">
@@ -852,10 +894,7 @@ export default function AnalyticsPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <ChevronUp className="h-3 w-3 text-[hsl(var(--success))]" />
-                    <span className="text-xs text-[hsl(var(--success))]">{stat.change}</span>
-                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{stat.change}</p>
                 </div>
                 <div className={`w-10 h-10 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
                   <stat.icon className={`h-5 w-5 ${stat.color}`} />

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, AlertTriangle, BookOpen, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, BookOpen, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -82,7 +82,6 @@ export function SessionRecapCard({ input, className }: SessionRecapCardProps) {
         >
           <Link to={recap.nextAction.href}>
             {isZh ? recap.nextAction.ctaZh : recap.nextAction.ctaEn}
-            <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </div>

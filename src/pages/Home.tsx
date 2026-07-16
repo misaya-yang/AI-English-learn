@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ArrowRight,
   BookOpen,
-  CheckCircle2,
   Menu,
   MessageSquare,
   Target,
@@ -15,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { buildAuthRedirect } from '@/lib/authRedirect';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { BrandMark } from '@/features/marketing/BrandMark';
 
 const sampleWords = [
   {
@@ -125,23 +125,25 @@ export default function Home() {
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMobileMenuOpen(false);
     };
     window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [mobileMenuOpen]);
 
   return (
     <div className="home-study-bg min-h-[100dvh] text-foreground">
       <header className="z-40 px-5 pt-5 sm:px-6 sm:pt-6">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between sm:h-20">
-          <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-none">
-              <BookOpen className="h-6 w-6" />
-            </span>
-            <span className="text-2xl font-bold tracking-normal">VocabDaily</span>
-          </Link>
+          <BrandMark
+            className="[&>span:first-child]:h-12 [&>span:first-child]:w-12 [&>span:first-child_svg]:h-5 [&>span:first-child_svg]:w-5 [&>span:last-child>span:first-child]:text-xl"
+          />
 
           <nav className="hidden items-center gap-7 md:flex">
             <a href="#workflow" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
@@ -170,14 +172,24 @@ export default function Home() {
               className="glass-icon-button flex h-11 w-11 items-center justify-center rounded-lg text-foreground md:hidden"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label={copy.nav.menu}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="home-mobile-menu"
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
         </div>
 
+        <AnimatePresence initial={false}>
         {mobileMenuOpen && (
-          <div className="liquid-glass-panel mx-auto mt-2 max-w-6xl p-2 md:hidden">
+          <motion.div
+            id="home-mobile-menu"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.18 }}
+            className="liquid-glass-panel mx-auto mt-2 max-w-6xl p-2 md:hidden"
+          >
             <div className="flex flex-col gap-1">
               <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-3 py-2 text-sm hover:bg-muted">
                 {copy.nav.workflow}
@@ -200,32 +212,50 @@ export default function Home() {
                 <LanguageSwitcher />
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </header>
 
       <main id="main-content">
         <section>
-          <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.74fr)] lg:items-start lg:py-16">
-            <div className="max-w-2xl">
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.74fr)] lg:items-start lg:gap-12 lg:py-14">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.46, ease: [0.2, 0, 0, 1] }}
+              className="max-w-2xl"
+            >
               <div className="inline-flex rounded-md bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary">
                 {isZh ? '每日 IELTS 练习' : 'Daily IELTS practice'}
               </div>
-              <h1
+              <motion.h1
                 aria-label={copy.hero.title}
-                className="mt-8 max-w-xl text-[2.7rem] font-bold leading-[1.02] text-foreground sm:text-[3.65rem] lg:text-[4.15rem]"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.06, ease: [0.2, 0, 0, 1] }}
+                className="mt-6 max-w-xl text-[2.7rem] font-bold leading-[1.02] text-foreground sm:mt-8 sm:text-[3.65rem] lg:text-[4.15rem]"
               >
                 {copy.hero.title}
-              </h1>
-              <p className="mt-7 max-w-xl text-xl leading-9 text-muted-foreground">
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.42, delay: 0.12, ease: [0.2, 0, 0, 1] }}
+                className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl sm:leading-9"
+              >
                 {copy.hero.subtitle}
-              </p>
+              </motion.p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.18, ease: [0.2, 0, 0, 1] }}
+                className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center"
+              >
                 <Button asChild size="lg" className="h-11 rounded-lg px-7 text-sm font-semibold">
                   <Link to={primaryCtaPath}>
                     {copy.hero.primaryCta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="ghost" className="h-11 rounded-lg px-5 text-sm font-semibold">
@@ -233,20 +263,16 @@ export default function Home() {
                     {copy.hero.secondaryCta}
                   </Link>
                 </Button>
-              </div>
+              </motion.div>
+              <p className="mt-5 text-sm font-medium text-muted-foreground">{copy.today.summary}</p>
+            </motion.div>
 
-              <div className="mt-10 space-y-1 sm:max-w-xl">
-                {copy.today.items.map((item) => (
-                  <div key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-xl bg-[hsl(var(--paper-muted)/0.26)] px-3 py-3">
-                    <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />
-                    <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
-                    <span className="text-xs text-muted-foreground">{item.duration}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <aside className="rounded-xl bg-[hsl(var(--paper-muted)/0.30)] p-5 lg:mt-8">
+            <motion.aside
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.18, ease: [0.2, 0, 0, 1] }}
+              className="workbook-surface p-5 lg:mt-6"
+            >
               <p className="text-sm font-semibold text-muted-foreground">{copy.today.label}</p>
               <h2 className="mt-3 text-3xl font-bold leading-tight text-foreground">{copy.today.title}</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.today.subtitle}</p>
@@ -262,7 +288,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </aside>
+            </motion.aside>
           </div>
         </section>
 
@@ -270,7 +296,6 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-foreground">{copy.examplesLabel}</h2>
-              <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
             </div>
             <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2">
               {sampleWords.map((w) => (

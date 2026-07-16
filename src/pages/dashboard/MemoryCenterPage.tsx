@@ -1,10 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Pin, PinOff, RefreshCw, Trash2, Search, BookOpen, Shield, Clock3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +27,8 @@ import {
   pinMemoryItem,
 } from '@/services/memoryCenter';
 import type { MemoryItemView, MemoryKind } from '@/types/memory';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 const KINDS: Array<{ value: MemoryKind | 'all'; labelEn: string; labelZh: string }> = [
   { value: 'all', labelEn: 'All', labelZh: '全部' },
@@ -58,8 +70,12 @@ export default function MemoryCenterPage() {
   const [items, setItems] = useState<MemoryItemView[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [kind, setKind] = useState<MemoryKind | 'all'>('all');
   const [error, setError] = useState<string | null>(null);
+  const [loadedCriteriaKey, setLoadedCriteriaKey] = useState<string | null>(null);
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  const requestVersionRef = useRef(0);
 
   const toFriendlyErrorMessage = useCallback((err: unknown): string => {
     if (err instanceof AuthRequiredError) {
@@ -82,32 +98,68 @@ export default function MemoryCenterPage() {
       : 'Failed to load memory. Please try again later.';
   }, [language]);
 
+  const criteriaKey = `${kind}\u0000${debouncedQuery}`;
+
   const load = useCallback(async () => {
+    const requestVersion = requestVersionRef.current + 1;
+    requestVersionRef.current = requestVersion;
     setLoading(true);
     setError(null);
     try {
       const data = await listMemoryItems({
         kind,
-        query,
+        query: debouncedQuery,
         limit: 120,
       });
+      if (requestVersion !== requestVersionRef.current) return;
       setItems(data);
+      setLoadedCriteriaKey(criteriaKey);
     } catch (err) {
+      if (requestVersion !== requestVersionRef.current) return;
       if (err instanceof AuthRequiredError && isLocalDemo) {
         setItems([]);
+        setLoadedCriteriaKey(criteriaKey);
         return;
       }
+      setItems([]);
+      setLoadedCriteriaKey(criteriaKey);
       setError(toFriendlyErrorMessage(err));
     } finally {
-      setLoading(false);
+      if (requestVersion === requestVersionRef.current) {
+        setLoading(false);
+      }
     }
-  }, [isLocalDemo, kind, query, toFriendlyErrorMessage]);
+  }, [criteriaKey, debouncedQuery, isLocalDemo, kind, toFriendlyErrorMessage]);
 
   useEffect(() => {
     void load();
-  }, [load]);
+    return () => {
+      requestVersionRef.current += 1;
+    };
+  }, [load, refreshVersion]);
 
-  const pinnedCount = useMemo(() => items.filter((item) => item.isPinned).length, [items]);
+  useEffect(() => {
+    const normalizedQuery = query.trim();
+    if (normalizedQuery === debouncedQuery) return;
+
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(normalizedQuery);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [debouncedQuery, query]);
+
+  const requestRefresh = useCallback(() => {
+    setLoading(true);
+    setDebouncedQuery(query.trim());
+    setRefreshVersion((version) => version + 1);
+  }, [query]);
+
+  const isDebouncing = query.trim() !== debouncedQuery;
+  const resultsAreCurrent = !isDebouncing && loadedCriteriaKey === criteriaKey;
+  const showLoading = loading || !resultsAreCurrent;
+  const visibleItems = resultsAreCurrent && !loading ? items : [];
+  const pinnedCount = visibleItems.filter((item) => item.isPinned).length;
 
   const handlePinToggle = useCallback(
     async (item: MemoryItemView) => {
@@ -154,11 +206,11 @@ export default function MemoryCenterPage() {
           ? `已清理 ${result.deletedCount} 条过期记忆`
           : `Cleared ${result.deletedCount} expired memory item(s)`,
       );
-      await load();
+      requestRefresh();
     } catch (err) {
       toast.error(toFriendlyErrorMessage(err));
     }
-  }, [language, load, toFriendlyErrorMessage]);
+  }, [language, requestRefresh, toFriendlyErrorMessage]);
 
   return (
     <div className="space-y-4">
@@ -172,7 +224,7 @@ export default function MemoryCenterPage() {
             <Pin className="h-3.5 w-3.5" /> {isZh ? `置顶 ${pinnedCount}` : `Pinned ${pinnedCount}`}
           </Badge>
           <Badge variant="outline" className="gap-1">
-            <Clock3 className="h-3.5 w-3.5" /> {isZh ? `总计 ${items.length}` : `Total ${items.length}`}
+            <Clock3 className="h-3.5 w-3.5" /> {isZh ? `总计 ${visibleItems.length}` : `Total ${visibleItems.length}`}
           </Badge>
         </div>
       </div>
@@ -185,6 +237,7 @@ export default function MemoryCenterPage() {
               className="rounded-xl bg-card pl-9"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              aria-label={isZh ? '搜索记忆' : 'Search memory'}
               placeholder={isZh ? '搜索记忆内容或标签...' : 'Search memory content or tags...'}
             />
           </div>
@@ -195,6 +248,7 @@ export default function MemoryCenterPage() {
                 variant={kind === option.value ? 'glassPrimary' : 'glass'}
                 size="sm"
                 className="rounded-lg"
+                aria-pressed={kind === option.value}
                 onClick={() => setKind(option.value)}
               >
                 {isZh ? option.labelZh : option.labelEn}
@@ -204,14 +258,34 @@ export default function MemoryCenterPage() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="glass" className="rounded-lg" onClick={() => void load()} disabled={loading}>
+          <Button size="sm" variant="glass" className="rounded-lg" onClick={requestRefresh} disabled={showLoading}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             {isZh ? '刷新' : 'Refresh'}
           </Button>
-          <Button size="sm" variant="glass" className="rounded-lg" onClick={handleClearExpired} disabled={loading}>
-            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-            {isZh ? '清理过期记忆' : 'Clear expired'}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="glass" className="rounded-lg" disabled={showLoading}>
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                {isZh ? '清理过期记忆' : 'Clear expired'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{isZh ? '清理所有过期记忆？' : 'Clear all expired memories?'}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {isZh
+                    ? '这会永久删除已经过期的记忆记录，仍在有效期内的内容不会受影响。'
+                    : 'This permanently deletes expired memory records. Active records will not be affected.'}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{isZh ? '取消' : 'Cancel'}</AlertDialogCancel>
+                <AlertDialogAction onClick={() => void handleClearExpired()}>
+                  {isZh ? '确认清理' : 'Confirm clear'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Badge variant="secondary" className="gap-1">
             <Shield className="h-3.5 w-3.5" />
             {t('dashboard.memory.privacyHint')}
@@ -225,52 +299,48 @@ export default function MemoryCenterPage() {
         </div>
       )}
 
-      <div className="min-h-[420px] rounded-xl border border-transparent bg-card">
-        <ScrollArea className="h-[520px]">
-          <div className="p-3 space-y-2">
-            {items.length === 0 ? (
-              <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-14 text-center">
+      <section className="rounded-xl border border-transparent bg-card" aria-busy={showLoading}>
+          <div className="space-y-2 p-3">
+            {showLoading ? (
+              <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-10 text-center" role="status" aria-live="polite">
+                <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+                <p className="mt-3 text-sm text-muted-foreground">{t('common.loading')}</p>
+              </div>
+            ) : visibleItems.length === 0 ? (
+              <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-8 text-center sm:py-10">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
                   <BookOpen className="h-6 w-6" />
                 </div>
                 <h2 className="mt-4 text-lg font-semibold text-foreground">
-                  {loading
-                    ? t('common.loading')
-                    : isZh
-                      ? '还没有保存的线索'
-                      : 'No saved learning records yet'}
+                  {isZh ? '还没有保存的线索' : 'No saved learning records yet'}
                 </h2>
-                {!loading && (
-                  <>
-                    <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-                      {isZh
-                        ? '完成练习、复习或答疑后，这里会保存目标、薄弱点、偏好和错误轨迹。'
-                        : 'After practice, review, or help sessions, this page stores goals, weaknesses, preferences, and error traces.'}
-                    </p>
-                    <div className="mt-5 grid w-full gap-2 sm:grid-cols-3">
-                      {[
-                        isZh ? '目标' : 'Goals',
-                        isZh ? '薄弱点' : 'Weaknesses',
-                        isZh ? '错误轨迹' : 'Error traces',
-                      ].map((label) => (
-                        <div key={label} className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
-                          {label}
-                        </div>
-                      ))}
+                <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                  {isZh
+                    ? '完成练习、复习或答疑后，这里会保存目标、薄弱点、偏好和错误轨迹。'
+                    : 'After practice, review, or help sessions, this page stores goals, weaknesses, preferences, and error traces.'}
+                </p>
+                <div className="mt-5 grid w-full gap-2 sm:grid-cols-3">
+                  {[
+                    isZh ? '目标' : 'Goals',
+                    isZh ? '薄弱点' : 'Weaknesses',
+                    isZh ? '错误轨迹' : 'Error traces',
+                  ].map((label) => (
+                    <div key={label} className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                      {label}
                     </div>
-                    <div className="mt-6 flex flex-wrap justify-center gap-2">
-                      <Button asChild variant="glassPrimary" className="rounded-lg">
-                        <Link to="/dashboard/chat">{isZh ? '打开答疑' : 'Open help'}</Link>
-                      </Button>
-                      <Button asChild variant="glass" className="rounded-lg">
-                        <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Start practice'}</Link>
-                      </Button>
-                    </div>
-                  </>
-                )}
+                  ))}
+                </div>
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  <Button asChild variant="glassPrimary" className="rounded-lg">
+                    <Link to="/dashboard/chat">{isZh ? '打开答疑' : 'Open help'}</Link>
+                  </Button>
+                  <Button asChild variant="glass" className="rounded-lg">
+                    <Link to="/dashboard/practice">{isZh ? '做一次练习' : 'Start practice'}</Link>
+                  </Button>
+                </div>
               </div>
             ) : (
-              items.map((item) => (
+              visibleItems.map((item) => (
                 <div key={item.id} className="space-y-2 rounded-xl border border-transparent bg-background p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
@@ -287,9 +357,32 @@ export default function MemoryCenterPage() {
 	                      <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={isZh ? '切换置顶' : 'Toggle pin'} onClick={() => void handlePinToggle(item)}>
 	                        {item.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
 	                      </Button>
-	                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label={isZh ? '删除记忆' : 'Delete memory'} onClick={() => void handleDelete(item)}>
-	                        <Trash2 className="h-4 w-4" />
-	                      </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+	                          <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label={isZh ? '删除记忆' : 'Delete memory'}>
+	                            <Trash2 className="h-4 w-4" />
+	                          </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{isZh ? '删除这条记忆？' : 'Delete this memory?'}</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {isZh
+                                  ? `删除后无法恢复：“${item.content.slice(0, 120)}”`
+                                  : `This cannot be undone: “${item.content.slice(0, 120)}”`}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{isZh ? '取消' : 'Cancel'}</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => void handleDelete(item)}
+                              >
+                                {isZh ? '确认删除' : 'Confirm delete'}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                   </div>
 
@@ -314,8 +407,7 @@ export default function MemoryCenterPage() {
               ))
             )}
           </div>
-        </ScrollArea>
-      </div>
+      </section>
     </div>
   );
 }

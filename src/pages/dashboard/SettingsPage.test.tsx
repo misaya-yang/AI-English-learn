@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Link, MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const i18nState = vi.hoisted(() => ({
@@ -128,9 +128,15 @@ describe('SettingsPage notifications', () => {
     vi.setSystemTime(new Date('2026-06-13T12:00:00+08:00'));
     vi.clearAllMocks();
     reminderState.permission = 'denied';
+    themeState.theme = 'system';
     userDataState.settings.lifecycleReminders = true;
     userDataState.settings.quietHoursStart = '23:00';
     userDataState.settings.quietHoursEnd = '07:00';
+    userDataState.settings.dailyNewWordLimit = 10;
+    userDataState.settings.maxReviewCount = 24;
+    userDataState.settings.examWeekBoost = false;
+    userDataState.settings.ttsEnabled = true;
+    userDataState.settings.autoPlayAudio = false;
     userDataState.dueWords = Array.from({ length: 9 }, (_, index) => ({ wordId: `w${index}` }));
     userDataState.dailyMission.status = 'in_progress';
     userDataState.dailyMission.tasks = [{ id: 't1', type: 'review', title: 'Review', titleZh: '复习', done: false }];
@@ -165,7 +171,14 @@ describe('SettingsPage notifications', () => {
     expect(screen.getByRole('link', { name: '打开对应练习' })).toHaveAttribute('href', '/dashboard/review');
 
     fireEvent.change(screen.getByLabelText('安静时间开始'), { target: { value: '21:00' } });
-    expect(userDataState.updateSettings).toHaveBeenCalledWith({ quietHoursStart: '21:00' });
+    expect(userDataState.updateSettings).not.toHaveBeenCalled();
+
+    const saveButton = screen.getByTestId('settings-save-notifications');
+    expect(saveButton).toBeEnabled();
+    fireEvent.click(saveButton);
+    expect(userDataState.updateSettings).toHaveBeenCalledWith(expect.objectContaining({
+      quietHoursStart: '21:00',
+    }));
   });
 
   it('does not preview a nudge after today is complete', () => {
@@ -198,6 +211,113 @@ describe('SettingsPage notifications', () => {
     expect(i18nState.changeLanguage).toHaveBeenCalledWith('en');
     expect(localStorage.getItem('language')).toBe('en');
     expect(localStorage.getItem('vocabdaily_language')).toBeNull();
+  });
+
+  it('treats theme selection as a draft until Save', async () => {
+    vi.useRealTimers();
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/settings?tab=general']}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+
+    const saveButton = screen.getByTestId('settings-save-general');
+    expect(saveButton).toBeDisabled();
+
+    fireEvent.pointerDown(screen.getAllByRole('combobox')[0], {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    });
+    fireEvent.click(await screen.findByRole('option', { name: '深色' }));
+
+    expect(themeState.setTheme).not.toHaveBeenCalled();
+    expect(userDataState.updateSettings).not.toHaveBeenCalled();
+    expect(saveButton).toBeEnabled();
+
+    fireEvent.click(saveButton);
+    expect(themeState.setTheme).toHaveBeenCalledWith('dark');
+    expect(userDataState.updateSettings).toHaveBeenCalledWith(expect.objectContaining({
+      theme: 'dark',
+    }));
+  });
+
+  it('enables save only for a dirty, valid draft and clamps numeric limits on blur', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard/settings?tab=learning']}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+
+    const saveButton = screen.getByTestId('settings-save-learning');
+    const dailyLimit = screen.getByLabelText('每日新词上限');
+    const reviewLimit = screen.getByLabelText('每日复习上限');
+    expect(saveButton).toBeDisabled();
+
+    fireEvent.change(dailyLimit, { target: { value: '' } });
+    expect(dailyLimit).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('请输入 1 到 50 之间的整数。')).toBeInTheDocument();
+    expect(saveButton).toBeDisabled();
+
+    fireEvent.change(dailyLimit, { target: { value: '99' } });
+    fireEvent.blur(dailyLimit);
+    expect(dailyLimit).toHaveValue(50);
+
+    fireEvent.change(reviewLimit, { target: { value: '1' } });
+    fireEvent.blur(reviewLimit);
+    expect(reviewLimit).toHaveValue(5);
+    expect(saveButton).toBeEnabled();
+
+    fireEvent.click(saveButton);
+    expect(userDataState.updateSettings).toHaveBeenCalledWith(expect.objectContaining({
+      dailyNewWordLimit: 50,
+      maxReviewCount: 5,
+    }));
+    expect(saveButton).toBeDisabled();
+  });
+
+  it('associates switch labels with their controls', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard/settings?tab=learning']}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByLabelText('考前强化周')).toHaveAttribute('role', 'switch');
+    expect(screen.getByLabelText('文字转语音')).toHaveAttribute('role', 'switch');
+    expect(screen.getByLabelText('自动播放音频')).toHaveAttribute('role', 'switch');
+  });
+
+  it('keeps the active tab synchronized with same-route query updates', async () => {
+    vi.useRealTimers();
+    const LocationProbe = () => {
+      const location = useLocation();
+      return <output data-testid="settings-location">{location.search}</output>;
+    };
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/settings?tab=general']}>
+        <Link to="/dashboard/settings?tab=notifications">Open notifications query</Link>
+        <SettingsPage />
+        <LocationProbe />
+      </MemoryRouter>,
+    );
+
+    const learningTab = screen.getByRole('tab', { name: '学习' });
+    fireEvent.mouseDown(learningTab, { button: 0, ctrlKey: false });
+    fireEvent.click(learningTab);
+    await waitFor(() => {
+      expect(screen.getByTestId('settings-location')).toHaveTextContent('?tab=learning');
+    });
+    expect(screen.getByText('FSRS 学习强度')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('link', { name: 'Open notifications query' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('settings-location')).toHaveTextContent('?tab=notifications');
+    });
+    expect(screen.getByRole('tab', { name: '通知' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getAllByText('学习提醒').length).toBeGreaterThan(0);
   });
 
   it('clears localStorage and IndexedDB only after destructive confirmation', async () => {

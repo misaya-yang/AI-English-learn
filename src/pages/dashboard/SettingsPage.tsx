@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStudyReminder } from '@/hooks/useStudyReminder';
 import { useAuth } from '@/contexts/AuthContext';
@@ -51,6 +51,40 @@ const localDateKey = (date: Date): string => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+};
+
+const SETTINGS_TABS = ['general', 'notifications', 'learning', 'account'] as const;
+type SettingsTab = (typeof SETTINGS_TABS)[number];
+
+const resolveSettingsTab = (value: string | null): SettingsTab =>
+  SETTINGS_TABS.includes(value as SettingsTab) ? value as SettingsTab : 'general';
+
+const settingsFingerprint = (settings: UserSettings): string => JSON.stringify([
+  settings.theme,
+  settings.notifications,
+  settings.emailReminders,
+  settings.reminderTime,
+  settings.lifecycleReminders,
+  settings.quietHoursStart,
+  settings.quietHoursEnd,
+  settings.soundEnabled,
+  settings.ttsEnabled,
+  settings.ttsVoice,
+  settings.autoPlayAudio,
+  settings.showPinyin,
+  settings.fontSize,
+  settings.dailyNewWordLimit,
+  settings.maxReviewCount,
+  settings.targetRetention,
+  settings.examWeekBoost,
+]);
+
+const isIntegerInRange = (value: number, min: number, max: number): boolean =>
+  Number.isInteger(value) && value >= min && value <= max;
+
+const clampInteger = (value: number, fallback: number, min: number, max: number): number => {
+  const finiteValue = Number.isFinite(value) ? value : fallback;
+  return Math.min(max, Math.max(min, Math.round(finiteValue)));
 };
 
 export default function SettingsPage() {
@@ -118,6 +152,8 @@ export default function SettingsPage() {
     dailyNewLimitDesc: isZh ? '影响 Today 的新词目标和每日词包大小。' : 'Affects Today goals and the daily word pack size.',
     maxReviewCount: isZh ? '每日复习上限' : 'Daily review limit',
     maxReviewCountDesc: isZh ? 'Review 页面和 Today 复习不会超过这个上限。' : 'Review and Today stay within this limit.',
+    invalidDailyNewLimit: isZh ? '请输入 1 到 50 之间的整数。' : 'Enter a whole number from 1 to 50.',
+    invalidMaxReviewCount: isZh ? '请输入 5 到 100 之间的整数。' : 'Enter a whole number from 5 to 100.',
     targetRetention: isZh ? '目标记忆保持率' : 'Target retention',
     retentionOptions: {
       light: isZh ? '85% · 轻量' : '85% · Light',
@@ -159,9 +195,20 @@ export default function SettingsPage() {
       account: isZh ? '账号' : 'Account',
     },
   };
-  const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
-  const location = useLocation();
-  const initialTab = new URLSearchParams(location.search).get('tab') || 'general';
+  const externalSettings = useMemo<UserSettings>(() => ({ ...settings, theme }), [settings, theme]);
+  const [localSettings, setLocalSettings] = useState<UserSettings>(externalSettings);
+  const [savedSettings, setSavedSettings] = useState<UserSettings>(externalSettings);
+  const externalSettingsFingerprint = settingsFingerprint(externalSettings);
+  const lastExternalSettingsFingerprintRef = useRef(externalSettingsFingerprint);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = resolveSettingsTab(searchParams.get('tab'));
+  const localSettingsFingerprint = settingsFingerprint(localSettings);
+  const savedSettingsFingerprint = settingsFingerprint(savedSettings);
+  const isDirty = localSettingsFingerprint !== savedSettingsFingerprint;
+  const isDailyNewLimitValid = isIntegerInRange(localSettings.dailyNewWordLimit, 1, 50);
+  const isMaxReviewCountValid = isIntegerInRange(localSettings.maxReviewCount, 5, 100);
+  const areSettingsValid = isDailyNewLimitValid && isMaxReviewCountValid;
+  const saveDisabled = !isDirty || !areSettingsValid;
   const now = new Date();
   const today = localDateKey(now);
   const todayCompleted =
@@ -193,9 +240,8 @@ export default function SettingsPage() {
     saveReminderHour,
   } = useStudyReminder(null, { schedule: false });
 
-  const updateLifecycleSettings = (patch: Partial<UserSettings>) => {
+  const updateDraftSettings = (patch: Partial<UserSettings>) => {
     setLocalSettings((current) => ({ ...current, ...patch }));
-    updateSettings(patch);
   };
   const lifecycleQuietNow = isInQuietHours(now, localSettings.quietHoursStart, localSettings.quietHoursEnd);
   const canSendNotifications = notifSupported && notifPermission === 'granted';
@@ -215,28 +261,59 @@ export default function SettingsPage() {
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove('text-sm', 'text-base', 'text-lg');
-    if (localSettings.fontSize === 'small') root.classList.add('text-sm');
-    else if (localSettings.fontSize === 'large') root.classList.add('text-lg');
+    if (savedSettings.fontSize === 'small') root.classList.add('text-sm');
+    else if (savedSettings.fontSize === 'large') root.classList.add('text-lg');
     else root.classList.add('text-base');
-  }, [localSettings.fontSize]);
+  }, [savedSettings.fontSize]);
 
   // Load settings from context
   useEffect(() => {
-    if (settings) {
-      const sync = window.setTimeout(() => {
-        setLocalSettings((prev) => ({
-          ...prev,
-          ...settings,
-        }));
-      }, 0);
+    if (lastExternalSettingsFingerprintRef.current === externalSettingsFingerprint) return;
+    lastExternalSettingsFingerprintRef.current = externalSettingsFingerprint;
 
-      return () => window.clearTimeout(sync);
-    }
-  }, [settings]);
+    const sync = window.setTimeout(() => {
+      setLocalSettings(externalSettings);
+      setSavedSettings(externalSettings);
+    }, 0);
+
+    return () => window.clearTimeout(sync);
+  }, [externalSettings, externalSettingsFingerprint]);
 
   const handleSave = () => {
-    updateSettings(localSettings);
+    if (saveDisabled) return;
+    const nextSettings = { ...localSettings };
+    lastExternalSettingsFingerprintRef.current = settingsFingerprint(nextSettings);
+    setSavedSettings(nextSettings);
+    if (nextSettings.theme !== savedSettings.theme) {
+      setTheme(nextSettings.theme as Theme);
+    }
+    updateSettings(nextSettings);
     toast.success(copy.saved);
+  };
+
+  const handleTabChange = (value: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', resolveSettingsTab(value));
+    setSearchParams(next, { replace: true });
+  };
+
+  const updateNumericSetting = (
+    key: 'dailyNewWordLimit' | 'maxReviewCount',
+    rawValue: string,
+  ) => {
+    const nextValue = rawValue.trim() === '' ? Number.NaN : Number(rawValue);
+    setLocalSettings((current) => ({ ...current, [key]: nextValue }));
+  };
+
+  const clampNumericSetting = (
+    key: 'dailyNewWordLimit' | 'maxReviewCount',
+    min: number,
+    max: number,
+  ) => {
+    setLocalSettings((current) => ({
+      ...current,
+      [key]: clampInteger(current[key], savedSettings[key], min, max),
+    }));
   };
 
   const handleLogout = () => {
@@ -258,7 +335,7 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">{copy.subtitle}</p>
       </div>
 
-      <Tabs defaultValue={initialTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <div className="overflow-x-auto pb-1">
           <TabsList className="liquid-glass-control grid w-max min-w-full grid-cols-4 rounded-lg p-1">
             <TabsTrigger value="general">{copy.tabs.general}</TabsTrigger>
@@ -281,11 +358,14 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>{copy.theme}</Label>
+                  <Label htmlFor="appearance-theme">{copy.theme}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '选择界面明暗风格' : 'Choose the app appearance'}</p>
                 </div>
-                <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-                  <SelectTrigger className="liquid-glass-control w-full sm:w-[180px]">
+                <Select
+                  value={localSettings.theme}
+                  onValueChange={(value) => updateDraftSettings({ theme: value as Theme })}
+                >
+                  <SelectTrigger id="appearance-theme" className="liquid-glass-control w-full sm:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -300,7 +380,7 @@ export default function SettingsPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>{copy.fontSize}</Label>
+                  <Label htmlFor="appearance-font-size">{copy.fontSize}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '调整阅读和练习文本大小' : 'Adjust reading and practice text size'}</p>
                 </div>
                 <Select
@@ -309,7 +389,7 @@ export default function SettingsPage() {
                     setLocalSettings((s) => ({ ...s, fontSize: v as FontSize }));
                   }}
                 >
-                  <SelectTrigger className="liquid-glass-control w-full sm:w-[180px]">
+                  <SelectTrigger id="appearance-font-size" className="liquid-glass-control w-full sm:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -324,7 +404,7 @@ export default function SettingsPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>{copy.language}</Label>
+                  <Label htmlFor="appearance-language">{copy.language}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '切换应用显示语言' : 'Switch the app display language'}</p>
                 </div>
                 <Select
@@ -335,7 +415,7 @@ export default function SettingsPage() {
                     toast.success(lang === 'zh' ? '已切换为中文' : 'Switched to English');
                   }}
                 >
-                  <SelectTrigger className="liquid-glass-control w-full sm:w-[180px]">
+                  <SelectTrigger id="appearance-language" className="liquid-glass-control w-full sm:w-[180px]">
                     <Globe className="h-4 w-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -346,7 +426,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <Button onClick={handleSave} className="w-full">
+              <Button onClick={handleSave} className="w-full" disabled={saveDisabled} data-testid="settings-save-general">
                 <Save className="h-4 w-4 mr-2" />
                 {copy.save}
               </Button>
@@ -405,14 +485,16 @@ export default function SettingsPage() {
                   {/* Reminder toggle + time */}
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <Label>{copy.dailyReminder}</Label>
-                      <p className="text-sm text-muted-foreground">
+                      <Label htmlFor="daily-reminder-switch">{copy.dailyReminder}</Label>
+                      <p id="daily-reminder-description" className="text-sm text-muted-foreground">
                         {reminderHour !== null
                           ? copy.reminderEnabled(reminderHour)
                           : copy.reminderOff}
                       </p>
                     </div>
                     <Switch
+                      id="daily-reminder-switch"
+                      aria-describedby="daily-reminder-description"
                       disabled={notifPermission !== 'granted'}
                       checked={reminderHour !== null}
                       onCheckedChange={(v) => {
@@ -460,16 +542,17 @@ export default function SettingsPage() {
                   <div className="space-y-4 rounded-xl bg-[hsl(var(--paper-muted)/0.20)] px-4 py-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <Label>{copy.lifecycleLabel}</Label>
-                        <p className="text-sm text-muted-foreground">
+                        <Label htmlFor="lifecycle-reminders-switch">{copy.lifecycleLabel}</Label>
+                        <p id="lifecycle-reminders-description" className="text-sm text-muted-foreground">
                           {copy.lifecycleDesc}
                         </p>
                       </div>
                       <Switch
+                        id="lifecycle-reminders-switch"
+                        aria-describedby="lifecycle-reminders-description"
                         checked={localSettings.lifecycleReminders}
                         onCheckedChange={(checked) => {
-                          updateLifecycleSettings({ lifecycleReminders: checked });
-                          toast.success(checked ? copy.lifecycleEnabledToast : copy.lifecycleDisabledToast);
+                          updateDraftSettings({ lifecycleReminders: checked });
                         }}
                       />
                     </div>
@@ -481,7 +564,7 @@ export default function SettingsPage() {
                           id="quiet-hours-start"
                           type="time"
                           value={localSettings.quietHoursStart}
-                          onChange={(event) => updateLifecycleSettings({ quietHoursStart: event.target.value })}
+                          onChange={(event) => updateDraftSettings({ quietHoursStart: event.target.value })}
                         />
                       </div>
                       <div className="grid gap-2">
@@ -490,7 +573,7 @@ export default function SettingsPage() {
                           id="quiet-hours-end"
                           type="time"
                           value={localSettings.quietHoursEnd}
-                          onChange={(event) => updateLifecycleSettings({ quietHoursEnd: event.target.value })}
+                          onChange={(event) => updateDraftSettings({ quietHoursEnd: event.target.value })}
                         />
                       </div>
                     </div>
@@ -522,6 +605,10 @@ export default function SettingsPage() {
                   </div>
                 </>
               )}
+              <Button onClick={handleSave} className="w-full" disabled={saveDisabled} data-testid="settings-save-notifications">
+                <Save className="h-4 w-4 mr-2" />
+                {copy.save}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -546,12 +633,21 @@ export default function SettingsPage() {
                     type="number"
                     min={1}
                     max={50}
-                    value={localSettings.dailyNewWordLimit}
-                    onChange={(event) => {
-                      setLocalSettings((s) => ({ ...s, dailyNewWordLimit: Number(event.target.value) }));
-                    }}
+                    step={1}
+                    value={Number.isFinite(localSettings.dailyNewWordLimit) ? localSettings.dailyNewWordLimit : ''}
+                    aria-invalid={!isDailyNewLimitValid}
+                    aria-describedby={isDailyNewLimitValid
+                      ? 'daily-new-limit-description'
+                      : 'daily-new-limit-description daily-new-limit-error'}
+                    onChange={(event) => updateNumericSetting('dailyNewWordLimit', event.target.value)}
+                    onBlur={() => clampNumericSetting('dailyNewWordLimit', 1, 50)}
                   />
-                  <p className="text-xs text-muted-foreground">{copy.dailyNewLimitDesc}</p>
+                  <p id="daily-new-limit-description" className="text-xs text-muted-foreground">{copy.dailyNewLimitDesc}</p>
+                  {!isDailyNewLimitValid ? (
+                    <p id="daily-new-limit-error" role="alert" className="text-xs text-destructive">
+                      {copy.invalidDailyNewLimit}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="grid gap-2">
@@ -561,12 +657,21 @@ export default function SettingsPage() {
                     type="number"
                     min={5}
                     max={100}
-                    value={localSettings.maxReviewCount}
-                    onChange={(event) => {
-                      setLocalSettings((s) => ({ ...s, maxReviewCount: Number(event.target.value) }));
-                    }}
+                    step={1}
+                    value={Number.isFinite(localSettings.maxReviewCount) ? localSettings.maxReviewCount : ''}
+                    aria-invalid={!isMaxReviewCountValid}
+                    aria-describedby={isMaxReviewCountValid
+                      ? 'max-review-count-description'
+                      : 'max-review-count-description max-review-count-error'}
+                    onChange={(event) => updateNumericSetting('maxReviewCount', event.target.value)}
+                    onBlur={() => clampNumericSetting('maxReviewCount', 5, 100)}
                   />
-                  <p className="text-xs text-muted-foreground">{copy.maxReviewCountDesc}</p>
+                  <p id="max-review-count-description" className="text-xs text-muted-foreground">{copy.maxReviewCountDesc}</p>
+                  {!isMaxReviewCountValid ? (
+                    <p id="max-review-count-error" role="alert" className="text-xs text-destructive">
+                      {copy.invalidMaxReviewCount}
+                    </p>
+                  ) : null}
                 </div>
               </div>
 
@@ -574,14 +679,14 @@ export default function SettingsPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
-                  <Label>{copy.targetRetention}</Label>
+                  <Label htmlFor="target-retention">{copy.targetRetention}</Label>
                   <Select
                     value={String(localSettings.targetRetention)}
                     onValueChange={(value) => {
                       setLocalSettings((s) => ({ ...s, targetRetention: Number(value) }));
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="target-retention">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -595,17 +700,19 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between rounded-lg bg-[hsl(var(--paper-muted)/0.18)] px-3 py-3">
                   <div>
-                    <Label>{copy.examWeekBoost}</Label>
-                    <p className="mt-1 text-sm text-muted-foreground">{copy.examWeekDesc}</p>
+                    <Label htmlFor="exam-week-boost-switch">{copy.examWeekBoost}</Label>
+                    <p id="exam-week-boost-description" className="mt-1 text-sm text-muted-foreground">{copy.examWeekDesc}</p>
                   </div>
                   <Switch
+                    id="exam-week-boost-switch"
+                    aria-describedby="exam-week-boost-description"
                     checked={localSettings.examWeekBoost}
                     onCheckedChange={(v) => setLocalSettings((s) => ({ ...s, examWeekBoost: v }))}
                   />
                 </div>
               </div>
 
-              <Button onClick={handleSave} className="w-full">
+              <Button onClick={handleSave} className="w-full" disabled={saveDisabled} data-testid="settings-save-learning">
                 <Save className="h-4 w-4 mr-2" />
                 {copy.save}
               </Button>
@@ -623,10 +730,12 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>{copy.ttsEnabled}</Label>
-                  <p className="text-sm text-muted-foreground">{copy.ttsEnabledDesc}</p>
+                  <Label htmlFor="tts-enabled-switch">{copy.ttsEnabled}</Label>
+                  <p id="tts-enabled-description" className="text-sm text-muted-foreground">{copy.ttsEnabledDesc}</p>
                 </div>
                 <Switch
+                  id="tts-enabled-switch"
+                  aria-describedby="tts-enabled-description"
                   checked={localSettings.ttsEnabled}
                   onCheckedChange={(v) => setLocalSettings((s) => ({ ...s, ttsEnabled: v }))}
                 />
@@ -636,10 +745,12 @@ export default function SettingsPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>{copy.autoPlayAudio}</Label>
-                  <p className="text-sm text-muted-foreground">{copy.autoPlayAudioDesc}</p>
+                  <Label htmlFor="auto-play-audio-switch">{copy.autoPlayAudio}</Label>
+                  <p id="auto-play-audio-description" className="text-sm text-muted-foreground">{copy.autoPlayAudioDesc}</p>
                 </div>
                 <Switch
+                  id="auto-play-audio-switch"
+                  aria-describedby="auto-play-audio-description"
                   checked={localSettings.autoPlayAudio}
                   onCheckedChange={(v) => setLocalSettings((s) => ({ ...s, autoPlayAudio: v }))}
                 />
@@ -649,14 +760,14 @@ export default function SettingsPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <Label>{copy.ttsVoice}</Label>
+                  <Label htmlFor="tts-voice">{copy.ttsVoice}</Label>
                   <p className="text-sm text-muted-foreground">{isZh ? '选择朗读口音' : 'Choose pronunciation accent'}</p>
                 </div>
                 <Select
                   value={localSettings.ttsVoice}
                   onValueChange={(v) => setLocalSettings((s) => ({ ...s, ttsVoice: v }))}
                 >
-                  <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectTrigger id="tts-voice" className="w-full sm:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -667,7 +778,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
 
-              <Button onClick={handleSave} className="w-full">
+              <Button onClick={handleSave} className="w-full" disabled={saveDisabled} data-testid="settings-save-audio">
                 <Save className="h-4 w-4 mr-2" />
                 {copy.save}
               </Button>

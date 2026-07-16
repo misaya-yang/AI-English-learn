@@ -3,7 +3,6 @@ import { BookOpen, ListChecks } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ISSUE_LABELS } from '@/features/exam/constants';
 import { ErrorGraph } from '@/features/exam/components/ErrorGraph';
@@ -58,7 +57,7 @@ export function InsightRail({
     <motion.aside initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
       <section className="overflow-hidden rounded-xl border border-transparent bg-card/90">
         <Tabs value={insightView} onValueChange={(value) => onInsightViewChange(value as InsightView)} className="gap-0">
-          <div className="border-b border-transparent px-4 py-4">
+          <div className="border-b border-transparent px-4 py-3">
             <div className="flex flex-col gap-3">
               <div>
                 <p className="text-[11px] font-medium text-muted-foreground/80">数据</p>
@@ -72,7 +71,7 @@ export function InsightRail({
             </div>
           </div>
 
-          <div className="px-4 py-4">
+          <div className="px-4 py-3">
             <TabsContent value="weakness" className="mt-0 space-y-4">
               {errorAnalytics.length === 0 ? (
                 <EmptyKickoffCard onQuickStart={() => void onQuickStart()} />
@@ -151,62 +150,60 @@ export function InsightRail({
               {recentHistory.length === 0 ? (
                 <p className="text-sm text-muted-foreground">暂无反馈记录，先完成一次写作评分。</p>
               ) : (
-                <ScrollArea className="h-[720px] pr-2">
-                  <div className="space-y-3">
-                    {recentHistory.map((item) => {
-                      const tags = item.issues.slice(0, 3).map((issue) => ISSUE_LABELS[issue.tag] || issue.tag);
-                      return (
-                        <div key={item.attemptId} className="rounded-lg border border-border/70 bg-background/35 p-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</p>
-                              <p className="mt-1 text-lg font-semibold">Band {item.scores.overallBand.toFixed(1)}</p>
-                            </div>
-                            <Badge variant="outline" className="rounded-md">{item.provider}</Badge>
+                <div className="space-y-3">
+                  {recentHistory.map((item) => {
+                    const tags = item.issues.slice(0, 3).map((issue) => ISSUE_LABELS[issue.tag] || issue.tag);
+                    return (
+                      <div key={item.attemptId} className="rounded-lg border border-border/70 bg-background/35 p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</p>
+                            <p className="mt-1 text-lg font-semibold">Band {item.scores.overallBand.toFixed(1)}</p>
                           </div>
-
-                          <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                            <span className="rounded-md bg-muted/40 px-2 py-1">题目 {item.scores.taskResponse.toFixed(1)}</span>
-                            <span className="rounded-md bg-muted/40 px-2 py-1">连贯 {item.scores.coherenceCohesion.toFixed(1)}</span>
-                            <span className="rounded-md bg-muted/40 px-2 py-1">词汇 {item.scores.lexicalResource.toFixed(1)}</span>
-                            <span className="rounded-md bg-muted/40 px-2 py-1">语法 {item.scores.grammaticalRangeAccuracy.toFixed(1)}</span>
-                          </div>
-
-                          <div className="mt-3 flex flex-wrap gap-1.5">
-                            {tags.length === 0 ? (
-                              <span className="text-xs text-muted-foreground">暂无明显问题</span>
-                            ) : (
-                              tags.map((tag) => (
-                                <span key={`${item.attemptId}-${tag}`} className="rounded-md border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
-                                  {tag}
-                                </span>
-                              ))
-                            )}
-                          </div>
-
-                          <div className="mt-4 flex gap-2">
-                            <Button size="sm" variant="glass" className="rounded-lg" onClick={() => onRetryFeedback(item)}>
-                              再练一次
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-primary"
-                              onClick={() => {
-                                const firstTag = item.issues[0]?.tag;
-                                if (firstTag) {
-                                  onViewError(firstTag);
-                                }
-                              }}
-                            >
-                              查看错因
-                            </Button>
-                          </div>
+                          <Badge variant="outline" className="rounded-md">{item.provider}</Badge>
                         </div>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
+
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                          <span className="rounded-md bg-muted/40 px-2 py-1">题目 {item.scores.taskResponse.toFixed(1)}</span>
+                          <span className="rounded-md bg-muted/40 px-2 py-1">连贯 {item.scores.coherenceCohesion.toFixed(1)}</span>
+                          <span className="rounded-md bg-muted/40 px-2 py-1">词汇 {item.scores.lexicalResource.toFixed(1)}</span>
+                          <span className="rounded-md bg-muted/40 px-2 py-1">语法 {item.scores.grammaticalRangeAccuracy.toFixed(1)}</span>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {tags.length === 0 ? (
+                            <span className="text-xs text-muted-foreground">暂无明显问题</span>
+                          ) : (
+                            tags.map((tag) => (
+                              <span key={`${item.attemptId}-${tag}`} className="rounded-md border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
+                                {tag}
+                              </span>
+                            ))
+                          )}
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                          <Button size="sm" variant="glass" className="rounded-lg" onClick={() => onRetryFeedback(item)}>
+                            再练一次
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-primary"
+                            onClick={() => {
+                              const firstTag = item.issues[0]?.tag;
+                              if (firstTag) {
+                                onViewError(firstTag);
+                              }
+                            }}
+                          >
+                            查看错因
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </TabsContent>
           </div>

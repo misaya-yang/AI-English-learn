@@ -1,22 +1,20 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2, MessageSquare } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Volume2, RefreshCw, AlertCircle, MessageSquare, Mic, Square, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { motionPresets } from '@/lib/motion';
-import { usePronunciationSession } from '@/hooks/usePronunciationSession';
+import { usePronunciationSession, type SessionStatus } from '@/hooks/usePronunciationSession';
 import { isSpeechRecognitionSupported } from '@/services/pronunciationScorer';
 import { speakEnglishText } from '@/services/tts';
 import { ScoreRadial } from '@/features/pronunciation/components/ScoreRadial';
 import { PhonemeIssueList } from '@/features/pronunciation/components/PhonemeIssueList';
-import { RecordButton } from '@/features/pronunciation/components/RecordButton';
 import { useUserData } from '@/contexts/UserDataContext';
-import { LearningCompletionState } from '@/features/learning/components/LearningWorkspace';
 
 // ─── Practice word list (curated from user's vocabulary) ────────────────────
 
@@ -61,6 +59,61 @@ function usePracticeItems(): PracticeItem[] {
 
 type PracticeMode = 'word' | 'sentence';
 
+function PronunciationRecordButton({
+  status,
+  onStart,
+  onCancel,
+}: {
+  status: SessionStatus;
+  onStart: () => void;
+  onCancel: () => void;
+}) {
+  const { t } = useTranslation();
+  const shouldReduceMotion = useReducedMotion();
+  const isListening = status === 'listening';
+  const isScoring = status === 'scoring';
+  const isBusy = isListening || isScoring;
+
+  return (
+    <Button
+      size="lg"
+      variant={isListening ? 'destructive' : 'default'}
+      className={`h-16 w-16 rounded-full p-0 ${isListening && !shouldReduceMotion ? 'animate-pulse' : ''}`}
+      onClick={isBusy ? onCancel : onStart}
+      disabled={isScoring}
+      aria-label={isListening ? t('pronunciation.stopRecording') : t('pronunciation.startRecording')}
+    >
+      {isScoring ? (
+        <Loader2 className={`h-6 w-6 ${shouldReduceMotion ? '' : 'animate-spin'}`} />
+      ) : isListening ? (
+        <Square className="h-6 w-6" />
+      ) : (
+        <Mic className="h-6 w-6" />
+      )}
+    </Button>
+  );
+}
+
+function AccessibleScoreRadial({
+  score,
+  label,
+  isZh,
+}: {
+  score: number;
+  label: string;
+  isZh: boolean;
+}) {
+  return (
+    <div
+      role="img"
+      aria-label={isZh ? `${label}：${score} 分，满分 100` : `${label}: ${score} out of 100`}
+      className="flex justify-center"
+    >
+      <ScoreRadial score={score} label={label} />
+    </div>
+  );
+}
+
 export default function PronunciationPage() {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language.startsWith('zh');
@@ -72,8 +125,14 @@ export default function PronunciationPage() {
 
   const item = items[currentIndex] ?? items[0];
   const targetText = item ? (mode === 'word' ? item.word : item.exampleSentence) : '';
-  const completedCount = session.records.length;
-  const progressPercent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
+  const completedItemIds = useMemo(
+    () => new Set(session.records.map((record) => record.wordId)),
+    [session.records],
+  );
+  const completedCount = completedItemIds.size;
+  const progressPercent = items.length > 0
+    ? Math.min(100, Math.round((completedCount / items.length) * 100))
+    : 0;
   const fallbackPrompt = isZh
     ? '请和我进行一个英语口语文字练习。请扮演考官或对话伙伴，先给我一个简短情境，再根据我的回答追问，并最后总结 2 个发音或表达建议。'
     : 'Run a text-based English speaking practice with me. Act as an examiner or conversation partner, give me a short scenario, ask follow-up questions, and finish with 2 pronunciation or expression tips.';
@@ -97,41 +156,6 @@ export default function PronunciationPage() {
   const handlePlayAudio = () => {
     speakEnglishText(targetText, { rate: 0.85 });
   };
-
-  const pronunciationRecap = session.result ? (
-    <LearningCompletionState
-      icon={CheckCircle2}
-      eyebrow={isZh ? '发音结果' : 'Pronunciation result'}
-      title={isZh ? `本次发音 ${session.result.overallScore}/100` : `Pronunciation score ${session.result.overallScore}/100`}
-      description={
-        session.result.overallScore >= 80
-          ? (isZh ? '目标音已经比较清楚，下一步可以切到句子模式练连读和语调。' : 'The target sound is clear. Switch to sentence mode for linking and intonation.')
-          : session.result.overallScore >= 60
-            ? (isZh ? '整体可懂度不错，继续看准确度、流利度和语调哪一项拖后腿。' : 'Overall intelligibility is workable. Check which dimension is holding the score back.')
-            : (isZh ? '先听标准音，再慢速重录一遍，重点对齐音素和重音。' : 'Listen to the model, slow down, and retry with phoneme and stress alignment.')
-      }
-      metrics={[
-        { label: isZh ? '总分' : 'Overall', value: `${session.result.overallScore}/100`, accent: session.result.overallScore >= 80 ? 'emerald' : session.result.overallScore >= 60 ? 'warm' : undefined },
-        { label: isZh ? '准确度' : 'Accuracy', value: session.result.dimensions.accuracy },
-        { label: isZh ? '流利度' : 'Fluency', value: session.result.dimensions.fluency },
-        { label: isZh ? '语调' : 'Intonation', value: session.result.dimensions.intonation },
-      ]}
-      actions={
-        <>
-          <Button variant="glass" onClick={() => session.reset()} className="rounded-lg">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            {t('pronunciation.tryAgain')}
-          </Button>
-          {currentIndex < items.length - 1 && (
-            <Button variant="glassPrimary" onClick={handleNext} className="rounded-lg">
-              {t('common.next')}
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          )}
-        </>
-      }
-    />
-  ) : null;
 
   if (!supported) {
     return (
@@ -159,8 +183,6 @@ export default function PronunciationPage() {
 
   return (
     <div className="learning-open-route mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
-      {pronunciationRecap}
-
       <motion.section
         {...motionPresets.fadeIn}
         className="learning-open-hero pb-5"
@@ -235,7 +257,14 @@ export default function PronunciationPage() {
       {/* Progress */}
       <div className="flex items-center gap-3">
         <Progress value={progressPercent} className="flex-1" />
-        <span className="text-xs text-muted-foreground whitespace-nowrap">
+        <span
+          className="whitespace-nowrap text-xs text-muted-foreground"
+          aria-label={
+            isZh
+              ? `已完成 ${completedCount} 个，共 ${items.length} 个练习`
+              : `${completedCount} of ${items.length} practice items completed`
+          }
+        >
           {completedCount}/{items.length}
         </span>
       </div>
@@ -287,7 +316,7 @@ export default function PronunciationPage() {
 
               {/* Record button */}
               <div className="flex justify-center pt-4">
-                <RecordButton
+                <PronunciationRecordButton
                   status={session.status}
                   onStart={handleRecord}
                   onCancel={session.cancelListening}
@@ -295,7 +324,7 @@ export default function PronunciationPage() {
               </div>
 
               {session.status === 'listening' && (
-                <p className="text-sm text-muted-foreground animate-pulse">
+                <p className="animate-pulse text-sm text-muted-foreground motion-reduce:animate-none">
                   {t('pronunciation.listening')}
                 </p>
               )}
@@ -333,8 +362,29 @@ export default function PronunciationPage() {
           {session.result && (
             <motion.div {...motionPresets.fadeInUp} className="mt-4 space-y-4">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{t('pronunciation.results')}</CardTitle>
+                <CardHeader className="gap-2 pb-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {isZh ? '发音结果' : 'Pronunciation result'}
+                      </p>
+                      <CardTitle className="mt-1 text-lg">
+                        {isZh
+                          ? `本次发音 ${session.result.overallScore}/100`
+                          : `Pronunciation score ${session.result.overallScore}/100`}
+                      </CardTitle>
+                    </div>
+                    <Badge variant="secondary" className="w-fit rounded-md text-sm">
+                      {session.result.overallScore}/100
+                    </Badge>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    {session.result.overallScore >= 80
+                      ? (isZh ? '目标音已经比较清楚，可以继续练连读和语调。' : 'The target sound is clear. Continue with linking and intonation.')
+                      : session.result.overallScore >= 60
+                        ? (isZh ? '整体可懂度不错，优先处理最低分维度。' : 'Overall intelligibility is workable. Focus on the lowest dimension.')
+                        : (isZh ? '先听标准音，再慢速重录并对齐音素和重音。' : 'Listen to the model, slow down, and retry with phoneme and stress alignment.')}
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Recognized text */}
@@ -346,27 +396,22 @@ export default function PronunciationPage() {
                   </div>
 
                   {/* Score radials */}
-                  <div className="flex justify-around">
-                    <ScoreRadial
+                  <div className="grid gap-3 min-[420px]:grid-cols-3">
+                    <AccessibleScoreRadial
                       score={session.result.dimensions.accuracy}
                       label={t('pronunciation.accuracy')}
+                      isZh={isZh}
                     />
-                    <ScoreRadial
+                    <AccessibleScoreRadial
                       score={session.result.dimensions.fluency}
                       label={t('pronunciation.fluency')}
+                      isZh={isZh}
                     />
-                    <ScoreRadial
+                    <AccessibleScoreRadial
                       score={session.result.dimensions.intonation}
                       label={t('pronunciation.intonation')}
+                      isZh={isZh}
                     />
-                  </div>
-
-                  {/* Overall */}
-                  <div className="text-center">
-                    <span className="text-3xl font-bold">
-                      {session.result.overallScore}
-                    </span>
-                    <span className="text-sm text-muted-foreground ml-1">/ 100</span>
                   </div>
 
                   {/* Phoneme issues */}
@@ -404,7 +449,6 @@ export default function PronunciationPage() {
               onClick={handlePrev}
               disabled={currentIndex === 0}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
               {t('common.previous')}
             </Button>
             <Button
@@ -414,7 +458,6 @@ export default function PronunciationPage() {
               disabled={currentIndex === items.length - 1}
             >
               {t('common.next')}
-              <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </TabsContent>

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { getSubscriptionEntitlement } from '@/services/billingGateway';
+import { isLocalAuthUserId } from '@/lib/localAuthIdentity';
 import type {
   AiFeedback,
   AnalyzedErrorNode,
@@ -373,6 +374,14 @@ const getUsageForToday = (userId: string): EntitlementUsage => {
 
 export const getEntitlement = async (userId: string): Promise<Entitlement> => {
   const map = getEntitlementMap();
+
+  if (isLocalAuthUserId(userId)) {
+    if (!map[userId]) {
+      map[userId] = getDefaultEntitlement(userId);
+      setEntitlementMap(map);
+    }
+    return map[userId];
+  }
 
   try {
     const remote = await getSubscriptionEntitlement();

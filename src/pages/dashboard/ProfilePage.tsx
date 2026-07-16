@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useQuota } from '@/hooks/useQuota';
@@ -36,6 +36,20 @@ const AVATAR_STORAGE_KEY = 'vocabdaily-avatar-url-';
 
 type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading';
+type ProfileFormData = {
+  displayName: string;
+  cefrLevel: CEFRLevel;
+  dailyGoal: number;
+  preferredTopics: string[];
+  learningStyle: LearningStyle;
+};
+
+type ProfileFormSource = {
+  cefrLevel?: string | null;
+  dailyGoal?: number | null;
+  preferredTopics?: string[] | null;
+  learningStyle?: string | null;
+};
 
 const cefrLevels: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -96,6 +110,30 @@ const ACHIEVEMENT_DISPLAY_ZH: Record<string, string> = {
   xp_1000: '累计 1000 条记录',
 };
 
+const buildProfileFormData = (
+  displayName: string | null | undefined,
+  profile: ProfileFormSource | null | undefined,
+): ProfileFormData => ({
+  displayName: displayName || '',
+  cefrLevel: (profile?.cefrLevel as CEFRLevel) || 'B1',
+  dailyGoal: profile?.dailyGoal ?? 10,
+  preferredTopics: [...(profile?.preferredTopics?.length ? profile.preferredTopics : ['daily'])],
+  learningStyle: (profile?.learningStyle as LearningStyle) || 'visual',
+});
+
+const cloneProfileFormData = (value: ProfileFormData): ProfileFormData => ({
+  ...value,
+  preferredTopics: [...value.preferredTopics],
+});
+
+const isSameProfileFormData = (left: ProfileFormData, right: ProfileFormData): boolean =>
+  left.displayName === right.displayName &&
+  left.cefrLevel === right.cefrLevel &&
+  left.dailyGoal === right.dailyGoal &&
+  left.learningStyle === right.learningStyle &&
+  left.preferredTopics.length === right.preferredTopics.length &&
+  left.preferredTopics.every((topic, index) => topic === right.preferredTopics[index]);
+
 export default function ProfilePage() {
   const { user, profile, updateUserProfile, updateDisplayName } = useAuth();
   const { xp, streak, stats, streakFreezes, achievements, allAchievementDefs, dailyMultiplier, purchaseStreakFreeze } = useUserData();
@@ -109,13 +147,41 @@ export default function ProfilePage() {
     () => localStorage.getItem(`${AVATAR_STORAGE_KEY}${user?.id}`) || null,
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState({
-    displayName: user?.displayName || '',
-    cefrLevel: (profile?.cefrLevel as CEFRLevel) || 'B1',
-    dailyGoal: profile?.dailyGoal || 10,
-    preferredTopics: profile?.preferredTopics || ['daily'],
-    learningStyle: (profile?.learningStyle as LearningStyle) || 'visual',
-  });
+  const [formData, setFormData] = useState<ProfileFormData>(() =>
+    buildProfileFormData(user?.displayName, profile),
+  );
+  const savedFormDataRef = useRef<ProfileFormData>(
+    buildProfileFormData(user?.displayName, profile),
+  );
+  const isEditingRef = useRef(isEditing);
+  isEditingRef.current = isEditing;
+  const upstreamDisplayName = user?.displayName;
+  const upstreamCefrLevel = profile?.cefrLevel;
+  const upstreamDailyGoal = profile?.dailyGoal;
+  const upstreamLearningStyle = profile?.learningStyle;
+  const preferredTopicsKey = profile?.preferredTopics?.join('\u0001') || '';
+
+  useEffect(() => {
+    const nextSnapshot = buildProfileFormData(upstreamDisplayName, {
+      cefrLevel: upstreamCefrLevel,
+      dailyGoal: upstreamDailyGoal,
+      preferredTopics: preferredTopicsKey ? preferredTopicsKey.split('\u0001') : undefined,
+      learningStyle: upstreamLearningStyle,
+    });
+
+    setFormData((current) => {
+      const shouldSyncForm =
+        !isEditingRef.current || isSameProfileFormData(current, savedFormDataRef.current);
+      savedFormDataRef.current = cloneProfileFormData(nextSnapshot);
+      return shouldSyncForm ? cloneProfileFormData(nextSnapshot) : current;
+    });
+  }, [
+    preferredTopicsKey,
+    upstreamCefrLevel,
+    upstreamDailyGoal,
+    upstreamDisplayName,
+    upstreamLearningStyle,
+  ]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -161,6 +227,7 @@ export default function ProfilePage() {
 
       const [profileOk, nameOk] = await Promise.all([profilePromise, namePromise]);
       if (profileOk && nameOk) {
+        savedFormDataRef.current = cloneProfileFormData(formData);
         setIsEditing(false);
         toast.success(isZh ? '个人资料已更新' : 'Profile updated successfully');
       } else {
@@ -169,6 +236,11 @@ export default function ProfilePage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(cloneProfileFormData(savedFormDataRef.current));
+    setIsEditing(false);
   };
 
   const toggleTopic = (topic: string) => {
@@ -214,29 +286,23 @@ export default function ProfilePage() {
             {isZh ? '管理学习设置、目标和账号身份。' : 'Manage your learner identity, goals, and account profile.'}
           </p>
         </div>
-        <Button
-          variant={isEditing ? 'default' : 'glass'}
-          onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-          disabled={isSaving}
-          className="rounded-lg"
-        >
-          {isSaving ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {isZh ? '保存中...' : 'Saving...'}
-            </>
-          ) : isEditing ? (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              {isZh ? '保存更改' : 'Save changes'}
-            </>
-          ) : (
+        {isEditing ? (
+          <Badge variant="outline" role="status" className="rounded-md">
+            {isZh ? '正在编辑' : 'Editing'}
+          </Badge>
+        ) : (
+          <Button
+            variant="glass"
+            onClick={() => setIsEditing(true)}
+            disabled={isSaving}
+            className="rounded-lg"
+          >
             <>
               <Edit2 className="h-4 w-4 mr-2" />
               {isZh ? '编辑资料' : 'Edit profile'}
             </>
-          )}
-        </Button>
+          </Button>
+        )}
       </div>
 
       <Card className="mb-8 border-transparent">
@@ -264,6 +330,7 @@ export default function ProfilePage() {
                     disabled={isUploading}
                     className="absolute bottom-0 right-0 h-8 w-8 rounded-md border border-border"
                     onClick={() => fileInputRef.current?.click()}
+                    aria-label={isZh ? '上传头像' : 'Upload avatar'}
                   >
                     {isUploading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -278,8 +345,9 @@ export default function ProfilePage() {
             <div className="flex-1 text-center md:text-left">
 	              {isEditing ? (
 	                <div className="grid gap-2 max-w-sm">
-	                  <Label>{isZh ? '显示名称' : 'Display name'}</Label>
+	                  <Label htmlFor="profile-display-name">{isZh ? '显示名称' : 'Display name'}</Label>
 	                  <Input
+                      id="profile-display-name"
 	                    value={formData.displayName}
 	                    onChange={(e) => setFormData((prev) => ({ ...prev, displayName: e.target.value }))}
 	                    placeholder={isZh ? '输入你的显示名称' : 'Your display name'}
@@ -386,7 +454,12 @@ export default function ProfilePage() {
           <CardContent>
             {isEditing ? (
               <div className="space-y-4">
+                <Label htmlFor="profile-daily-goal" className="sr-only">
+                  {isZh ? '每日目标' : 'Daily goal'}
+                </Label>
                 <Slider
+                  id="profile-daily-goal"
+                  aria-label={isZh ? '每日目标' : 'Daily goal'}
                   value={[formData.dailyGoal]}
                   onValueChange={(v) =>
                     setFormData((prev) => ({ ...prev, dailyGoal: v[0] }))
@@ -426,7 +499,9 @@ export default function ProfilePage() {
                 {topics.map((topic) => (
                   <button
                     key={topic}
+                    type="button"
                     onClick={() => toggleTopic(topic)}
+                    aria-pressed={formData.preferredTopics.includes(topic)}
                     className={cn(
 	                      'rounded-md px-3 py-1 text-sm transition-colors',
                       formData.preferredTopics.includes(topic)
@@ -492,6 +567,32 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {isEditing && (
+        <div className="sticky bottom-[calc(6rem+env(safe-area-inset-bottom))] z-20 mt-6 flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-3 shadow-sm sm:static sm:justify-end sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none">
+          <p className="text-xs text-muted-foreground sm:hidden">
+            {isZh ? '完成设置后保存更改' : 'Save when your settings are ready'}
+          </p>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+              {isZh ? '取消' : 'Cancel'}
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {isZh ? '保存中...' : 'Saving...'}
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isZh ? '保存更改' : 'Save changes'}
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Card className="mt-8 border-transparent">
         <CardHeader>
@@ -679,14 +780,6 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
-
-      {isEditing && (
-        <div className="mt-6 flex justify-end">
-          <Button variant="outline" onClick={() => setIsEditing(false)}>
-            {isZh ? '取消' : 'Cancel'}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

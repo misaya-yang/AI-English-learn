@@ -3,7 +3,7 @@
 // empty so the learner has a clear next step.
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 const useUserDataMock = vi.fn();
@@ -110,6 +110,61 @@ describe('ReviewPage — LEARN-04 due-only rendering', () => {
     fireEvent.click(screen.getByRole('button', { name: /Good/i }));
     expect(reviewWordMock).toHaveBeenCalledWith('w1', 'good');
     expect(screen.queryByText(/No review cards due right now/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps audio outside the recall button and labels both audio states', () => {
+    useUserDataMock.mockReturnValue({ ...baseUserData });
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/review?wordId=w1']}>
+        <ReviewPage />
+      </MemoryRouter>,
+    );
+
+    const recallSurface = screen.getByTestId('review-recall-surface');
+    const audioButton = screen.getByRole('button', { name: 'Play pronunciation' });
+    expect(recallSurface).not.toContainElement(audioButton);
+    expect(recallSurface.querySelector('button')).toBeNull();
+    expect(recallSurface.closest('section')).toHaveClass('min-h-[280px]', 'sm:min-h-[360px]');
+
+    fireEvent.click(recallSurface);
+    expect(screen.getByRole('button', { name: 'Play pronunciation' })).toHaveAttribute(
+      'aria-label',
+      'Play pronunciation',
+    );
+  });
+
+  it('renders a compact mobile session summary', () => {
+    useUserDataMock.mockReturnValue({ ...baseUserData });
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/review?wordId=w1']}>
+        <ReviewPage />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('review-session-summary-mobile')).toHaveClass('sm:hidden');
+  });
+
+  it('locks a rating transaction against rapid duplicate activation', () => {
+    useUserDataMock.mockReturnValue({ ...baseUserData });
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/review?wordId=w1']}>
+        <ReviewPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByTestId('review-recall-surface'));
+    const goodButton = screen.getByRole('button', { name: /Good/i });
+
+    act(() => {
+      goodButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      goodButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(reviewWordMock).toHaveBeenCalledTimes(1);
+    expect(reviewWordMock).toHaveBeenCalledWith('w1', 'good');
   });
 
   it('surfaces a stubborn-word recovery drill and records whether it helped', async () => {
